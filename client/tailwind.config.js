@@ -169,7 +169,8 @@ module.exports = {
 
 // Sample Groups Color Theme
         'sample-group-added-light': '#f4e7Ba',
-        'sample-group-added-dark': '#d9bf98',
+        'sample-group-added-dark': '#e6daae',
+
 
       },
       zIndex: {

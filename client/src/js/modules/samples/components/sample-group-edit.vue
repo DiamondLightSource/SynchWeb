@@ -1,8 +1,90 @@
 <template>
   <div class="content">
-    <help-banner level='notify' message='To save the sample group, edit the name and click OK. To add samples to the group, select the relevant container and add sample locations to the group, then click "Save Sample Group" at the foot of the page.'/>
+    <help-banner level='notify' message="Select a shipment to see all containers. Clicking on the samples in the selected containers will add it to the current group. Click the 'Save Sample Group' button to save the changes to the group. "/>
 
-    <validation-observer ref="sampleGroupName" v-slot="{ invalid, errors }">
+    <h1>{{ gid ? 'Editing Sample Group' : 'Create Sample Group' }}</h1>
+
+    <div v-if="objectKeys(selectedSamplesInGroups).length > 0 && objectKeys(cachedContainerList).length > 0" class="content">
+      <h2>Sample in Group By Containers</h2>
+      <custom-table-component class="tw-w-full" :data-list="formatSamplesInGroups()" table-class="tw-w-full">
+        <template v-slot:tableHeaders>
+          <td class="tw-w-6/12 tw-py-2 tw-pl-2">Container Name</td>
+          <td class="tw-w-6/12 tw-py-2 tw-pl-2">Container Samples Added</td>
+        </template>
+        <template v-slot:slotData="{ dataList }">
+          <custom-table-row
+            :class="['tw-w-full', 'tw-cursor-pointer', rowIndex % 2 === 0 ? 'tw-bg-table-body-background-odd': 'tw-bg-table-body-background']"
+            v-for="(result, rowIndex) in dataList"
+            :key="rowIndex"
+            :result="result"
+            :row-index="rowIndex"
+            @click.native="onContainerSelected(cachedContainerList[result['CONTAINERID']])">
+            <td class="tw-w-6/12 tw-pl-2 tw-p1-2">{{ result['NAME'] }}</td>
+            <td class="tw-w-6/12 tw-py-1 tw-pl-2">{{ result['SAMPLES'] }}</td>
+          </custom-table-row>
+        </template>
+      </custom-table-component>
+    </div>
+
+    <div class="content">
+      <h2>Containers</h2>
+      <p class="tw-text-xs tw-mb-3">Select a shipment to see all associated containers</p>
+      <div class="tw-flex tw-flex-row tw-w-full">
+        <div class="tw-mr-2">
+          <p class="tw-mb-2">Shipment</p>
+          <combo-box
+            class="tw-w-48 tw-mb-4 shipment-select"
+            :data="shipments"
+            value-field="SHIPPINGID"
+            text-field="SHIPPINGNAME"
+            default-text="Select a Shipment"
+            :input-index="0"
+            v-model="shipmentId"
+          />
+        </div>
+      </div>
+
+      <containers-list
+        v-if="proposalObject.BEAMLINENAME"
+        :showImaging="false"
+        :tableHeaders="containerHeaders"
+        :query-params="queryParams"
+        :table-actions="true"
+        action-class="tw-w-2/12 tw-py-2 tw-pl-2"
+        v-on:row-clicked="onContainerSelected"
+      >
+        <template v-slot:containers-table-action="{ result, rowIndex }">
+          <router-link class="button button-notext atp" :to="`/containers/cid/${result.CONTAINERID}`">
+            <i class="fa fa-info"></i> <span>See Details</span>
+          </router-link>
+        </template>
+      </containers-list>
+    </div>
+
+    <div v-if="containerSelected" class="tw-w-full">
+      <puck-table-view
+        v-if="selectedContainerType.NAME && selectedContainerType.NAME.toLowerCase() === 'puck'"
+        :selected-samples="selectedSamplesInGroups[selectedContainerId]"
+        :samples="samples"
+        :container-name="selectedContainerName"
+        @cell-clicked="addSelectedCells"
+        @unselect-cell="deselectCells"
+      />
+
+      <valid-container-graphic
+        v-else-if="selectedContainerType.NAME && selectedContainerType.NAME.toLowerCase() !== 'puck'"
+        :container-type="selectedContainerType"
+        :valid-samples="selectedSamplesInGroups[selectedContainerId]"
+        :container-identifier="selectedContainerName"
+        color-attribute="VALID"
+        :samples="samples"
+        :containerGraphicHeader="selectedContainerName"
+        @cell-clicked="addSelectedCells"
+        @unselect-cell="deselectCells"
+      />
+    </div>
+
+    <validation-observer class="tw-w-full" ref="sampleGroupName" v-slot="{ invalid, errors }" tag="div">
       <validation-provider
         tag="div"
         class="tw-flex tw-flex-row tw-w-full tw-items-center"
@@ -18,88 +100,18 @@
           type="text"
           id="sample_group_name"
           :errorMessage="errors[0]"
-          :label="gid ? 'Editing Sample Group' : 'Create Sample Group'"
-          :inline="true"
-          placeholder-text="Click to edit and save name"
-          @save="saveSampleGroupName(true)"
+          label="Sample Group Name"
+          initial-text="Click here to enter name"
+          placeholder-text="Click here to enter name"
         />
-        <p class="tw-text-sm maven-pro-font">(Click to edit and save name)</p>
       </validation-provider>
-    </validation-observer>
 
-    <div v-if="objectKeys(selectedSamplesInGroups).length > 0" class="content">
-      <h1>Sample Group Containers</h1>
-      <table-panel
-        :headers="sampleGroupHeaders"
-        :data="formatSamplesInGroups()"
-        @row-clicked="getContainerFromSample"
-      />
-    </div>
-
-    <div class="content">
-      <h1>Containers</h1>
-      <p class="tw-text-xs tw-mb-3">Select a shipment and dewar to see all associated containers</p>
-      <div class="tw-flex tw-flex-row tw-w-full">
-        <div class="tw-mr-2">
-          <p class="tw-mb-2">Shipment</p>
-          <combo-box
-            class="tw-w-48 tw-mb-4 shipment-select"
-            :data="shipments"
-            value-field="SHIPPINGID"
-            text-field="SHIPPINGNAME"
-            default-text="Select a Shipment"
-            :input-index="0"
-            v-model="shipmentId"
-          />
-        </div>
-
-        <div class="tw-ml-2">
-          <p class="tw-mb-2">Dewar</p>
-          <combo-box
-            class="tw-w-48 tw-mb-4 dewars-select"
-            :is-disabled="!shipmentId"
-            :data="dewars"
-            value-field="DEWARID"
-            text-field="CODE"
-            default-text="Select a Dewar"
-            :input-index="1"
-            v-model="dewarId"
-          />
-        </div>
+      <div class="tw-relative tw-mt-6">
+        <base-button class="button" @perform-button-action="onSaveSampleGroup" :is-disabled="invalid && isDisabled">
+          Save Sample Group
+        </base-button>
       </div>
-      <containers-list
-        v-if="proposalObject.BEAMLINENAME"
-        :showImaging="false"
-        :tableHeaders="containerHeaders"
-        :query-params="queryParams"
-        @row-clicked="onContainerSelected"
-      >
-        <template slot="container-actions" slot-scope="{ row }">
-          <router-link class="button button-notext atp" :to="`/containers/cid/${row.CONTAINERID}`">
-            <i class="fa fa-info"></i> <span>See Details</span>
-          </router-link>
-        </template>
-      </containers-list>
-    </div>
-
-    <container-graphic
-      v-if="containerSelected"
-      :selectedContainerName="selectedContainerName"
-      :selectedContainerType="selectedContainer.CONTAINERTYPE"
-      :samples="samples"
-      :selectedSamples="selectedSamplesInGroups[selectedContainerName]"
-      @unselect-cell="deselectCells"
-      @cell-clicked="addSelectedCells"
-    />
-
-    <div class="tw-relative tw-mt-6" v-if="!isDisabled">
-      <base-button
-        class="button"
-        @perform-button-action="onSaveSampleGroup"
-      >
-        Save Sample Group
-      </base-button>
-    </div>
+    </validation-observer>
   </div>
 </template>
 
@@ -107,9 +119,7 @@
 import { mapGetters } from 'vuex'
 import { ValidationObserver, ValidationProvider } from 'vee-validate'
 import { differenceBy, uniqBy, get as lodashGet, values, keys, has, pick, map, differenceWith, isEqual } from 'lodash-es'
-import ContainerGraphic from './ContainerGraphic.vue'
 
-import Table from 'app/components/table.vue'
 import BaseButton from 'app/components/base-button.vue'
 import BaseInputText from 'app/components/base-input-text.vue'
 import HelpBanner from 'app/components/help-banner.vue'
@@ -122,19 +132,26 @@ import ContainerModel from 'models/container.js'
 import SampleGroup from 'models/samplegroup.js'
 import BaseInputSelect from 'app/components/base-input-select.vue'
 import Shipments from 'collections/shipments'
-import Dewars from 'collections/dewars'
 import ComboBox from 'app/components/combo-box.vue';
+import CustomTableComponent from 'app/components/custom-table-component.vue'
+import CustomTableRow from 'app/components/custom-table-row.vue'
+import ValidContainerGraphic from 'modules/types/mx/samples/valid-container-graphic.vue'
+import SampleGroupMixin from 'modules/samples/components/sample-group-mixin'
+import PuckTableView from 'modules/samples/components/puck-table-view.vue'
 
 export default {
   name: 'sample-group-edit',
   props: {
     gid: Number
   },
+  mixins: [SampleGroupMixin],
   components: {
+    'puck-table-view': PuckTableView,
+    'valid-container-graphic': ValidContainerGraphic,
+    'custom-table-component': CustomTableComponent,
+    'custom-table-row': CustomTableRow,
     'combo-box': ComboBox,
     'base-input-select': BaseInputSelect,
-    'table-panel': Table,
-    'container-graphic': ContainerGraphic,
     'base-button': BaseButton,
     'base-input-text': BaseInputText,
     'containers-list': ContainersList,
@@ -142,28 +159,21 @@ export default {
     'validation-observer': ValidationObserver,
     'validation-provider': ValidationProvider
   },
-  data: function () {
+  data() {
     return {
       groupName: '',
       lockName: !!this.gid,
-      sampleGroupHeaders: [
-        { title: 'Container', key: 'NAME' },
-        { title: 'Samples', key: 'SAMPLES' },
-      ],
-      containersBodyColumns: ['NAME', 'CONTAINERTYPE', 'BARCODE'],
       containerHeaders: [
-        { title: 'Name', key: 'NAME' },
-        { title: 'Container Type', key: 'CONTAINERTYPE' },
-        { title: 'BarCode', key: 'BARCODE' }
+        { title: 'Name', key: 'NAME', columnClass: 'tw-w-4/12 tw-py-2 tw-pl-2' },
+        { title: 'Container Type', key: 'CONTAINERTYPE', columnClass: 'tw-w-3/12 tw-py-2 tw-pl-2' },
+        { title: 'BarCode', key: 'BARCODE', columnClass: 'tw-w-3/12 tw-py-2 tw-pl-2' }
       ],
       sampleGroupName: null,
       containerSelected: false,
       selectedContainerName: '',
       samples: [],
       sampleGroup: null,
-      selectedContainer: {},
-      objectValues: values,
-      objectKeys: keys,
+      selectedContainerType: {},
       sampleKeys: [
         'BLSAMPLEID',
         'CONTAINER',
@@ -181,19 +191,13 @@ export default {
       initialSamplesInGroup: [],
       initialSampleInGroupModels: null,
       sampleGroupId: null,
-      sampleGroupSamples: null,
       containerModel: null,
-      sampleGroupNameModel: null,
       queryParams: {},
-      beamLineTypesContainerType: {
-        'i02-2': 'plate',
-      },
       shipmentsCollection: null,
-      dewarsCollection: null,
       shipments: [],
-      dewars: [],
       shipmentId: '',
-      dewarId: ''
+      selectedContainerId: '',
+      ready: false
     };
   },
   computed: {
@@ -210,31 +214,30 @@ export default {
     },
     proposalObject() {
       return this.$store.getters['proposal/currentProposalModel'].toJSON()
-    },
-
+    }
   },
   created: function () {
+    this.getContainerTypes()
     this.sampleGroup = new SampleGroupsCollection()
     this.containerSamples = new SamplesCollection()
-    this.sampleGroupSamples = new SampleGroupSamplesCollection()
     this.containerModel = new ContainerModel()
     this.shipmentsCollection = new Shipments()
-    this.dewarsCollection = new Dewars()
-  },
-  mounted() {
+
     this.fetchShipmentsForProposal()
     this.sampleGroupId = this.gid
     if (this.sampleGroupId) {
       this.getSampleGroupInformation()
     } else {
-      this.initialSampleInGroupModels = this.sampleGroupSamples
+      this.initialSampleInGroupModels = new SampleGroupSamplesCollection()
       // The database does not allow some characters like ':' and '.' so we replace them with '-'
     }
   },
   methods: {
+    objectKeys: keys,
     async onSaveSampleGroup() {
       try {
         this.$store.commit('loading', true)
+        await this.saveSampleGroupName()
         let result
 
         const totalSamples = this.flattenedSamplesInGroup
@@ -245,8 +248,8 @@ export default {
             acc.push(sample)
           }
           
-          if (this.gid && typeof sample.BLSAMPLEGROUPID === 'undefined') {
-            acc.push({ ...sample, BLSAMPLEGROUPID: this.gid })
+          if (this.sampleGroupId && typeof sample.BLSAMPLEGROUPID === 'undefined') {
+            acc.push({ ...sample, BLSAMPLEGROUPID: this.sampleGroupId })
           }
 
           return acc
@@ -256,9 +259,8 @@ export default {
         if (deletedSamples.length > 0) await this.deleteUnselectedSamplesFromGroup(deletedSamples)
         
         if (samples.length > 0) {
-          this.sampleGroupSamples.reset(samples)
-          this.sampleGroupSamples.newType = !this.sampleGroupId
-          result = await this.$store.dispatch('saveCollection', { collection: this.sampleGroupSamples })
+          const sampleGroupSamplesCollection = new SampleGroupSamplesCollection(samples, { sampleGroupId: this.sampleGroupId })
+          result = await this.$store.dispatch('saveCollection', { collection: sampleGroupSamplesCollection })
         }
 
         if (result) {
@@ -281,68 +283,63 @@ export default {
     },
     async onContainerSelected(item) {
       try {
+        if (!this.cachedContainerList[item.CONTAINERID]) {
+          this.cachedContainerList[item.CONTAINERID] = item
+        }
         this.containerSelected = false
         this.$store.commit('loading', true)
   
-        this.selectedContainer = item
-        this.selectedContainerName =  item.NAME ? item.NAME : `${item.CONTAINERID} - ${item.BARCODE}`
+        this.selectedContainerType = this.getContainerTypeForContainer(item)
+        this.selectedContainerName =  this.generateContainerTitle(item)
+        this.selectedContainerId = item.CONTAINERID
         this.containerSamples.queryParams.cid = item.CONTAINERID
         this.containerSamples.queryParams.per_page = 999
   
         const samplesData = await this.$store.dispatch('getCollection', this.containerSamples)
   
         this.samples = samplesData.toJSON()
-        this.$store.commit('loading', false)
-      } catch (error) {
-        this.$store.commit('loading', false)
       } finally {
+        this.$store.commit('loading', false)
+
         this.containerSelected = true
       }
     },
     async saveSampleGroupName(loading = false) {
-      try {
-        const validField = await this.$refs.sampleGroupName.validate()
-        if (validField) {
-          if (loading) this.$store.commit('loading', loading)
-          let attributes = null
+      const validField = await this.$refs.sampleGroupName.validate()
+      if (validField) {
+        let attributes = null
+        let sampleGroupModel = null
 
-          if (this.sampleGroupId) {
-            attributes = { BLSAMPLEGROUPID: this.sampleGroupId, NAME: this.groupName }
-          } else {
-            this.sampleGroupNameModel = new SampleGroupNameModel({ NAME: this.groupName }, {})
-            this.sampleGroupNameModel.ignoreSamples = true
-          }
-
-          await this.$store.dispatch('saveModel', {
-            model: this.sampleGroupNameModel,
-            attributes
-          })
-
-          const { BLSAMPLEGROUPID } = this.sampleGroupNameModel.toJSON()
-
-          this.sampleGroupId = BLSAMPLEGROUPID
-          await this.$router.replace({ path: `/samples/groups/edit/id/${this.sampleGroupId}` })
+        if (this.sampleGroupId) {
+          sampleGroupModel = new SampleGroup({ BLSAMPLEGROUPID: this.sampleGroupId })
+          attributes = { NAME: this.groupName }
+        } else {
+          sampleGroupModel = new SampleGroup({ NAME: this.groupName })
         }
-      } catch (error) {
-        let message = `An error occurred while saving the sample group name. ${error.message}`
-        this.$store.commit('notifications/addNotification', { title: 'Error', message: message, level: 'error' })
-      } finally {
-        this.$store.commit('loading', false)
+
+        const result = await this.$store.dispatch('saveModel', {
+          model: sampleGroupModel,
+          attributes
+        })
+
+        const { BLSAMPLEGROUPID } = result.toJSON()
+
+        this.sampleGroupId = BLSAMPLEGROUPID
       }
     },
     addSelectedCells(cellsLocation) {
       const fullSampleDetails = this.getFullSamplesDetails(cellsLocation)
-      const selectedContainerSamples = lodashGet(this.selectedSamplesInGroups, this.selectedContainerName, [])
+      const selectedContainerSamples = lodashGet(this.selectedSamplesInGroups, this.selectedContainerId, [])
       const updatedSelectedContainerSamples = uniqBy(selectedContainerSamples.concat(fullSampleDetails), 'BLSAMPLEID')
 
-      this.$store.commit('sampleGroups/setSelectedSampleGroups', { [this.selectedContainerName]: updatedSelectedContainerSamples })
+      this.$store.commit('sampleGroups/setSelectedSampleGroups', { [this.selectedContainerId]: updatedSelectedContainerSamples })
     },
     deselectCells(cellsLocation) {
       const fullSampleDetails = this.getFullSamplesDetails(cellsLocation)
-      const selectedContainerSamples = lodashGet(this.selectedSamplesInGroups, this.selectedContainerName)
+      const selectedContainerSamples = lodashGet(this.selectedSamplesInGroups, this.selectedContainerId)
       const updatedSelectedContainerSamples = differenceBy(selectedContainerSamples, fullSampleDetails, 'BLSAMPLEID')
 
-      this.$store.commit('sampleGroups/setSelectedSampleGroups', { [this.selectedContainerName]: updatedSelectedContainerSamples })
+      this.$store.commit('sampleGroups/setSelectedSampleGroups', { [this.selectedContainerId]: updatedSelectedContainerSamples })
     },
     getFullSamplesDetails(cellsLocation) {
       return cellsLocation.reduce((samples, location) => {
@@ -350,7 +347,8 @@ export default {
         if (typeof sample !== 'undefined') {
           samples.push({
             ...pick(sample, this.sampleKeys),
-            SAMPLE: sample.NAME
+            SAMPLE: sample.NAME,
+            VALID: 1
           })
         }
 
@@ -361,28 +359,34 @@ export default {
     // Remove when we start persisting the vuex store
     async getSampleGroupInformation() {
       await this.fetchSampleGroupName()
-      this.sampleGroupSamples.queryParams = { BLSAMPLEGROUPID: this.sampleGroupId, page: 1, per_page: 9999, total_pages: 1 }
-      const groupSamples = await this.$store.dispatch('getCollection', this.sampleGroupSamples)
+      const sampleGroupSamplesCollection = new SampleGroupSamplesCollection(null, { state: { pageSize: 9999 }, sampleGroupId: this.sampleGroupId })
+      const groupSamples = await this.$store.dispatch('getCollection', sampleGroupSamplesCollection)
       this.initialSampleInGroupModels = groupSamples
 
       const { samplesByContainer, initialSamples }  = groupSamples.toJSON().reduce((acc, curr) => {
-        if (typeof curr.CONTAINER === 'undefined') {
+        if (typeof curr.CONTAINERID === 'undefined') {
           return acc
         }
 
         acc.initialSamples.push({
           ...pick(curr, this.sampleKeys),
-          BLSAMPLEGROUPID: curr.BLSAMPLEGROUPID
+          BLSAMPLEGROUPID: curr.BLSAMPLEGROUPID,
+          VALID: 1
         })
 
-        if (has(acc.samplesByContainer, curr.CONTAINER)) {
-          acc.samplesByContainer[curr.CONTAINER].push({
+        if (has(acc.samplesByContainer, curr.CONTAINERID)) {
+          acc.samplesByContainer[curr.CONTAINERID].push({
             ...pick(curr, this.sampleKeys),
-            BLSAMPLEGROUPID: curr.BLSAMPLEGROUPID
+            BLSAMPLEGROUPID: curr.BLSAMPLEGROUPID,
+            VALID: 1
           })
         } 
         else {
-          acc.samplesByContainer[curr.CONTAINER] = [{ ...pick(curr, this.sampleKeys), BLSAMPLEGROUPID: curr.BLSAMPLEGROUPID }]
+          acc.samplesByContainer[curr.CONTAINERID] = [{
+            ...pick(curr, this.sampleKeys),
+            BLSAMPLEGROUPID: curr.BLSAMPLEGROUPID,
+            VALID: 1
+          }]
         }
 
         return acc
@@ -391,6 +395,7 @@ export default {
         samplesByContainer: {}
       })
       this.initialSamplesInGroup = initialSamples
+      await this.fetchContainersInformation(samplesByContainer)
       this.$store.commit('sampleGroups/setSelectedSampleGroups', samplesByContainer)
     },
     extractSampleNamesFromList(list, property) {
@@ -409,23 +414,11 @@ export default {
 
       await Promise.allSettled(deletedModels)
     },
-    async getContainerFromSample(row) {
-      const { CONTAINERID } = this.selectedSamplesInGroups[row.NAME][0]
-      if (CONTAINERID) {
-        try {
-          this.$store.commit('loading', true)
-          this.containerModel = new ContainerModel({ CONTAINERID })
-          const container = await this.$store.dispatch('getModel', this.containerModel)
-          await this.onContainerSelected(container.toJSON())
-          this.$store.commit('loading', false)
-        } catch (error) {
-          this.$store.commit('loading', false)
-        }
-      }
-    },
     formatSamplesInGroups() {
       return keys(this.selectedSamplesInGroups).map(item => ({
-        NAME: item, SAMPLES: this.extractSampleNamesFromList(this.selectedSamplesInGroups[item], 'SAMPLE')
+        NAME: this.generateContainerTitle(this.cachedContainerList[item]),
+        CONTAINERID: item,
+        SAMPLES: this.extractSampleNamesFromList(this.selectedSamplesInGroups[item], 'SAMPLE')
       }))
     },
     async fetchSampleGroupName() {
@@ -434,10 +427,7 @@ export default {
       } else {
         try {
           const sampleGroupModel = new SampleGroup({ BLSAMPLEGROUPID: this.sampleGroupId })
-          const groupNameResult = await this.$store.dispatch(
-            'getModel',
-              sampleGroupModel
-          )
+          const groupNameResult = await this.$store.dispatch('getModel', sampleGroupModel)
           this.groupName = groupNameResult.toJSON().NAME
         } catch (error) {
           let message = 'An error occurred while fetching sample group name'
@@ -451,39 +441,28 @@ export default {
       const shipments = await this.$store.dispatch('getCollection', this.shipmentsCollection)
       this.shipments = [{ SHIPPINGID: '', SHIPPINGNAME: '' }, ...shipments.toJSON()]
     },
-    async fetchDewarsByShipmentId() {
-      this.dewarsCollection = new Dewars(null, { id: this.shipmentId, state: { pageSize: 99999 } })
-      const dewars = await this.$store.dispatch('getCollection', this.dewarsCollection)
-      this.dewars = [{ DEWARID: '', CODE: '' }, ...dewars.toJSON()]
-    },
   },
   provide() {
     return {
-      $tableActions: 'Action',
-      $dewarId: () => this.dewarId,
-      $restrictLoading: () => true
+      $shipmentId: () => this.shipmentId,
+      $restrictLoading: () => true,
+      $labelAsButtons: true,
+      $displayHelpMessage: true
     }
   },
   beforeRouteLeave(to, from , next) {
     this.$store.commit('sampleGroups/resetSelectedSampleGroups')
     next()
   },
-  watch: {
-    shipmentId(newValue) {
-      if (newValue) {
-        this.fetchDewarsByShipmentId()
-      }
-    }
-  }
 };
 </script>
 <style scoped>
 >>> .name-label {
-  @apply tw-font-normal tw-text-2xl ;
+  @apply tw-font-normal tw-text-lg;
 }
 >>> .group-name {
   .btn-edit {
-    @apply tw-font-normal tw-text-2xl ;
+    @apply tw-font-normal tw-text-lg;
   }
 }
 .maven-pro-font {

@@ -16,42 +16,39 @@
       name="currentUserContainers"
       @input="setUserContainersState"/>
 
-    <table-panel
-      :headers="tableColumns"
-      :data="containers"
-      v-on="$listeners"
-      :actions="tableActions"
-    >
-      <template v-slot:table-headers="{ headers, sortHeader, actions }">
-        <slot name="container-header" :headers="headers" :sortHeader="sortHeader">
-          <th
-            v-for="(header,index) in headers" :key="index"
-            class=""
-            @click="sortHeader(header)">
-            {{header.title}}
-          </th>
-          <th v-if="actions">{{actions}}</th>
-        </slot>
+    <custom-table-component :data-list="containers" table-class="tw-w-full" v-on="$listeners">
+      <template v-slot:tableHeaders>
+        <td
+          :class="column.columnClass"
+          v-for="(column, columnIndex) in tableColumns"
+          :key="columnIndex"
+          @click="$emit('sort-by', column)">{{ column.title}}</td>
+        <td :class="actionClass" v-if="tableActions">Actions</td>
       </template>
-      <template slot-scope="{ data, headers, rowClicked, actions }">
-        <slot :data="data" :headers="headers" :rowClicked="rowClicked">
-          <tr
-            v-for="(row, index) in data"
-            :key="index"
-            v-on:click="rowClicked(row)">
-            <td v-for="(header, index) in headers" :key="index">
-              {{row[header.key]}}
-            </td>
 
-            <td>
-              <slot :row="row" name="container-actions">
-                <template slot="actions" v-if="actions"></template>
-              </slot>
-            </td>
-          </tr>
-        </slot>
+      <template v-slot:slotData="{ dataList }">
+        <custom-table-row
+          :class="['tw-w-full', 'tw-cursor-pointer', rowIndex % 2 === 0 ? 'tw-bg-table-body-background-odd': 'tw-bg-table-body-background']"
+          v-for="(result, rowIndex) in dataList"
+          :key="rowIndex"
+          :result="result"
+          :row-index="rowIndex"
+          @click.native="$emit('row-clicked', result)">
+          <td :class="header.columnClass" v-for="(header, index) in tableColumns" :key="index">
+            {{ result[header.key] }}
+          </td>
+          <td :class="actionClass" v-if="tableActions">
+            <slot name="containers-table-action" :result="result" :rowIndex="rowIndex"></slot>
+          </td>
+        </custom-table-row>
       </template>
-    </table-panel>
+
+      <template v-slot:noData>
+        <custom-table-row>
+          <td class="tw-w-full tw-py-2 tw-text-center" :colspan="tableColumns.length + 1">No containers found</td>
+        </custom-table-row>
+      </template>
+    </custom-table-component>
 
     <pagination-panel
       :initial-page="containersListState.firstPage"
@@ -63,17 +60,19 @@
 </template>
 
 <script>
-import Table from 'app/components/table.vue'
 import Pagination from 'app/components/pagination.vue'
 import Containers from 'collections/containers'
 import MarionetteApplication from 'app/marionette-application.js'
 import CollectionFilters from 'app/components/utils/collection-filters.vue'
 import BaseInputCheckbox from 'app/components/base-input-checkbox.vue'
+import CustomTableComponent from 'app/components/custom-table-component.vue'
+import CustomTableRow from 'app/components/custom-table-row.vue'
 
 export default {
     name: 'ContainersList',
     components: {
-        'table-panel': Table,
+        'custom-table-component': CustomTableComponent,
+        'custom-table-row': CustomTableRow,
         'pagination-panel': Pagination,
         'collection-filters': CollectionFilters,
         'base-input-checkbox': BaseInputCheckbox
@@ -107,6 +106,12 @@ export default {
         pageableCollectionState: {
             type: Object,
             default: () => ({})
+        },
+        actionClass: {
+            type: String,
+        },
+        tableActions: {
+            type: Boolean
         }
     },
     data() {
@@ -154,11 +159,8 @@ export default {
 
         return this.filters
       },
-      tableActions() {
-          return this.$tableActions
-      },
-      dewarId() {
-        return this.$dewarId()
+      shipmentId() {
+        return this.$shipmentId()
       },
       restrictLoading() {
         return this.$restrictLoading
@@ -169,8 +171,8 @@ export default {
         queryParams: this.queryParams,
         state: this.pageableCollectionState
       })
-      if (this.dewarId) {
-        this.collection.dewarID = this.dewarId
+      if (this.shipmentId) {
+        this.collection.shipmentID = this.shipmentId
       }
     },
     mounted() {
@@ -193,7 +195,7 @@ export default {
         this.$store.commit('loading', false)
       },
       handleFilterSelection(data) {
-        if (!this.restrictLoading || (this.restrictLoading && this.dewarId)) {
+        if (!this.restrictLoading || (this.restrictLoading && this.shipmentId)) {
           this.filters.forEach(filter => {
             if (filter.id === data.id ) {
               filter.isSelected = !data.isSelected
@@ -205,13 +207,13 @@ export default {
         }
       },
       async handlePageChange(data) {
-        if (!this.restrictLoading || (this.restrictLoading && this.dewarId)) {
+        if (!this.restrictLoading || (this.restrictLoading && this.shipmentId)) {
           this.collection.queryParams = { page: data['current-page'], per_page: Number(data['page-size'])}
           await this.fetchContainers()
         }
       },
       setUserContainersState() {
-        if (!this.restrictLoading || (this.restrictLoading && this.dewarId)) {
+        if (!this.restrictLoading || (this.restrictLoading && this.shipmentId)) {
           this.showUserContainers = !this.showUserContainers
         }
       }
@@ -231,15 +233,14 @@ export default {
 
         this.fetchContainers()
       },
-      dewarId() {
-        this.collection.dewarID = this.dewarId
+      shipmentId() {
+        this.collection.shipmentID = this.shipmentId
         this.collection.queryParams = { page: 1, per_page: 15 }
         this.fetchContainers()
       }
     },
     inject: [
-      '$tableActions',
-      '$dewarId',
+      '$shipmentId',
       '$restrictLoading'
     ]
 }

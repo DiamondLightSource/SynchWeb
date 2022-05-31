@@ -16,7 +16,7 @@ define(['backbone', 'backbone.paginator', 'models/samplegroupsample'], function(
     },
 
     initialize(collection, options) {
-      if (options.sampleGroupId) {
+      if (options && options.sampleGroupId) {
         this.sampleGroupId = options.sampleGroupId
       }
     },
@@ -31,6 +31,19 @@ define(['backbone', 'backbone.paginator', 'models/samplegroupsample'], function(
 
     parseState: function(r) {
       return { totalRecords: r.total }
-    }
+    },
+
+    save(options) {
+      options = _.extend({}, options)
+
+      var col = this
+      var success = options.success;
+      options.success = function(resp) {
+        col.reset(resp, { silent: true })
+        if (success) success(col, resp, options)
+      }
+
+      return Backbone.sync('create', this, options)
+    },
   })
 })

@@ -7,7 +7,7 @@ TODO - move the score colour methods to a utility class
 -->
 <template>
   <div>
-    <div id="puck"></div>
+    <div :id="puckId"></div>
   </div>
 </template>
 
@@ -36,8 +36,20 @@ export default {
       type: String,
       default: 'SCORE'
     },
+    puckId: {
+      type: String,
+      default: 'puck'
+    },
+    selectedDrops: {
+      type: Array,
+      default: () => ([])
+    },
+    selectedSamples: {
+      type: Array,
+      default: () => ([])
+    }
   },
-  data: function() {
+  data() {
     return {
       // Define geometry of puck locations
       cell: {
@@ -89,7 +101,7 @@ export default {
   watch: {
     samples: {
       handler() {
-        d3SelectAll("#puck > *").remove()
+        d3SelectAll(`#${this.puckId} > *`).remove()
         this.drawContainer()
         this.updateSelected()
         this.showLabels()
@@ -100,7 +112,7 @@ export default {
     }
   },
   mounted: function() {
-    d3SelectAll("#puck > *").remove()
+    d3SelectAll(`#${this.puckId} > *`).remove()
     this.drawContainer()
     this.updateSelected()
     this.showLabels()
@@ -116,7 +128,7 @@ export default {
       const viewBoxHeight = 500
       const viewBox = [0,0,viewBoxWidth,viewBoxHeight]
       // Make the svg fit within a viewport
-      const svg = d3Select('#puck')
+      const svg = d3Select(`#${this.puckId}`)
           .append('svg')
           .attr('viewBox', viewBox.join(','))
           .attr('preserveAspectRatio', 'xMaxYMax meet')
@@ -210,7 +222,17 @@ export default {
     // TODO - move these color functions into a separate utility class
     scoreColors: function(d) {
       let scale
-      let score = (this.colorAttribute && d[this.colorAttribute]) ? d[this.colorAttribute] : null
+      let score
+      const selectedSample = this.selectedSamples.find(sample => Number(sample['LOCATION']) === Number(d.LOCATION))
+
+      if (selectedSample) {
+        score = selectedSample[this.colorAttribute]
+      } else if (!selectedSample && d[this.colorAttribute]) {
+        score = d[this.colorAttribute]
+      } else {
+        score = null
+      }
+
       switch(this.colorScale) {
         case 'rgb':
           scale = this.rgbScale()

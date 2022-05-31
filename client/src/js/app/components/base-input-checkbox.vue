@@ -18,7 +18,6 @@ Slots include:
       type="checkbox"
       :checked="value"
       :disabled="disabled"
-      @input="updateValue"
       @change="updateValue"
       @blur="onBlur"
       @focus="$emit('focus')"

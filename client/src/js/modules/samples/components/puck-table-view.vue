@@ -1,56 +1,57 @@
 <template>
-  <div>
-    <div class="tw-w-full"><button class="button"></button></div>
-    <custom-table
-      :data="formattedSampleList"
+  <div class="content">
+    <h2>{{ containerName }}</h2>
+    <custom-table-component
+      :data-list="formattedSampleList"
       :headers="sampleHeaders"
-      class="puck-view-table"
-      @row-clicked="handleDropSelection"
-    >
-      <template v-slot:table-headers="{ headers, sortHeader }">
-        <th><base-input-checkbox @input="toggleSelectAll" :value="allSelected"/></th>
-        <th
+      class="tw-w-full">
+      <template v-slot:tableHeaders>
+        <td class="tw-w-8 tw-py-2 tw-pl-2"><base-input-checkbox @input="toggleSelectAll" :value="allSelected"/></td>
+        <td
           v-for="(header, index) in tableColumns" :key="index"
-          class=""
-          @click="sortHeader(header)">
-          {{header.title}}
-        </th>
+          class="tw-w-4/12 tw-py-2 tw-pl-2">
+          {{ header.title }}
+        </td>
       </template>
-      <template v-slot:default="{ data, rowClicked }">
-        <tr
-          v-for="(row, index) in data"
-          :key="index"
-          :class="{
-            'sample-group-added': row['ISADDED'],
-            'table-row': true
-          }"
-          @click="rowClicked(row)"
-        >
-          <td><base-input-checkbox @input="rowClicked(row)" :value="row['ISADDED']"/></td>
-          <td v-for="(header, headerIndex) in tableColumns" :key="headerIndex">{{ row[header.key] }}</td>
-        </tr>
+      <template v-slot:slotData="{ dataList }">
+        <custom-table-row
+          :class="['tw-w-full', 'tw-cursor-pointer', tableRowClass(result, rowIndex)]"
+          v-for="(result, rowIndex) in dataList"
+          :key="rowIndex"
+          :result="result"
+          :row-index="rowIndex">
+          <td class="tw-w-8 tw-py-2 tw-pl-2"><base-input-checkbox @input="handleDropSelection(result)" :value="result['ISADDED']"/></td>
+          <td class="tw-w-4/12 tw-py-2 tw-pl-2" v-for="(header, headerIndex) in tableColumns" :key="headerIndex">{{ result[header.key] }}</td>
+        </custom-table-row>
       </template>
-    </custom-table>
+    </custom-table-component>
   </div>
 </template>
 <script>
-import CustomTable from 'app/components/table.vue'
-import BaseInputCheckbox from 'app/components/base-input-checkbox.vue'
 import { cloneDeep } from 'lodash-es'
+import CustomTableComponent from 'app/components/custom-table-component.vue'
+import BaseInputCheckbox from 'app/components/base-input-checkbox.vue'
+import CustomTableRow from 'app/components/custom-table-row.vue'
 
 export default {
   components: {
+    CustomTableRow,
     'base-input-checkbox': BaseInputCheckbox,
-    'custom-table': CustomTable
+    'custom-table-component': CustomTableComponent
   },
   props: {
     samples: {
       type: Array,
       required: true,
+      default: () => ([])
     },
     selectedSamples: {
       type: Array,
-      required: true
+      required: true,
+      default: () => ([])
+    },
+    containerName: {
+      type: String
     }
   },
   name: 'puck-table-view',
@@ -93,6 +94,17 @@ export default {
       }
 
       this.allSelected = !this.allSelected
+    },
+    tableRowClass(row, rowIndex) {
+      if (row['ISADDED'] && rowIndex % 2 === 0) {
+        return 'tw-bg-sample-group-added-light'
+      } else if (row['ISADDED'] && rowIndex % 2 !== 0) {
+        return 'tw-bg-sample-group-added-dark'
+      } else if (!row['ISADDED'] && rowIndex % 2 !== 0) {
+        return 'tw-bg-table-body-background-odd'
+      } else if (!row['ISADDED'] && rowIndex % 2 === 0) {
+        return 'tw-bg-table-body-background'
+      }
     }
   },
   computed: {
@@ -105,15 +117,12 @@ export default {
       handler: 'formatSamplesList',
       immediate: true,
       deep: true
+    },
+    samples: {
+      handler: 'formatSamplesList',
+      immediate: true,
+      deep: true
     }
   }
 }
 </script>
-<style scoped>
-.puck-view-table tr.sample-group-added:nth-child(odd) td {
-  background-color: #f4e7Ba
-}
-.puck-view-table tr.sample-group-added:nth-child(even) td {
-  background-color: #e6daae
-}
-</style>

@@ -525,7 +525,8 @@ export default {
       $plateType: () => this.plateType,
       $containerTypeDetails: () => this.containerTypeDetails,
       $screenComponents: () => this.screenComponents,
-      $screenComponentGroups: () => this.screenComponentGroups
+      $screenComponentGroups: () => this.screenComponentGroups,
+      $displayTextInDrop: true
     }
   }
 }

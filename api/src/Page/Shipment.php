@@ -162,7 +162,7 @@ class Shipment extends Page
 
 
 
-                              array('/containers(/:cid)(/did/:did)', 'get', '_get_all_containers'),
+                              array('/containers(/:cid)(/did/:did)(/sid/:sid)', 'get', '_get_all_containers'),
                               array('/containers/', 'post', '_add_container'),
                               array('/containers/:cid', 'patch', '_update_container'),
                               array('/containers/move', 'get', '_move_container'),
@@ -1357,6 +1357,12 @@ class Shipment extends Page
                 $where .= ' AND d.dewarid=:'.(sizeof($args)+1);
                 array_push($args, $this->arg('did'));
             }
+
+            if ($this->has_arg('sid')) {
+                $where .= ' AND sh.shippingid=:'.(sizeof($args)+1);
+                array_push($args, $this->arg('sid'));
+            }
+
             if ($this->has_arg('cid')) {
                 $where .= ' AND c.containerid=:'.(sizeof($args)+1);
                 array_push($args, $this->arg('cid'));

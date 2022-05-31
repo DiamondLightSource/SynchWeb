@@ -2402,18 +2402,23 @@ class Sample extends Page
                 b.dimension2,
                 b.dimension3,
                 b.shape,
+                b.location,
                 b.packingfraction,
                 cr.theoreticaldensity,
                 b.blsampleid,
                 cr.crystalid,
                 cr.name as crystal,
-                CONCAT(CONCAT(bshg.blsamplegroupid, '-'), b.blsampleid) as blsamplegroupsampleid
+                CONCAT(CONCAT(bshg.blsamplegroupid, '-'), b.blsampleid) as blsamplegroupsampleid,
+                c.containerid,
+                IF(c.code IS NOT NULL, c.code, c.barcode) as container,
+                c.capacity
             ";
             $from_table = 'FROM blsample b';
             $joins = '
                 INNER JOIN blsamplegroup_has_blsample bshg on b.blsampleid = bshg.blsampleid
                 INNER JOIN blsamplegroup bsg ON bshg.blsamplegroupid = bsg.blsamplegroupid
                 INNER JOIN crystal cr on cr.crystalid = b.crystalid
+                INNER JOIN container c on c.containerid = b.containerid
             ';
             $where .= ' AND bsg.blsamplegroupid =:'.(sizeof($args) + 1);
             array_push($args, $this->arg('BLSAMPLEGROUPID'));

@@ -104,6 +104,7 @@
 
         <div class="puck tw-w-2/3" title="Click to jump to a position in the puck">
           <valid-container-graphic
+            class="tw-border-l tw-border-gray-500"
             :containerType="containerType"
             :samples="samples"
             :valid-samples="validSamples"
