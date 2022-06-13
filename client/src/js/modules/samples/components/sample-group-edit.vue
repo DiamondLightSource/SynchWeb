@@ -52,6 +52,7 @@
         :table-actions="true"
         action-class="tw-w-2/12 tw-py-2 tw-pl-2"
         v-on:row-clicked="onContainerSelected"
+        v-on:unselect-container="unselectContainer"
       >
         <template v-slot:containers-table-action="{ result, rowIndex }">
           <router-link class="button button-notext atp" :to="`/containers/cid/${result.CONTAINERID}`">
@@ -441,6 +442,12 @@ export default {
       const shipments = await this.$store.dispatch('getCollection', this.shipmentsCollection)
       this.shipments = [{ SHIPPINGID: '', SHIPPINGNAME: '' }, ...shipments.toJSON()]
     },
+    unselectContainer() {
+      this.selectedContainerType = {}
+      this.selectedContainerName = ''
+      this.selectedContainerId = ''
+      this.containerSelected = false
+    }
   },
   provide() {
     return {

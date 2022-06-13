@@ -224,6 +224,7 @@ export default {
           ? { page: 1, per_page: 15, ty: this.selectedFilterType }
           : { page: 1, per_page: 15 }
 
+        this.$emit('unselect-container')
         this.fetchContainers()
       },
       showUserContainers() {
