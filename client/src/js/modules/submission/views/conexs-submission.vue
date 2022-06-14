@@ -1044,7 +1044,7 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
                 })
                 this.output += "\n\n"
 
-                this.output += "ATOMIC_POSITIONS { " + this.atomicPositionType + " }\n"
+                this.output += "ATOMIC_POSITIONS {" + this.atomicPositionType + "}\n"
 
                 this.atomData.forEach(function(item, index){
                     console.log(item)
@@ -1059,7 +1059,7 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
                 this.output += "1 1 1 0 0 0\n"
                 this.output += "\n\n"
 
-                this.output += "CELL_PARAMETERS { " + this.cellParamsType + " }\n"
+                this.output += "CELL_PARAMETERS {" + this.cellParamsType + "}\n"
 
                 this.cellParamData.forEach(function(item, index){
                     self.output += " " + item.X + " " + item.Y + " " + item.Z + "\n"
