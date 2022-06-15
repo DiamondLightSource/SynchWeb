@@ -6,16 +6,13 @@
         &nbsp;&nbsp;&nbsp;&nbsp;
         <span>Cluster status: {{ clusterStatus }}</span>&nbsp;&nbsp;&nbsp;<i v-if="clusterStatus != 'Running' && clusterStatus != 'Sleeping' && clusterStatus != 'Unavailable'" class="fa icon grey fa-cog fa-spin"></i>
         <br />
-
-        <form v-on:submit.prevent="onSubmit" method="post" id="submit-orca" v-bind:class="{loading: isLoading}" style="border:1px solid #ccc">
-
+        <br />
+        <form v-on:submit.prevent="onSubmit" method="post" id="submit-orca" v-bind:class="{loading: isLoading}">
             <br />
             <label class="left">Input file already exists (*.inp)?</label>
             <input type="file" ref="inputFile" v-on:change="setInputFile($event)"/>
             <button type="button" ref="clearInputFile" name="clearInputFile" class="button" v-on:click="clearFile($event)">Clear </button>
-
             <br /><br />
-
             <div v-if="form != 'orca'">
                 <label v-if="form == 'fdmnes'" class="left">Element:</label>
                 <select v-if="form == 'fdmnes'" name="element" v-model="element" v-on:change="overviewBuilder()">
@@ -32,7 +29,14 @@
                 </select>
                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
             </div>
-
+            </div v-if="form = 'orca'">
+                <input type="checkbox" name="orcaLicense" value="accepted" v-model="orcaLicense">
+                <label class="notleft" >  Please read ORCA license agreement <a href="https://orcaforum.kofo.mpg.de/app.php/privacypolicy/policy">https://orcaforum.kofo.mpg.de/app.php/privacypolicy/policy</a> and check to declare your compilance with it</label>
+                <div v-if="orcaLicense">
+                    <label class="left">Thanks!</label>
+                </div>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            </div>
             <section id="orcaTab" v-bind:style="{display: orcaDisplay}">
                 <div style="float:right; width:40%; height:30%">
                     <p>ORCA is an ab initio, DFT, and semi-empirical SCF-MO package developed by Frank Neese et al. at the Max Planck Institut für Kohlenforschung.</p>
@@ -471,6 +475,7 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
 
 
                 // ORCA
+                orcaLicense: false,
                 orcaDisplay: 'inline',
                 technique: '',
                 functional: '',
@@ -511,7 +516,7 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
                     "RIXS", "RIXSSOC"
                 ],
                 orcaStartValue: 0,
-                orcaStopValue: 100,
+                orcaStopValue: 1000,
                 orcaBroadening: 1,
 
 
