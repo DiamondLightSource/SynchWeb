@@ -29,7 +29,7 @@
                 </select>
                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
             </div>
-            </div v-if="form = 'orca'">
+            <div v-if="form = 'orca'">
                 <input type="checkbox" name="orcaLicense" value="accepted" v-model="orcaLicense">
                 <label class="notleft" >  Please read ORCA license agreement <a href="https://orcaforum.kofo.mpg.de/app.php/privacypolicy/policy">https://orcaforum.kofo.mpg.de/app.php/privacypolicy/policy</a> and check to declare your compilance with it</label>
                 <div v-if="orcaLicense">
