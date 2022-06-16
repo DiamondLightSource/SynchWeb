@@ -29,14 +29,6 @@
                 </select>
                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
             </div>
-            <div v-if="form = 'orca'">
-                <input type="checkbox" name="orcaLicense" value="accepted" v-model="orcaLicense">
-                <label class="notleft" >  Please read ORCA license agreement <a href="https://orcaforum.kofo.mpg.de/app.php/privacypolicy/policy">https://orcaforum.kofo.mpg.de/app.php/privacypolicy/policy</a> and check to declare your compilance with it</label>
-                <div v-if="orcaLicense">
-                    <label class="left">Thanks!</label>
-                </div>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-            </div>
             <section id="orcaTab" v-bind:style="{display: orcaDisplay}">
                 <div style="float:right; width:40%; height:30%">
                     <p>ORCA is an ab initio, DFT, and semi-empirical SCF-MO package developed by Frank Neese et al. at the Max Planck Institut für Kohlenforschung.</p>
@@ -361,24 +353,38 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
                         <option v-for="s in orcaMapKeyword">{{ s }}</option>
                     </select>
                     <label class="notLeft">Start Value (eV):</label>
+                    &nbsp;
                     <input type="text" name="orcaStartValue" v-model="orcaStartValue" v-bind:class="{ferror: errors.has('orcaStartValue')}" v-validate="'required|decimal'">
+                    &nbsp;
                     <label class="notLeft">Stop Value (eV):</label>
+                    &nbsp;
                     <input type="text" name="orcaStopValue" v-model="orcaStopValue" v-bind:class="{ferror: errors.has('orcaStopValue')}" v-validate="'required|decimal'">
+                    &nbsp;
                     <label class="notLeft">Broadening (eV):</label>
+                    &nbsp;
                     <input type="text" name="orcaBroadening" v-model="orcaBroadening" v-bind:class="{ferror: errors.has('orcaBroadening')}" v-validate="'required|decimal|min_value:0|max_value:100'">
                 </li>
-                <li>
+                <li v-if="orcaDisplay == 'inline'">
+                    <input type="checkbox" name="orcaLicense" value="accepted" v-model="orcaLicense">
+                    &nbsp;
+                    <label class="notleft" style="font-size:14px; color:red">  Please tick here to comply with ORCA license agreement <a href="https://orcaforum.kofo.mpg.de/app.php/privacypolicy/policy">https://orcaforum.kofo.mpg.de/app.php/privacypolicy/policy</a></label>
+                    <!-- <label v-if="orcaLicense" class="left">Thanks!</label> -->
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                </li>
+                <!-- Here vertical align does not really work -->
+                <li style="vertical-align:middle; position: relative;">
                     <label class="left">CPUs: </label>
                     <input type="text" name="cpus" v-model="cpus" v-on:change="overviewBuilder()" v-bind:class="{ferror: errors.has('cpus')}" v-validate="'required|numeric|min_value:1|max_value:10'"/>
                     <span v-if="errors.has('cpus')" class="errormessage ferror">{{ errors.first('cpus') }}</span>
                     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                     <label class="notLeft">Memory required in Gb:</label>
                     <input type="text" name="memory" v-model="memory" v-on:change="overviewBuilder()" v-bind:class="{ferror: errors.has('memory')}" v-validate="'required|numeric|min_value:1|max_value:32'"/>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                     <span v-if="errors.has('memory')" class="errormessage ferror">{{ errors.first('memory') }}</span>
-                    <button type="button" class="button submit" name="orcaSubmit" v-on:click="onSubmit($event)" :disabled="isSubmitDisabled">SUBMIT</button>
+                    <button type="button" class="button submit" name="orcaSubmit" v-on:click="onSubmit($event)" :disabled="isSubmitDisabled || !orcaLicense">SUBMIT</button>
                 </li>
                 <li>
-                    <span style="font-size:14px">On successful submission, your results will be sent to the e-mail address associated with your fedid</span>
+                    <span style="font-size:13px">On successful submission, your results will be sent to the e-mail address associated with your fedid</span>
                 </li>
 
                 <hr style="border:1px solid #ccc"/>
