@@ -203,6 +203,7 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
                 <button type="button" name="systemCardBtn" ref="systemCardBtn" class="button" v-on:click="cardDisplay($event)">SYSTEM</button>
                 <button type="button" name="atomicPositionCardBtn" ref="atomicPositionCardBtn" class="button" v-on:click="cardDisplay($event)">ATOMIC_POSITION</button>
                 <button type="button" name="cellParamsCardBtn" ref="cellParamsCardBtn" class="button" v-on:click="cardDisplay($event)">CELL_PARAMETERS</button>
+                <button type="button" name="mpApiBtn" ref="mpApiBtn" class="button" v-on:click="cardDisplay($event)">MATERIAL_PROJECT</button>
 
                 <br /><br />
 
@@ -283,6 +284,25 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
                                     <td><input type="text" v-model="row.Z" :name="row.ID+'Z'" v-bind:class="{ferror: errors.has(row.ID+'Z')}" v-validate="'required|decimal|min_value:-100|max_value:100'" v-on:change="overviewBuilder()"/></td>
                                 </template>
                             </table-component>
+                        </li>
+                    </ul>
+                </section>
+                <section id="mpApiCard" name="mpApiCard" v-if="card =='mpApi' && quantumEspressoDisplay == 'inline'">
+                    <ul>
+                        <li>
+                            <label class="left">Your personal MP token:</label>
+                            <input style="width: 30%" type="text" v-model="mpApiToken" name="mpApiToken"/>
+                        </li>
+                        <li>
+                            <label class="left">Material ID (e.g., mp-100):</label>
+                            <input style="width: 30%" type="text" v-model="mpApiId" name="mpApiId"/>
+                        </li>
+                        <li>
+                            <label class="left">Which atom is absorbing (counting from 1)?:</label>
+                            <input type="number" min="1" max="100" v-model="mpApiAtom" name="mpApiAtom"/>
+                        </li>
+                        <li>
+                            <button type="button" ref="fetchMpapiInput" name="fetchMpapiInput" class="button" v-on:click="clearFile($event)">Poke MP api</button>
                         </li>
                     </ul>
                 </section>
@@ -583,6 +603,11 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
                     { ID: 2, X: 0, Y: 0, Z: 0 },
                     { ID: 3, X: 0, Y: 0, Z: 0 }
                 ],
+                // MP_API
+                mpApiToken: '',
+                mpApiId: 'mp-100',
+                mpApiAtom: 'required|decimal|min_value:1|max_value:100',
+
                 // Can use decimal:5 to limit 5 decimal places
                 atomRules: '',
                 orcaAtomRules: 'required|decimal|min_value:-100|max_value:100',
@@ -723,7 +748,7 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
             },
 
             tabDisplay: function(event){
-                var name = event.target.name
+                var name = event.target.name 
 
                 this.$refs.inputFile.value = ''
                 this.$refs.orcaStructureFile.value = ''
@@ -776,6 +801,7 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
                 this.$refs.systemCardBtn.classList.remove('active')
                 this.$refs.atomicPositionCardBtn.classList.remove('active')
                 this.$refs.cellParamsCardBtn.classList.remove('active')
+                this.$refs.mpApiBtn.classList.remove('active')
                 this.$refs[name].classList.add('active')
 
                 switch(name){
@@ -787,6 +813,9 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
                         break
                     case "cellParamsCardBtn":
                         this.card = 'cellParams'
+                        break
+                    case "mpApiBtn":
+                        this.card = 'mpApi'
                         break
                     default:
                         this.card = 'control'
@@ -1142,6 +1171,11 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
                 this.overviewBuilder()
             },
 
+            fetchMpApi: function(e){
+                console.log(e)
+
+            },
+
             onSubmit: function(e){
                 e.preventDefault()
                 let self = this
@@ -1409,6 +1443,10 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
     button {
         width: 150px;
         height: 30px;
+    }
+    input[type="text"]:focus {
+        width: 50px;
+        background-color: #42b3d569;
     }
     input[type="text"] {
         width: 50px;
