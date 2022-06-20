@@ -1256,8 +1256,13 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
 
                             success: function(response) {
                                 self.isLoading = false
-                                app.alert({className: 'message notify', message: "Successfully submitted conexs file contents!"})
-                                
+                                if(!response.error){
+                                    console.log('got no error in response to job submission')
+                                    app.alert({className: 'message notify', message: "Successfully submitted conexs file contents!"})                                    
+                                } else {
+                                    console.log('error upon job submission')
+                                    app.alert({className: 'Error', message: response.error})
+                                }                                
                             },
                             error: function(response) {
                                 self.isLoading = false
