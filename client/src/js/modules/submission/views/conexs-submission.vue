@@ -401,7 +401,7 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
                     <input type="text" name="memory" v-model="memory" v-on:change="overviewBuilder()" v-bind:class="{ferror: errors.has('memory')}" v-validate="'required|numeric|min_value:1|max_value:32'"/>
                     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                     <span v-if="errors.has('memory')" class="errormessage ferror">{{ errors.first('memory') }}</span>
-                    <button type="button" class="button submit" name="orcaSubmit" v-on:click="onSubmit($event)" :disabled="isSubmitDisabled || !orcaLicense">SUBMIT</button>
+                    <button type="button" class="button submit" name="orcaSubmit" v-on:click="onSubmit($event)" :disabled="isSubmitDisabled || (!orcaLicense && orcaDisplay=='inline')">SUBMIT</button>
                 </li>
                 <li>
                     <span style="font-size:13px">On successful submission, your results will be sent to the e-mail address associated with your fedid</span>
