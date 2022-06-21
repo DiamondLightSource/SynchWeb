@@ -37,6 +37,9 @@ class Conexs extends Page
                                     'orcaStartValue' => '.*',
                                     'orcaStopValue' => '.*',
                                     'orcaBroadening' => '.*',
+                                    'mpapiToken' => '.*',
+                                    'mpapiMaterial' => '.*',
+                                    'mpapiAbsorbingAtom' => '\d+',
                             );
 
     public static $dispatch = array(array('/', 'post', '_initiate_conexs_cluster'),
@@ -44,8 +47,28 @@ class Conexs extends Page
                                     array('/jobs', 'get', '_get_conexs_jobs'),
                                     array('/submit', 'post', '_submit'),
                                     array('/kill', 'post', '_kill_job'),
+                                    array('/mpapi', 'post', '_get_mpapi_structure'),
                         );
 
+
+    // Get overview data from MPapi sidecar container
+    function _get_mpapi_structure() {
+        global $conexs_mpapi_url;
+
+        $data = $this->args;
+
+        $c = curl_init();
+        curl_setopt($c, CURLOPT_URL, $conexs_mpapi_url . 'get_mpapi');
+        curl_setopt($c, CURLOPT_POST, 1);
+        curl_setopt($c, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+        curl_setopt($c, CURLOPT_POSTFIELDS, json_encode($data, JSON_UNESCAPED_SLASHES));
+        curl_setopt($c, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($c, CURLOPT_RETURNTRANSFER, 1);
+        $result = curl_exec($c);
+        curl_close($c);
+
+        $this->_output(json_decode($result));
+    }
 
     // Check if user has CONEXS cluster available and initiate one if not
     function _initiate_conexs_cluster() {

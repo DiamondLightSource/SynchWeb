@@ -302,7 +302,7 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
                             <input type="number" min="1" max="100" v-model="mpApiAtom" name="mpApiAtom"/>
                         </li>
                         <li>
-                            <button type="button" ref="fetchMpapiInput" name="fetchMpapiInput" class="button" v-on:click="clearFile($event)">Poke MP api</button>
+                            <button type="button" ref="fetchMpapiInput" name="fetchMpapiInput" class="button" v-on:click="fetchMpApi($event)">Fetch from MP api</button>
                         </li>
                     </ul>
                 </section>
@@ -605,7 +605,7 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
                 ],
                 // MP_API
                 mpApiToken: '',
-                mpApiId: 'mp-100',
+                mpApiId: '',
                 mpApiAtom: 'required|decimal|min_value:1|max_value:100',
 
                 // Can use decimal:5 to limit 5 decimal places
@@ -1172,7 +1172,46 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
             },
 
             fetchMpApi: function(e){
-                console.log(e)
+                e.preventDefault()
+                let self = this
+
+                self.isLoading = true
+
+                let data = {
+                        mpapiToken: self.mpApiToken,
+                        mpapiMaterial: self.mpApiId,
+                        mpapiAbsorbingAtom: self.mpApiAtom
+                    }
+
+                let formData = new FormData()
+
+                // Add data
+                for(var key in data){
+                    formData.append(key, data[key])
+                }
+
+                Backbone.ajax({
+                    url: app.apiurl + '/conexs/mpapi',
+                    data: formData,
+                    method: 'POST',
+                    // Required to allow split content type between file/data
+                    // Stops AJAX setting it's preferred defaults
+                    contentType: false,
+                    processData: false,
+
+                    success: function(response) {
+                        self.isLoading = false
+                        console.log(response)
+                        self.inputFileContents = response
+                        app.alert({className: 'message notify', message: response}) 
+                    },
+
+                    error: function(response) {
+                        self.isLoading = false
+                        console.log(response)
+                        app.alert({ title: 'Error', message: response })
+                    },
+                })
 
             },
 
