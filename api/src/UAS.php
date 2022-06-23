@@ -83,10 +83,11 @@ class UAS
 		return $this->code;
 	}
 
-	function close_session($sessionid) {
+	function close_session($sessionid, $data = array()) {
+        $data['endAt'] = date('Y-m-d\TH:i:s.000\Z');
 		$resp = $this->_curl(array(
             'URL' => $this->url.'/uas/rest/v1/session/'.$sessionid,
-            'FIELDS' => array('endAt' => date('Y-m-d\TH:i:s.000\Z')),
+            'FIELDS' => $data,
             'PATCH' => 1,
             'HEADERS' => array(
                 'Content-type: application/json',
@@ -94,8 +95,6 @@ class UAS
                 'Cookie: JSESSIONID='.$this->session,
             ),
         ));
-
-		// print_r(array($resp));
 
 		return $this->code;
 	}
