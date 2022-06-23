@@ -197,6 +197,12 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
             </section>
 
             <section id="quantumEspressoTab" v-bind:style="{display: quantumEspressoDisplay}">
+                <div style="float:right; width:40%; height:30%">
+                    <span><a href="https://www.quantum-espresso.org/">https://www.quantum-espresso.org/</a></span>
+
+                    <p>Quantum ESPRESSO is an integrated suite of Open-Source computer codes for electronic-structure calculations and materials modeling at the nanoscale. It is based on density-functional theory, plane waves, and pseudopotentials.</p>
+                </div>
+                <br />
                 <br /><br />
                 <label>Cards</label>
                 <br /><br />
@@ -1202,8 +1208,14 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
                     success: function(response) {
                         self.isLoading = false
                         console.log(response)
-                        self.inputFileContents = response
-                        app.alert({className: 'message notify', message: response}) 
+                        if(!response.error){
+                            self.inputFileContents = response
+                            console.log('got no error in body of MP API fetching response')
+                            app.alert({className: 'message notify', message: "Fetching completed"})                                    
+                        } else {
+                            console.log('error in body of MP API fetching response')
+                            app.alert({className: 'Error', message: response.error})
+                        }
                     },
 
                     error: function(response) {
