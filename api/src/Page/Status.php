@@ -13,6 +13,7 @@ class Status extends Page
                               'st' => '\d\d-\d\d-\d\d\d\d',
                               'en' => '\d\d-\d\d-\d\d\d\d',
                               'c' => '\d+',
+                              'mmsg' => '\d+', // Used for fetching only the Machine Status Message for Beamline PVs
                               );
         
         public static $dispatch = array(array('/pvs/:bl', 'get', '_get_pvs'),
@@ -42,24 +43,38 @@ class Status extends Page
             
             if (!$this->has_arg('bl')) $this->_error('No beamline specified');
             
-            $ring_pvs = array('Ring Current' => 'SR-DI-DCCT-01:SIGNAL',
-                              //'Ring State' => 'CS-CS-MSTAT-01:MODE',
-                              'Refill' => 'SR-CS-FILL-01:COUNTDOWN'
-                              );
-            
+            $ring_pvs = array(
+                'Ring Current' => 'SR-DI-DCCT-01:SIGNAL',
+                //'Ring State' => 'CS-CS-MSTAT-01:MODE',
+                'Refill' => 'SR-CS-FILL-01:COUNTDOWN',
+            );
+
+            $messages_pvs = array(
+                'Machine Status 1' => 'CS-CS-MSTAT-01:MESS01',
+                'Machine Status 2' => 'CS-CS-MSTAT-01:MESS02',
+            );
+
             if (!array_key_exists($this->arg('bl'), $bl_pvs)) $this->_error('No such beamline');
-            
-            $pvs = array_merge($ring_pvs, $bl_pvs[$this->arg('bl')]);
-            $vals = $this->pv(array_values($pvs));
-            
+
             $return = array();
-            foreach ($pvs as $k => $pv) {
-                if ($k == 'Hutch') $return[$k] = $vals[$pv] == 7 ? 'Open' : 'Locked';
-                else $return[$k] = $vals[$pv];
+
+            if ($this->has_arg('mmsg')) {
+                $messages_val = $this->pv(array_values($messages_pvs), false, true);
+
+                foreach ($messages_pvs as $k => $v) {
+                    $return[$k] = $messages_val[$v];
+                }
+            } else {
+                $pvs = array_merge($ring_pvs, $bl_pvs[$this->arg('bl')]);
+                $vals = $this->pv(array_values($pvs), false, false);
+
+                foreach ($pvs as $k => $pv) {
+                    if ($k == 'Hutch') $return[$k] = $vals[$pv] == 7 ? 'Open' : 'Locked';
+                    else $return[$k] = $vals[$pv];
+                }
             }
-            
+
             $this->_output($return);
-            
         }
         
         

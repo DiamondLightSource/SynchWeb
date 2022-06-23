@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
+import Backbone from 'backbone'
 
 // VueX modules
 // TODO - adopt vue-enterprise-boiler plate design
@@ -18,10 +19,8 @@ import config from 'config.json'
 import MarionetteApplication from 'app/marionette-application.js'
 import { resolve } from 'promise'
 import { reject } from 'promise'
-import Backbone from "backbone";
 
 Vue.use(Vuex)
-Vue.config.devtools = !config.production
 
 const store = new Vuex.Store({
   modules: {

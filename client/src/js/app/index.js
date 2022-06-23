@@ -3,17 +3,17 @@ var FontAwesome = require('font-awesome/css/font-awesome.css')
 
 import Vue from 'vue'
 import VeeValidate from 'vee-validate'
+import PortalVue from 'portal-vue'
 
 import Main from 'app/layouts/main.vue'
 import MaintenanceView from 'app/layouts/maintenance.vue'
 import store from 'app/store/store'
 import router from 'app/router/router'
-import PortalVue from 'portal-vue'
 
 import MarionetteApp from 'app/marionette-application.js'
 
 import config from 'config.json'
-import VeeValidateCustomRules from "js/app/mixins/vee-validate-custom-rules";
+import VeeValidateCustomRules from 'app/mixins/vee-validate-custom-rules'
 
 Vue.use(VeeValidate)
 Vue.use(PortalVue)
