@@ -172,9 +172,8 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
 
             <section id="fdmnesTab" v-bind:style="{display: fdmnesDisplay}">
                 <div style="float:right; width:40%; height:30%">
-                    <span><a href="http://fdmnes.neel.cnrs.fr/">http://fdmnes.neel.cnrs.fr/</a></span>
-
                     <p>FDMNES, for Finite Difference Method Near Edge Structure, uses the density functional theory (DFT). It is thus specially devoted to the simulation of the K edges of all the chemical elements and of the L23 edges of the heavy ones.</p>
+                    <span><a href="http://fdmnes.neel.cnrs.fr/">http://fdmnes.neel.cnrs.fr/</a></span>
                 </div>
                 <br />
                 <ul>
@@ -198,9 +197,11 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
 
             <section id="quantumEspressoTab" v-bind:style="{display: quantumEspressoDisplay}">
                 <div style="float:right; width:40%; height:30%">
-                    <span><a href="https://www.quantum-espresso.org/">https://www.quantum-espresso.org/</a></span>
-
                     <p>Quantum ESPRESSO is an integrated suite of Open-Source computer codes for electronic-structure calculations and materials modeling at the nanoscale. It is based on density-functional theory, plane waves, and pseudopotentials.</p>
+                    <span><a href="https://www.quantum-espresso.org/">https://www.quantum-espresso.org/</a></span>
+                    <br /><br />
+                    <p>Materials Project provides open web-based access to computed information on known and predicted materials.</p>
+                    <span><a href="https://materialsproject.org/">https://materialsproject.org/</a></span>
                 </div>
                 <br />
                 <br /><br />
@@ -209,7 +210,7 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
                 <button type="button" name="systemCardBtn" ref="systemCardBtn" class="button" v-on:click="cardDisplay($event)">SYSTEM</button>
                 <button type="button" name="atomicPositionCardBtn" ref="atomicPositionCardBtn" class="button" v-on:click="cardDisplay($event)">ATOMIC_POSITION</button>
                 <button type="button" name="cellParamsCardBtn" ref="cellParamsCardBtn" class="button" v-on:click="cardDisplay($event)">CELL_PARAMETERS</button>
-                <button type="button" name="mpApiBtn" ref="mpApiBtn" class="button" v-on:click="cardDisplay($event)">MATERIAL_PROJECT</button>
+                <button type="button" name="mpApiBtn" ref="mpApiBtn" class="button" v-on:click="cardDisplay($event)">MATERIALS_PROJECT</button>
 
                 <br /><br />
 
