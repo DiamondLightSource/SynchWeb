@@ -291,6 +291,9 @@
         )
     );
 
+    # Web-conexs URLs
+    $conexs_url = '';
+    $conexs_mpapi_url = '';
 
     # Webcam IPs
     # - These are show on the beamline status and active datacollection lists
