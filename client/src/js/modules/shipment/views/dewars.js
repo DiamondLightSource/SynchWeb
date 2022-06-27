@@ -113,7 +113,6 @@ define(['marionette', 'backbone',
             edit.create('TRACKINGNUMBERFROMSYNCHROTRON', 'text')
             edit.create('WEIGHT', 'text')
             
-            var self = this
             this.visits = new Visits(null, { queryParams: { next: 1 }, state: { pageSize: 5 } })
             this.visits.fetch().done(function() {
                 self.ui.first.html(self.visits.opts({ empty: true }))
@@ -124,7 +123,7 @@ define(['marionette', 'backbone',
         },
 
         modelEvents: {
-            change: 'render'
+            sync: 'render'
         }
     }))
     
