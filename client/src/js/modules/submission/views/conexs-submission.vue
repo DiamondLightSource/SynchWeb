@@ -176,11 +176,11 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
                     <p>FDMNES (Finite Difference Method Near Edge Structure) is to provide a user friendly code, which is able to simulate a broad range of x-ray spectroscopies, beyond the muffin tin approximation. This ab initio (first principles) approach which is based upon the finite difference method, aims to eliminate all methodological parameters and go beyond the limitations of the spherical muffin tin approximation. It includes density functional theory and time-dependent density functional theory.</p>
                     <span>FDMNES webpage: <a href="http://fdmnes.neel.cnrs.fr/">http://fdmnes.neel.cnrs.fr/</a></span>
                     <br/>
-                    <span>FDMNES Theory and input: <a href="https://research.ncl.ac.uk/media/sites/researchwebsites/collaborativenetworkforx-rayspectroscopy/Joly_FDMNES_CONEXS_Newcastle.pdf">HJoly_FDMNES_CONEXS_Newcastle.pdf</a></span>
+                    <span>FDMNES theory and input: <a href="https://research.ncl.ac.uk/media/sites/researchwebsites/collaborativenetworkforx-rayspectroscopy/Joly_FDMNES_CONEXS_Newcastle.pdf">HJoly_FDMNES_CONEXS_Newcastle.pdf</a></span>
                     <br/><br/>
                     <p>If you publish calculation results performed with FDMNES code please cite the original papers:</p>
-                    <p><i>Phys.: Condens. Matter 21, 345501 (2009).</i></p>
-                    <p><i>Chem. Theory Comput. 11, 4512-4521 (2015).</i></p>
+                    <p><i>J. Phys.: Condens. Matter 21, 345501 (2009).</i></p>
+                    <p><i>J. Chem. Theory Comput. 11, 4512-4521 (2015).</i></p>
                     <p><i>J. Synchrotron Rad. 23, 551-559 (2016).</i></p>
                 </div>
                 <br />
@@ -215,10 +215,10 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
                     <br/><br/>
                     <p>If you publish calculation results performed with QE code please cite the original papers:</p>
                     <p><i>Journal of Physics: Condensed Matter 21, 395502 (2009).</i></p>
+                    <p><i>Phys. Rev. B 80, 075102 (2009)</i></p>
+                    <p><i>Phys. Rev. B 87, 205105 (2013)</i></p>
                     <p><i>Journal of Physics: Condensed Matter 29, 465901 (2017).</i></p>
-                    <p><i>Journal of Chemical Physics 152, 154105 (2020).</i></p>
-                    <p><i>Rev. B 87, 205105 (2013)</i></p>
-                    <p><i>Rev. B 80, 075102 (2009)</i></p>
+                    <p><i>The Journal of Chemical Physics 152, 154105 (2020).</i></p>
                     <br/><br/>
                     <p> X-ray absorption simulations in quantum espresso are carried out in two steps. Firstly using the pw.x code and then using the xspectra.x code. The input files for these to codes are ASCII files separated into cards (or blocks). The beginning of a block is denoted by an & symbol and the name of the card, the card is closed with a "/", for example:</p>
                     <p> &CONTROL … /. </p>
