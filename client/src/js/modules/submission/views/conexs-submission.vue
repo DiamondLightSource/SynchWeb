@@ -32,15 +32,16 @@
             <section id="orcaTab" v-bind:style="{display: orcaDisplay}">
                 <div style="float:right; width:40%; height:30%">
                     <p>ORCA is an ab initio, DFT, and semi-empirical SCF-MO package developed by Frank Neese et al. at the Max Planck Institut für Kohlenforschung.</p>
-                    <br/>
-
                     <span>ORCA webpage at Max-Planck-Institut: <a href="https://www.kofo.mpg.de/en/research/services/orca">https://www.kofo.mpg.de/en/research/services/orca</a></span>
                     <br/>
                     <span>ORCA manual: <a href="https://www.kofo.mpg.de/412442/orca_manual-opt.pdf">https://www.kofo.mpg.de/412442/orca_manual-opt.pdf</a></span>
                     <br/>
                     <span>ORCA input library website: <a href="https://sites.google.com/site/orcainputlibrary/home">https://sites.google.com/site/orcainputlibrary/home</a></span>
                     <br/><br/>
-
+                    <p>If you publish calculation results performed with ORCA code please cite the original papers:</p>
+                    <p><i>F. Neese, Wiley Interdisciplinary Reviews: Computational Molecular Science 2, 73 (2012).</i></p>
+                    <p><i>F. Neese, Wiley Interdisciplinary Reviews: Computational Molecular Science 8, e1327 (2018).</i></p>
+                    <br/>
                     <p>
                         In general, the input file is a free format ASCII file and can contain one or more keyword lines that start with a
                         "!" sign, one or more input blocks enclosed between an "%" sign and "end" that provide finer control over specific
@@ -172,8 +173,15 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
 
             <section id="fdmnesTab" v-bind:style="{display: fdmnesDisplay}">
                 <div style="float:right; width:40%; height:30%">
-                    <p>FDMNES, for Finite Difference Method Near Edge Structure, uses the density functional theory (DFT). It is thus specially devoted to the simulation of the K edges of all the chemical elements and of the L23 edges of the heavy ones.</p>
-                    <span><a href="http://fdmnes.neel.cnrs.fr/">http://fdmnes.neel.cnrs.fr/</a></span>
+                    <p>FDMNES (Finite Difference Method Near Edge Structure) is to provide a user friendly code, which is able to simulate a broad range of x-ray spectroscopies, beyond the muffin tin approximation. This ab initio (first principles) approach which is based upon the finite difference method, aims to eliminate all methodological parameters and go beyond the limitations of the spherical muffin tin approximation. It includes density functional theory and time-dependent density functional theory.</p>
+                    <span>FDMNES webpage: <a href="http://fdmnes.neel.cnrs.fr/">http://fdmnes.neel.cnrs.fr/</a></span>
+                    <br/>
+                    <span>FDMNES Theory and input: <a href="https://research.ncl.ac.uk/media/sites/researchwebsites/collaborativenetworkforx-rayspectroscopy/Joly_FDMNES_CONEXS_Newcastle.pdf">HJoly_FDMNES_CONEXS_Newcastle.pdf</a></span>
+                    <br/><br/>
+                    <p>If you publish calculation results performed with FDMNES code please cite the original papers:</p>
+                    <p><i>Phys.: Condens. Matter 21, 345501 (2009).</i></p>
+                    <p><i>Chem. Theory Comput. 11, 4512-4521 (2015).</i></p>
+                    <p><i>J. Synchrotron Rad. 23, 551-559 (2016).</i></p>
                 </div>
                 <br />
                 <ul>
@@ -197,11 +205,29 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
 
             <section id="quantumEspressoTab" v-bind:style="{display: quantumEspressoDisplay}">
                 <div style="float:right; width:40%; height:30%">
-                    <p>Quantum ESPRESSO is an integrated suite of Open-Source computer codes for electronic-structure calculations and materials modeling at the nanoscale. It is based on density-functional theory, plane waves, and pseudopotentials.</p>
-                    <span><a href="https://www.quantum-espresso.org/">https://www.quantum-espresso.org/</a></span>
-                    <br /><br />
+                    <p>Quantum ESPRESSO (Quantum opEn-Source Package for Research in Electronic Structure, Simulation, and Optimisation) is a suite of applications for ab-initio electronic structure calculations using plane waves and pseudopotentials.</p>
+                    <p>
+                    <span>Quantum ESPRESSO webpage: <a href="https://www.quantum-espresso.org/">https://www.quantum-espresso.org</a></span>
+                    <br/>
+                    <span>Pw.x input descriptions: <a href="https://www.quantum-espresso.org/Doc/INPUT_PW.html">https://www.quantum-espresso.org/Doc/INPUT_PW.html</a></span>
+                    <br/>
+                    <span>XSPECTRA input descriptions: <a href="https://github.com/QEF/q-e/blob/master/XSpectra/Doc/INPUT_XSPECTRA">https://github.com/QEF/q-e/blob/master/XSpectra/Doc/INPUT_XSPECTRA</a></span>
+                    <br/><br/>
+                    <p>If you publish calculation results performed with QE code please cite the original papers:</p>
+                    <p><i>Journal of Physics: Condensed Matter 21, 395502 (2009).</i></p>
+                    <p><i>Journal of Physics: Condensed Matter 29, 465901 (2017).</i></p>
+                    <p><i>Journal of Chemical Physics 152, 154105 (2020).</i></p>
+                    <p><i>Rev. B 87, 205105 (2013)</i></p>
+                    <p><i>Rev. B 80, 075102 (2009)</i></p>
+                    <br/><br/>
+                    <p> X-ray absorption simulations in quantum espresso are carried out in two steps. Firstly using the pw.x code and then using the xspectra.x code. The input files for these to codes are ASCII files separated into cards (or blocks). The beginning of a block is denoted by an & symbol and the name of the card, the card is closed with a "/", for example:</p>
+                    <p> &CONTROL … /. </p>
+                    <p> For pw.x the input cards must be given in the order: control, system, electrons. Information on the geometry is given in the input file and can be provided as a set of atomic coordinates in Angstrom and a set of cell parameters also in Angstroms.</p>
+                    <br/><br/>
                     <p>Materials Project provides open web-based access to computed information on known and predicted materials.</p>
                     <span><a href="https://materialsproject.org/">https://materialsproject.org/</a></span>
+                    <p>If you use the Materials Project as a resource in your research, please cite the following work:</p>
+                    <p><i>APL Materials, 2013, 1(1), 011002.</i></p>
                 </div>
                 <br />
                 <br /><br />
@@ -1190,21 +1216,22 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
                         mpapiAbsorbingAtom: self.mpApiAtom
                     }
 
-                let formData = new FormData()
+                //let formData = new FormData()
 
                 // Add data
-                for(var key in data){
-                    formData.append(key, data[key])
-                }
+                //for(var key in data){
+                //    formData.append(key, data[key])
+                //}
 
                 Backbone.ajax({
                     url: app.apiurl + '/conexs/mpapi',
-                    data: formData,
+                    //data: formData,
+                    data: data,
                     method: 'POST',
                     // Required to allow split content type between file/data
                     // Stops AJAX setting it's preferred defaults
-                    contentType: false,
-                    processData: false,
+                    //contentType: false,
+                    //processData: false,
 
                     success: function(response) {
                         self.isLoading = false
