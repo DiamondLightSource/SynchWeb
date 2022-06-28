@@ -1216,23 +1216,11 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
                         mpapiAbsorbingAtom: self.mpApiAtom
                     }
 
-                //let formData = new FormData()
-
-                // Add data
-                //for(var key in data){
-                //    formData.append(key, data[key])
-                //}
-
                 Backbone.ajax({
                     url: app.apiurl + '/conexs/mpapi',
-                    //data: formData,
                     data: data,
                     method: 'POST',
-                    // Required to allow split content type between file/data
-                    // Stops AJAX setting it's preferred defaults
-                    //contentType: false,
-                    //processData: false,
-
+                    
                     success: function(response) {
                         self.isLoading = false
                         console.log(response)
