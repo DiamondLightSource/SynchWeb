@@ -59,6 +59,19 @@
             :container-type="getContainerTypeForContainer(cachedContainerList[containerKey])"/>
         </div>
       </div>
+
+      <div class="processing-job-list tw-mt-5">
+        <div class="tw-flex tw-justify-between content">
+          <h1> Summary of last multiplex jobs from group {{ sampleGroupName }}</h1>
+          <div>
+            <button class="button tw-text-link-color" @click="goToSampleGroupsDataCollections">Sample Group Data Collections</button>
+          </div>
+        </div>
+
+        <auto-processing-jobs-list
+          v-if="Object.keys(latestMultiplexJobs).length > 0"
+          :processing-programs-list="latestMultiplexJobs" />
+      </div>
     </div>
   </div>
 </template>
@@ -72,10 +85,12 @@ import CustomTableComponent from 'app/components/custom-table-component.vue'
 import CustomTableRow from 'app/components/custom-table-row.vue'
 import ValidContainerGraphic from 'modules/types/mx/samples/valid-container-graphic.vue'
 import SampleGroupMixin from 'modules/samples/components/sample-group-mixin'
+import AutoProcessingJobsList from 'modules/dc/components/auto-processing-jobs-list.vue'
 
 export default {
   name: 'sample-group-management',
   components: {
+    'auto-processing-jobs-list': AutoProcessingJobsList,
     'valid-container-graphic': ValidContainerGraphic,
     'custom-table-row': CustomTableRow,
     'custom-table-component': CustomTableComponent,
@@ -93,6 +108,7 @@ export default {
       sampleGroupId: null,
       sampleGroupsListState: {},
       selectedSampleGroup: null,
+      latestMultiplexJobs: []
     };
   },
   created() {
@@ -104,7 +120,7 @@ export default {
     this.getSampleGroups();
   },
   methods: {
-    selectSampleGroup(item) {
+    async selectSampleGroup(item) {
       this.selectedSampleGroup = item
       this.sampleGroupId = item.BLSAMPLEGROUPID
       this.sampleGroupName = item.NAME
@@ -119,6 +135,7 @@ export default {
         this.sampleGroupByContainers = {}
         this.sampleGroupContainers = {}
         await this.groupSamplesByContainer(collection.toJSON())
+        await this.fetchLatestSampleGroupMultiplexJobs()
       } finally {
         this.$store.commit('loading', false)
       }
@@ -150,6 +167,21 @@ export default {
     },
     getValidSamplesInContainer(samples) {
       return samples.filter(sample => Number(sample.VALID) === 1)
+    },
+    async fetchLatestSampleGroupMultiplexJobs() {
+      const result = await this.$store.dispatch('fetchDataFromApi', {
+        url: `/processing/multiplex_jobs/groups/${this.sampleGroupId}?resultCount=3`,
+        requestType: 'fetching last 3 multiplex jobs'
+      })
+
+      this.latestMultiplexJobs = Object.keys(result).reduce((acc, curr) => {
+        acc.push(result[curr])
+
+        return acc
+      }, [])
+    },
+    goToSampleGroupsDataCollections() {
+
     }
   },
   watch: {
@@ -159,3 +191,8 @@ export default {
   }
 }
 </script>
+<style scoped>
+.processing-job-list {
+  max-width: 1600px;
+}
+</style>

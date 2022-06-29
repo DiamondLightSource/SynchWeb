@@ -20,6 +20,11 @@ class Processing extends Page {
             'get',
             '_downstream_mapmodel',
         ),
+        array(
+            '/multiplex_jobs/groups/:blSampleGroupId',
+            'get',
+            '_get_latest_multiplex_job_result'
+        ),
     );
 
     public static $arg_list = array(
@@ -28,6 +33,8 @@ class Processing extends Page {
         'visit' => '\w+\d+-\d+',
         'map' => '\d+',
         'n' => '\d+',
+        'sampleGroupId' => '\d+',
+        'resultCount' => '\d+'
     );
 
     /**
@@ -235,156 +242,16 @@ class Processing extends Page {
      * @param integer $id DataCollectionId
      */
     function _results($id) {
-        $rows = $this->db->pq(
-            'SELECT apss.cchalf, apss.ccanomalous, apss.anomalous, dc.xbeam, dc.ybeam, api.refinedxbeam, api.refinedybeam, app.autoprocprogramid,app.processingprograms as type, apss.ntotalobservations as ntobs, apss.ntotaluniqueobservations as nuobs, apss.resolutionlimitlow as rlow, apss.resolutionlimithigh as rhigh, apss.scalingstatisticstype as shell, apss.rmeasalliplusiminus as rmeas, apss.rmerge, apss.completeness, apss.anomalouscompleteness as anomcompleteness, apss.anomalousmultiplicity as anommultiplicity, apss.multiplicity, apss.meanioversigi as isigi, ap.spacegroup as sg, ap.refinedcell_a as cell_a, ap.refinedcell_b as cell_b, ap.refinedcell_c as cell_c, ap.refinedcell_alpha as cell_al, ap.refinedcell_beta as cell_be, ap.refinedcell_gamma as cell_ga, 
-                    (SELECT COUNT(api1.autoprocintegrationid) FROM autoprocintegration api1 WHERE api1.autoprocprogramid =  app.autoprocprogramid) as imagesweepcount, app.processingstatus, app.processingmessage, count(distinct pjis.datacollectionid) as dccount, max(pjis.processingjobid) as processingjobid, pj.automatic
-                FROM autoprocintegration api 
-                LEFT OUTER JOIN autoprocscaling_has_int aph ON api.autoprocintegrationid = aph.autoprocintegrationid 
-                LEFT OUTER JOIN autoprocscaling aps ON aph.autoprocscalingid = aps.autoprocscalingid 
-                LEFT OUTER JOIN autoproc ap ON aps.autoprocid = ap.autoprocid 
-                LEFT OUTER JOIN autoprocscalingstatistics apss ON apss.autoprocscalingid = aph.autoprocscalingid 
-                INNER JOIN autoprocprogram app ON api.autoprocprogramid = app.autoprocprogramid 
-                LEFT OUTER JOIN processingjob pj ON app.processingjobid = pj.processingjobid
-                LEFT OUTER JOIN processingjobimagesweep pjis ON pjis.processingjobid = pj.processingjobid
-                INNER JOIN datacollection dc ON api.datacollectionid = dc.datacollectionid
-                WHERE api.datacollectionid = :1 AND app.processingstatus IS NOT NULL
-                GROUP BY app.autoprocprogramid, apss.autoprocscalingstatisticsid
-                ORDER BY apss.scalingstatisticstype DESC',
-            array($id)
-        );
+        $processing_job_query = $this->_autoprocessing_query_builder(
+            "api.datacollectionid = :1 AND app.processingstatus IS NOT NULL",
+            "GROUP BY app.autoprocprogramid, apss.autoprocscalingstatisticsid",
+            "ORDER BY apss.scalingstatisticstype DESC");
+        $rows = $this->db->pq($processing_job_query, array($id));
 
-        $msg_tmp = $this->db->pq(
-            "SELECT api.autoprocprogramid, appm.recordtimestamp, appm.severity, appm.message, appm.description
-                FROM autoprocprogrammessage appm
-                INNER JOIN autoprocintegration api ON api.autoprocprogramid = appm.autoprocprogramid
-                WHERE api.datacollectionid=:1",
-            array($id)
-        );
+        $whereClause = "api.datacollectionid=:1";
+        $messages = $this->_generate_auto_program_messages($whereClause, "", array($id));
 
-        $messages = array();
-        foreach ($msg_tmp as $m) {
-            if (!array_key_exists($m['AUTOPROCPROGRAMID'], $messages)) {
-                $messages[$m['AUTOPROCPROGRAMID']] = array();
-            }
-            array_push($messages[$m['AUTOPROCPROGRAMID']], $m);
-        }
-
-        $dts = array(
-            'cell_a',
-            'cell_b',
-            'cell_c',
-            'cell_al',
-            'cell_be',
-            'cell_ga',
-        );
-        $dts2 = array('rlow', 'rhigh');
-
-        $output = array();
-        foreach ($rows as &$r) {
-            if (!array_key_exists($r['AUTOPROCPROGRAMID'], $output)) {
-                $output[$r['AUTOPROCPROGRAMID']] = array(
-                    'BEAM' => array(),
-                    'SHELLS' => array(),
-                    'CELL' => array(),
-                );
-            }
-
-            if ($r['PROCESSINGSTATUS'] == '1') {
-                $shell = array();
-                foreach ($r as $k => &$v) {
-                    if ($k == 'TYPE') {
-                        if ($r['DCCOUNT'] > 1) {
-                            $prefix = preg_match('/multi/', $v) ? '' : 'multi-';
-                            $v = $r['DCCOUNT'] . 'x ' . $prefix . $v;
-                        }
-                    }
-
-                    if ($k == 'ISIGI') {
-                        $v = number_format($v, 1);
-                    }
-                    if ($k == 'RMERGE') {
-                        $v = number_format($v, 3);
-                    }
-                    if ($k == 'RMEAS') {
-                        $v = number_format($v, 3);
-                    }
-                    if ($k == 'COMPLETENESS') {
-                        $v = number_format($v, 1);
-                    }
-                    if ($k == 'MULTIPLICITY') {
-                        $v = number_format($v, 1);
-                    }
-                    if ($k == 'ANOMCOMPLETENESS') {
-                        $v = number_format($v, 1);
-                    }
-                    if ($k == 'ANOMMULTIPLICITY') {
-                        $v = number_format($v, 1);
-                    }
-                    if ($k == 'CCHALF') {
-                        $v = number_format($v, 1);
-                    }
-                    if ($k == 'CCANOMALOUS') {
-                        $v = number_format($v, 1);
-                    }
-
-                    $beam = array(
-                        'XBEAM',
-                        'YBEAM',
-                        'REFINEDXBEAM',
-                        'REFINEDYBEAM',
-                    );
-
-                    // We need to discriminate between NULL values from the database and when the value is a zero
-                    if (in_array($k, $beam) && is_numeric($v)) {
-                        $v = number_format($v, 2);
-                    }
-
-                    if (
-                        $k == 'AUTOPROCPROGRAMID' ||
-                        $k == 'SHELL' ||
-                        $k == 'PROCESSINGJOBID' ||
-                        $k == 'IMAGESWEEPCOUNT'
-                    ) {
-                        continue;
-                    } elseif ($k == 'SG') {
-                        $output[$r['AUTOPROCPROGRAMID']]['SG'] = $v;
-                    } elseif (in_array(strtolower($k), $dts2)) {
-                        $shell[$k] = number_format($v, 2);
-                    } elseif (in_array(strtolower($k), $dts)) {
-                        $v = number_format($v, 2);
-                        $output[$r['AUTOPROCPROGRAMID']]['CELL'][$k] = $v;
-                    } elseif (in_array($k, $beam)) {
-                        $output[$r['AUTOPROCPROGRAMID']]['BEAM'][$k] = $v;
-                    } else {
-                        $shell[$k] = $v;
-                    }
-                }
-                $output[$r['AUTOPROCPROGRAMID']]['SHELLS'][
-                    $r['SHELL']
-                ] = $shell;
-            }
-
-            $output[$r['AUTOPROCPROGRAMID']]['PROCESSINGJOBID'] =
-                $r['PROCESSINGJOBID'];
-            $output[$r['AUTOPROCPROGRAMID']]['IMAGESWEEPCOUNT'] =
-                $r['IMAGESWEEPCOUNT'];
-            $output[$r['AUTOPROCPROGRAMID']]['DCCOUNT'] = $r['DCCOUNT'];
-
-            $output[$r['AUTOPROCPROGRAMID']]['TYPE'] = $r['TYPE'];
-            $output[$r['AUTOPROCPROGRAMID']]['AID'] = $r['AUTOPROCPROGRAMID'];
-            $output[$r['AUTOPROCPROGRAMID']]['PROCESSINGSTATUS'] =
-                $r['PROCESSINGSTATUS'];
-            $output[$r['AUTOPROCPROGRAMID']]['PROCESSINGMESSAGE'] =
-                $r['PROCESSINGMESSAGE'];
-            $output[$r['AUTOPROCPROGRAMID']]['MESSAGES'] = array_key_exists(
-                $r['AUTOPROCPROGRAMID'],
-                $messages
-            )
-                ? $messages[$r['AUTOPROCPROGRAMID']]
-                : array();
-            $output[$r['AUTOPROCPROGRAMID']]['AUTOMATIC'] =
-                $r['AUTOMATIC'] != 0;
-        }
+        $output = $this->_format_auto_processing_result($rows, $messages);
 
         $this->_output(array(sizeof($output), $output));
     }
@@ -723,5 +590,248 @@ class Processing extends Page {
         } else {
             $this->_error('Could not find map / model');
         }
+    }
+
+    /**
+     * Processing results by sample groups
+     *
+     */
+    function _get_latest_multiplex_job_result() {
+        if (!$this->has_arg('prop')) {
+            $this->_error('proposal specified');
+        }
+
+        if (!$this->has_arg('blSampleGroupId')) {
+            $this->_error('No sample group specified');
+        }
+
+        $args = array($this->arg('blSampleGroupId'));
+
+        $result_count = $this->has_arg('resultCount') ? $this->arg('resultCount') : '';
+        $result_count = empty($result_count) ? 3 : $this->arg('resultCount');
+        array_push($args, $result_count);
+
+        $last_processing_job_result = $this->db->pq("
+            SELECT pj.processingJobId
+            FROM BLSampleGroup_has_BLSample bhg
+            JOIN DataCollectionGroup dcg ON dcg.blSampleId = bhg.blSampleId
+            JOIN DataCollection dc ON dc.dataCollectionGroupId = dcg.dataCollectionGroupId
+            JOIN ProcessingJob pj ON pj.dataCollectionId = dc.dataCollectionId
+            JOIN ProcessingJobParameter pjp ON pj.processingJobId = pjp.processingJobId
+            WHERE pjp.parameterKey = 'sample_group_id' AND pjp.parameterValue =:1
+            ORDER BY processingJobId DESC
+            LIMIT :2",
+        $args);
+
+        if (sizeof($last_processing_job_result) < 1) {
+            $this->_output(array());
+            return;
+        }
+
+        $processing_ids_list = array_column($last_processing_job_result, 'PROCESSINGJOBID');
+        $processing_jobs = array_reduce(array_keys($processing_ids_list), function ($carry, $index) use ($processing_ids_list) {
+            $index_value = $index + 1;
+
+            if ($index_value < sizeof($processing_ids_list)) {
+                $carry .= ":{$index_value}, ";
+            } else {
+                $carry .= ":{$index_value}";
+            }
+            return $carry;
+        }, "");
+
+        $whereClause = "app.processingJobId IN ({$processing_jobs})";
+        $job_where_clause = "pj.processingJobId IN ({$processing_jobs})";
+        $message_join = "INNER JOIN autoprocprogram app on api.autoprocprogramid = app.autoprocprogramid";
+
+        $multiplex_job_query = $this->_autoprocessing_query_builder(
+            $job_where_clause,
+            "GROUP BY app.autoprocprogramid, apss.autoprocscalingstatisticsid",
+            "ORDER BY processingJobId DESC");
+        $last_multiplex_jobs = $this->db->pq($multiplex_job_query, $processing_ids_list);
+        $multiplex_jobs_messages = $this->_generate_auto_program_messages($whereClause, $message_join, $processing_ids_list);
+        $output = $this->_format_auto_processing_result($last_multiplex_jobs, $multiplex_jobs_messages);
+        $this->_output($output);
+    }
+
+    private function _autoprocessing_query_builder($where, $group, $order = '') {
+        $fields = "
+            apss.cchalf,
+            apss.ccanomalous,
+            apss.anomalous,
+            dc.xbeam,
+            dc.ybeam,
+            api.refinedxbeam,
+            api.refinedybeam,
+            app.autoprocprogramid,
+            app.processingprograms as type,
+            apss.ntotalobservations as ntobs,
+            apss.ntotaluniqueobservations as nuobs,
+            apss.resolutionlimitlow as rlow,
+            apss.resolutionlimithigh as rhigh,
+            apss.scalingstatisticstype as shell,
+            apss.rmeasalliplusiminus as rmeas,
+            apss.rmerge, apss.completeness,
+            apss.anomalouscompleteness as anomcompleteness,
+            apss.anomalousmultiplicity as anommultiplicity,
+            apss.multiplicity,
+            apss.meanioversigi as isigi,
+            ap.spacegroup as sg,
+            ap.refinedcell_a as cell_a,
+            ap.refinedcell_b as cell_b,
+            ap.refinedcell_c as cell_c,
+            ap.refinedcell_alpha as cell_al,
+            ap.refinedcell_beta as cell_be,
+            ap.refinedcell_gamma as cell_ga, 
+            (SELECT COUNT(api1.autoprocintegrationid) FROM autoprocintegration api1 WHERE api1.autoprocprogramid =  app.autoprocprogramid) as imagesweepcount,
+            app.processingstatus,
+            app.processingmessage,
+            count(distinct pjis.datacollectionid) as dccount,
+            max(pjis.processingjobid) as processingjobid,
+            pj.automatic";
+
+        $from = "FROM autoprocintegration api";
+        $joins = "
+            LEFT OUTER JOIN autoprocscaling_has_int aph ON api.autoprocintegrationid = aph.autoprocintegrationid 
+            LEFT OUTER JOIN autoprocscaling aps ON aph.autoprocscalingid = aps.autoprocscalingid 
+            LEFT OUTER JOIN autoproc ap ON aps.autoprocid = ap.autoprocid 
+            LEFT OUTER JOIN autoprocscalingstatistics apss ON apss.autoprocscalingid = aph.autoprocscalingid 
+            INNER JOIN autoprocprogram app ON api.autoprocprogramid = app.autoprocprogramid 
+            LEFT OUTER JOIN processingjob pj ON app.processingjobid = pj.processingjobid
+            LEFT OUTER JOIN processingjobimagesweep pjis ON pjis.processingjobid = pj.processingjobid
+            INNER JOIN datacollection dc ON api.datacollectionid = dc.datacollectionid
+        ";
+
+        return "SELECT $fields $from $joins WHERE $where $group $order";
+    }
+
+    private function _generate_auto_program_messages($where, $join = "", $args = array()) {
+        $messages = array();
+
+        $query = "SELECT api.autoprocprogramid, appm.recordtimestamp, appm.severity, appm.message, appm.description
+            FROM autoprocprogrammessage appm
+            INNER JOIN autoprocintegration api ON api.autoprocprogramid = appm.autoprocprogramid
+            $join
+            WHERE $where";
+
+        $messages_row = $this->db->pq($query, $args);
+
+        foreach ($messages_row as $message) {
+            if (!array_key_exists($message['AUTOPROCPROGRAMID'], $messages)) {
+                $messages[$message['AUTOPROCPROGRAMID']] = array();
+            }
+            array_push($messages[$message['AUTOPROCPROGRAMID']], $message);
+        }
+
+        return $messages;
+    }
+
+    private function _format_auto_processing_result($table_rows, $messages_result) {
+        $formatted_result = array();
+        $cells_data = array(
+            'cell_a',
+            'cell_b',
+            'cell_c',
+            'cell_al',
+            'cell_be',
+            'cell_ga',
+        );
+        $resolution_data = array('rlow', 'rhigh');
+        $returned_keys = array('PROCESSINGJOBID', 'IMAGESWEEPCOUNT', 'DCCOUNT', 'TYPE', 'PROCESSINGSTATUS', 'PROCESSINGMESSAGE');
+
+        foreach($table_rows as &$row) {
+            if (!array_key_exists($row['AUTOPROCPROGRAMID'], $formatted_result)) {
+                $formatted_result[$row['AUTOPROCPROGRAMID']] = array_intersect_key($row, array_flip($returned_keys));
+                $new_items = array(
+                    'BEAM' => array(),
+                    'SHELLS' => array(),
+                    'CELL' => array()
+                );
+                $formatted_result[$row['AUTOPROCPROGRAMID']] = array_merge($formatted_result[$row['AUTOPROCPROGRAMID']], $new_items);
+            }
+
+            if ($row['PROCESSINGSTATUS'] == '1') {
+                $shell = array();
+                foreach ($row as $key => &$value) {
+                    if ($key == 'TYPE') {
+                        if ($row['DCCOUNT'] > 1) {
+                            $prefix = preg_match('/multi/', $value) ? '' : 'multi-';
+                            $value = $row['DCCOUNT'] . 'x ' . $prefix . $value;
+                        }
+                    }
+
+
+                    if ($key == 'ISIGI') {
+                        $value = number_format($value, 1);
+                    }
+                    if ($key == 'RMERGE') {
+                        $value = number_format($value, 3);
+                    }
+                    if ($key == 'RMEAS') {
+                        $value = number_format($value, 3);
+                    }
+                    if ($key == 'COMPLETENESS') {
+                        $value = number_format($value, 1);
+                    }
+                    if ($key == 'MULTIPLICITY') {
+                        $value = number_format($value, 1);
+                    }
+                    if ($key == 'ANOMCOMPLETENESS') {
+                        $value = number_format($value, 1);
+                    }
+                    if ($key == 'ANOMMULTIPLICITY') {
+                        $value = number_format($value, 1);
+                    }
+                    if ($key == 'CCHALF') {
+                        $value = number_format($value, 1);
+                    }
+                    if ($key == 'CCANOMALOUS') {
+                        $value = number_format($value, 1);
+                    }
+
+                    $beam = array(
+                        'XBEAM',
+                        'YBEAM',
+                        'REFINEDXBEAM',
+                        'REFINEDYBEAM',
+                    );
+
+                    // We need to discriminate between NULL values from the database and when the value is a zero
+                    if (in_array($key, $beam) && is_numeric($value)) {
+                        $value = number_format($value, 2);
+                    }
+
+                    if (
+                        $key == 'AUTOPROCPROGRAMID' ||
+                        $key == 'SHELL' ||
+                        $key == 'PROCESSINGJOBID' ||
+                        $key == 'IMAGESWEEPCOUNT'
+                    ) {
+                        continue;
+                    } elseif ($key == 'SG') {
+                        $formatted_result[$row['AUTOPROCPROGRAMID']]['SG'] = $value;
+                    } elseif (in_array(strtolower($key), $resolution_data)) {
+                        $shell[$key] = number_format($value, 2);
+                    } elseif (in_array(strtolower($key), $cells_data)) {
+                        $value = number_format($value, 2);
+                        $formatted_result[$row['AUTOPROCPROGRAMID']]['CELL'][$key] = $value;
+                    } elseif (in_array($key, $beam)) {
+                        $formatted_result[$row['AUTOPROCPROGRAMID']]['BEAM'][$key] = $value;
+                    } else {
+                        $shell[$key] = $value;
+                    }
+                }
+                $formatted_result[$row['AUTOPROCPROGRAMID']]['SHELLS'][$row['SHELL']] = $shell;
+            }
+
+            $formatted_result[$row['AUTOPROCPROGRAMID']]['TYPE'] = $row['TYPE'];
+            $formatted_result[$row['AUTOPROCPROGRAMID']]['AID'] = $row['AUTOPROCPROGRAMID'];
+            $formatted_result[$row['AUTOPROCPROGRAMID']]['MESSAGES'] = array_key_exists($row['AUTOPROCPROGRAMID'], $messages_result)
+                ? $messages_result[$row['AUTOPROCPROGRAMID']]
+                : array();
+            $formatted_result[$row['AUTOPROCPROGRAMID']]['AUTOMATIC'] = $row['AUTOMATIC'] != 0;
+        }
+
+        return $formatted_result;
     }
 }
