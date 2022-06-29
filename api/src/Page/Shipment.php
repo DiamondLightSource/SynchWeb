@@ -36,7 +36,7 @@ class Shipment extends Page
 
                               // Dewar Fields
                               'CODE' => '([\w-])+',
-                              'FACILITYCODE' => '^(?![\s\S])|([\w-])+',
+                              'FACILITYCODE' => '([\w-])+',
                               'NEWFACILITYCODE' => '([\w-])+',
                               'TRACKINGNUMBERTOSYNCHROTRON' => '\w+',
                               'TRACKINGNUMBERFROMSYNCHROTRON' => '\w+',
