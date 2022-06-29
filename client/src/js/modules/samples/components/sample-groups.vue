@@ -61,16 +61,20 @@
       </div>
 
       <div class="processing-job-list tw-mt-5">
-        <div class="tw-flex tw-justify-between content">
+        <div class="content">
           <h1> Summary of last multiplex jobs from group {{ sampleGroupName }}</h1>
-          <div>
+          <div class="tw-flex tw-justify-end">
             <button class="button tw-text-link-color" @click="goToSampleGroupsDataCollections">Sample Group Data Collections</button>
           </div>
         </div>
 
         <auto-processing-jobs-list
-          v-if="Object.keys(latestMultiplexJobs).length > 0"
+          v-if="Object.keys(latestMultiplexJobs).length > 0 && loadedMultiplex"
           :processing-programs-list="latestMultiplexJobs" />
+
+        <div v-else-if="Object.keys(latestMultiplexJobs).length < 1 && loadedMultiplex" class="tw-w-full">
+          <p class="tw-text-center">No multiplex job for this sample group at this time.</p>
+        </div>
       </div>
     </div>
   </div>
@@ -108,7 +112,8 @@ export default {
       sampleGroupId: null,
       sampleGroupsListState: {},
       selectedSampleGroup: null,
-      latestMultiplexJobs: []
+      latestMultiplexJobs: [],
+      loadedMultiplex: false
     };
   },
   created() {
@@ -179,6 +184,7 @@ export default {
 
         return acc
       }, [])
+      this.loadedMultiplex = true
     },
     goToSampleGroupsDataCollections() {
 
