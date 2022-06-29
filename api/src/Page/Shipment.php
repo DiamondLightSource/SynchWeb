@@ -2076,7 +2076,12 @@ class Shipment extends Page
             
             if ($this->has_arg('DEWARS')) {
                 if ($this->arg('DEWARS') > 0) {
-                    $exp = $this->has_arg('FIRSTEXPERIMENTID') ? $this->arg('FIRSTEXPERIMENTID') : null;
+                    $first_experiment = '';
+                    if ($this->has_arg('FIRSTEXPERIMENTID')) {
+                        $first_experiment = $this->arg('FIRSTEXPERIMENTID');
+                    }
+
+                    $exp = !empty($first_experiment) ? $this->arg('FIRSTEXPERIMENTID') : null;
 
                     if ($exp) {
                         $this->db->pq("INSERT INTO shippinghassession (shippingid, sessionid) 

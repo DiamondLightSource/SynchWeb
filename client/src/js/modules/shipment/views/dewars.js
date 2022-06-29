@@ -124,7 +124,7 @@ define(['marionette', 'backbone',
         },
 
         modelEvents: {
-            change: 'render'
+            sync: 'render'
         }
     }))
     
