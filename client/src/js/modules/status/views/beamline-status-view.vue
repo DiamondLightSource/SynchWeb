@@ -45,7 +45,7 @@
       </div>
     </div>
 
-    <div v-if="" class="tw-mb-3">
+    <div v-if="isStaff" class="tw-mb-3">
       <h1>GDA Log</h1>
       <div class="tw-bg-content-light-background tw-m-2 tw-p-2 tw-rounded-sm tw-overflow-y-scroll tw-h-64 tw-text-content-page-color">
         <p v-for="(logItem, logIndex) in GDALogData" :key="logIndex">{{ logItem['LINE'] }}</p>
@@ -140,7 +140,9 @@ export default {
       })
     }
 
-    this.fetchDGALogData()
+    if (this.isStaff) {
+      this.fetchDGALogData()
+    }
     this.fetchPVSData()
     this.fetchMessagePVSData()
     this.fetchEPICSPagesData()
@@ -228,7 +230,8 @@ export default {
   },
   computed: {
     ...mapGetters({
-      apiUrl: ['apiUrl']
+      apiUrl: ['apiUrl'],
+      isStaff: ['user/isStaff']
     })
   },
   watch: {
