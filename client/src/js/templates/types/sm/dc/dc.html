@@ -16,7 +16,11 @@
     </div>
     
     <ul class="clearfix">
-        <li>Flux: <%-parseFloat(FLUX).toExponential(2)%></li>
+        <%if (FLUX != null) { %>
+          <li><%- parseFloat(FLUX).toExponential(2) %></li>
+        <% } else { %>
+          <li> Flux: </li>
+        <% } %>
         <li>&<%-ROTATIONAXIS%>; Start: <%-AXISSTART%>&deg;</li>
         <li>&<%-ROTATIONAXIS%>; Osc: <%-AXISRANGE%>&deg;</li>
         <li>&<%-ROTATIONAXIS%>; Overlap: <%-OVERLAP%>&deg;</li>
@@ -24,7 +28,8 @@
         <% if (SI != 1 ) { %> <li>First Image: <%-SI%></li><% } %>
         <% if (KAPPA != null) { %><li>&kappa;: <%-KAPPA%>&deg;</li><% } %>
         <% if (PHI != null) { %><li>&phi;: <%-PHI%>&deg;</li><% } %>
-        <% if (CHISTART != null) { %><li>&chi;: <%-CHISTART%>&deg;<% } %>
+        <% if (CHISTART != null) { %><li>&chi;: <%-CHISTART%>&deg;</li><% } %>
+        <% if (OMEGASTART != null) { %> <li>&omega;: <%- OMEGASTART %>&deg;</li> <% } %>
         <li>Resolution: <%-RESOLUTION%>&#197;</li>
         <li>Wavelength: <%-WAVELENGTH%>&#197;</li>
         <li>Detector Distance: <%-parseFloat(DET).toFixed(1)%>mm</li>
