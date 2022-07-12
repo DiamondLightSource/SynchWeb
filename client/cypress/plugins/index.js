@@ -24,9 +24,10 @@ module.exports = (on, config) => {
   // `config` is the resolved Cypress config
   config.env.apiUrl = process.env.VUE_APP_API_URL
   config.env.appUrl = process.env.VUE_APP_URL
-  config.env.baseUrl = process.env.VUE_APP_URL
   config.env.username = process.env.VUE_APP_USERNAME
   config.env.password = process.env.VUE_APP_PASSWORD
+  
+  config.baseUrl = process.env.VUE_APP_URL
 
   on('dev-server:start', async(options) => {
     return startDevServer({
