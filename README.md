@@ -5,12 +5,14 @@ The client includes some newer components written in Vue.js
 Read More: https://diamondlightsource.github.io/SynchWeb/
 
 ## Installation
-Running SynchWeb requires setting up a Linux, Apache, MariaDB and PHP (LAMP) software stack. If running in production you should configure your Apache and PHP to serve secure pages only. The steps below describe how to build the software so it is ready to deploy onto your target server.
+Running SynchWeb requires setting up a Linux, Apache, MariaDB and PHP (LAMP) software stack. If running in production you should configure your Apache and PHP to serve secure pages only. The steps below describe how to build the software so it is ready to deploy onto your target server. The `podman` folder provides
+support for creating a containerised Production deployment.
+Instructions [here](./podman/README.md).
 
-For development, a simple environment can be setup by using scripts provided [here](https://github.com/DiamondLightSource/synchweb-devel-env). They are not intended for production use but include scripts to automatically build and deploy the software on a local VM.
+For development, a simple environment can be setup by using scripts provided [here](https://github.com/DiamondLightSource/synchweb-devel-env). They are not intended for production use but include scripts to automatically build and deploy the software on a local VM or in a Podman container.
 
 ### Requirements
-To build SynchWeb on a machine you will need [npm](https://docs.npmjs.com/) and [composer](https://getcomposer.org/)
+If not using the Podman containter, to build SynchWeb on a machine you will need [npm](https://docs.npmjs.com/) and [composer](https://getcomposer.org/)
 
 You will also need php5 on the build machine.
 
@@ -20,6 +22,7 @@ If not using the development VMs you will also need an instance of the ISPyB dat
 ```sh
 $ git clone https://github.com/DiamondLightSource/SynchWeb
 ```
+
 ### Customise front end - config.json
 An example configuration is provided in client/src/js/config_sample.json
 This file should be copied to create a client/src/js/config.json file and edited to customise the application for your site.
