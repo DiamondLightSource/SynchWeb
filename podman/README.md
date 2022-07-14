@@ -14,9 +14,13 @@ connection string data to an ISPyB database - i.e. via the `$isb` variable.
 1. Adjust `Dockerfile` to point to the correct release/branch to clone into the container
 1. Add `config.php` to same directory as the `Dockerfile` - adjusting details as appropriate 
 for the Production environment deployment (at a minimum setting a valid value for `$isb`)
+1. Update `php.ini` to include any settings whose default values you
+wish to override.
 1. Generate SSL certificate and key (e.g. see [here](https://linuxconfig.org/how-to-generate-a-self-signed-ssl-certificate-on-linux)).
 Place these in the same directory as the `Dockerfile`.  Note, the names should be `cert.pem` and `key.pem` - 
 to match the `httpd.conf` configuration.
+1. Ensure you have a valid ssh key set up for github.com access (required to retrieve
+some DHL php libraries) - instructions [here](https://docs.github.com/en/authentication/connecting-to-github-with-ssh).
 1. Run `setup_synchweb_prod.bash` - note, this can take one input arg:
 ``` setup_synchweb.bash <image-name>```.
 If no args are specified, an image called `synchweb-prod` is built and run.
@@ -39,12 +43,11 @@ anyway.
 some of the required dependencies.  This is usually down to network issues.
 For Diamond users, it is recommended that the `sshuttle` vpn set up 
 is running.
+* Obtaining the DHL php libraries, via the `composer install` step is quite
+unreliable if run from the `Dockerfile`.  If problems are encountered, comment
+out this step and uncomment the equivalient in the `entrypoint.bash` file.
 * Once running, the podman container can be accessed by using, 
-`podman exec -it synchweb-dev /bin/bash`.  From here, check the required
+`podman exec -it synchweb-prod /bin/bash`.  From here, check the required
 php and httpd processes are running and check the logs under
 `/var/log/httpd`.
-* Sometimes the web client stops working.  Not sure why, but this can usually
-be fixed by rebuilding and relinking this.  The `rebuildClient.bash` can be
-used to simplify this process.  For Diamond users, restarting the VPN client
-can also help here.
 *  See [here](https://github.com/DiamondLightSource/synchweb-devel-env/blob/master/README.md) for more general advice.
