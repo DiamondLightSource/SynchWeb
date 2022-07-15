@@ -44,8 +44,12 @@ some of the required dependencies.  This is usually down to network issues.
 For Diamond users, it is recommended that the `sshuttle` vpn set up 
 is running.
 * Obtaining the DHL php libraries, via the `composer install` step is quite
-unreliable if run from the `Dockerfile`.  If problems are encountered, comment
+unreliable if run from the `Dockerfile` (due to rate limiting on anonymous
+requests).  If problems are encountered, comment
 out this step and uncomment the equivalient in the `entrypoint.bash` file.
+Alternatively, connect with a personal access token (generated 
+[here](https://github.com/settings/tokens/new))
+using `composer config --global http-basic.github.com <USERNAME> <TOKEN>`
 * Once running, the podman container can be accessed by using, 
 `podman exec -it synchweb-prod /bin/bash`.  From here, check the required
 php and httpd processes are running and check the logs under

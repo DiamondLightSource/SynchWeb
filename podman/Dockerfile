@@ -46,7 +46,7 @@ EXPOSE 8082
 # Install Composer & Build Backend
 RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" && \
     php composer-setup.php --install-dir=/usr/local/bin --filename=composer && \
-    rm ./composer-setup.php 
+    rm ./composer-setup.php
 
 # Note: the 'composer install' step is prone to fail - if this doesn't work
 # add it to the entrypoint.bash script instead (uncommenting out the line there)
