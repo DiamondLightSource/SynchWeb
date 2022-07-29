@@ -5,7 +5,7 @@ WORKDIR /app
 # Install httpd, PHP, node and required dependencies
 RUN yum install wget git tar xz-utils httpd mod_ssl -y http://rpms.famillecollet.com/enterprise/remi-release-7.rpm && \
     sed -i 's/enabled=0/enabled=1/g' /etc/yum.repos.d/remi-php54.repo && \
-    yum install -y php5.4 php54-php-mysql php54-php-mbstring php54-php-xml php54-php-gd php54-php-fpm php54-php-cli && \
+    yum install -y php54 php54-php-mysql php54-php-mbstring php54-php-xml php54-php-gd php54-php-fpm php54-php-cli && \
     wget -qO- https://nodejs.org/dist/v16.13.2/node-v16.13.2-linux-x64.tar.xz | tar -xJ
 
 # Add php & node to path
@@ -36,7 +36,7 @@ RUN chmod 744 /etc/httpd/conf/httpd.conf && \
 # Build Frontend
 RUN cd SynchWeb/client/ && \
     npm install && npm run build:dev && \
-    export HASH=$(ls /app/SynchWeb/client/dist) && \ 
+    export HASH=$(ls -t /app/SynchWeb/client/dist | head -n1) && \ 
     ln -sf dist/${HASH}/index.html index.php && \
     rm -rf /app/node-v16.13.2-linux-x64
 
