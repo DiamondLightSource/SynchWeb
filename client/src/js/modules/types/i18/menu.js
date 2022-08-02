@@ -9,6 +9,7 @@ define([], function() {
             dc: 'View All Data',
             visits: 'Visits',
             contacts: 'Lab Contacts',
+            conexs: 'Conexs Submission',
         },
         
         extra: {
