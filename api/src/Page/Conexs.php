@@ -81,7 +81,7 @@ class Conexs extends Page
         );
 
         $c = curl_init();
-        curl_setopt($c, CURLOPT_URL, $conexs_url);
+        curl_setopt($c, CURLOPT_URL, $conexs_url . 'main');
         curl_setopt($c, CURLOPT_POST, 1);
         curl_setopt($c, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
         curl_setopt($c, CURLOPT_POSTFIELDS, json_encode($data, JSON_UNESCAPED_SLASHES));
