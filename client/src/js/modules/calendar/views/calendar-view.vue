@@ -105,6 +105,7 @@ import Visits from 'collections/visits'
 import Beamlines from 'collections/bls'
 import FilterPills from 'app/components/filter-pills.vue'
 import CalendarDayEvents from 'modules/calendar/views/components/calendar-day-events.vue'
+import { DateTime } from 'luxon'
 
 export default {
   name: 'calendar-view',
@@ -125,7 +126,6 @@ export default {
   },
   data() {
     return {
-      currentDate: new Date(),
       days: [
         'Monday',
         'Tuesday',
@@ -136,13 +136,13 @@ export default {
         'Sunday',
       ],
       shortDays: [
-        'Sun',
         'Mon',
         'Tues',
         'Wed',
         'Thurs',
         'Fri',
         'Sat',
+        'Sun',
       ],
       months: [
         'January',
@@ -158,9 +158,9 @@ export default {
         'November',
         'December'
       ],
-      currentMonth: new Date().getUTCMonth(),
-      currentDay: new Date().getUTCDate(),
-      currentYear: new Date().getUTCFullYear(),
+      currentMonth: null,
+      currentDay: null,
+      currentYear: null,
       visits: [],
       selectedBeamline: this.bl || 'all',
       beamlines: []
@@ -253,8 +253,7 @@ export default {
           acc[currentWeek].push(date)
         } else {
           currentWeek += 1
-          acc[currentWeek] = []
-          acc[currentWeek].push(date)
+          acc[currentWeek] = [date]
         }
 
         if (index === this.daysInMonth - 1 && acc[currentWeek].length < 7) {
@@ -267,16 +266,18 @@ export default {
       }, {})
     },
     isToday(date) {
-      const todaysDate = new Date()
-      const [month, day, year] = [todaysDate.getUTCMonth(), todaysDate.getUTCDate(), todaysDate.getUTCFullYear()]
-      return date === day && month === this.currentMonth && year === this.currentYear
+      const { month, day, year } = this.todayDate
+      return date === day && month - 1 === this.currentMonth && year === this.currentYear
     },
     isPastDate(date) {
-      const todaysDate = new Date()
-      const currentDate = new Date(todaysDate.getUTCFullYear(), todaysDate.getUTCMonth(), todaysDate.getUTCDate())
-      const dateItem = new Date(this.currentYear, this.currentMonth, date)
+      const dateItem = DateTime.fromObject({
+        year: this.currentYear,
+        month: this.currentMonth + 1,
+        day: date,
+        zone: this.timezone
+      })
 
-      return currentDate > dateItem
+      return dateItem < this.todayDate
 
     },
     onHover(ref, addHover) {
@@ -337,8 +338,15 @@ export default {
   },
   computed: {
     ...mapGetters({
-      proposalType: ['proposal/currentProposalType']
+      proposalType: ['proposal/currentProposalType'],
+      appOption: ['getAppOptions']
     }),
+    timezone() {
+      return this.appOption['timezone']
+    },
+    todayDate() {
+      return DateTime.now().setZone(this.timezone)
+    },
     currentSelectedMonth() {
       return this.months[this.currentMonth]
     },
@@ -357,18 +365,28 @@ export default {
       return this.currentYear + 1
     },
     daysInMonth() {
-      return new Date(this.currentYear, this.currentMonth + 1, 0).getDate()
+      return DateTime.fromObject({
+        year: this.currentYear,
+        month: this.currentMonth + 1,
+        day: 1,
+        zone: this.timezone
+      }).daysInMonth
     },
     startDayOfMonth() {
-      return new Date(this.currentYear, this.currentMonth, 1).getUTCDay()
+      return DateTime.fromObject({
+        year: this.currentYear,
+        month: this.currentMonth + 1,
+        day: 1,
+        zone: this.timezone
+      }).weekday - 1
     },
     sortedVisitsByDay() {
       return Array(this.daysInMonth).fill('').reduce((acc, curr, index) => {
         const number = index + 1
-        const date = new Date(this.currentYear, this.currentMonth, number)
 
         acc[number] = this.visits.filter(visit => {
-          return new Date(visit['STISO']) >= date && new Date(visit['STISO']) < new Date(date.getTime() + (24 * 3600 * 1000))
+          const { year, month, day } = visit['STISO']
+          return year === this.currentYear && month - 1 === this.currentMonth && day === number
         })
 
         return acc
@@ -390,6 +408,15 @@ export default {
     currentMonth: {
       handler: 'fetchVisitsCalendar'
     }
+  },
+  beforeRouteEnter(to, from, next) {
+    next((vm) => {
+      const zone = vm.$store.getters.getAppOptions.timezone
+      const dateTime = DateTime.now().setZone(zone)
+      vm.currentMonth = dateTime.month - 1
+      vm.currentYear = dateTime.year
+      vm.currentDay = dateTime.day
+    })
   }
 }
 </script>
