@@ -260,20 +260,30 @@ module.exports = (env, argv) => ({
     // Anything matching in the from path is copied so images/file.png => assets/images/file.png
     // Also copy jquery to assets dir, so we can use it for Dialog popup with log files (see js/views/log.js)
     // Also copy config.json to assets dir, app uses the assets/js/config.json to tell if client needs updating
-    new CopyPlugin([
-      { context: path.resolve(__dirname, 'src'),
-        from: 'images/**',
-        to: path.resolve(__dirname, 'assets') },
-      { context: path.resolve(__dirname, 'src'),
-        from: 'js/config.json',
-        to: path.resolve(__dirname, 'assets/js/') },
-      { context: path.resolve(__dirname, 'src'),
-        from: 'js/vendor/jquery/jquery-1.9.1.min.js',
-        to: path.resolve(__dirname, 'assets/js/') },
-      { context: path.resolve(__dirname, 'src'),
-        from: 'files/**',
-        to: path.resolve(__dirname, 'assets') }
-    ]),
+    new CopyPlugin({ 
+        patterns: [
+            { 
+                context: path.resolve(__dirname, 'src'),
+                from: 'images/**',
+                to: path.resolve(__dirname, 'assets') 
+            },
+            { 
+                context: path.resolve(__dirname, 'src'),
+                from: 'js/config.json',
+                to: path.resolve(__dirname, 'assets/js/') 
+            },
+            { 
+                context: path.resolve(__dirname, 'src'),
+                from: 'js/vendor/jquery/jquery-1.9.1.min.js',
+                to: path.resolve(__dirname, 'assets/js/') 
+            },
+            { 
+                context: path.resolve(__dirname, 'src'),
+                from: 'files/**',
+                to: path.resolve(__dirname, 'assets') 
+            }
+        ]
+    }),
     new VueLoaderPlugin(),
     new MiniCssExtractPlugin({
       filename: '[name].css',
