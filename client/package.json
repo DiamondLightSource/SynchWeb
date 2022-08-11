@@ -87,7 +87,7 @@
     "promise": "^8.0.3",
     "tailwindcss": "^1.9.5",
     "three": "^0.83.0",
-    "uglymol": "^0.5.7",
+    "uglymol": "^0.6.4",
     "underscore": "1.6.0",
     "vee-validate": "^2.2.15",
     "vue": "^2.6.10",
