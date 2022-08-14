@@ -62,7 +62,7 @@ class Sample extends Page
                               'DENSITY' => '\d+(.\d+)?',
                               'THEORETICALDENSITY' => '\d+(.\d+)?',
 
-                              'NAME' => '[\w\s-()]+',
+                              'NAME' => '[\w\s\-()]+',
                               'COMMENTS' => '.*',
                               'SPACEGROUP' => '(\w|\s|\-|\/)+|^$', // Any word character (inc spaces bars and slashes) or empty string
                               'CELL_A' => '\d+(.\d+)?',
