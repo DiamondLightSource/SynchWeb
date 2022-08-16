@@ -1,8 +1,6 @@
 const path = require('path');
 const webpack = require("webpack");
 const childProcess = require('child_process')
-// As of v3.0.3 GitRevisionPlugin does not work with MiniCssExtractPlugin
-// const GitRevisionPlugin = require('git-revision-webpack-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const CopyPlugin = require('copy-webpack-plugin');
 const VueLoaderPlugin = require('vue-loader/lib/plugin')
