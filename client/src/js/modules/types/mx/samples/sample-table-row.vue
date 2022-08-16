@@ -193,7 +193,7 @@ export default {
 .min-height-8 {
   min-height: 32px;
 }
->>> .sample-group-select .items-list, >>> .protein-select .items-list {
+:deep() .sample-group-select .items-list, :deep() .protein-select .items-list {
   min-height: 40px;
   max-height: 100px;
   overflow-y: auto;
