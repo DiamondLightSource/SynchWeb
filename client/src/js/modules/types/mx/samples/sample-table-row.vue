@@ -10,7 +10,7 @@
     <validation-provider
       class="tw-px-2 protein-column tw-py-1"
       tag="div"
-      :rules="sample['NAME'] && !containerId ? 'required' : ''"
+      :rules="sample['NAME'] && (!containerId || editingRow === sample['LOCATION']) ? 'required' : ''"
       :name="`Sample ${sampleIndex + 1} Protein`"
       :vid="`sample ${sampleIndex + 1} protein`"
       v-slot="{ errors }">
@@ -40,14 +40,14 @@
     <validation-provider
       tag="div"
       class="name-column tw-py-1 tw-px-2"
-      :rules="sample['PROTEINID'] > -1 && !containerId ? 'required|alpha_dash|max:25|' : ''"
+      :rules="sample['PROTEINID'] > -1 && (!containerId || editingRow === sample['LOCATION']) ? 'required|alpha_dash|max:25|' : ''"
       :name="`Sample ${sampleIndex + 1} Name`"
       :vid="`sample ${sampleIndex + 1} name`"
       v-slot="{ errors }">
       <base-input-text
         v-if="canEditRow(sample['LOCATION'], editingRow) && !isContainerProcessing && !sampleHasDataCollection"
         inputClass="tw-w-full tw-h-8"
-        v-model="NAME"
+        v-model.trim="NAME"
         :errorMessage="errors[0]"
         :quiet="true"
         :errorClass="errors[0] ? 'tw-text-xxs ferror' : ''"
@@ -165,11 +165,6 @@ export default {
     'validation-observer': ValidationObserver
   },
   methods: {
-    editRow(row) {
-      this.sample = row
-      this.sample.CONTAINERID = this.containerId
-      this.editingRow = row.LOCATION
-    },
     onAddToSampleGroup() {
       this.displaySampleGroupModal = true
     },
