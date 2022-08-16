@@ -286,6 +286,7 @@ module.exports = (env, argv) => ({
     new MiniCssExtractPlugin({
       filename: '[name].css',
       chunkFilename: '[id].css',
+      ignoreOrder: true, // see https://stackoverflow.com/questions/51971857/mini-css-extract-plugin-warning-in-chunk-chunkname-mini-css-extract-plugin-con/67579319#67579319
     }),
     // Allow use to use process.env.NODE_ENV in the build
     // NODE_ENV should be set in scripts for production builds
