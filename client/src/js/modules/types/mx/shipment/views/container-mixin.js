@@ -343,6 +343,12 @@ export default {
     async saveSample(location) {
       let sampleIndex = +location
       // Create a new Sample Model, so it uses the BLSAMPLEID to check for post, update etc
+      const validForm = await this.$refs.containerForm.validate()
+
+      if (!validForm) {
+        this.$store.commit('notifications/addNotification', { message: 'Sample data is invalid, please check the form', level: 'error'})
+        return
+      }
       let sampleModel = new Sample(omit(this.samples[sampleIndex], ['STRATEGYOPTION', 'STATUS']))
 
       const result = await this.$store.dispatch('saveModel', { model: sampleModel })

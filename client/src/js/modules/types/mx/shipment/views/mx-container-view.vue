@@ -118,6 +118,8 @@
           ref="samples"
           :containerId="containerId"
           :invalid="invalid"
+          :currentlyEditingRow="editingSampleLocation"
+          @update-editing-row="updateEditingSampleLocation"
           @save-sample="onSaveSample"
           @clone-sample="onCloneSample"
           @clear-sample="onClearSample"
@@ -246,7 +248,8 @@ export default {
       dewars: [],
       dewarsCollection: null,
       selectedDewarId: null,
-      selectedShipmentId: null
+      selectedShipmentId: null,
+      editingSampleLocation: null
     }
   },
   computed: {
@@ -472,12 +475,20 @@ export default {
 
       sample.INITIALSAMPLEGROUP = matchingSampleGroup ? matchingSampleGroup['BLSAMPLEGROUPID'] : ''
       return sample
+    },
+    updateEditingSampleLocation(value) {
+      this.editingSampleLocation = value
     }
   },
   watch: {
     containersSamplesGroupData(newValues) {
       this.updateContainerSampleGroupsData(newValues)
     },
+  },
+  provide() {
+    return {
+      $editingRow: () => this.editingSampleLocation
+    }
   }
 }
 </script>
