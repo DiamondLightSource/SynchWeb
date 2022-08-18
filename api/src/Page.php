@@ -35,7 +35,7 @@ class Page
                                       'sort_by' => '\w+',
                                       'order' => 'desc|asc',
                                       'ty' => '\w+',
-                                      's' => '[\w\s-]+',
+                                      's' => '[\w\s\-]+',
                                       'prop' => '\w+\d+',
                                       );
 
