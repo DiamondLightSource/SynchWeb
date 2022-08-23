@@ -22,17 +22,6 @@ class Status extends Page
                               array('/epics/:bl/c/:c', 'get', '_get_component'),
         );
 
-        /*
-        var $dispatch = array('pvs' => '_get_pvs',
-                              'log' => '_get_server_log',
-                              'epics' => '_get_component',
-                              'ep' => '_epics_pages',
-                              );
-        
-        var $def = 'pvs';
-        #var $profile = True;
-        //var $debug = True;
-        */
         
         # ------------------------------------------------------------------------
         # Return beam / ring status pvs for a beamline
@@ -80,7 +69,8 @@ class Status extends Page
         
         function _get_component() {
             if (!$this->has_arg('bl')) $this->_error('No beamline specified');
-            
+            $beamline = $this->arg('bl');
+
             if (!file_exists('tables/motors.json')) $this->_error('Couldn\'t find motors file');
             $json = preg_replace("/(\s\s+|\n)/", '', file_get_contents('tables/motors.json'));
             $pages = json_decode($json, true);
@@ -102,15 +92,14 @@ class Status extends Page
                     # Motors
                     if ($t == 1) {
                         foreach ($vals as $i => $s) {
-                            array_push($pvs, $bls[$this->arg('bl')].'-'.$p.'.'.$s);
+                            array_push($pvs, $bls[$beamline].'-'.$p.'.'.$s);
                         }
                         
                     # Toggles
                     } else if ($t == 2) {
-                        array_push($pvs, $bls[$this->arg('bl')].'-'.$p);
+                        array_push($pvs, $bls[$beamline].'-'.$p);
                     }
                 }
-
                 $pvv = $this->pv($pvs);
                 
                 foreach ($pvp as $n => $pt) {
@@ -119,18 +108,17 @@ class Status extends Page
                     # Motors
                     if ($t == 1) {
                         foreach ($vals as $i => $s) {
-                            $p = $bls[$this->arg('bl')].'-'.$pv.'.'.$s;
-                            $output[$n]['val'][$s] = $pvv[$p];
+                            $p = $bls[$beamline].'-'.$pv.'.'.$s;
+                            $output[$n]['val'][$s] = array_key_exists($p, $pvv) ? $pvv[$p] : null;
                         }
                         
                     # Toggles
                     } else if ($t == 2) {
-                        $p = $bls[$this->arg('bl')].'-'.$pv;
-                        $output[$n]['val'] = $pvv[$p] == $pt[2];
+                        $p = $bls[$beamline].'-'.$pv;
+                        $output[$n]['val'] = array_key_exists($p, $pvv) ? $pvv[$p] == $pt[2] : false;
                     }
                 }
             }
-            
             $this->_output($output);
         }
         
@@ -167,7 +155,6 @@ class Status extends Page
             for ($line = 0, $lines = array(); $line < $num_lines && false !== ($char = fgetc($file));) {
                 if ($char === "\n"){
                     if(isset($lines[$line])){
-                        //$lines[$line][] = $char;
                         $lines[$line] = implode('', array_reverse($lines[$line]));
                         $line++;
                     }

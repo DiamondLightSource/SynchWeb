@@ -1568,7 +1568,7 @@ class Sample extends Page
                 $this->args['LOCATION'] = $defaultContainerLocation['LOCATION'];
             }
 
-            $maxLocation = $this->_get_current_max_dcp_plan_order($this->args['CONTAINERID']);
+            $maxLocation = array_key_exists('CONTAINERID', $this->args) ? $this->_get_current_max_dcp_plan_order($this->args['CONTAINERID']) : array(0);
             $maxLocation = sizeof($maxLocation) ? $maxLocation : -1;
 
             $sfields = array('CODE', 'NAME', 'COMMENTS', 'VOLUME', 'PACKINGFRACTION', 'DIMENSION1', 'DIMENSION2', 'DIMENSION3', 'SHAPE', 'POSITION', 'CONTAINERID', 'LOOPTYPE', 'LOCATION');
