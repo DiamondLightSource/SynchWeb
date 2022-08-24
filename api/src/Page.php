@@ -337,11 +337,6 @@ class Page
                 $this->args['t'] = $route->getName();
             }
 
-            /*$extra = $route->getParams();
-            foreach (array('id', 'visit', 't') as $i => $k) {
-                if (array_key_exists($k, $extra)) $this->args[$k] = $extra[$k];
-            }*/
-
             $extra = array();
             foreach ($route->getParams() as $k => $v) {
                 if ($v) $extra[$k] = $v;
