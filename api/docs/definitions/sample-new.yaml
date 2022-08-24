@@ -22,7 +22,7 @@ properties:
     example: '1'
   NAME:
     type: string
-    pattern: '[\w\s-()]+'
+    pattern: '[\w\s\-()]+'
     description: Sample name
     example: xtal4
 

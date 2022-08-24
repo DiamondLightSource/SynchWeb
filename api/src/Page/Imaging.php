@@ -426,7 +426,7 @@ class Imaging extends Page
             if (!$this->has_arg('IMAGERID') && !$this->has_arg('TEMPERATURE')) $this->_error('No temperature specified');
 
             if ($this->has_arg('IMAGERID')) {
-                $imager = $this->db->pq("SELECT temperature FROM imager WHERE imagerid=:1", array($args['IMAGERID']));
+                $imager = $this->db->pq("SELECT temperature FROM imager WHERE imagerid=:1", array($this->arg('IMAGERID')));
                 if (!sizeof($imager)) $this->error('No such imager');
                 $temp = $imager[0]['TEMPERATURE'];
 

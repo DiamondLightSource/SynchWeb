@@ -22,7 +22,7 @@ class Cell extends Page
                               'author' => '.*',
                               'bl' => '.*',
                               'year' => '\d\d\d\d-\d\d-\d\d',
-                              's' => '[\w|\s|-|,]+',
+                              's' => '[\w|\s|\-|,]+',
                               't' => '\w+',
                               'pp' => '\d+',
                               'page' => '\d+',

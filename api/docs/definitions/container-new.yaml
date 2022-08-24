@@ -60,7 +60,7 @@ properties:
   STORAGETEMPERATURE:
     type: string
     description: Requested storage temperature
-    pattern: '[\w-]+'
+    pattern: '[\w\-]+'
     example: 24
 
 required:

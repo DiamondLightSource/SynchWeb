@@ -29,12 +29,12 @@ properties:
     type: string
     description: Courier Name
     example: dhl
-    pattern: '[\s|\w|-]+'
+    pattern: '[\s|\w|\-]+'
   DELIVERYAGENT_AGENTCODE:
     type: string
     description: Courier Acount Number
     example: 124
-    pattern: '[\w-]+'
+    pattern: '[\w\-]+'
   DELIVERYAGENT_SHIPPINGDATE:
     type: string
     description: Date to ship
@@ -54,7 +54,7 @@ properties:
     type: string
     description: Pickup location of shipment (for DHL pickup)
     example: stores out
-    pattern: '[\s|\w|-]+'
+    pattern: '[\s|\w|\-]+'
   READYBYTIME:
     type: string
     description: Shipment ready by time (for DHL pickup)
