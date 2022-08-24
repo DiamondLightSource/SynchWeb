@@ -425,8 +425,7 @@ class Page
                 foreach ($request as $r) {
                     $par = array();
                     foreach (array_merge($this->generic_args, $this->_arg_list) as $k => $v) {
-                        if (array_key_exists($k, $r)) {
-
+                        if (property_exists($r, $k) && isset($r->$k)) {
                             if (is_array($r->$k)) {
                                 $tmp = array();
                                 foreach ($r->$k as $val) {

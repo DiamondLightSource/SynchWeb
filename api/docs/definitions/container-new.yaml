@@ -4,7 +4,7 @@ properties:
     type: string
     description: Container name
     example: Container1
-    pattern: ([\w-])+
+    pattern: ([\w\-])+
   CONTAINERTYPE:
     type: string
     description: Type of container
@@ -47,7 +47,7 @@ properties:
   BARCODE:
     type: string
     description: Container barcode
-    pattern: ([\w-])+
+    pattern: ([\w\-])+
     example: vmxi-124242342-2342
   EXPERIMENTTYPE:
     type: string

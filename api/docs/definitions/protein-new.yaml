@@ -2,13 +2,13 @@ type: object
 properties:
   ACRONYM:
     type: string
-    pattern: ([\w-])+
+    pattern: ([\w\-])+
     description: Protein acronym
     example: prot1
 
   NAME:
     type: string
-    pattern: ([\w-])+
+    pattern: ([\w\-])+
     description: Protein acronym
     example: Protein one
   SEQUENCE:

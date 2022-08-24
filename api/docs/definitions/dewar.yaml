@@ -34,7 +34,7 @@ allOf:
         type: string
         description: Dewar shipment barcode
         example: cm14451-2-i03-0008624
-        pattern: '([\w-])+'
+        pattern: '([\w\-])+'
       STORAGELOCATION:
         type: string
         description: Current storage location (unused?)

@@ -27,7 +27,7 @@ class PDF extends Page
                               'cid' => '\d+',
                               'did' => '\d+',
                               'sid' => '\d+',
-                              'labels' => '[\w-]+',
+                              'labels' => '[\w\-]+',
                               'month' => '\d\d-\d\d\d\d',
                               );
 
@@ -153,7 +153,7 @@ class PDF extends Page
                 LEFT OUTER JOIN containerqueue cq ON c.containerid = cq.containerid
                 WHERE d.shippingid=:1
                 GROUP BY d.dewarid", array($ship['SHIPPINGID']));
-            
+
             $this->_render('shipment_label');
         }
 
@@ -399,7 +399,12 @@ class PDF extends Page
                 # Enable output buffering to capture html
                 ob_start();
 
-                $mpdf = new mPDF('', 'A4'.$orientation);
+                global $pdf_tmp_dir;
+                $mpdf = new \Mpdf\Mpdf([
+                    'mode' => 'utf-8', 
+                    'format' =>  'A4'.$orientation,
+                    'tempDir' => $pdf_tmp_dir
+                ]);
                 $mpdf->WriteHTML(file_get_contents('assets/pdf/styles.css'),1);
                 
                 if (file_exists($f)) {
@@ -413,7 +418,6 @@ class PDF extends Page
 
                 $this->app->contentType('application/pdf');
                 $mpdf->Output();
-                
             
             # Preview mode outputs raw html, add /p/1 to url
             } else {

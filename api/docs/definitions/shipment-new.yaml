@@ -4,7 +4,7 @@ properties:
     type: string
     description: Shipment Name
     example: ship1
-    pattern: '([\w\s-])+'
+    pattern: '([\w\s\-])+'
   SENDINGLABCONTACTID:
     type: string
     description: Lab Contact id sending the shipment

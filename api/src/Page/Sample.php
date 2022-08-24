@@ -900,7 +900,6 @@ class Sample extends Page
                 for ($i = 0; $i < 4; $i++) array_push($args, $this->arg('s'));
             }
             
-            
             // Filter by sample status
             if ($this->has_arg('t')) {
                 //$this->db->set_debug(true);
@@ -958,7 +957,6 @@ class Sample extends Page
                                   , $cseq $sseq string_agg(cpr.name) as componentnames, string_agg(cpr.density) as componentdensities
                                   ,string_agg(cpr.proteinid) as componentids, string_agg(cpr.acronym) as componentacronyms, string_agg(cpr.global) as componentglobals, string_agg(chc.abundance) as componentamounts, string_agg(ct.symbol) as componenttypesymbols, b.volume, pct.symbol,ROUND(cr.abundance,3) as abundance, TO_CHAR(b.recordtimestamp, 'DD-MM-YYYY') as recordtimestamp, dp.radiationsensitivity, dp.energy, dp.userpath, dp.strategyoption, dp.minimalresolution as minimumresolution
                                     ,count(distinct dc.dataCollectionId) as dcc            
-                
                                   
                                   FROM blsample b
 
@@ -986,7 +984,6 @@ class Sample extends Page
                                   LEFT OUTER JOIN screeningstrategy st ON st.screeningoutputid = so.screeningoutputid AND sc.shortcomments LIKE '%EDNA%'
                                   LEFT OUTER JOIN screeningstrategywedge ssw ON ssw.screeningstrategyid = st.screeningstrategyid
                                   
-                                  
                                   LEFT OUTER JOIN autoprocintegration ap ON ap.datacollectionid = dc.datacollectionid
                                   LEFT OUTER JOIN autoprocscaling_has_int aph ON aph.autoprocintegrationid = ap.autoprocintegrationid
                                   LEFT OUTER JOIN autoprocscalingstatistics apss ON apss.autoprocscalingid = aph.autoprocscalingid
@@ -996,7 +993,6 @@ class Sample extends Page
 
                                   LEFT OUTER JOIN blsubsample ss ON b.blsubsampleid = ss.blsubsampleid AND ss.source='manual'
                                   LEFT OUTER JOIN blsample ssp ON ss.blsampleid = ssp.blsampleid
-                                  
                                   
                                   LEFT OUTER JOIN robotaction r ON r.blsampleid = b.blsampleid AND r.actiontype = 'LOAD'
                                   
@@ -1024,13 +1020,12 @@ class Sample extends Page
                 }
             }
 
-
             if ($this->has_arg('sid')) {
                 if (sizeof($rows))$this->_output($rows[0]);
                 else $this->_error('No such sample');
-            } else $this->_output(array('total' => $tot,
-                                 'data' => $rows,
-                           ));   
+            } else {
+                $this->_output(array('total' => $tot, 'data' => $rows));   
+            }
         }
 
         function _update_sample_full() {

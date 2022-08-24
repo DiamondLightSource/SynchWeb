@@ -2,17 +2,17 @@ type: object
 properties:
   CARDNAME:
     type: string
-    pattern: '([\w\s-])+'
+    pattern: '([\w\s\-])+'
     description: Lab Card Name
     example: Card Name
   GIVENNAME:
     type: string
-    pattern: '([\w-])+'
+    pattern: '([\w\-])+'
     description: First Name
     example: John
   FAMILYNAME:
     type: string
-    pattern: '([\w-])+'
+    pattern: '([\w\-])+'
     description: Family Name
     example: Smith
   PHONENUMBER:
@@ -25,40 +25,40 @@ properties:
     example: a@b.com
   LABNAME:
     type: string
-    pattern: '([\w\s-])+'
+    pattern: '([\w\s\-])+'
     description: Lab Name
     example: Lab Name
   ADDRESS:
     type: string
-    pattern: '([\w\s-\n])+'
+    pattern: '([\w\s\-\n])+'
     description: Address
     example: 123 Synchrotron Road\nSynchrotron
   CITY:
     type: string
-    pattern: '([\w\s-])+'
+    pattern: '([\w\s\-])+'
     description: City
     example: City
   POSTCODE:
     type: string
-    pattern: '([\w\s-])+'
+    pattern: '([\w\s\-])+'
     description: Post Code
     example: 12345
   COUNTRY:
     type: string
-    pattern: ([\w\s-,\(\)\'])+
+    pattern: ([\w\s\-,\(\)\'])+
     description: Country
     example: United States
   COURIERACCOUNT:
     type: string
-    pattern: '([\w-])+'
+    pattern: '([\w\-])+'
     description: Courier Account Number
   BILLINGREFERENCE:
     type: string
-    pattern: '([\w\s-])+'
+    pattern: '([\w\s\-])+'
     description: Billing Reference
   DEFAULTCOURRIERCOMPANY:
     type: string
-    pattern: '([\w\s-])+'
+    pattern: '([\w\s\-])+'
     description: Courier Company
   DEWARAVGCUSTOMSVALUE:
     type: string
