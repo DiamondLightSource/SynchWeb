@@ -5,7 +5,6 @@ namespace SynchWeb\Page;
 use SynchWeb\Page;
 use SynchWeb\TemplateParser;
 
-use Symfony\Component\Filesystem\Exception\IOExceptionInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
@@ -14,7 +13,6 @@ class Download extends Page
 {
 
         public static $arg_list = array('id' => '\d+',
-                              'aid' => '\d+',
                               'run' => '\d+',
                               'visit' => '\w+\d+-\d+',
                               'u' => '\w+\d+',

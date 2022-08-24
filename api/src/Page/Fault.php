@@ -8,7 +8,7 @@ class Fault extends Page
 {
         
         public static $arg_list = array('time' => '\d+',
-                              'bl' => '[\w-]+',
+                              'bl' => '[\w\-]+',
                               'sid' => '\d+',
                               'cid' => '\d+',
                               'scid' => '\d+',
@@ -16,14 +16,14 @@ class Fault extends Page
                               'runid' => '\d+',
 
                               'NAME' => '[A-Za-z0-9_\- ]+',
-                              'BLS' => '[\w-]+',
+                              'BLS' => '[\w\-]+',
                               'SYSTEMID' => '\d+',
                               'COMPONENTID' => '\d+',
 
                               'term' => '\w+',
                               'visit' => '\w+\d+-\d+',
                               
-                              'BEAMLINE' => '[\w-]+',
+                              'BEAMLINE' => '[\w\-]+',
                               'STARTTIME' => '\d\d-\d\d-\d\d\d\d \d\d:\d\d',
                               'ENDTIME' => '\d\d-\d\d-\d\d\d\d \d\d:\d\d',
                               'BEAMTIMELOST_STARTTIME' => '\d\d-\d\d-\d\d\d\d \d\d:\d\d',

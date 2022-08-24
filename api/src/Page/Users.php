@@ -26,15 +26,15 @@ class Users extends Page
 
 
                                     'PERSONID' => '\d+',
-                                    'FAMILYNAME' => '([\w-])+',
-                                    'GIVENNAME' => '([\w-])+',
+                                    'FAMILYNAME' => '([\w\-])+',
+                                    'GIVENNAME' => '([\w\-])+',
                                     'PHONENUMBER' => '.*',
                                     'EMAILADDRESS' => '.*',
-                                    'LABNAME' => '([\w\s-])+',
-                                    'ADDRESS' => '([\w\s-\n])+',
-                                    'COUNTRY' => '([\w\s-])+',
-                                    'CITY' => '([\w\s-])+',
-                                    'POSTCODE' => '([\w\s-])+',
+                                    'LABNAME' => '([\w\s\-])+',
+                                    'ADDRESS' => '([\w\s\-\n])+',
+                                    'COUNTRY' => '([\w\s\-])+',
+                                    'CITY' => '([\w\s\-])+',
+                                    'POSTCODE' => '([\w\s\-])+',
                                     'LOGIN' => '\w+',
                                     'PASSWORD' => '.*',
                               );

@@ -23,7 +23,6 @@ class PDF extends Page
         private $vars  = array();
         
         public static $arg_list = array('visit' => '\w+\d+\-\d+',
-                              'sid' => '\d+',
                               'p' => '\d',
                               'cid' => '\d+',
                               'did' => '\d+',

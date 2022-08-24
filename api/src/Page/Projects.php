@@ -14,7 +14,7 @@ class Projects extends Page
                               'rem' => '\d',
                               
                               'TITLE' => '.*',
-                              'ACRONYM' => '([\w-])+',
+                              'ACRONYM' => '([\w\-])+',
 
                               'PROJECTID' => '\d+',
                               'USERNAME' => '\w+\d+',

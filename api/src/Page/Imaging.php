@@ -36,7 +36,7 @@ class Imaging extends Page
                                         'BLSAMPLEID' => '\d+',
                                         'BLSAMPLEIMAGESCOREID' => '\d+',
                                         'COMMENTS' => '.*',
-                                        'NAME' => '[\w|\s|-]+',
+                                        'NAME' => '[\w|\s|\-]+',
                                         'MANUAL' => '\d',
                                         'OFFSET_HOURS' => '\d+',
                                         'BLTIMESTAMP' => '\d\d-\d\d-\d\d\d\d \d\d:\d\d',

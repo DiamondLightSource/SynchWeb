@@ -7,7 +7,7 @@ use SynchWeb\Page;
 class Assign extends Page
 {
         
-        public static $arg_list = array('visit' => '\w+\d+-\d+', 'cid' => '\d+', 'did' => '\d+', 'pos' => '\d+', 'bl' => '[\w-]+');
+        public static $arg_list = array('visit' => '\w+\d+-\d+', 'cid' => '\d+', 'did' => '\d+', 'pos' => '\d+', 'bl' => '[\w\-]+');
 
         public static $dispatch = array(array('/visits(/:visit)', 'get', '_blsr_visits'),
                               array('/assign', 'get', '_assign'),

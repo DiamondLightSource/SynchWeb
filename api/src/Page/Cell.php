@@ -8,8 +8,7 @@ class Cell extends Page
 {
 
 
-        public static $arg_list = array('page' => '\d+',
-                              'a' => '\d+(.\d+)?',
+        public static $arg_list = array('a' => '\d+(.\d+)?',
                               'b' => '\d+(.\d+)?',
                               'c' => '\d+(.\d+)?',
                               'al' => '\d+(.\d+)?',
@@ -19,7 +18,6 @@ class Cell extends Page
                               'res' => '\d+(.\d+)?',
                               'sg' => '(\w|\s)+',
                               'id' => '\d+',
-                              'pdb' => '\w+',
                               'title' => '.*',
                               'author' => '.*',
                               'bl' => '.*',

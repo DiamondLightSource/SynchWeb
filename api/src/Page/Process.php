@@ -11,7 +11,7 @@ class Process extends Page
         public static $arg_list = array(
             'PROCESSINGJOBID' => '\d+',
             'DATACOLLECTIONID' => '\d+',
-            'DISPLAYNAME' => '([\w\s-])+',
+            'DISPLAYNAME' => '([\w\s\-])+',
             'COMMENTS' => '.*',
 
             'PROCESSINGJOBIMAGESWEEPID' => '\d+',
@@ -21,16 +21,16 @@ class Process extends Page
             'PROCESSINGJOBPARAMETERID' => '\d+',
             'PARAMETERKEY' => '\w+',
             // Processing parameter value needs to cope with '/' characters e.g. spacegroups for reprocessing
-            'PARAMETERVALUE' => '([a-zA-Z0-9-_\.,\/])+',
+            'PARAMETERVALUE' => '([a-zA-Z0-9\-_\.,\/])+',
 
             'AUTOMATIC' => '\d',
 
-            'RECIPE' => '([\w-])+',
+            'RECIPE' => '([\w\-])+',
 
             'ids' => '\d+', 
-            'pipelinestatus' => '([\w\s-])+',
-            'category' => '([\w\s-])+',
-            'discipline' => '([\w\s-])+',
+            'pipelinestatus' => '([\w\s\-])+',
+            'category' => '([\w\s\-])+',
+            'discipline' => '([\w\s\-])+',
         );
         
 

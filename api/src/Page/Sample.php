@@ -54,8 +54,7 @@ class Sample extends Page
                               'CONTAINERID' => '\d+',
                               'LOCATION' => '\d+',
                               'CODE' => '(\w|\s|\-)+|^$', // Change validation to work for dashes as well as numbers
-                              // 'NAME' => '.*',
-                              'ACRONYM' => '([\w-])+',
+                              'ACRONYM' => '([\w\-])+',
                               'SEQUENCE' => '[\s\w\(\)\.>\|;\n]+',
                               'MOLECULARMASS' => '\d+(.\d+)?',
                               'VOLUME' => '\d+(.\d+)?',
@@ -104,7 +103,6 @@ class Sample extends Page
                               'EXPERIMENTKIND' => '[\w|\s]+',
                               'CENTRINGMETHOD' => '\w+',
                               'RADIATIONSENSITIVITY' => '\w+',
-                              'ENERGY' => '\w+',
                               'USERPATH' => '(?=.{0,40}$)(\w|-)+\/?(\w|-)+', // Up to two folders as a path, 40 characters maximum
                               'EXPOSURETIME' => '\d+(.\d+)?',
                               'PREFERREDBEAMSIZEX' => '\d+(.\d+)?',
@@ -118,7 +116,7 @@ class Sample extends Page
                               'ENERGY' => '\d+(.\d+)?',
                               'MONOCHROMATOR' => '\w+',
                               'PRESET' => '\d',
-                              'BEAMLINENAME' => '[\w-]+',
+                              'BEAMLINENAME' => '[\w\-]+',
 
                               'queued' => '\d',
                               'UNQUEUE' => '\d',

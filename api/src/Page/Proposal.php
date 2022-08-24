@@ -16,8 +16,7 @@ class Proposal extends Page
                               'all' => '\d',
                               'year' => '\d\d\d\d',
                               'month' => '\d+',
-                              'bl' => '[\w-]+',
-                              'ty' => '\w+',
+                              'bl' => '[\w\-]+',
                               'cm' => '\d',
                               'ty' => '\w+',
                               'next' => '\d',
@@ -50,7 +49,7 @@ class Proposal extends Page
                               'PROPOSALID' => '\d+',
                               'STARTDATE' => '\d\d-\d\d-\d\d\d\d \d\d:\d\d',
                               'ENDDATE' => '\d\d-\d\d-\d\d\d\d \d\d:\d\d',
-                              'BEAMLINENAME' => '[\w-]+',
+                              'BEAMLINENAME' => '[\w\-]+',
                               'BEAMLINEOPERATOR' => '(\w|\s|-)+',
                               'SCHEDULED' => '\d',
                               'ARCHIVED' => '\d',
@@ -62,7 +61,7 @@ class Proposal extends Page
                               // visit has person
                               'SHPKEY' => '\d+\-\d+',
                               'SESSIONID' => '\d+',
-                              'ROLE' => '([\w\s-])+',
+                              'ROLE' => '([\w\s\-])+',
                               'REMOTE' => '\d',
 
                               // Updating Used Time when a session is closed

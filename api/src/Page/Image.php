@@ -14,7 +14,7 @@ class Image extends Page
             'id' => '\d+', 
             'n' => '\d+', 
             'f' => '\d', 
-            'bl' => '[\w-]+', 
+            'bl' => '[\w\-]+', 
             'w' => '\d+', 
             'fid' => '\d+', 
             'aid' => '\d+', 

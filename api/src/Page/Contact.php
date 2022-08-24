@@ -7,19 +7,19 @@ use SynchWeb\Page;
 class Contact extends Page
 {
 
-        public static $arg_list = array('CARDNAME' => '([\w\s-])+',
-                              'FAMILYNAME' => '([\w-])+',
-                              'GIVENNAME' => '([\w-])+',
+        public static $arg_list = array('CARDNAME' => '([\w\s\-])+',
+                              'FAMILYNAME' => '([\w\-])+',
+                              'GIVENNAME' => '([\w\-])+',
                               'PHONENUMBER' => '.*',
                               'EMAILADDRESS' => '.*',
-                              'LABNAME' => '([\w\s-])+',
+                              'LABNAME' => '([\w\s\-])+',
                               'ADDRESS' => '([\w\s\-\n,])+',
                               'COUNTRY' => '([\w\s\-,\(\)\'])+',
-                              'CITY' => '([\w\s-])+',
-                              'POSTCODE' => '([\w\s-])+',
-                              'DEFAULTCOURRIERCOMPANY' => '([\w\s-])+',
-                              'COURIERACCOUNT' => '([\w-])+',
-                              'BILLINGREFERENCE' => '([\w\s-])+',
+                              'CITY' => '([\w\s\-])+',
+                              'POSTCODE' => '([\w\s\-])+',
+                              'DEFAULTCOURRIERCOMPANY' => '([\w\s\-])+',
+                              'COURIERACCOUNT' => '([\w\-])+',
+                              'BILLINGREFERENCE' => '([\w\s\-])+',
                               'DEWARAVGTRANSPORTVALUE' => '\d+',
                               'DEWARAVGCUSTOMSVALUE' => '\d+',
 

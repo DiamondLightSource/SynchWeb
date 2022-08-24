@@ -20,7 +20,7 @@ class Exp extends Page
 
             // DiffractionPlan (=>DataCollectionPlan)
             'DIFFRACTIONPLANID' => '\d+',
-            'BLSAMPLEID' => '\d+',
+            // 'BLSAMPLEID' => '\d+',
             'EXPERIMENTKIND' => '\w+',
             'EXPOSURETIME' => '\d+(.\d+)?',
             'REQUIREDRESOLUTION' => '\d+(.\d+)?',
@@ -41,9 +41,9 @@ class Exp extends Page
 
             // Detector
             'DETECTORID' => '\d+',
-            'DETECTORTYPE' => '[\w-\s]+',
-            'DETECTORMANUFACTURER' => '[\w-]+',
-            'DETECTORMODEL' => '[\w-\s]+',
+            'DETECTORTYPE' => '[\w\-\s]+',
+            'DETECTORMANUFACTURER' => '[\w\-]+',
+            'DETECTORMODEL' => '[\w\-\s]+',
             'DETECTORPIXELSIZEHORIZONTAL' => '\d+',
             'DETECTORPIXELSIZEVERTICAL' => '\d+',
             'DETECTORDISTANCEMIN' => '\d+',
@@ -55,14 +55,14 @@ class Exp extends Page
             'DETECTORROLLMIN' => '-?\d+(.\d+)?',
             'DETECTORROLLMAX' => '-?\d+(.\d+)?',
             'SENSORTHICKNESS' => '\d+',
-            'DETECTORSERIALNUMBER' => '[\w-]+',
+            'DETECTORSERIALNUMBER' => '[\w\-]+',
             'NUMBEROFPIXELSX' => '\d+',
             'NUMBEROFPIXELSY' => '\d+',
 
 
             // Scan Param Service
             'SCANPARAMETERSSERVICEID' => '\d+',
-            'NAME' => '[\w|\s|-]+',
+            'NAME' => '[\w|\s|\-]+',
             'DESCRIPTION' => '.*',
 
 
@@ -77,14 +77,14 @@ class Exp extends Page
             
             // DCPlan has Detector
             'DATACOLLECTIONPLANHASDETECTORID' => '\d+',
-            'EXPOSURETIME' => '\d+(.\d+)?',
+            // 'EXPOSURETIME' => '\d+(.\d+)?',
             'DISTANCE' => '\d+(.\d+)?',
             'ROLL' => '\d+(.\d+)?',
 
 
             // Beamline Setup
             'BEAMLINESETUPID' => '\d+',
-            'BEAMLINENAME' => '[\w-]+',
+            'BEAMLINENAME' => '[\w\-]+',
             'BEAMSIZEXMAX' => '\d+(.\d+)?',
             'BEAMSIZEXMIN' => '\d+(.\d+)?',
             'BEAMSIZEYMAX' => '\d+',

@@ -20,7 +20,6 @@ class Shipment extends Page
 
                               
                               'visit' => '\w+\d+-\d+',
-                              'bl' => '[\w-]+',
                               'current' => '\d',
                               'all' => '\d',
                               'ty' => '\w+',
@@ -35,9 +34,9 @@ class Shipment extends Page
 
 
                               // Dewar Fields
-                              'CODE' => '([\w-])+',
-                              'FACILITYCODE' => '([\w-])+',
-                              'NEWFACILITYCODE' => '([\w-])+',
+                              'CODE' => '([\w\-])+',
+                              'FACILITYCODE' => '([\w\-])+',
+                              'NEWFACILITYCODE' => '([\w\-])+',
                               'TRACKINGNUMBERTOSYNCHROTRON' => '\w+',
                               'TRACKINGNUMBERFROMSYNCHROTRON' => '\w+',
                               'FIRSTEXPERIMENTID' => '\d+|^(?![\s\S])',
@@ -45,22 +44,22 @@ class Shipment extends Page
 
                               'DEWARREGISTRYID' => '\d+',
 
-                              'BARCODE' => '([\w-])+',
-                              'LOCATION' => '[\w|\s|-]+',
+                              'BARCODE' => '([\w\-])+',
+                              'LOCATION' => '[\w|\s|\-]+',
                               'NEXTLOCATION' => '\w+|^(?![\s\S])',
-                              'STATUS' => '[\w|\s|-]+',
+                              'STATUS' => '[\w|\s|\-]+',
 
                               'PURCHASEDATE' => '\d+-\d+-\d+',
                               'LABCONTACTID' => '\d+',
                               'REPORT' => '.*',
 
                               'ADDRESS' => '.*',
-                              'DESCRIPTION' => '.*',
+                            //   'DESCRIPTION' => '.*',
                               'EMAILADDRESS' => '.*',
                               'FAMILYNAME' => '.*',
                               'GIVENNAME' => '.*',
                               'LABNAME' => '.*',
-                              'LOCALCONTACT' => '[\w|\s+|-]+',
+                              'LOCALCONTACT' => '[\w|\s+|\-]+',
                               'NEXTLOCALCONTACT' => '\w+|^(?![\s\S])',
                               'PHONENUMBER' => '.*',
                               'VISIT' => '\w+\d+-\d+',
@@ -69,28 +68,28 @@ class Shipment extends Page
                               'WEIGHT' => '\d+',
                               
                               // Shipment fields
-                              'FCODES' => '([\w-])+',
+                              'FCODES' => '([\w\-])+',
                               'SENDINGLABCONTACTID' => '\d+',
                               'RETURNLABCONTACTID' => '\d+',
-                              'SHIPPINGNAME' => '([\w\s-])+',
+                              'SHIPPINGNAME' => '([\w\s\-])+',
                               'DELIVERYAGENT_SHIPPINGDATE' => '\d+-\d+-\d+',
                               'DELIVERYAGENT_DELIVERYDATE' => '\d+-\d+-\d+',
-                              'DELIVERYAGENT_AGENTNAME' => '[\s|\w|-]+',
-                              'DELIVERYAGENT_AGENTCODE' => '[\w-]+',
+                              'DELIVERYAGENT_AGENTNAME' => '[\s|\w|\-]+',
+                              'DELIVERYAGENT_AGENTCODE' => '[\w\-]+',
                               'SAFETYLEVEL' => '\w+',
-                              'DEWARS' => '\d+',
+                            //   'DEWARS' => '\d+',
                               //'FIRSTEXPERIMENTID' => '\w+\d+-\d+',
                               'COMMENTS' => '.*',
                               
                               'assigned' => '\d',
-                              'bl' => '[\w-]+',
-                              'unassigned' => '[\w-]+',
+                              'bl' => '[\w\-]+',
+                              'unassigned' => '[\w\-]+',
                               
                               // Container fields
                               'DEWARID' => '\d+',
                               'CAPACITY' => '\d+',
                               'CONTAINERTYPE' => '\w+',
-                              'NAME' => '([\w-])+',
+                              'NAME' => '([\w\-])+',
                               'SCHEDULEID' => '\d+',
                               'SCREENID' => '\d+',
                               'PERSONID' => '\d+',
@@ -100,7 +99,7 @@ class Shipment extends Page
                               'CONTAINERID' => '\d+',
                               'UNQUEUE' => '\d',
                               'EXPERIMENTTYPE' => '\w+',
-                              'STORAGETEMPERATURE' => '[\w-]+',
+                              'STORAGETEMPERATURE' => '[\w\-]+',
                               'AUTOMATED' => '\d+',
                               'PUCK' => '\d',
                               'PROCESSINGPIPELINEID' => '\d+',
@@ -115,11 +114,11 @@ class Shipment extends Page
                               'DESCRIPTION' => '.*',
                               'DEWARS' => '\d+',
 
-                              'PHYSICALLOCATION' => '[\s|\w|-]+',
+                              'PHYSICALLOCATION' => '[\s|\w|\-]+',
                               'READYBYTIME' => '\d\d:\d\d',
                               'CLOSETIME' => '\d\d:\d\d',
                               'PRODUCTCODE' => '\w',
-                              'BEAMLINENAME' => '[\w-]+',
+                              'BEAMLINENAME' => '[\w\-]+',
 
                               'manifest' => '\d',
                               'currentuser' => '\d',
