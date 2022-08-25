@@ -917,7 +917,7 @@ class DC extends Page
                     if ($dc['DCT'] == 'OSC') $dc['DCT'] = 'Data Collection';
                     
 
-                    if ($dc['AXISRANGE'] == 0 && $dc['NI'] > 1) $dc['TYPE'] = 'grid';
+                    if ($dc['DCT'] != 'Serial Fixed' && $dc['AXISRANGE'] == 0 && $dc['NI'] > 1) $dc['TYPE'] = 'grid';
                     //$this->profile('dc');
                     
                 // Edge Scans
