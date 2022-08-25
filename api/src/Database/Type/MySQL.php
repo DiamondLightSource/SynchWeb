@@ -12,7 +12,7 @@ class MySQL extends DatabaseParent implements DatabaseInterface
 
     protected $type = 'mysql';
 
-    var $debug = False;
+    var $debug = false;
     var $stat = '';
     var $stats = False;
     var $transaction = False;

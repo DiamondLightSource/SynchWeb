@@ -293,8 +293,6 @@ class Proposal extends Page
                 return;
             }
             
-            // if (!$this->staff && !$this->has_arg('prop')) $this->_error('No proposal specified');
-            
             if ($this->has_arg('all')) {
                 $args = array();
                 $where = 'WHERE 1=1';
@@ -362,12 +360,10 @@ class Proposal extends Page
                 $where .= " AND s.scheduled=1";
             }
             
-            
             if ($visit) {
                 $where .= " AND CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) LIKE :".(sizeof($args)+1);
                 array_push($args, $visit);
             }
-            
             
             if (!$this->staff) {
                 $where .= " AND shp.personid=:".(sizeof($args)+1);
@@ -402,7 +398,6 @@ class Proposal extends Page
                 $dir = $this->has_arg('order') ? ($this->arg('order') == 'asc' ? 'ASC' : 'DESC') : 'ASC';
                 if (array_key_exists($this->arg('sort_by'), $cols)) $order = $cols[$this->arg('sort_by')].' '.$dir;
             }
-
             $rows = $this->db->paginate("
                 SELECT CURRENT_TIMESTAMP BETWEEN s.startdate AND s.enddate        AS active,
                     CURRENT_TIMESTAMP BETWEEN
@@ -458,7 +453,6 @@ class Proposal extends Page
                     WHERE $where GROUP BY dcg.sessionid", $ids);
                 foreach($tdcs as $t) $dcs[$t['SESSIONID']] = $t['C'];
             }
-            
 
             foreach ($rows as &$r) {
                 $dc = array_key_exists($r['SESSIONID'], $dcs) ? $dcs[$r['SESSIONID']] : 0;
