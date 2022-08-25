@@ -19,6 +19,7 @@ module.exports = (env, argv) => ({
     publicPath: path.join('/dist', gitHash, '/'),
   },
   devServer: {
+    static: __dirname,
     host: (env && env.host) || 'localhost',
     port: (env && env.port) || 9000,
     https: true,
