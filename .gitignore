@@ -29,3 +29,8 @@ client/index.html
 
 api/config.php
 api/vendor
+entrypoint.bash
+php-fpm.conf
+php-fpm.pid
+client/package-lock.json
+client/package-lock.json
