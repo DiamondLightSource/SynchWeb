@@ -17,6 +17,7 @@ import I20Menu from 'modules/types/i20/menu.js'
 import I12Menu from 'modules/types/i12/menu.js'
 import I13Menu from 'modules/types/i13/menu.js'
 import B24Menu from 'modules/types/b24/menu.js'
+import EpsicMenu from 'modules/types/epsic/menu.js'
 
 const menuStore = {
     namespaced: true,
@@ -41,6 +42,7 @@ const menuStore = {
         'i12': I12Menu,
         'i13': I13Menu,
         'b24': B24Menu,
+        'epsic': EpsicMenu,
       }
     }),
 
