@@ -113,7 +113,11 @@ class Cell extends Page
                 INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
                 INNER JOIN blsession s ON s.sessionid = dcg.sessionid
                 INNER JOIN proposal p ON s.proposalid = p.proposalid $nostafft 
-                WHERE p.proposalcode != 'in' AND apss.scalingstatisticstype LIKE 'overall' AND (ap.refinedcell_a BETWEEN :1 AND :2) AND (ap.refinedcell_b BETWEEN :3 AND :4) AND (ap.refinedcell_c BETWEEN :5 AND :6) AND (ap.refinedcell_alpha BETWEEN :7 AND :8) AND (ap.refinedcell_beta BETWEEN :9 AND :10) AND (ap.refinedcell_gamma BETWEEN :11 AND :12) AND TO_DATE(:13, 'HH24:MI YYYY-MM-DD') >= dc.starttime $rest $sgt", $tot_args);
+                WHERE p.proposalcode != 'in' AND apss.scalingstatisticstype LIKE 'overall' AND 
+                (ap.refinedcell_a BETWEEN :1 AND :2) AND (ap.refinedcell_b BETWEEN :3 AND :4) AND 
+                (ap.refinedcell_c BETWEEN :5 AND :6) AND (ap.refinedcell_alpha BETWEEN :7 AND :8) AND 
+                (ap.refinedcell_beta BETWEEN :9 AND :10) AND (ap.refinedcell_gamma BETWEEN :11 AND :12) 
+                AND TO_DATE(:13, 'HH24:MI YYYY-MM-DD') >= dc.starttime $rest $sgt", $tot_args);
             
             if (sizeof($tot)) $tot = $tot[0]['TOT'];
             else $tot = 0;
