@@ -7,6 +7,7 @@ use Slim\Slim;
 
 class Authentication
 {
+
         protected $app, $db, $user;
 
 		function __construct(Slim $app, $db) {
@@ -23,6 +24,19 @@ class Authentication
 			$this->app->get('/authenticate/logout', array(&$this, 'logout'));
 		}
 
+		//////////////////// Print to console - for deletion 
+		////////////////////
+
+		function debug_to_console($data) {
+			$output = $data;
+			if (is_array($output))
+				$output = implode(',', $output);
+		
+			echo "<script>console.log('Debug Objects: " . $output . "' );</script>";
+		}
+
+		//////////////////// 
+		////////////////////
 
 		function get_user() {
 			return $this->user;
