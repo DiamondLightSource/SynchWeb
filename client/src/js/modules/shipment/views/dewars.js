@@ -113,16 +113,18 @@ define(['marionette', 'backbone',
             edit.create('TRACKINGNUMBERFROMSYNCHROTRON', 'text')
             edit.create('WEIGHT', 'text')
             
-            var self = this
             this.visits = new Visits(null, { queryParams: { next: 1 }, state: { pageSize: 5 } })
             this.visits.fetch().done(function() {
-                self.ui.first.html(self.visits.opts())
-                edit.create('FIRSTEXPERIMENTID', 'select', { data: self.visits.kv() }, true)
+                self.ui.first.html(self.visits.opts({ empty: true }))
+                edit.create('FIRSTEXPERIMENTID', 'select', { data: self.visits.kv({ empty: true }) }, true)
             })
 
             this.ui.fc.html(this.getOption('regdewars').opts({ empty: true }))
         },
-        
+
+        modelEvents: {
+            sync: 'render'
+        }
     }))
     
 

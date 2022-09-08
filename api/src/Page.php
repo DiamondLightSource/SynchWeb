@@ -2,6 +2,7 @@
 
 namespace SynchWeb;
 
+use Exception;
 use HTMLPurifier;
 use HTMLPurifier_Config;
 use ReflectionClass;
@@ -9,6 +10,8 @@ use Slim\Slim;
 use xmlrpc_client;
 use xmlrpcmsg;
 use xmlrpcval;
+
+use SynchWeb\Queue;
 
 class Page
 {
@@ -565,7 +568,7 @@ class Page
             exec($bl_pv_prog . ($string ? ' -S' : '') .' ' . implode(' ', $pvs) . ' 2>/dev/null', $ret);
             $output = array();
             foreach ($ret as $i => $v) {
-                $lis = preg_split('/\s+/', $v);
+                $lis = preg_split('/\s+/', $v, 2);
                 $output[$lis[0]] = sizeof($lis) > 1 ? ($full ? array_slice($lis,1) : $lis[1]) : '';
             }
             
@@ -896,4 +899,47 @@ class Page
             return $root;
         }
 
-    }
+
+        function _submit_zocalo_recipe($recipe, $parameters, $error_code=500) {
+            global $zocalo_mx_reprocess_queue;
+
+            if (isset($zocalo_mx_reprocess_queue)) {
+                // Send job to processing queue
+                $zocalo_message = array(
+                    'recipes' => array(
+                        $recipe,
+                    ),
+                    'parameters' => $parameters,
+                );
+                $this->_send_zocalo_message($zocalo_mx_reprocess_queue, $zocalo_message, $error_code);
+            }
+        }
+
+
+        function _send_zocalo_message($zocalo_queue, $zocalo_message, $error_code=500) {
+            global
+            $zocalo_server,
+            $zocalo_username,
+            $zocalo_password;
+
+            if (empty($zocalo_server) || empty($zocalo_queue)) {
+                $message = 'Zocalo server or queue not specified.';
+                error_log($message);
+                if (isset($error_code)) {
+                    $this->_error($message, $error_code);
+                }
+            }
+
+            try {
+                error_log("Sending message" . var_export($zocalo_message, true));
+                $queue = new Queue($zocalo_server, $zocalo_username, $zocalo_password);
+                $queue->send($zocalo_queue, $zocalo_message, true, $this->user->login);
+            } catch (Exception $e) {
+                $message = $e->getMessage();
+                error_log($message);
+                if (isset($error_code)) {
+                    $this->_error($message, $error_code);
+                }
+            }
+        }
+}

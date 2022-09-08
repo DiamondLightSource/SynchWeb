@@ -2,6 +2,8 @@ var Styles = require('css/main.scss')
 var FontAwesome = require('font-awesome/css/font-awesome.css')
 
 import Vue from 'vue'
+import VeeValidate from 'vee-validate'
+import PortalVue from 'portal-vue'
 
 import Main from 'app/layouts/main.vue'
 import MaintenanceView from 'app/layouts/maintenance.vue'
@@ -11,8 +13,13 @@ import router from 'app/router/router'
 import MarionetteApp from 'app/marionette-application.js'
 
 import config from 'config.json'
+import VeeValidateCustomRules from 'app/mixins/vee-validate-custom-rules'
+
+Vue.use(VeeValidate)
+Vue.use(PortalVue)
 
 Vue.config.productionTip = false
+Vue.config.devtools = !config.production
 
 
 const vm = new Vue({
@@ -27,9 +34,10 @@ const vm = new Vue({
 
     // Start the Marionette application
     let application = MarionetteApp.getInstance()
-  
+
     application.start()
   },
+  mixins: [VeeValidateCustomRules]
 }).$mount('#synchweb-app')
 
 
@@ -37,3 +45,5 @@ const vm = new Vue({
 if (window.Cypress) {
   window.vm = vm
 }
+
+module.hot.accept()

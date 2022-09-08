@@ -78,7 +78,7 @@ define(['marionette', 'backbone', 'views/table', 'views/validatedrow', 'utils',
 
     	onRender: function() {
     		if (this.model.get('edit') || this.model.get('new')) {
-    			_.each(['CONCENTRATION', 'PH'], function(f, i) {
+    			_.each(['CONCENTRATION', 'PH'], function(f) {
                 	if (this.model.get(f)) this.$el.find('input[name='+f+']').val(this.model.get(f))
             	}, this)
     		}
@@ -132,11 +132,11 @@ define(['marionette', 'backbone', 'views/table', 'views/validatedrow', 'utils',
 			}
 		},
 
-		onSave: function(resp) {
+		onSave: function() {
 			this.model.set({ new: false })
 
 			if (this.collection.length) {
-				this.collection.each(function(m,i) {
+				this.collection.each(function(m) {
 					m.set('SCREENCOMPONENTGROUPID', this.model.get('SCREENCOMPONENTGROUPID'))
 				}, this)
 
@@ -151,7 +151,7 @@ define(['marionette', 'backbone', 'views/table', 'views/validatedrow', 'utils',
 		},
 
 		onSaveCollection: function() {
-			this.components.each(function(m,i) {
+			this.components.each(function(m) {
 				m.set({ new: false })
 			})
 
@@ -172,17 +172,17 @@ define(['marionette', 'backbone', 'views/table', 'views/validatedrow', 'utils',
 		},
 
 		onRender: function() {
-            this.ui.add.autocomplete({ source: this.getComponentList.bind(this), select: this.addComponent.bind(this) })
+			this.ui.add.autocomplete({ source: this.getComponentList.bind(this), select: this.addComponent.bind(this) })
 		},
 
-        getComponentList: function(req, resp) {
+		getComponentList: function(req, resp) {
             var self = this
             this.componentlist.fetch({
                 data: {
                     term: req.term,
                     global: 1,
                 },
-                success: function(data) {
+                success: function() {
                     resp(self.componentlist.map(function(m) {
                         return {
                             value: m.get('NAME') || m.get('ACRONYM'),
@@ -194,7 +194,7 @@ define(['marionette', 'backbone', 'views/table', 'views/validatedrow', 'utils',
         },
 
 		addComponent: function(e, ui) {
-            e.preventDefault()
+			e.preventDefault()
 			var component = this.componentlist.findWhere({ PROTEINID: ui.item.id })
 			if (component) {
 				this.components.add(new ScreenComponent({
@@ -210,24 +210,28 @@ define(['marionette', 'backbone', 'views/table', 'views/validatedrow', 'utils',
 				}))
 			}
 
-            this.ui.add.val('')
+			this.ui.add.val('')
 		},
 
 
 		setModel: function(s) {
-            this.undelegateEvents()
-            this.model = s
-            this.delegateEvents()
-            
-            this.selectComponents()
-            this.render()
-        },
+			this.undelegateEvents()
+			this.model = s
+			this.delegateEvents()
 
-        selectComponents: function() {
-        	if (this.model) var cs = this.components.where({ POSITION: this.model.get('POSITION') })
-        		else var cs = []
-        	this.collection.reset(cs)
-        }
+			this.selectComponents()
+			this.render()
+		},
+
+		selectComponents: function() {
+			let cs;
+			if (this.model) {
+				cs = this.components.where({ POSITION: this.model.get('POSITION') });
+			} else {
+				cs = [];
+			}
+			this.collection.reset(cs)
+		}
 
 	})
 

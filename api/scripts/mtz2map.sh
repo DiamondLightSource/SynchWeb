@@ -8,7 +8,7 @@ cd /tmp
 
 # If not, define the environment variables required below
 #export CCP4_MASTER=/dls_sw/apps/ccp4/<ccp4 version>
-export CCP4_MASTER=/dls_sw/apps/ccp4/latest/ccp4-7.1
+export CCP4_MASTER=/dls_sw/apps/ccp4/latest/ccp4-8.0
 export CINCL=$CCP4_MASTER/include
 export CLIBD=$CCP4_MASTER/lib/data
 

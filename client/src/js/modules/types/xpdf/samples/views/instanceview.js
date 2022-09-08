@@ -10,7 +10,7 @@ define(['marionette',
     'modules/types/xpdf/utils/phasecompositor',
     'modules/types/xpdf/samples/views/phasetable',
     'modules/types/xpdf/samples/views/samplecontainerview',
-    'collections/samplegroups',
+    'collections/samplegroupsmembers',
     'modules/types/xpdf/collections/instances',
     'templates/types/xpdf/samples/instance.html',
     ], function(Marionette,
@@ -21,7 +21,7 @@ define(['marionette',
         phaseCompositor,
         PhaseTableView,
         SampleContainersView,
-        SampleGroups,
+        SampleGroupsBySample,
         Instances,
         template) {
 
@@ -42,7 +42,7 @@ define(['marionette',
         },
     
 
-        initialize: function(options) {
+        initialize: function() {
             // bind the validation
             Backbone.Validation.bind(this)
                         
@@ -51,8 +51,12 @@ define(['marionette',
             this.dcs.fetch()
 
             // Get samplegroups
-            this.groups = new SampleGroups()
-            this.groups.queryParams.BLSAMPLEID = this.model.get('BLSAMPLEID')
+            this.groups = new SampleGroupsBySample(null, {
+                state: {
+                    pageSize: 9999
+                },
+                blSampleId: this.model.get('BLSAMPLEID')
+            })
             this.groups.fetch()
 
             // Get sample containers
@@ -81,7 +85,7 @@ define(['marionette',
             
             // Show the phase table
             this.rphases.show(new PhaseTableView({ collection: this.model.get('components'), editable: false }))
-            
+
             // Show the sample containers
             this.rcont.show(new SampleContainersView({ 
                 collection: this.groups, 

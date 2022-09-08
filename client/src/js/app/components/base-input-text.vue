@@ -9,14 +9,16 @@ Can be used as inline edit - by default acts as normal input
 Set inline = true to initially show as span with button to change the input
 Component will emit a save event when the value changes
 
+the label property may contain HTML... beware:
+https://eslint.vuejs.org/rules/no-v-html.html
 -->
 <template>
   <div :class="outerClass">
-
     <!-- The label which includes an optional subtitle -->
-    <label v-if="label" :for="id">{{label}}
+    <label v-if="label" :for="id" :class="labelClass">
+      <span v-html="label"></span>
       <slot name="description">
-        <span v-if="description" class="small">{{description}}</span>
+        <span v-if="description" class="small">{{ description }}</span>
       </slot>
     </label>
 
@@ -28,14 +30,26 @@ Component will emit a save event when the value changes
       :name="name"
       :type="type"
       :value="value"
+      :placeholder="placeholderText"
       :disabled="disabled"
       :class="classObject"
+      :step="step"
       @keyup="onEnter"
       @input="updateValue"
       @blur="onBlur"
       @focus="$emit('focus')"
     >
-    <span v-if="inline && !editable" class="btn-edit" @click="onEdit" @mouseover="showEditIcon = true" @mouseleave="showEditIcon = false">{{ value }} <span v-show="showEditIcon"><i :class="['fa', 'fa-edit']"></i> Edit</span></span>
+    <span
+      v-if="inline && !editable"
+      class="btn-edit"
+      @click="onEdit"
+      @mouseover="showEditIcon = true"
+      @mouseleave="showEditIcon = false">
+      {{ inlineText }}
+      <span v-show="showEditIcon">
+        <i :class="['fa', 'fa-edit']"></i> Edit
+      </span>
+    </span>
     <button v-if="inline && editable" class="button tw-px-2 tw-py-1" @mousedown="onSave">OK</button>
 
     <!-- Placeholder for any error message placed after the input -->
@@ -83,7 +97,6 @@ export default {
     },
     errorClass: {
       type: String,
-      required: false,
       default: 'ferror'
     },
     errorMessage: {
@@ -104,6 +117,25 @@ export default {
       type: Boolean,
       default: false
     },
+    // For input text that needs a placeholder text
+    placeholderText: {
+      type: String,
+      default: ''
+    },
+    // For cases where we need to add a css class to the label of the input field
+    labelClass: {
+      type: String,
+      default: ''
+    },
+    // For cases where the value is null but you want to display a custom text telling the user what to do
+    initialText: {
+      type: String,
+      default: 'Enter value here'
+    },
+    step: {
+      type: Number,
+      default: 1
+    }
   },
   data() {
     return {
@@ -113,20 +145,25 @@ export default {
   },
   watch: {
     editable: function(value) {
-      if (value == false) this.showEditIcon = false
-    }
+      if (!value) this.showEditIcon = false
+    },
+    value: function(newVal) {
+      this.$emit('value-changed', newVal)
+    },
   },
   computed: {
     // If a user passes in an error Message, add the error class to the input
     classObject() {
       return [ this.inputClass, this.errorMessage ? this.errorClass : '']
-    }
+    },
+    inlineText() {
+      return this.value || this.initialText
+    },
   },
   created() {
     // If created with editable = false then we are in inline-edit mode
     this.editable = !this.inline
   },
-
   methods: {
     updateValue(event) {
       // If we are in inline editing mode, only update model on save
@@ -152,7 +189,7 @@ export default {
     },
     onEnter(event) {
       // If we are in inline edit mode - save the model on enter (key = 13)
-      if (this.inline && event.keyCode == 13) this.onSave()
+      if (this.inline && event.keyCode === 13) this.onSave()
     },
   },
 };

@@ -339,8 +339,7 @@ class MySQL extends DatabaseParent implements DatabaseInterface
         return $query;
     }
 
-
-    function pq($query, $args = array())
+    function pq($query, $args = array(), $upperCaseKeys = true)
     {
         list($query, $args) = $this->oracle2mysql($query, $args);
         $query = $this->tablelookup($query);
@@ -396,7 +395,10 @@ class MySQL extends DatabaseParent implements DatabaseInterface
                                     if (gettype($val) == gettype(0.1)) $val = round($val, 5);
                                     $val = strval($val);
                                 }
-                                $c[strtoupper($key)] = $val;
+                                if ($upperCaseKeys) {
+                                    $key = strtoupper($key);
+                                }
+                                $c[$key] = $val;
                             }
                             array_push($data, $c);
                         }

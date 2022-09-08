@@ -40,14 +40,14 @@ class Shipment extends Page
                               'NEWFACILITYCODE' => '([\w-])+',
                               'TRACKINGNUMBERTOSYNCHROTRON' => '\w+',
                               'TRACKINGNUMBERFROMSYNCHROTRON' => '\w+',
-                              'FIRSTEXPERIMENTID' => '\d+',
+                              'FIRSTEXPERIMENTID' => '\d+|^(?![\s\S])',
                               'SHIPPINGID' => '\d+',
 
                               'DEWARREGISTRYID' => '\d+',
 
                               'BARCODE' => '([\w-])+',
                               'LOCATION' => '[\w|\s|-]+',
-                              'NEXTLOCATION' => '[\w|\s|-]+',
+                              'NEXTLOCATION' => '\w+|^(?![\s\S])',
                               'STATUS' => '[\w|\s|-]+',
 
                               'PURCHASEDATE' => '\d+-\d+-\d+',
@@ -61,10 +61,10 @@ class Shipment extends Page
                               'GIVENNAME' => '.*',
                               'LABNAME' => '.*',
                               'LOCALCONTACT' => '[\w|\s+|-]+',
-                              'NEXTLOCALCONTACT' => '[\w|\s+|-]+',
+                              'NEXTLOCALCONTACT' => '\w+|^(?![\s\S])',
                               'PHONENUMBER' => '.*',
                               'VISIT' => '\w+\d+-\d+',
-                              'NEXTVISIT' => '\w+\d+-\d+',
+                              'NEXTVISIT' => '\w+\d+-\d+|^(?![\s\S])',
                               'AWBNUMBER' => '\w+',
                               'WEIGHT' => '\d+',
                               
@@ -166,7 +166,10 @@ class Shipment extends Page
                               array('/containers/', 'post', '_add_container'),
                               array('/containers/:cid', 'patch', '_update_container'),
                               array('/containers/move', 'get', '_move_container'),
-                              array('/containers/queue', 'get', '_queue_container'),
+
+                              // TODO: Need to have a separate method for handling queueing and unqueueing of containers
+                              array('/containers/queue(/:cid)', 'patch', '_queue_container'),
+                              array('/containers/queue(/:cid)', 'get', '_queue_container'),
                               array('/containers/barcode/:BARCODE', 'get', '_check_container'),
 
 
@@ -182,6 +185,7 @@ class Shipment extends Page
                               array('/containers/history', 'post', '_add_container_history'),
                               array('/containers/reports(/:CONTAINERREPORTID)', 'get', '_get_container_reports'),
                               array('/containers/reports', 'post', '_add_container_report'),
+                              array('/containers/types', 'get', '_get_container_types'),
                               
                               array('/containers/notify/:BARCODE', 'get', '_notify_container'),
 
@@ -333,7 +337,7 @@ class Shipment extends Page
             array_push($args, $start);
             array_push($args, $end);
 
-            $rows = $this->db->paginate("SELECT s.shippingid, s.shippingname as shipment, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), b.visit_number) as visit, b.beamlinename as bl, b.beamlineoperator as localcontact, h.dewarid, h.dewarstatus,h.storagelocation,TO_CHAR(h.arrivaldate, 'DD-MM-YYYY HH24:MI') as arrival 
+            $rows = $this->db->paginate("SELECT s.shippingid, s.shippingname as shipment, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), b.visit_number) as visit, b.beamlinename as bl, b.beamlineoperator as localcontact, h.dewarid, h.dewarstatus,h.storagelocation,TO_CHAR(h.arrivaldate, 'DD-MM-YYYY HH24:MI') as arrival, d.comments
               FROM dewartransporthistory h 
               INNER JOIN dewar d ON d.dewarid = h.dewarid 
               INNER JOIN shipping s ON d.shippingid = s.shippingid 
@@ -743,18 +747,18 @@ class Shipment extends Page
             global $transfer_email;
             if (!$this->has_arg('DEWARID')) $this->_error('No dewar specified');
 
-            $dew = $this->db->pq("SELECT d.dewarid,s.shippingid 
-              FROM dewar d 
-              INNER JOIN shipping s ON s.shippingid = d.shippingid 
+            $dew = $this->db->pq("SELECT d.dewarid,s.shippingid
+              FROM dewar d
+              INNER JOIN shipping s ON s.shippingid = d.shippingid
               INNER JOIN proposal p ON p.proposalid = s.proposalid
               WHERE d.dewarid=:1 and p.proposalid=:2", array($this->arg('DEWARID'), $this->proposalid));
 
             if (!sizeof($dew)) $this->_error('No such dewar');
             else $dew = $dew[0];
 
-            
+
             $this->db->pq("INSERT INTO dewartransporthistory (dewartransporthistoryid,dewarid,dewarstatus,storagelocation,arrivaldate) 
-              VALUES (s_dewartransporthistory.nextval,:1,'transfer-requested',:2,CURRENT_TIMESTAMP) RETURNING dewartransporthistoryid INTO :id", 
+              VALUES (s_dewartransporthistory.nextval,:1,'transfer-requested',:2,CURRENT_TIMESTAMP) RETURNING dewartransporthistoryid INTO :id",
               array($dew['DEWARID'], $this->arg('LOCATION')));
 
             // Update dewar status to transfer-requested to keep consistent with history
@@ -764,23 +768,28 @@ class Shipment extends Page
                 $sessions = $this->db->pq("SELECT s.sessionid
                   FROM blsession s
                   INNER JOIN proposal p ON p.proposalid = s.proposalid
-                  WHERE p.proposalid=:1 AND CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) LIKE :2", 
+                  WHERE p.proposalid=:1 AND CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) LIKE :2",
                     array($this->proposalid, $this->arg('NEXTVISIT')));
 
-                if (sizeof($sessions)) {
-                    $this->db->pq("UPDATE dewar SET firstexperimentid=:1 WHERE dewarid=:2", 
-                      array($sessions[0]['SESSIONID'], $dew['DEWARID']));
-                }
+                $sessionId = !empty($sessions) ? $sessions[0]['SESSIONID'] : NULL;
+
+                $this->db->pq("UPDATE dewar SET firstexperimentid=:1 WHERE dewarid=:2", array($sessionId, $dew['DEWARID']));
             }
+
 
             $email = new Email('dewar-transfer', '*** Dewar ready for internal transfer ***');
 
+            $nextLocalContact = $this->arg('NEXTLOCALCONTACT');
+            $newContact = !empty($nextLocalContact) ? $nextLocalContact : $this->arg('LOCALCONTACT');
+            $nextLocation = $this->arg('NEXTLOCATION');
+
             $this->args['LCEMAIL'] = $this->_get_email_fn($this->arg('LOCALCONTACT'));
-            $this->args['LCNEXTEMAIL'] = $this->_get_email_fn($this->arg('NEXTLOCALCONTACT'));
+            $this->args['LCNEXTEMAIL'] = $this->_get_email_fn($newContact);
+            $this->args['NEXTLOCATION'] = !empty($nextLocation) ? $nextLocation : $this->arg('LOCATION');
 
             $data = $this->args;
             if (!array_key_exists('FACILITYCODE', $data)) $data['FACILITYCODE'] = '';
-            $email->data = $data;            
+            $email->data = $data;
 
             $recpts = $transfer_email.', '.$this->arg('EMAILADDRESS');
             if ($this->args['LCEMAIL']) $recpts .= ', '.$this->arg('LCEMAIL');
@@ -1070,8 +1079,12 @@ class Shipment extends Page
             $from = $this->has_arg('TRACKINGNUMBERFROMSYNCHROTRON') ? $this->arg('TRACKINGNUMBERFROMSYNCHROTRON') : '';
             $fc = $this->has_arg('FACILITYCODE') ? $this->arg('FACILITYCODE') : '';
             $wg = $this->has_arg('WEIGHT') ? $this->arg('WEIGHT') : $dewar_weight;
-            
-            $exp = $this->has_arg('FIRSTEXPERIMENTID') ? $this->arg('FIRSTEXPERIMENTID') : null;
+            $exp = null;
+
+            if ($this->has_arg('FIRSTEXPERIMENTID')) {
+                $experimentId = $this->arg('FIRSTEXPERIMENTID');
+                $exp = !empty($experimentId) ? $this->arg('FIRSTEXPERIMENTID') : NULL;
+            }
             
             $this->db->pq("INSERT INTO dewar (dewarid,code,trackingnumbertosynchrotron,trackingnumberfromsynchrotron,shippingid,bltimestamp,dewarstatus,firstexperimentid,facilitycode,weight) 
               VALUES (s_dewar.nextval,:1,:2,:3,:4,CURRENT_TIMESTAMP,'opened',:5,:6,:7) RETURNING dewarid INTO :id", 
@@ -1132,40 +1145,46 @@ class Shipment extends Page
         function _update_dewar() {
             if (!$this->has_arg('prop')) $this->_error('No proposal specified');
             if (!$this->has_arg('did')) $this->_error('No dewar id specified');
-            
-            $dewar = $this->db->pq("SELECT d.dewarid,d.shippingid FROM dewar d 
-              INNER JOIN shipping s ON d.shippingid = s.shippingid 
+
+            $dewar = $this->db->pq("SELECT d.dewarid,d.shippingid FROM dewar d
+              INNER JOIN shipping s ON d.shippingid = s.shippingid
               WHERE s.proposalid = :1 AND d.dewarid = :2", array($this->proposalid,$this->arg('did')));
-            
+
             if (!sizeof($dewar)) $this->_error('No such dewar');
 
             if ($this->has_arg('FIRSTEXPERIMENTID')) {
-                $chk = $this->db->pq("SELECT 1
-                  FROM shippinghassession
-                  WHERE shippingid=:1 AND sessionid=:2", array($dewar[0]['SHIPPINGID'], $this->arg('FIRSTEXPERIMENTID')));
+                $experimentId = $this->arg('FIRSTEXPERIMENTID');
+                $sessionId = !empty($experimentId) ? $this->arg('FIRSTEXPERIMENTID') : NULL;
+                $chk = $this->db->pq("SELECT 1 FROM shippinghassession WHERE shippingid=:1 AND sessionid=:2", array($dewar[0]['SHIPPINGID'], $this->arg('FIRSTEXPERIMENTID')));
 
-                if (!sizeof($chk)) {
-                  $this->db->pq("INSERT INTO shippinghassession (shippingid, sessionid) 
-                            VALUES (:1,:2)", array($dewar[0]['SHIPPINGID'], $this->arg('FIRSTEXPERIMENTID')));
+                if (!sizeof($chk) && !is_null($sessionId)) {
+                    $this->db->pq("INSERT INTO shippinghassession (shippingid, sessionid)  VALUES (:1,:2)", array($dewar[0]['SHIPPINGID'], $this->arg('FIRSTEXPERIMENTID')));
                 }
             }
-            
+
             $fields = array('CODE', 'TRACKINGNUMBERTOSYNCHROTRON', 'TRACKINGNUMBERFROMSYNCHROTRON', 'FIRSTEXPERIMENTID', 'FACILITYCODE', 'WEIGHT');
             foreach ($fields as $f) {
                 if ($this->has_arg($f)) {
-                    $this->db->pq("UPDATE dewar SET $f=:1 WHERE dewarid=:2", array($this->arg($f), $this->arg('did')));
+                    if ($f === 'FIRSTEXPERIMENTID') {
+                        $experimentId = $this->arg('FIRSTEXPERIMENTID');
+                        $sessionId = !empty($experimentId) ? $this->arg('FIRSTEXPERIMENTID') : NULL;
+                        $this->db->pq("UPDATE dewar SET $f=:1 WHERE dewarid=:2", array($sessionId, $this->arg('did')));
 
-                    if ($f == 'FIRSTEXPERIMENTID') {
-                        $visit = $this->db->pq("SELECT CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as visit 
-                          FROM blsession s 
-                          INNER JOIN proposal p ON p.proposalid = s.proposalid 
-                          WHERE s.sessionid=:1", array($this->arg($f)));
+                        $visit = $this->db->pq("SELECT CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as visit
+                          FROM blsession s
+                          INNER JOIN proposal p ON p.proposalid = s.proposalid
+                          WHERE s.sessionid=:1", array($sessionId));
 
                         if (sizeof($visit)) {
-                            $this->_output(array($f => $this->arg($f), 'EXP' => $visit[0]['VISIT']));
+                            $this->_output(array($f => $sessionId, 'EXP' => $visit[0]['VISIT']));
+                        } else {
+                            $this->_output(1);
                         }
+                    } else {
+                        $this->db->pq("UPDATE dewar SET $f=:1 WHERE dewarid=:2", array($this->arg($f), $this->arg('did')));
+                        $this->_output(array($f => $this->arg($f)));
+                    }
 
-                    } else $this->_output(array($f => $this->arg($f)));
                 }
             }
         }
@@ -1525,11 +1544,14 @@ class Shipment extends Page
                 $this->_output();
 
             } else {
-                $chkq = $this->db->pq("SELECT containerid FROM containerqueue WHERE containerid=:1 AND completedtimestamp IS NULL", array($this->arg('CONTAINERID')));
-                if (sizeof($chkq)) $this->_error('That container is already queued');
+                $chkq = $this->db->pq("SELECT containerid, containerqueueid FROM containerqueue WHERE containerid=:1 AND completedtimestamp IS NULL", array($this->arg('CONTAINERID')));
+                if (!sizeof($chkq)) {
+                    $this->db->pq("INSERT INTO containerqueue (containerid, personid) VALUES (:1, :2)", array($this->arg('CONTAINERID'), $this->user->personid));
+                    $qid = $this->db->id();
+                } else {
+                    $qid = $chkq[0]['CONTAINERQUEUEID'];
+                }
 
-                $this->db->pq("INSERT INTO containerqueue (containerid, personid) VALUES (:1, :2)", array($this->arg('CONTAINERID'), $this->user->personid));
-                $qid = $this->db->id();
 
                 $samples = $this->db->pq("SELECT ss.blsubsampleid, cqs.containerqueuesampleid FROM blsubsample ss
                   INNER JOIN blsample s ON s.blsampleid = ss.blsampleid
@@ -1604,8 +1626,8 @@ class Shipment extends Page
             if (!$this->has_arg('NAME')) $this->_error('No container name specified');
             if (!$this->has_arg('CONTAINERTYPE')) $this->_error('No container type specified');
             if (!$this->has_arg('DEWARID')) $this->_error('No dewar id specified');
-        
-            
+
+
             $cap = $this->has_arg('CAPACITY') ? $this->arg('CAPACITY') : 16;
             $sch = $this->has_arg('SCHEDULEID') ? $this->arg('SCHEDULEID') : null;
             $scr = $this->has_arg('SCREENID') ? $this->arg('SCREENID') : null;
@@ -1623,9 +1645,9 @@ class Shipment extends Page
             $this->db->pq("INSERT INTO container (containerid,dewarid,code,bltimestamp,capacity,containertype,scheduleid,screenid,ownerid,requestedimagerid,comments,barcode,experimenttype,storagetemperature,containerregistryid,prioritypipelineid)
               VALUES (s_container.nextval,:1,:2,CURRENT_TIMESTAMP,:3,:4,:5,:6,:7,:8,:9,:10,:11,:12,:13,:14) RETURNING containerid INTO :id",
               array($this->arg('DEWARID'), $this->arg('NAME'), $cap, $this->arg('CONTAINERTYPE'), $sch, $scr, $own, $rid, $com, $bar, $ext, $tem, $crid, $pipeline));
-                                 
+
             $cid = $this->db->id();
-            
+
             if ($this->has_arg('SCHEDULEID')) {
                 $sh = new ImagingShared($this->db);
                 $sh->_generate_schedule(array(
@@ -1757,8 +1779,18 @@ class Shipment extends Page
             $this->_output(array('CONTAINERHISTORYID' => $chid));
         }
 
-
-
+        function _get_container_types() {
+            $where = '';
+            // By default only return active container types.
+            // If all param set return everything
+            if ($this->has_arg('all')) {
+                $where .= '1=1';
+            } else {
+                $where .= 'ct.active = 1';
+            }
+            $rows = $this->db->pq("SELECT ct.containerTypeId, name, ct.proposalType, ct.capacity, ct.wellPerRow, ct.dropPerWellX, ct.dropPerWellY, ct.dropHeight, ct.dropWidth, ct.wellDrop FROM ContainerType ct WHERE $where");
+            $this->_output(array('total' => count($rows), 'data' => $rows));
+        }
 
         function _container_registry() {
             $args = array($this->proposalid);
@@ -2044,7 +2076,12 @@ class Shipment extends Page
             
             if ($this->has_arg('DEWARS')) {
                 if ($this->arg('DEWARS') > 0) {
-                    $exp = $this->has_arg('FIRSTEXPERIMENTID') ? $this->arg('FIRSTEXPERIMENTID') : null;
+                    $first_experiment = '';
+                    if ($this->has_arg('FIRSTEXPERIMENTID')) {
+                        $first_experiment = $this->arg('FIRSTEXPERIMENTID');
+                    }
+
+                    $exp = !empty($first_experiment) ? $this->arg('FIRSTEXPERIMENTID') : null;
 
                     if ($exp) {
                         $this->db->pq("INSERT INTO shippinghassession (shippingid, sessionid) 
@@ -2175,7 +2212,11 @@ class Shipment extends Page
                 if (!$this->has_arg('PRODUCTCODE')) $this->_error('No product code specified');
                 $product = $this->arg('PRODUCTCODE');
             }
-
+            // Catch programmatic use of awb - suspend international shipments
+            // facility_courier_countries is an array containing United Kingdom
+            if (!in_array($cont['COUNTRY'], $facility_courier_countries)) {
+                $this->_error('International shipment bookings currently suspended. Please see MX manual for instructions');
+            }
             if ($this->has_arg('RETURN')) {
                 $accno = $ship['DELIVERYAGENT_AGENTCODE'];
                 $payee = 'R';
@@ -2417,6 +2458,8 @@ class Shipment extends Page
 
 
         function _quote_awb() {
+            global $facility_city, $facility_postcode, $facility_country, $facility_courier_countries;
+
             if (!$this->has_arg('prop')) $this->_error('No proposal specified');
             if (!$this->has_arg('sid')) $this->_error('No shipping id specified');
 
@@ -2451,7 +2494,12 @@ class Shipment extends Page
                 'country' => $cont['COUNTRY'],
             );
 
-            global $facility_city, $facility_postcode, $facility_country;
+            // Catch programmatic use of awb - suspend international shipments
+            // facility_courier_countries is an array containing United Kingdom
+            if (!in_array($cont['COUNTRY'], $facility_courier_countries)) {
+                $this->_error('International shipment bookings currently suspended. Please see MX manual for instructions');
+            }
+
             $facility = array(
                 'city' => $facility_city,
                 'postcode' => $facility_postcode,

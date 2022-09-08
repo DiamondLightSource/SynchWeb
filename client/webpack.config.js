@@ -34,7 +34,7 @@ module.exports = (env, argv) => ({
         // Change this target to where SynchWeb server is running
         target: (env && env.proxy && env.proxy.target) || 'http://127.0.0.1',
         // Intercept the request and add auth header
-        onProxyReq: function(proxyReq, req, res) {
+        onProxyReq: function(proxyReq, req) {
           if (req.headers.authorization) {
             proxyReq.setHeader('Authorization', req.headers.authorization);
           }
@@ -42,6 +42,7 @@ module.exports = (env, argv) => ({
         secure: env && env.proxy && env.proxy.secure && JSON.parse(env.proxy.secure)
       },
     ],
+    hot: true
   },
   optimization: {
     splitChunks: {
@@ -196,8 +197,8 @@ module.exports = (env, argv) => ({
           { 
             loader: MiniCssExtractPlugin.loader,
             options: {
-              hmr: argv.mode === 'development',
-              // reloadAll: true,
+              hmr: true,
+              reloadAll: true,
             }
           },
           "css-loader", // translates CSS into CommonJS
@@ -223,6 +224,7 @@ module.exports = (env, argv) => ({
   },
 
   plugins: [
+    new webpack.HotModuleReplacementPlugin(),
     new webpack.ProvidePlugin({
        $: "jquery",
         jQuery: "jquery",

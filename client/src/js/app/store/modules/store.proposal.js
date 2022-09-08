@@ -22,7 +22,6 @@ const proposalModule = {
         state.proposalModel = model
         app.proposal = state.proposalModel
       } else {
-        console.log("Store.proposal - unsetting proposal model")
         // Ensure proposal model is unset.
         state.proposalModel = null
         app.proposal = null
@@ -47,7 +46,10 @@ const proposalModule = {
     },
     // Set current visit / session number
     setVisit(state, visit) {
-      state.visit = visit
+      if (visit) {
+        this.dispatch('proposal/setProposal', visit.split('-')[0])
+        state.visit = visit
+      }
     },
     clearVisit(state) {
       state.visit = ''
@@ -57,12 +59,13 @@ const proposalModule = {
     setProposal({commit, state, rootState}, prop) {
         return new Promise((resolve, reject) => {
           // Only fetch a new model if this one is different from what we have already
-          if (prop == state.proposal) { resolve(); return }
+          if (String(prop) === String(state.proposal)) { resolve(); return }
           // If null reset (e.g. navigated back to home page)
           if (!prop) {
             commit('setProposal', null)
             commit('setProposalType', rootState.user.defaultType)
             commit('setProposalModel', null)
+            commit('clearVisit')
             resolve()
             return
           }
@@ -100,7 +103,6 @@ const proposalModule = {
               success: function() {
                 // If ok then ProposalLookup has set a new proposal for us
                 // We might need to do other things here - refresh proposal type?
-                console.log(JSON.stringify(lookup))
                 resolve(lookup)
               },
               error: function() {
@@ -126,7 +128,9 @@ const proposalModule = {
       return state.proposal
     },
     currentProposalType: state => state.proposalType,
-    currentProposalState: state => state.proposalModel ? state.proposalModel.get('STATE'): null
+    currentProposalState: state => state.proposalModel ? state.proposalModel.get('STATE'): null,
+    getProposalId: state => state.proposalModel ? state.proposalModel.get('PROPOSALID'): null,
+    currentVisit: state => state.visit,
   }
 }
 

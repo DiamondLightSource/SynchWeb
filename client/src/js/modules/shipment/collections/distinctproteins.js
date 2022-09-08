@@ -9,7 +9,7 @@ define(['backbone.paginator', 'utils/kvcollection', 'models/protein'], function(
         idAttribute: 'PROTEINID',
         url: '/sample/proteins/distinct',
         
-        initialize: function(options) {
+        initialize: function() {
             this.on('fetch', this.fetch, this)
         },
         

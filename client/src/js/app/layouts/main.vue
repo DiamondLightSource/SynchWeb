@@ -38,6 +38,7 @@
 
     <!-- Show logos, links etc. -->
     <footer-panel />
+    <portal-target name="dialog"></portal-target>
   </div>
 </template>
 
@@ -54,6 +55,7 @@ import NotificationPersist from 'app/components/notification-persist.vue'
 import EventBus from 'app/components/utils/event-bus.js'
 import Dialog from 'app/components/dialogbox.vue'
 import SearchMobile from 'app/components/search-mobile.vue'
+import Backbone from 'backbone'
 
 import { mapState } from 'vuex'
 
@@ -76,6 +78,7 @@ export default {
         admin_menu: [],
         proposal_menu: [],
         bc: [{title: 'Home', link: '/'}],
+        bl: ''
       }
     },
     computed: {
@@ -128,10 +131,11 @@ export default {
             menu.push(item)
           })
         } else {
+          let self = this
           // proposal and extra menus are simpler
           Object.keys(legacyMenu).forEach(function(key) {
             var item = {link: key, name: legacyMenu[key]}
-            menu.push(item)
+              menu.push(item)
           })
         }
 

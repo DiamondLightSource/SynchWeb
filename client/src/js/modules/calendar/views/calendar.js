@@ -1,4 +1,4 @@
-define(['marionette', 'backbone', 'collections/visits', 'templates/calendar/calendar.html'], function(Marionette, Backbone, Visits, template) {
+define(['marionette', 'backbone', 'collections/visits', 'collections/bls', 'views/filter',  'templates/calendar/calendar.html', 'templates/calendar/calendar-wrapper.html'], function(Marionette, Backbone, Visits, Beamlines, FilterView, calendarTemplate, template) {
     
     // humm
     DISABLE_DAY_SCROLL = false
@@ -19,7 +19,7 @@ define(['marionette', 'backbone', 'collections/visits', 'templates/calendar/cale
         className: function() {
             var c = []
             if (this.model.get('ENISO') < new Date())  c.push('past')
-            if (this.model.get('ACTIVE') == 1) c.push('active')
+            if (this.model.get('ACTIVE') === 1) c.push('active')
                 
             return c.join(' ')
         },
@@ -37,7 +37,7 @@ define(['marionette', 'backbone', 'collections/visits', 'templates/calendar/cale
         childView: EventItemView,
         childViewContainer: 'ul',
         
-        initialize: function(options) {
+        initialize: function() {
             this.collection = new Backbone.Collection(this.model.get('visits'))
         },
     })
@@ -58,7 +58,7 @@ define(['marionette', 'backbone', 'collections/visits', 'templates/calendar/cale
             }
         },
         
-        initialize: function(options) {
+        initialize: function() {
             var hours = _.uniq(_.map(this.model.get('visits'), function(m) {
                 var sessionStartISO = m.get('STISO')
                 return sessionStartISO.hour 
@@ -68,7 +68,7 @@ define(['marionette', 'backbone', 'collections/visits', 'templates/calendar/cale
             _.each(hours, function(h) {
                 hc.push({ hour: h, visits: _.filter(this.model.get('visits'), function(m) {
                     var sessionStartISO = m.get('STISO')
-                    return sessionStartISO.hour  == h
+                    return sessionStartISO.hour  === h
                 }) })
             }, this)
             
@@ -79,13 +79,13 @@ define(['marionette', 'backbone', 'collections/visits', 'templates/calendar/cale
         },
         
         onRender: function() {
-            if (this.model.get('type') == 'day') this.$el.attr('data-day', this.model.get('date').getDate())
+            if (this.model.get('type') === 'day') this.$el.attr('data-day', this.model.get('date').getDate())
         },
         
         getTemplate: function() {
-            if (this.model.get('type') == 'head') {
+            if (this.model.get('type') === 'head') {
                 return _.template('<%-dayNames[day]%>')
-            } else if (this.model.get('type') == 'day') {
+            } else if (this.model.get('type') === 'day') {
                 return _.template('<span class="full"><%-dayNames[date.getDay()]%></span> <%-date.getDate()%> <span class="full"><%-monthNames[date.getMonth()]%></span><ul></ul>')
             } else {
                 return _.template('&nbsp')
@@ -95,15 +95,15 @@ define(['marionette', 'backbone', 'collections/visits', 'templates/calendar/cale
         className: function() {
             var classes = []
             
-            if (this.model.get('type') == 'head') {
+            if (this.model.get('type') === 'head') {
                 classes.push('head')
-                if (this.model.get('day') == 0 || this.model.get('day') == 6) classes.push('wend')
+                if (this.model.get('day') === 0 || this.model.get('day') === 6) classes.push('wend')
                     
-            } else if (this.model.get('type') == 'day') {
+            } else if (this.model.get('type') === 'day') {
                 var t = new Date()
-                if (this.model.get('date').getTime() == new Date(t.getFullYear(), t.getMonth(), t.getDate()).getTime()) classes.push('today')
+                if (this.model.get('date').getTime() === new Date(t.getFullYear(), t.getMonth(), t.getDate()).getTime()) classes.push('today')
                 
-                if (this.model.get('visits').length == 0) classes.push('no_event')
+                if (this.model.get('visits').length === 0) classes.push('no_event')
                 
             } else classes.push('noday')
                 
@@ -141,7 +141,7 @@ define(['marionette', 'backbone', 'collections/visits', 'templates/calendar/cale
             var classes = []
                 
             var t = new Date()
-            if (this.model.get('date').getTime() == new Date(t.getFullYear(), t.getMonth(), t.getDate()).getTime()) classes.push('today')
+            if (this.model.get('date').getTime() === new Date(t.getFullYear(), t.getMonth(), t.getDate()).getTime()) classes.push('today')
                 
             if (this.model.get('visits').length) classes.push('event')
                 
@@ -168,7 +168,7 @@ define(['marionette', 'backbone', 'collections/visits', 'templates/calendar/cale
         },
         
         
-        initialize: function(options) {
+        initialize: function() {
             this.onScroll = _.debounce(this.onScroll, 100)
             this.lastDay = null
         },
@@ -178,12 +178,12 @@ define(['marionette', 'backbone', 'collections/visits', 'templates/calendar/cale
             var first = this.collection.at(0)
             if (first) {
                 var d = first.get('date')
-                if (now.getMonth() == d.getMonth() && now.getFullYear() == d.getFullYear()) this.doGotoDay(null, now.getDate())
+                if (now.getMonth() === d.getMonth() && now.getFullYear() === d.getFullYear()) this.doGotoDay(null, now.getDate())
                 else $('.calendar_main').animate({scrollTop: 0 })
             }
         },
         
-        onScroll: function(e) {
+        onScroll: function() {
             if (DISABLE_DAY_SCROLL) return
             
             DISABLE_ITEM_SCROLL = true
@@ -193,7 +193,7 @@ define(['marionette', 'backbone', 'collections/visits', 'templates/calendar/cale
             })
             
             if (di) day = di.model.get('date').getDate()
-            if (day != this.lastDay && day) this.doGotoDay(null, day)
+            if (day !== this.lastDay && day) this.doGotoDay(null, day)
             this.lastDay = day
                 
             setTimeout(function() {
@@ -202,18 +202,13 @@ define(['marionette', 'backbone', 'collections/visits', 'templates/calendar/cale
         },
         
         doGotoDay: function(child, day) {
-            console.log('day', day)
             var dp = $('.calendar_main li[data-day='+day+']').offset().top
             $('.calendar_main').animate({scrollTop: dp-$('.calendar_main').offset().top+$('.calendar_main').scrollTop() })
         },
     })
     
-    
-    
-    
-    return Marionette.CompositeView.extend({
-        template: template,
-        className: 'content',
+    var CalendarCompositeView = Marionette.CompositeView.extend({
+        template: calendarTemplate,
         childView: DayItemView,
         childViewContainer: 'ul.calendar_main',
         
@@ -235,7 +230,7 @@ define(['marionette', 'backbone', 'collections/visits', 'templates/calendar/cale
         },
         
         
-        onScroll: function(e) {
+        onScroll: function() {
             if (DISABLE_ITEM_SCROLL) return
             
             DISABLE_DAY_SCROLL = true
@@ -245,7 +240,7 @@ define(['marionette', 'backbone', 'collections/visits', 'templates/calendar/cale
             }, this)
             
             if (di) day = di.model.get('date').getDate()
-            if (day && this.lastDay != day) this.gotoDay(day)
+            if (day && this.lastDay !== day) this.gotoDay(day)
             this.lastDay = day
                 
             setTimeout(function() {
@@ -270,7 +265,7 @@ define(['marionette', 'backbone', 'collections/visits', 'templates/calendar/cale
         },
         
         prevMonth: function() {
-            if (this.month == 0) {
+            if (this.month === 0) {
                 this.month = 11
                 this.year--
             } else this.month--
@@ -278,29 +273,28 @@ define(['marionette', 'backbone', 'collections/visits', 'templates/calendar/cale
         },
         
         nextMonth: function() {
-            if (this.month == 11) {
+            if (this.month === 11) {
                 this.year++
                 this.month = 0
             } else this.month++
             this.generateMonth()
         },
-        
-        
+
         initialize: function(options) {
             this.lastDay = null
             this.onScroll = _.debounce(this.onScroll, 100)
             this.collection = new Backbone.Collection()
             this.days = new Backbone.Collection()
-            
-            var d = new Date()
+
+            const d = new Date()
+
             this.year = options.y !== undefined ? options.y : d.getFullYear()
             this.month = options.m !== undefined ? options.m : d.getMonth()
-            
-            var self = this
-            var queryParams = {
-                year: function() { return self.year },
-                month: function() {
-                    var m = self.month + 1
+
+            const queryParams = {
+                year: () => { return this.year },
+                month: () => {
+                    const m = this.month + 1
                     return m < 10 ? ('0'+m) : m
                 },
                 all: options.all,
@@ -313,11 +307,11 @@ define(['marionette', 'backbone', 'collections/visits', 'templates/calendar/cale
                 queryParams: queryParams,
                 state: { pageSize: 9999 }
             })
-            
+
             this.listenTo(this.visits, 'request', this.displaySpinner)
             this.listenTo(this.visits, 'sync', this.removeSpinner)
             this.listenTo(this.visits, 'error', this.removeSpinner)
-            
+
             this.generateMonth()
         },
 
@@ -355,7 +349,6 @@ define(['marionette', 'backbone', 'collections/visits', 'templates/calendar/cale
         },
         
         generateLinks: function() {
-            console.log(this.month, this.year)
             this.ui.mnext.text(Months[(this.month+1)%12])
             // javascript modulus doesnt work for negative numbers :(
             this.ui.mprev.text(Months[((this.month-1%12)+12)%12])
@@ -374,15 +367,13 @@ define(['marionette', 'backbone', 'collections/visits', 'templates/calendar/cale
             var daysinmonth = new Date(this.year, this.month+1, 0).getDate()
             var startday = new Date(this.year, this.month, 1).getDay()
             var endday = new Date(this.year, this.month, daysinmonth).getDay()
-
-            console.log(daysinmonth, startday, endday)
             
             var days = []
             _.each(_.range(7), function(d) {
                 days.push({ type: 'head', day: (((d+1)%7)+7)%7 })
             })            
             
-            _.each(_.range((((startday-1)%7)+7)%7), function(d) {
+            _.each(_.range((((startday-1)%7)+7)%7), function() {
                 days.push({ type: 'pre' })
             })
             
@@ -395,7 +386,7 @@ define(['marionette', 'backbone', 'collections/visits', 'templates/calendar/cale
                 days.push({ type: 'day', date: date, visits: visits })
             }, this)
             
-            _.each(_.range(6%endday), function(d) {
+            _.each(_.range(6%endday), function() {
                 days.push({ type: 'post' })
             })
             
@@ -403,9 +394,71 @@ define(['marionette', 'backbone', 'collections/visits', 'templates/calendar/cale
             this.generateLinks()
         
             this.days.reset(this.collection.where({ type: 'day' }))
-            console.log(this.days)
         },
     })
 
+    return Marionette.LayoutView.extend({
+        template: template,
+        className: 'content',
+        beamline: 'all',
+
+        regions: {
+            calendar: '.calendar-wrapper',
+            bl: '.type'
+        },
+
+        initialize: function(options) {
+            this.beamline = options.bl || 'all'
+            this.beamlines = new Beamlines(null, { ty: app.type })
+            this.displayBeamlines()
+        },
+
+        displayBeamlines: function() {
+            this.beamlines.fetch().done(() => {
+                const beamlinesList = this.beamlines.toJSON().map((beamline) => ({ id: beamline['BEAMLINE'], name: beamline['BEAMLINE'] }))
+                this.displayBeamlinesView = new FilterView({
+                    url: false,
+                    value: this.beamline,
+                    name: 'bl',
+                    filters: [{ id: 'all', name: 'All' }, ...beamlinesList]
+                })
+
+                this.listenTo(this.displayBeamlinesView, 'selected:change', this.handleBeamlineChange)
+                this.bl.show(this.displayBeamlinesView)
+            })
+        },
+
+        handleBeamlineChange(beamline) {
+            const regexExp = new RegExp(/\/bl\/.*/)
+            let url = window.location.pathname
+
+            if (beamline !== 'all') {
+                url = url.replace(regexExp, '')+'/bl/'+ beamline
+                window.history.pushState({}, '', url)
+            } else {
+                this.beamline = ''
+                url = url.replace(regexExp, '')
+                window.history.pushState({}, '', url)
+            }
+            this.beamline = beamline
+
+            this.showCalenderView()
+        },
+
+        showCalenderView() {
+            this.calendarView = new CalendarCompositeView({
+                all: this.getOption('all'),
+                bl: this.beamline !== 'all' ? this.beamline : '' ,
+                y: this.getOption('y'),
+                m: this.getOption('m')
+            })
+
+            this.calendar.show(this.calendarView)
+        },
+
+        onRender() {
+           this.showCalenderView()
+        }
+    })
 })
 
