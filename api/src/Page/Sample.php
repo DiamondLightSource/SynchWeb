@@ -162,7 +162,8 @@ class Sample extends Page
                               array('/components', 'post', '_add_sample_component'),
                               array('/components/:scid', 'delete', '_remove_sample_component'),
 
-                              array('/sub(/:ssid)(/sid/:sid)', 'get', '_sub_samples'),
+                              array('/sub(/sid/:sid)', 'get', '_sub_samples'),
+                              array('/sub/:ssid', 'get', '_get_sub_sample'),
                               array('/sub/:ssid', 'patch', '_update_sub_sample'),
                               array('/sub/:ssid', 'put', '_update_sub_sample_full'),
                               array('/sub', 'post', '_add_sub_sample'),
@@ -547,7 +548,6 @@ class Sample extends Page
 
         function _sub_samples() {
             $where = '';
-            $having = '';
             $first_inner_select_where = '';
             $second_inner_select_where = '';
             $args = array($this->proposalid);
@@ -559,20 +559,50 @@ class Sample extends Page
                 array_push($args, $this->arg('sid'), $this->arg('sid'), $this->arg('sid'));
             }
 
-            if ($this->has_arg('ssid')) {
-                $where .= ' AND ss.blsubsampleid=:'.(sizeof($args)+1);
-                $first_inner_select_where .= ' AND ss.blsubsampleid=:'.(sizeof($args) + 2);
-                $second_inner_select_where .= ' AND ss.blsubsampleid=:'.(sizeof($args) + 3);
-
-                array_push($args, $this->arg('ssid'), $this->arg('ssid'), $this->arg('ssid'));
-            }
-
             if ($this->has_arg('cid')) {
                 $where .= ' AND c.containerid=:'.(sizeof($args)+1);
                 $first_inner_select_where .= ' AND s.containerid=:'.(sizeof($args) + 2);
                 $second_inner_select_where .= ' AND s.containerid=:'.(sizeof($args) + 3);
                 array_push($args, $this->arg('cid'), $this->arg('cid'), $this->arg('cid'));
             }
+
+            $this->db->wait_rep_sync(true);
+            $ss_query_string = $this->get_sub_samples_query($where, $first_inner_select_where, $second_inner_select_where);
+            $subs = $this->db->pq($ss_query_string, $args);
+
+            $this->db->wait_rep_sync(false);
+
+            foreach ($subs as $i => &$r) $r['RID'] = $i;
+
+            $this->_output($subs);
+        }
+
+        function _get_sub_sample() {
+            $where = '';
+            $args = array($this->proposalid);
+
+            if ($this->has_arg('ssid')) {
+                $where .= ' AND ss.blsubsampleid=:'.(sizeof($args)+1);
+                array_push($args,  $this->arg('ssid'));
+            }
+
+            $this->db->wait_rep_sync(true);
+            $ss_query_string = $this->get_sub_samples_query($where);
+            $subs = $this->db->pq($ss_query_string, $args);
+
+            $this->db->wait_rep_sync(false);
+
+            if (!sizeof($subs)) $this->_error('No such sub sample');
+            else {
+                $subs[0]['RID'] = 0;
+                $this->_output($subs[0]);
+            }
+        }
+
+        private function get_sub_samples_query($where, $first_inner_select_where = '', $second_inner_select_where = '') {
+            $group_by = "";
+            $order_by = "";
+            $having = "";
 
             if ($this->has_arg('queued')) {
                 $where .= ' AND cqs.containerqueuesampleid IS NOT NULL';
@@ -586,8 +616,53 @@ class Sample extends Page
                 $having .= ' HAVING count(dc.datacollectionid) = 0';
             }
 
-            $this->db->wait_rep_sync(true);
-            $ss_query = "SELECT
+            if ($this->has_arg('ssid')) {
+                $from_query = "FROM blsubsample ss";
+
+            } else {
+                $from_query = "FROM (
+                    SELECT ss.blsubsampleid
+                    FROM (
+                        SELECT s.blsampleid, max(si.blsampleimageid) AS blsampleimageid
+                      FROM blsample s
+                          INNER JOIN blsampleimage si ON si.blsampleid = s.blsampleid
+                      WHERE 1=1 $first_inner_select_where
+                      GROUP BY s.blsampleid
+                    ) qq
+                    JOIN blsubsample ss ON ss.blsampleimageid = qq.blsampleimageid
+                    WHERE ss.source = 'auto'
+            
+                    UNION ALL
+            
+                    SELECT ss.blsubsampleid
+                    FROM blsubsample ss
+                        LEFT JOIN blsample s on ss.blsampleid = s.blsampleid
+                    WHERE ss.source = 'manual' $second_inner_select_where
+                ) q JOIN blsubsample ss ON ss.blsubsampleid = q.blsubsampleid";
+
+                $group_by = "GROUP BY pr.acronym,
+                    s.name,
+                    dp.experimentkind,
+                    dp.preferredbeamsizex,
+                    dp.preferredbeamsizey,
+                    dp.exposuretime,
+                    dp.requiredresolution,
+                    s.location,
+                    ss.diffractionplanid,
+                    pr.proteinid,
+                    ss.blsubsampleid,
+                    ss.blsampleid,
+                    ss.source,
+                    ss.comments,
+                    ss.positionid,
+                    po.posx,
+                    po.posy,
+                    po.posz";
+
+                $order_by = "ORDER BY ss.blsubsampleid";
+            }
+
+            return "SELECT
                 pr.acronym as protein,
                 s.name as sample,
                 dp.experimentkind,
@@ -635,26 +710,7 @@ class Sample extends Page
                 round(min(apss.resolutionlimithigh),2) as dcresolution,
                 round(max(apss.completeness),1) as dccompleteness,
                 cq2.completedtimestamp as queuecompleted
-                FROM (
-                    SELECT ss.blsubsampleid
-                    FROM (
-                        SELECT s.blsampleid, max(si.blsampleimageid) AS blsampleimageid
-                      FROM blsample s
-                          INNER JOIN blsampleimage si ON si.blsampleid = s.blsampleid
-                      WHERE 1=1 $first_inner_select_where
-                      GROUP BY s.blsampleid
-                    ) qq
-                    JOIN blsubsample ss ON ss.blsampleimageid = qq.blsampleimageid
-                    WHERE ss.source = 'auto'
-            
-                    UNION ALL
-            
-                    SELECT ss.blsubsampleid
-                    FROM blsubsample ss
-                        LEFT JOIN blsample s on ss.blsampleid = s.blsampleid
-                    WHERE ss.source = 'manual' $second_inner_select_where
-                ) q
-                JOIN blsubsample ss ON ss.blsubsampleid = q.blsubsampleid
+                $from_query
                 LEFT OUTER JOIN position po ON po.positionid = ss.positionid
                 LEFT OUTER JOIN position po2 ON po2.positionid = ss.position2id
                 LEFT OUTER JOIN blsample sss on ss.blsubsampleid = sss.blsubsampleid
@@ -690,39 +746,9 @@ class Sample extends Page
                 LEFT OUTER JOIN autoprocprogram app ON app.autoprocprogramid = ap.autoprocprogramid AND app.processingstatus = 1
 
                 WHERE p.proposalid=:1 $where
-                GROUP BY pr.acronym,
-                    s.name,
-                    dp.experimentkind,
-                    dp.preferredbeamsizex,
-                    dp.preferredbeamsizey,
-                    dp.exposuretime,
-                    dp.requiredresolution,
-                    s.location,
-                    ss.diffractionplanid,
-                    pr.proteinid,
-                    ss.blsubsampleid,
-                    ss.blsampleid,
-                    ss.source,
-                    ss.comments,
-                    ss.positionid,
-                    po.posx,
-                    po.posy,
-                    po.posz
+                $group_by
                 $having
-                ORDER BY ss.blsubsampleid";
-            $subs = $this->db->pq($ss_query, $args);
-
-            $this->db->wait_rep_sync(false);
-
-            foreach ($subs as $i => &$r) $r['RID'] = $i;
-
-            if ($this->has_arg('ssid')) {
-                if (!sizeof($subs)) $this->_error('No such sub sample');
-                else $this->_output($subs[0]);
-
-            } else {
-                $this->_output($subs);
-            }
+                $order_by";
         }
 
         function _update_sub_sample() {
@@ -844,7 +870,7 @@ class Sample extends Page
 
             // $this->_output(array('BLSUBSAMPLEID' => $this->db->id()));
             $this->args['ssid'] = $this->db->id();
-            $this->_sub_samples();
+            $this->_get_sub_sample();
         }
 
 
