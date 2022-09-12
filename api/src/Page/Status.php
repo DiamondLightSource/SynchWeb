@@ -112,7 +112,7 @@ class Status extends Page
                 }
 
                 $pvv = $this->pv($pvs);
-                
+
                 foreach ($pvp as $n => $pt) {
                     list($pv, $t) = $pt;
                     $output[$n] = array('t' => $t, 'val' => array());
@@ -130,7 +130,6 @@ class Status extends Page
                     }
                 }
             }
-            
             $this->_output($output);
         }
         

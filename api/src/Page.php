@@ -571,7 +571,6 @@ class Page
                 $lis = preg_split('/\s+/', $v, 2);
                 $output[$lis[0]] = sizeof($lis) > 1 ? ($full ? array_slice($lis,1) : $lis[1]) : '';
             }
-            
             return $output;
         }
         

@@ -14,14 +14,18 @@ class LDAP extends AuthenticationParent implements AuthenticationInterface
 
     function authenticate($login, $password)
     {
-        global $ldap_server;
-        global $ldap_search;
+        global $ldap_server, $ldap_search, $ldap_use_tls;
 
         $conn = ldap_connect($ldap_server);
 
         if ($conn) {
             // Tested against LDAP version 3 (could add support for older versions here)
             ldap_set_option($conn, LDAP_OPT_PROTOCOL_VERSION, 3);
+
+            // use a secure connection for LDAP, if configured this way (default is unsecured as this was the historical setting)
+            if ($ldap_use_tls) {
+                ldap_start_tls($conn);
+            }
 
             try {
                 // testing with openldap indicates this call needs to use a correct

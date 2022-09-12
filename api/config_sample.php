@@ -4,7 +4,6 @@
     # - Many of the parameters in this file will in due course move into the
     #   database
 
-
     # Production / Dev Mode Switch
     # - Dev mode enabled debugging to stdout in addition to httpd error_log
     #   Values: dev | production
@@ -14,17 +13,14 @@
     $isb  = array('user' => 'user', 'pass' => 'pass', 'db' => 'localhost/ispyb');
     $dbtype = 'mysql';
 
-
     # Encoded JWT key, used to sign and check validaty of jwt tokens
     # - Create one of these using /api/authenticate/key
     #   This can be changed to invalidate all currently active tokens
     $jwt_key = '';
 
-
     # Auth type
     # Can be cas, ldap
     $authentication_type = 'cas';
-
 
     # CAS url (if using cas, assume https)
     $cas_url = 'cas.server.ac.uk';
@@ -40,6 +36,7 @@
     # Update the ldap(s) prefix, hostname and search settings as required
     $ldap_server = 'ldaps://ldap.example.com';
     $ldap_search = 'ou=people,dc=example,dc=com';
+    $ldap_use_tls = false; # default - i.e. don't use secured LDAP connection
 
     # Upload directory
     # - used for user image uploads
