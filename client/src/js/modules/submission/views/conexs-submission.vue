@@ -535,6 +535,7 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
 
 
                 // ORCA
+                orcaHeavyAtoms: [],
                 orcaLicense: false,
                 orcaDisplay: 'inline',
                 technique: '',
@@ -876,7 +877,24 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
             // Build Orca overview file/string based on form inputs or files uploaded
             orcaOverviewBuilder: function(event){
                 if (this.technique == 'Xas') {
-                    this.output = '! ' + this.functional + ' DKH2 ' + this.basis + ' def2/J '
+                    
+                    // check for heavy atoms in manual table
+                    this.orcaHeavyAtoms = []
+                    if (this.atomData.length>0){
+                        for(var i=0; i<this.atomData.length; i++){
+                            for(var j=0; j<this.elements.length; j++){
+                                if(this.atomData[i].Atom == this.elements[j]['element'] && this.elements[j]['number']>54){
+                                    this.orcaHeavyAtoms.push(this.atomData[i].Atom)
+                                }
+                            }
+                        }
+                    }
+                    
+                    if (this.orcaHeavyAtoms.length>0){
+                        this.output = '! ' + this.functional + ' DKH DKH-def2-TZVP SARC/J '
+                    } else {
+                        this.output = '! ' + this.functional + ' DKH2 ' + this.basis + ' def2/J '
+                    }
 
                     if (this.solvent != 'None') {
                         this.output += 'CPCM(' + this.solvent + ') '
@@ -916,6 +934,14 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
                     this.output += 'DoSOC true' + "\n"
                     this.output += 'Normalize true' + "\n"
                     this.output += 'MDOriginAdjustMethod 1' + "\n"
+                    this.output += 'end' + "\n\n"
+                }
+
+                if (this.orcaHeavyAtoms.length>0) {
+                    this.output += '%basis' + "\n"
+                    for (var i=0; i < this.orcaHeavyAtoms.length; i++){
+                        this.output += 'NewGTO '+this.orcaHeavyAtoms[i]+' "SARC-DKH-TZVP" end' + "\n"
+                    }
                     this.output += 'end' + "\n\n"
                 }
 
