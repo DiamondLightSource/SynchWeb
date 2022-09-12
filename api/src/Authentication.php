@@ -254,7 +254,6 @@ class Authentication
 
     // Return instance of authentication class corresponding to $authentication_type.
     // The value passed by the calling method derives from $authentication_type, a global variable specified in config.php.
-
     private function authenticateByType($authentication_type)
     {
         // Array of authentication types and corresponding authentication class names.

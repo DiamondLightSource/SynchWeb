@@ -21,6 +21,7 @@ class MySQL extends DatabaseParent implements DatabaseInterface
 
     function __construct($user, $pass, $db, $port = null)
     {
+        mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT); // throw exceptions.
         list($host, $dbn) = explode('/', $db);
         if (!$port) $port = ini_get("mysqli.default_port");
         $this->conn = new mysqli($host, $user, $pass, $dbn, $port);
@@ -361,7 +362,6 @@ class MySQL extends DatabaseParent implements DatabaseInterface
 
         if (sizeof($args)) {
             $vtypes = array('NULL' => 'i', 'integer' => 'i', 'double' => 'd', 'string' => 's');
-
 
             $strfs = '';
             foreach ($args as $a) {
