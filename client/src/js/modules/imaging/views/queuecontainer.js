@@ -49,10 +49,10 @@ define(['marionette',
             var self = this
             Backbone.ajax({
                 url: app.apiurl+'/sample/sub/queue/'+this.model.get('BLSUBSAMPLEID'),
-                success: function(resp) {
+                success: function() {
                     self.model.set('READYFORQUEUE', '1')
                 },
-                error: function(resp) {
+                error: function() {
                     app.alert({ message: 'Something went wrong queuing this sub sample' })
                 }
             })
@@ -63,7 +63,7 @@ define(['marionette',
 
             console.log('add cell', this.model.get('CONTAINERQUEUEID'))
             if (!this.column.get('disable')) {
-                if (this.model.get('READYFORQUEUE') == '0' && !this.model.get('QUEUECOMPLETED'))
+                if (Number(this.model.get('READYFORQUEUE')) === 0 && !this.model.get('QUEUECOMPLETED'))
                     this.$el.html('<a href="#" class="button add"><i class="fa fa-plus"></i></a>')
             }
 
@@ -102,7 +102,7 @@ define(['marionette',
                     app.alert({ message: 'Preset successfully saved' })
                     self.column.get('plans').add(p)
                 },
-                error: function(resp) {
+                error: function() {
                     app.alert({ message: 'Something went wrong saving this preset' })
                 }
             })
@@ -115,11 +115,11 @@ define(['marionette',
             Backbone.ajax({
                 url: app.apiurl+'/sample/sub/queue/'+this.model.get('BLSUBSAMPLEID'),
                 data: { 'UNQUEUE': 1 },
-                success: function(resp) {
+                success: function() {
                     self.model.set('READYFORQUEUE', '0')
                     self.render()
                 },
-                error: function(resp) {
+                error: function() {
                     app.alert({ message: 'Something went wrong removing this sub sample' })
                 }
             })
@@ -205,8 +205,8 @@ define(['marionette',
             if (this.plan.isValid(true)) {
                 var ch = this.model.changedAttributes()
                 console.log('model valid', this.model, ch)
-                if (this.model.get('_valid') == false) this.model.save()
-                else if (ch && !(Object.keys(ch).length == 1 && ('isSelected' in ch || '_valid' in ch || this.plan.computed().indexOf(Object.keys(ch)[0]) > -1))) {
+                if (this.model.get('_valid') === false) this.model.save()
+                else if (ch && !(Object.keys(ch).length === 1 && ('isSelected' in ch || '_valid' in ch || this.plan.computed().indexOf(Object.keys(ch)[0]) > -1))) {
                     console.log('attrs changed', this.model.changedAttributes())
                     this.model.save()   
                 }
@@ -292,9 +292,8 @@ define(['marionette',
             }, this)
         },
 
-        render: function(e) {
-            console.log('render cell exp')
-            var types = {
+        render: function() {
+            const types = {
                 'SAD': pointemplate,
                 'MESH': gridtemplate,
                 'XFE': xfetemplate,
@@ -334,11 +333,12 @@ define(['marionette',
 
         render: function() {
             this.$el.empty()
+            let opts
             if (this.model.get('X2') && this.model.get('Y2')) {
-                var opts = this.types['Region']
-            } else var opts = this.types['Point']
+                opts = this.types['Region']
+            } else opts = this.types['Point']
             
-            var options = ''
+            let options = ''
             _.each(opts, function(o) {
                 options += '<option value="'+o.type+'">'+o.name+"</option>"
             })
@@ -390,13 +390,13 @@ define(['marionette',
             this.trigger('selected:change', id, this.selectedName())
             if (id) {
                 this.filterablecollection.reset(this.shadowCollection.filter(function(m) {
-                    if (id == 'invalid') {
-                        return m.get('_valid') == false
+                    if (id === 'invalid') {
+                        return m.get('_valid') === false
 
-                    } else if (id == 'region') {
+                    } else if (id === 'region') {
                         return m.get('X2') && m.get('Y2')
 
-                    } else if (id == 'point') {
+                    } else if (id === 'point') {
                         return m.get('X') && m.get('Y') && !m.get('X2')
                     }
                 }), {reindex: false})
@@ -507,17 +507,16 @@ define(['marionette',
         },
 
         doUnqueueContainer: function() {
-            var self = this
             Backbone.ajax({
                 url: app.apiurl+'/shipment/containers/queue',
                 data: {
                     CONTAINERID: this.model.get('CONTAINERID'),
                     UNQUEUE: 1,
                 },
-                success: function(resp) {
+                success: function() {
                     app.alert({ message: 'Container Successfully Unqueued' })
                 },
-                error: function(resp) {
+                error: function() {
                     app.alert({ message: 'Something went wrong unqueuing this container' })
                 }
             })
@@ -533,7 +532,7 @@ define(['marionette',
         applyModel: function(p) {
             var models = this.qsubsamples.where({ isGridSelected: true })
             _.each(models, function(m) {
-                if (p.get('EXPERIMENTKIND') != m.get('EXPERIMENTKIND')) return
+                if (p.get('EXPERIMENTKIND') !== m.get('EXPERIMENTKIND')) return
                     
                 _.each(['REQUIREDRESOLUTION', 'PREFERREDBEAMSIZEX', 'PREFERREDBEAMSIZEY', 'EXPOSURETIME', 'BOXSIZEX', 'BOXSIZEY', 'AXISSTART', 'AXISRANGE', 'NUMBEROFIMAGES', 'TRANSMISSION', 'ENERGY', 'MONOCHROMATOR'], function(k) {
                     if (p.get(k) !== null) m.set(k, p.get(k))
@@ -560,8 +559,9 @@ define(['marionette',
             this.qsubsamples.fullCollection.each(function(qs) {
                 if (qs.get('_valid') !== undefined) return
 
-                var expcell = new ExperimentCell({ model: qs, column: { beamlinesetups: this.beamlinesetups } })
-                var val = expcell.checkIsValid()
+                const expcell = new ExperimentCell({model: qs, column: {beamlinesetups: this.beamlinesetups}});
+                const val = expcell.checkIsValid();
+                console.log({ experimentCell: val })
             }, this)
 
             var invalid = this.qsubsamples.fullCollection.where({ '_valid': false })
@@ -572,16 +572,15 @@ define(['marionette',
                 if (inv) inv.set({ isSelected: true })
 
             } else {
-                var self = this
                 Backbone.ajax({
                     url: app.apiurl+'/shipment/containers/queue',
                     data: {
                         CONTAINERID: this.model.get('CONTAINERID')
                     },
-                    success: function(resp) {
+                    success: function() {
                         app.alert({ message: 'Container Successfully Queued' })
                     },
-                    error: function(resp) {
+                    error: function() {
                         app.alert({ message: 'Something went wrong queuing this container' })
                     }
                 })
@@ -607,7 +606,7 @@ define(['marionette',
             this.subsamples.fetch()
         },
         
-        initialize: function(options) {
+        initialize: function() {
             this._lastSample = null
 
             this.platetypes = new PlateTypes()
@@ -683,7 +682,6 @@ define(['marionette',
         },
 
         refreshQSubSamples: function() {
-            console.log('ref q subs', this.subsamples.where({ READYFORQUEUE: '1' }))
             if (this.model.get('CONTAINERQUEUEID')) {
                 this.qsubsamples.fullCollection.reset(this.subsamples.fullCollection.where({ CONTAINERQUEUEID: this.model.get('CONTAINERQUEUEID') }))
             } else this.qsubsamples.fullCollection.reset(this.subsamples.fullCollection.where({ READYFORQUEUE: '1' }))
@@ -692,11 +690,10 @@ define(['marionette',
         selectSubSample: function() {
             var ss = this.subsamples.findWhere({ isSelected: true })
             var s = ss.get('BLSAMPLEID')
-            if (s != this._lastSample) {
-                this.imagess.reset(this.subsamples.where({ BLSAMPLEID: s }))
+            if (s !== this._lastSample) {
+                this.imagess.reset(this.subsamples.fullCollection.where({ BLSAMPLEID: s }))
                 var i = this.inspectionimages.findWhere({ BLSAMPLEID: s })
                 this.image.setModel(i)
-
             }
         },
         
@@ -708,24 +705,26 @@ define(['marionette',
         },
 
         doOnRender: function() {
-            var columns = [{ label: '#', cell: table.TemplateCell, editable: false, template: '<%-(RID+1)%>' },
-                           { name: 'SAMPLE', label: 'Sample', cell: 'string', editable: false },
-                           { name: 'PROTEIN', label: 'Protein', cell: 'string', editable: false },
-                           { label: 'Location', cell: LocationCell, editable: false, type: this.type },
-                           { label: 'Type', cell: table.TemplateCell, editable: false, template: '<%-(X2 ? "Region" : "Point")%>' },
-                           { label: '', cell: table.StatusCell, editable: false },
-                           { label: '', cell: AddCell, editable: false, disable: this.model.get('CONTAINERQUEUEID') },
+            const subSamplesColumns = [
+                { label: '#', cell: table.TemplateCell, editable: false, template: '<%-(RID+1)%>' },
+                { name: 'SAMPLE', label: 'Sample', cell: 'string', editable: false },
+                { name: 'PROTEIN', label: 'Protein', cell: 'string', editable: false },
+                { label: 'Location', cell: LocationCell, editable: false, type: this.type },
+                { label: 'Type', cell: table.TemplateCell, editable: false, template: '<%-(X2 ? "Region" : "Point")%>' },
+                { label: 'Source', cell: table.TemplateCell, editable: false, template: '<%- SOURCE %>' },
+                { label: '', cell: table.StatusCell, editable: false },
+                { label: '', cell: AddCell, editable: false, disable: this.model.get('CONTAINERQUEUEID') },
             ]
 
             if (app.mobile()) {
                 _.each([], function(v) {
-                    columns[v].renderable = false
+                    subSamplesColumns[v].renderable = false
                 })
             }
 
             this.table = new TableView({ 
                 collection: this.subsamples, 
-                columns: columns, 
+                columns: subSamplesColumns,
                 tableClass: 'subsamples', 
                 loading: true,
                 backgrid: { row: ClickableRow, emptyText: 'No sub samples found' },
@@ -734,21 +733,23 @@ define(['marionette',
 
             this.asmps.show(this.table)
 
-            var columns = [{ label: '#', cell: table.TemplateCell, editable: false, template: '<%-(RID+1)%>' },
-                           { label: '', cell: 'select-row', headerCell: 'select-all', editable: false },
-                           { name: 'SAMPLE', label: 'Sample', cell: 'string', editable: false },
-                           { label: 'Type', cell: table.TemplateCell, editable: false, template: '<%-(X2 ? "Region" : "Point")%>' },
-                           { label: 'Experiment', cell: ExperimentKindCell, editable: false },
-                           { label: 'Parameters', cell: ExperimentCell, editable: false, beamlinesetups: this.beamlinesetups },
-                           { name: '_valid', label: 'Valid', cell: table.TemplateCell, editable: false, test: '_valid', template: '<i class="button fa fa-check active"></i>' },
-                           { name: '', cell: table.StatusCell, editable: false },
-                           { label: '', cell: SnapshotCell, editable: false, inspectionimages: this.inspectionimages },
-                           { label: '', cell: ActionsCell, editable: false, plans: this.plans },
+            const queuedSubSamples = [
+                { label: '#', cell: table.TemplateCell, editable: false, template: '<%-(RID+1)%>' },
+                { label: '', cell: 'select-row', headerCell: 'select-all', editable: false },
+                { name: 'SAMPLE', label: 'Sample', cell: 'string', editable: false },
+                { label: 'Type', cell: table.TemplateCell, editable: false, template: '<%-(X2 ? "Region" : "Point")%>' },
+                { label: 'Source', cell: table.TemplateCell, editable: false, template: '<%- SOURCE %>' },
+                { label: 'Experiment', cell: ExperimentKindCell, editable: false },
+                { label: 'Parameters', cell: ExperimentCell, editable: false, beamlinesetups: this.beamlinesetups },
+                { name: '_valid', label: 'Valid', cell: table.TemplateCell, editable: false, test: '_valid', template: '<i class="button fa fa-check active"></i>' },
+                { name: '', cell: table.StatusCell, editable: false },
+                { label: '', cell: SnapshotCell, editable: false, inspectionimages: this.inspectionimages },
+                { label: '', cell: ActionsCell, editable: false, plans: this.plans },
             ]
 
             if (app.mobile()) {
                 _.each([], function(v) {
-                    columns[v].renderable = false
+                    queuedSubSamples[v].renderable = false
                 })
             }
 
@@ -760,13 +761,13 @@ define(['marionette',
 
             if (this.model.get('CONTAINERQUEUEID')) {
                 this.ui.rpreset.hide()
-                columns.push({ label: '', cell: table.StatusCell, editable: false })
-                columns.push({ label: '', cell: table.TemplateCell, editable: false, template: '<a href="/samples/sid/<%-BLSAMPLEID%>" class="button"><i class="fa fa-search"></i></a>' })
+                queuedSubSamples.push({ label: '', cell: table.StatusCell, editable: false })
+                queuedSubSamples.push({ label: '', cell: table.TemplateCell, editable: false, template: '<a href="/samples/sid/<%-BLSAMPLEID%>" class="button"><i class="fa fa-search"></i></a>' })
             }
 
             this.table2 = new TableView({ 
                 collection: this.qsubsamples,
-                columns: columns, 
+                columns: queuedSubSamples,
                 tableClass: 'subsamples', 
                 loading: false,
                 backgrid: { 

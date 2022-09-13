@@ -13,13 +13,12 @@ define(['marionette',
             'mouseover': 'hover',
         },
 
-        hover: function(e) {
-            console.log('hover')
+        hover: function() {
             this.model.set({isSelected: true});
             this.model.collection.trigger('selected:change', this.model)
         },
         
-        initialize: function(options) {
+        initialize: function() {
             this.model.on('change:isSelected', this.onSelectedChanged.bind(this))
             
             var self = this
@@ -34,8 +33,8 @@ define(['marionette',
         },
 
         loadImage: function() {
-            var idx = this.model.collection.indexOf(this.model)
-            var last = this.model.collection.length == idx+1
+            const idx = this.model.collection.indexOf(this.model)
+            const last = this.model.collection.length === idx+1
             setTimeout(this.doLoadImage.bind(this), last ? 0 : idx*500)
         },
 
@@ -126,7 +125,6 @@ define(['marionette',
             var i = this.images.at(n)
             if (this.caching && i) {
                 var xhr =  new XHRImage()
-                console.log('caching history', i.urlFor('hd'))
                 xhr.load(i.urlFor('full'), function() {
                     self.cachethread = setTimeout(function() {
                         self.preCache(++n)
