@@ -22,6 +22,10 @@ final class DatabaseTest extends TestCase
 
     public function testGetThrowsExceptionDueToInvalidConnectionDetails(): void
     {
+        global $isb, $dbtype;
+        $dbtype = "MySql";
+        $isb  = array('user' => 'user', 'pass' => 'pass', 'db' => 'localhost/ispyb', 'port' => '80');
+
         $this->expectException(\mysqli_sql_exception::class);
         Database::get();
     }
