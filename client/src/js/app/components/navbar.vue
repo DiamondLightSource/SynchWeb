@@ -6,7 +6,7 @@
     -->
     <div v-show="isLoggedIn" data-cy="navbar" class="tw-hidden tw-z-10 md:tw-flex md:flex-row tw-bg-sidebar-grad-end tw-justify-center tw-my-4 md:tw-mx-auto tw-border tw-border-gray-400 tw-divide-x tw-divide-gray-400">
         <!-- List proposals item -->
-        <router-link to="/proposals" class="navbar-item">
+        <router-link to="/proposals" class="navbar-item" data-testid="proposal-link">
             Proposals
         </router-link>
 
@@ -95,7 +95,7 @@ export default {
             return this.$store.getters['proposal/currentProposal']
         },
         isProposalClosed: function() {
-            return this.$store.getters['proposal/currentProposalState'] == 'Closed'
+            return this.$store.getters['proposal/currentProposalState'] ===  'Closed'
         },
         isLoggedIn: function() {
             return this.$store.getters['auth/isLoggedIn']
