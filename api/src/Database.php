@@ -4,6 +4,14 @@ namespace SynchWeb;
 
 class Database
 {
+
+    // Array of database types and corresponding database class names.
+    // Value is class name in SynchWeb\Database\Type namespace.
+    // Key is lower case representation of class name.
+    static $database_types = array(
+        'mysql' => 'MySQL'
+    );
+
     public static function get()
     {
         global $dbtype, $isb;
@@ -11,25 +19,18 @@ class Database
         // Global variable is named $dbtype in config.php.
         $database_type = $dbtype;
 
-        // Array of database types and corresponding database class names.
-        // Value is class name in SynchWeb\Database\Type namespace.
-        // Key is lower case representation of class name.
-        $database_types = array(
-            'mysql' => 'MySQL'
-        );
-
         if (!$database_type) {
-            error_log('Database type ($dbtype) is not specified in config.php - defaulting to MySql.');
+            error_log('Database type variable, dbtype, is not specified in config.php - defaulting to MySql.');
 
             $database_type = 'MySQL';
         }
 
         // Determine fully-qualified class name of database class corresponding to $database_type.
-        $full_class_name = null;
+        if (key_exists(strtolower($database_type), Database::$database_types)) {
+            $dbClassName = Database::$database_types[strtolower($database_type)];
 
-        if (key_exists(strtolower($database_type), $database_types)) {
-            $full_class_name = 'SynchWeb\\Database\\Type\\' . $database_types[$database_type];
-
+            $full_class_name = 'SynchWeb\\Database\\Type\\'.$dbClassName;
+            
             if (class_exists($full_class_name)) {
                 $port = array_key_exists('port', $isb) ? $isb['port'] : null;
 
@@ -42,7 +43,5 @@ class Database
         } else {
             error_log("Database type '$database_type' not configured.");
         }
-
-        // $this->_error(500, 'Database connection not possible due to a configuration error.');
     }
 }
