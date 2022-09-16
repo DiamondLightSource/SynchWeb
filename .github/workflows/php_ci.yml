@@ -24,7 +24,7 @@ jobs:
     - name: Setup PHP
       uses: shivammathur/setup-php@v2
       with:
-        php-version: 5.4
+        php-version: 7.4
 
     - name: Validate composer.json and composer.lock
       run: composer validate
@@ -45,7 +45,10 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-        - uses: michaelw90/PHP-Lint@master
+      - name: Psalm Linting
+        uses: docker://vimeo/psalm-github-actions
+        with:
+          security_analysis: true
 
   phptest:
     needs: build
