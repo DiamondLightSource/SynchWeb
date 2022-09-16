@@ -510,7 +510,7 @@ class DC extends Page
                     min(dc.xtalsnapshotfullpath2) as x2,
                     min(dc.xtalsnapshotfullpath3) as x3,
                     min(dc.xtalsnapshotfullpath4) as x4,
-                    min(dc.starttime) as sta,
+                    max(dc.starttime) as sta,
                     min(dc.detectordistance) as det,
                     min(dc.xbeam) as xbeam,
                     min(dc.ybeam) as ybeam,
