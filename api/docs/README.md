@@ -359,7 +359,7 @@ Response:
 
 # Building the swagger spec
 
-After updating any relevant yaml files the `spec.json` can be rubuilt with:
+After updating any relevant yaml files the `spec.json` can be rebuilt with:
 
 ```bash
 node resolve.js
