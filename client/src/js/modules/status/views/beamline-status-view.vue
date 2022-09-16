@@ -9,10 +9,15 @@
       </pv-item>
     </div>
 
+    <div class="tw-full tw-mb-3">
+      <pv-item v-for="(messagePV, messagePVIndex) in messagesPvs" :key="messagePVIndex" class="tw-mx-1/2 tw-my-1/2 tw-w-full" :pv-item="messagePV" value-class-names="" title-class-names="tw-font-bold tw-mb-2">
+      </pv-item>
+    </div>
+
     <div class="tw-mb-3">
-      <h1>Webcams</h1>
-      <div class="tw-w-full tw-flex tw-justify-between">
-        <div v-for="(webcam, webcamIndex) in webcams" :key="webcamIndex" class="tw-mx-1">
+      <h6 class="tw-font-bold">Webcams</h6>
+      <div class="tw-w-full tw-flex">
+        <div v-for="(webcam, webcamIndex) in webcams" :key="webcamIndex" class="tw-px-1">
           <img class="tw-w-full" :alt="webcam.alt" :src="webcam.url"/>
         </div>
       </div>
@@ -40,7 +45,7 @@
       </div>
     </div>
 
-    <div v-if="" class="tw-mb-3">
+    <div v-if="isStaff" class="tw-mb-3">
       <h1>GDA Log</h1>
       <div class="tw-bg-content-light-background tw-m-2 tw-p-2 tw-rounded-sm tw-overflow-y-scroll tw-h-64 tw-text-content-page-color">
         <p v-for="(logItem, logIndex) in GDALogData" :key="logIndex">{{ logItem['LINE'] }}</p>
@@ -108,7 +113,9 @@ export default {
         url: '#'
       },
       pvs: [],
+      messagesPvs: [],
       pvsCollection: null,
+      messagePVsCollection: null,
       webcams: [
         {
           alt: 'webcam1',
@@ -133,8 +140,11 @@ export default {
       })
     }
 
-    this.fetchDGALogData()
+    if (this.isStaff) {
+      this.fetchDGALogData()
+    }
     this.fetchPVSData()
+    this.fetchMessagePVSData()
     this.fetchEPICSPagesData()
     this.prepareWebcamDisplay()
   },
@@ -147,14 +157,18 @@ export default {
       this.pvsCollection = new PVs(null, { bl: this.beamline })
       await this.$store.dispatch('getCollection', this.pvsCollection)
     },
+    async fetchMessagePVSData() {
+      this.messagePVsCollection = new PVs(null, { bl: this.beamline, mmsg: true })
+      await this.$store.dispatch('getCollection', this.messagePVsCollection)
+    },
     async fetchEPICSPagesData() {
       this.epicPagesCollection = new EpicPages(null, { bl: this.beamline })
       const epicPages = await this.$store.dispatch('getCollection', this.epicPagesCollection)
       this.epicPages = epicPages.toJSON()
     },
     fetchCamToken(data) {
-      return this.$store.dispatch('postRequest', {
-        url: `${this.apiUrl}/download/sign`,
+      return this.$store.dispatch('saveDataToApi', {
+        url: `/download/sign`,
         data
       })
     },
@@ -166,13 +180,13 @@ export default {
         cam.url = `${this.apiUrl}/image/cam/bl/${this.beamline}/n/${index}?token=${camToken.token}`
       }
     },
-    toggleOAV() {
+    async toggleOAV() {
       if (!this.showOAV) {
-        const camToken = this.fetchCamToken({
+        const camToken = await this.fetchCamToken({
           validity: `/image/oav/bl/${this.beamline}`
         })
 
-        this.oavData.url = `${this.apiUrl}/image/cam/bl/${this.beamline}?token${camToken.token}`
+        this.oavData.url = `${this.apiUrl}/image/oav/bl/${this.beamline}?token=${camToken.token}`
       } else {
         this.oavData.url = '#'
       }
@@ -182,6 +196,11 @@ export default {
     formatPvsCollectionData(data) {
       if (data) {
         this.pvs = this.pvsCollection.toJSON()
+      }
+    },
+    formatMessagesPvsCollectionData(data) {
+      if (data) {
+        this.messagesPvs = this.messagePVsCollection.toJSON()
       }
     },
     formatGDALogCollectionData(data) {
@@ -211,7 +230,8 @@ export default {
   },
   computed: {
     ...mapGetters({
-      apiUrl: ['apiUrl']
+      apiUrl: ['apiUrl'],
+      isStaff: ['user/isStaff']
     })
   },
   watch: {
@@ -219,6 +239,11 @@ export default {
       deep: true,
       immediate: true,
       handler: 'formatPvsCollectionData'
+    },
+    messagePVsCollection: {
+      deep: true,
+      immediate: true,
+      handler: 'formatMessagesPvsCollectionData'
     },
     GDALogCollection: {
       deep: true,
@@ -233,6 +258,7 @@ export default {
   },
   beforeDestroy() {
     this.pvsCollection.stop()
+    this.messagePVsCollection.stop()
     this.GDALogCollection.stop()
   }
 }
