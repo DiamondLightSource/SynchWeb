@@ -98,10 +98,9 @@ define(['marionette',
         },
 
         delete: function(e) {
-            var self = this
             e.preventDefault()
 
-            var self = this
+            const self = this
             utils.confirm({
                 title: 'Delete Subsample',
                 content: 'Are you sure you want to delete this subsample?',
@@ -130,14 +129,13 @@ define(['marionette',
         render: function() {
             this.$el.empty();
 
-            var active = this.model.get('EXPERIMENTKIND') ? 'active' : ''
-            var active2 = this.model.get('SAMPLES') > 0 ? 'active' : ''
+            const active2 = this.model.get('SAMPLES') > 0 ? 'active' : ''
 
-            var has_dc = false
+            let has_dc = false
             _.each(['GR', 'SC', 'DC'], function(ty) {
                 if (this.model.get(ty) > 0) has_dc = true
             }, this)
-            var del = has_dc ? '' : '<a href="#" class="button button-notext delete"><i class="fa fa-times"></i> <span>Delete</span></a>'
+            const del = has_dc ? '' : '<a href="#" class="button button-notext delete"><i class="fa fa-times"></i> <span>Delete</span></a>'
 
             this.$el.html('<!--<a href="#" class="button button-notext measure" title="Measure"><i class="fa fa-arrows-h"></i> <span>Measure</span></a>-->\
              <a href="#" class="button button-notext fish '+active2+'" title="Fish into puck"><i class="fa fa-crosshairs"></i> <span>Fish</span></a>\
@@ -223,7 +221,7 @@ define(['marionette',
         className: 'content',
 
         // template: template,
-        getTemplate: function(m) {
+        getTemplate: function() {
             return this.model.get('INSPECTIONS') > 0 ? templateimage : template
         },
 
@@ -297,13 +295,13 @@ define(['marionette',
             'change:QUEUED': 'updatedQueued',
         },
 
-        toggleSampleStatus: function(e) {
+        toggleSampleStatus: function() {
             this.ui.auto.prop('checked', false)
             this.plateView.setAutoStatus(false)
             this.plateView.setShowSampleStatus(this.ui.ss.is(':checked'))
         },
 
-        setRankStatus: function(e) {
+        setRankStatus: function() {
             var opt = this.ui.param.find('option:selected')
             var options = this.ui.rank.is(':checked') ? {
                 value: opt.attr('value'),
@@ -323,7 +321,7 @@ define(['marionette',
             }
         },
 
-        setAutoStatus: function(e) {
+        setAutoStatus: function() {
             this.ui.ss.prop('checked', false)
             this.ui.rank.prop('checked', false)
             this.plateView.setShowSampleStatus(false)
@@ -334,7 +332,7 @@ define(['marionette',
         },
 
         updateAdhoc: function() {
-            if (this.model.get('ALLOW_ADHOC') == '1') {
+            if (Number(this.model.get('ALLOW_ADHOC')) === 1) {
                 this.ui.ity.show()
                 this.ui.adh.html('<a href="#" class="button adhoc"><i class="fa fa-picture-o"></i> <span>Request Plate Imaging</span></a>')
             } else {
@@ -364,7 +362,7 @@ define(['marionette',
         },
 
         updateReturn: function() {
-            if (this.model.get('REQUESTEDRETURN') == '1') this.ui.ret.html('<p>This plate has been requested for return to the user</p>')
+            if (Number(this.model.get('REQUESTEDRETURN')) === 1) this.ui.ret.html('<p>This plate has been requested for return to the user</p>')
             else this.ui.ret.html('<a href="#" class="button return"><i class="fa fa-paper-plane-o"></i> <span>Request Return</span></a>')
         },
 
@@ -372,7 +370,7 @@ define(['marionette',
         dragHover: function(e) {
             e.stopPropagation()
             e.preventDefault()
-            if (e.type == 'dragover') this.ui.drop.addClass('active')
+            if (e.type === 'dragover') this.ui.drop.addClass('active')
             else this.ui.drop.removeClass('active')
         },
 
@@ -425,13 +423,13 @@ define(['marionette',
             app.dialog.show(new DialogView({ title: 'Add Manual Container Inspection', className: 'content', view: this.addInspection, autoSize: true }))
         },
 
-        appendInspection: function(e) {
-            var m = this.addInspection.getModel()
+        appendInspection: function() {
+            const m = this.addInspection.getModel()
             this.inspections.add(m)
             this.ui.ins.html(this.inspections.opts())
             this.model.set('INSPECTIONS', this.model.get('INSPECTIONS')+1)
 
-            if (this.model.get('INSPECTIONS') == 1) {
+            if (this.model.get('INSPECTIONS') === 1) {
                 this.render()
                 this.doOnShow()
 
@@ -455,11 +453,11 @@ define(['marionette',
                     cid: this.model.get('CONTAINERID'),
                     INSPECTIONTYPEID: this.ui.ity.val(),
                 },
-                success: function(resp) {
+                success: function() {
                     app.alert({ message: 'Adhoc inspection successfully requested for this container' })
                     self.updateAdhoc()
                 },
-                error: function(resp) {
+                error: function() {
                     app.alert({ message: 'Something went wrong request an adhoc inspection for this container' })
                 }
             })
@@ -536,7 +534,7 @@ define(['marionette',
                 xhr.load(i.urlFor('full'), function() {
                     self.plateView.drawPlate()
 
-                    if (n+1 == self.inspectionimages.length) self.ui.status.html('')
+                    if (n+1 === self.inspectionimages.length) self.ui.status.html('')
                     else self.ui.status.html('Loaded '+(n+1)+' out of '+self.inspectionimages.length+' images')
 
                     self.cachethread = setTimeout(function() {
@@ -574,15 +572,16 @@ define(['marionette',
         },
 
         getNext: function(options) {
-            var cur = options && options.s ? options.s : this.samples.findWhere({ isSelected: true })
-            var idx = this.samples.indexOf(cur)
+            const cur = options && options.s ? options.s : this.samples.findWhere({ isSelected: true })
+            const idx = this.samples.indexOf(cur)
+            let next
 
-            if (options && options.first) var next = this.samples.first()
-            else if (options && options.last) var next = this.samples.last()
-            else var next = this.samples.at(idx+(options && options.prev ? -1 : 1))
+            if (options && options.first) next = this.samples.first()
+            else if (options && options.last) next = this.samples.last()
+            else next = this.samples.at(idx+(options && options.prev ? -1 : 1))
             if (!next) next = options && options.prev ? this.samples.last() : this.samples.at(0)
 
-            var hasimg = this.inspectionimages.findWhere({ BLSAMPLEID: next.get('BLSAMPLEID') })
+            const hasimg = this.inspectionimages.findWhere({ BLSAMPLEID: next.get('BLSAMPLEID') })
             return hasimg ? next : this.getNext({ s: next, prev: options && options.prev })
         },
 
@@ -593,7 +592,6 @@ define(['marionette',
             this.playthread = null
             this.caching = !app.mobile()
 
-            var self = this
             this.samples = new Samples(null, { state: {pageSize: 9999} })
             this.samples.queryParams.cid = options.model.get('CONTAINERID')
             this.listenTo(this.samples, 'selected:change', this.selectSample)
@@ -663,7 +661,7 @@ define(['marionette',
             this.ui.class.html(opts)
         },
 
-        updateTypes: function(e) {
+        updateTypes: function() {
             this.ui.ity.html(this.inspectiontypes.opts())
         },
 
@@ -672,22 +670,22 @@ define(['marionette',
             m.save(m.changedAttributes(), { patch: true })
         },
 
-        prevImage: function(e) {
+        prevImage: function() {
             var s = this.getNext({ prev: true })
             s.set({ isSelected: true })
         },
 
-        nextImage: function(e) {
+        nextImage: function() {
             var s = this.getNext()
             s.set({ isSelected: true })
         },
 
-        firstImage: function(e) {
+        firstImage: function() {
             var s = this.getNext({ first: true })
             s.set({ isSelected: true })
         },
 
-        lastImage: function(e) {
+        lastImage: function() {
             var s = this.getNext({ last: true })
             s.set({ isSelected: true })
         },
@@ -717,7 +715,7 @@ define(['marionette',
                         else this.groupview.setModel(null)
                 }
 
-                if (this.model.get('INSPECTIONS') == 0) return
+                if (Number(this.model.get('INSPECTIONS')) === 0) return
                 if (!s.get('BLSAMPLEID')) {
                     this.ui.add.removeClass('enable')
 
@@ -772,33 +770,33 @@ define(['marionette',
             if (app.user_can('disp_cont')) edit.create('CONTAINERTYPE', 'select', { data: this.ctypes.kv() })
 
             if (this.model.get('INSPECTIONS') > 0) {
-                var columns = [
-                        { label: '#', cell: table.TemplateCell, editable: false, template: '<%-(RID+1)%>' },
-                        { label: 'Type', cell: table.TemplateCell, editable: false, template: '<%-(X2 ? "Region" : "Point")%>' },
-                        { name: 'X', label: 'X', cell: 'string', editable: false },
-                        { name: 'Y', label: 'Y', cell: 'string', editable: false },
-                        { name: 'COMMENTS', label: 'Comments', cell: 'string', editable: true },
-                        { label: '', cell: table.StatusCell, editable: false },
-                        { name: 'DCRESOLUTION', label: 'Res', cell: 'string', editable: false },
-                        { label: '', cell: DataCell, editable: false, dcs: this.sampledcs, visit: this.model.get('VISIT') },
-                        { label: '', cell: table.TemplateCell, editable: false, template: '<a href="/samples/sid/<%-BLSAMPLEID%>" class="button"><i class="fa fa-search"></i></a>' },
+                const subSamplesTableColumns = [
+                    { label: '#', cell: table.TemplateCell, editable: false, template: '<%-(RID+1)%>' },
+                    { label: 'Type', cell: table.TemplateCell, editable: false, template: '<%-(X2 ? "Region" : "Point")%>' },
+                    { label: 'Source', cell: table.TemplateCell, editable: false, template: '<%- SOURCE %>' },
+                    { name: 'X', label: 'X', cell: 'string', editable: false },
+                    { name: 'Y', label: 'Y', cell: 'string', editable: false },
+                    { name: 'COMMENTS', label: 'Comments', cell: 'string', editable: true },
+                    { label: '', cell: table.StatusCell, editable: false },
+                    { name: 'DCRESOLUTION', label: 'Res', cell: 'string', editable: false },
+                    { label: '', cell: DataCell, editable: false, dcs: this.sampledcs, visit: this.model.get('VISIT') },
+                    { label: '', cell: table.TemplateCell, editable: false, template: '<a href="/samples/sid/<%-BLSAMPLEID%>" class="button"><i class="fa fa-search"></i></a>' },
                 ]
 
-                if (!this.model.get('CONTAINERQUEUEID')) columns.push({ label: '', cell: ActionCell, editable: false })
+                if (!this.model.get('CONTAINERQUEUEID')) subSamplesTableColumns.push({ label: '', cell: ActionCell, editable: false })
 
-                this.subtable = new TableView({ collection: this.subsamples, columns: columns, tableClass: 'subsamples', loading: false, pages: false, backgrid: { row: ClickableRow, emptyText: 'No subsamples found', } })
+                this.subtable = new TableView({ collection: this.subsamples, columns: subSamplesTableColumns, tableClass: 'subsamples', loading: false, pages: false, backgrid: { row: ClickableRow, emptyText: 'No subsamples found', } })
                 this.subs.show(this.subtable)
             }
 
-
-            var columns = [
+            const containerHistoryTableColumns = [
                 { name: 'BLTIMESTAMP', label: 'Date', cell: 'string', editable: false },
                 { name: 'STATUS', label: 'Status', cell: 'string', editable: false },
                 { name: 'LOCATION', label: 'Location', cell: 'string', editable: false },
                 { name: 'BEAMLINENAME', label: 'Beamline', cell: 'string', editable: false },
             ]
 
-            this.histtable = new TableView({ collection: this.history, columns: columns, tableClass: 'hist', loading: true, pages: true, backgrid: { emptyText: 'No history found', } })
+            this.histtable = new TableView({ collection: this.history, columns: containerHistoryTableColumns, tableClass: 'hist', loading: true, pages: true, backgrid: { emptyText: 'No history found', } })
             this.hist.show(this.histtable)
 
             this.updateReturn()
@@ -890,29 +888,29 @@ define(['marionette',
 
                 // Enable swiping for mobile
                 if (app.mobile()) {
-                    var self = this
+                    const self = this
                     console.log('enable swipe')
                     this.img.$el.find('canvas').swipe({
-                        swipe: function(e, direction, distance, duration, fingerCount, fingerData) {
+                        swipe: function(e, direction) {
                             e.preventDefault()
 
-                            var s = null
+                            let s = null
 
                             console.log('swipe', direction)
 
-                            if (direction == 'left') {
+                            if (direction === 'left') {
                                 s = self.getNext()
                             }
 
-                            if (direction == 'right') {
+                            if (direction === 'right') {
                                 s = self.getNext({ prev: true })
                             }
 
-                            if (direction == 'up') {
+                            if (direction === 'up') {
 
                             }
 
-                            if (direction == 'down') {
+                            if (direction === 'down') {
 
                             }
 
@@ -926,7 +924,7 @@ define(['marionette',
             }
 
             if (this.getOption('params').sid) {
-                var s = this.samples.findWhere({ BLSAMPLEID: this.getOption('params').sid })
+                const s = this.samples.findWhere({ BLSAMPLEID: this.getOption('params').sid })
                 if (s) s.set({ isSelected: true })
             } else this.samples.at(0).set({isSelected: true})
             this.sample.show(this.singlesample)

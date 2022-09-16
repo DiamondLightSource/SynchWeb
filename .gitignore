@@ -26,6 +26,9 @@ client/assets
 client/index.php
 client/dist
 client/index.html
+client/.env
 
 api/config.php
 api/vendor
+
+

@@ -1,7 +1,7 @@
 <template>
   <div class="tw-p-1 tw-rounded" :class="`${pvStatusClassName}`">
-    <h6 class="tw-text-center tw-text-sm tw-font-page-header tw-mb-1">{{ pvItem['NAME'] }}</h6>
-    <p class="tw-text-center">{{ pvItem['VALUE'] }}</p>
+    <h6 :class="[titleClassNames]">{{ pvItem['NAME'] }}</h6>
+    <p :class="[valueClassNames]" v-html="pvItemValue"></p>
   </div>
 </template>
 <script>
@@ -11,6 +11,14 @@ export default {
     pvItem: {
       required: true,
       type: Object
+    },
+    titleClassNames: {
+      type: String,
+      default: 'tw-text-center tw-text-sm tw-font-page-header tw-mb-1'
+    },
+    valueClassNames: {
+      type: String,
+      default: 'tw-text-center'
     }
   },
   data() { return {} },
@@ -39,6 +47,13 @@ export default {
       }
 
       return className ? 'tw-bg-content-active' : 'tw-bg-content-inactive'
+    },
+    pvItemValue() {
+      if (this.pvItem['VALUE']) {
+        return this.pvItem['VALUE'].replace(/\\n/g, '<br />')
+      }
+
+      return ''
     }
   }
 }

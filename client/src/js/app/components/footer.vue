@@ -3,16 +3,20 @@
       <div class="whatnow">
           <a href="http://diamondlightsource.github.io/SynchWeb/">SynchWeb? What is This?</a>
       </div>
-      <p><a href="http://diamond.ac.uk">Diamond Light Source</a> &copy;2013-{{currentYear}}</p>
+      <p><a :href="siteLink">{{siteName}}</a> &copy;2013-{{currentYear}}</p>
     </div>
 </template>
 
 <script>
+import config from 'config.json'
+
 export default {
     name: 'Footer',
     data: function() {
       return {
-        currentYear: new Date().getFullYear()
+        currentYear: new Date().getFullYear(),
+        siteLink: config.site_link || 'https://www.diamond.ac.uk',
+        siteName: config.site_name || 'Diamond Light Source'
       }
     }
 }
