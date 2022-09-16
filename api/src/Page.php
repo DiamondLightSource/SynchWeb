@@ -152,7 +152,7 @@ class Page
         * The return value can be checked with empty() if required
         *
         * @param String $ty Beamline type/group 'mx', 'em', etc. or 'all' to get all beamlines
-        * @param Boolean $archived Default: False. Flag that allows archived beamlines to be included in result
+        * @param bool $archived Default: false. Flag that allows archived beamlines to be included in result
         * @return Array Returns list of beamlines that are part of the beamline type
         */
         function _get_beamlines_from_type($ty, $archived = False) {
@@ -460,7 +460,7 @@ class Page
                                 }
                                 $parsed[$k] = $tmp;
                                 
-                            } elseif ($request[$k] instanceof stdClass) {
+                            } elseif ($request[$k] instanceof \stdClass) {
                                 // Handles nested backbone models
                                 foreach($request[$k] as $key => $value) {
                                     if(is_array($value)) {
@@ -485,7 +485,7 @@ class Page
                                 $json = json_decode($request[$k]);
                                 
                                 foreach($json as $label => $object){
-                                    if($object instanceof stdClass){
+                                    if($object instanceof \stdClass){
                                         foreach($object as $name => $item){
                                             if(is_array($item)) {
                                                 $tmp = array();

@@ -393,13 +393,15 @@ class PDF extends Page
 
             $f = 'assets/pdf/'.$file.'.php';
             
+            global $pdf_tmp_dir;
+            
             if (!$this->has_arg('p')) {
                 if ($orientation) $orientation = '-'.$orientation;
                 
                 # Enable output buffering to capture html
                 ob_start();
 
-                global $pdf_tmp_dir;
+
                 $mpdf = new \Mpdf\Mpdf([
                     'mode' => 'utf-8', 
                     'format' =>  'A4'.$orientation,

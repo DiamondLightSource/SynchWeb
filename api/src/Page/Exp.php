@@ -602,7 +602,7 @@ class Exp extends Page
             ", $args);
 
             if ($this->has_arg('DIFFRACTIONPLANID')) {
-                if (sizeof($dps)) $this->_output($dps[0]);
+                if (sizeof($rows)) $this->_output($rows[0]);
                 else $this->_error('No such diffraction plan');
 
             } else $this->_output(array(
@@ -734,7 +734,7 @@ class Exp extends Page
             ", $args);
 
             if ($this->has_arg('BEAMLINESETUPID')) {
-                if (sizeof($dps)) $this->_output($dps[0]);
+                if (sizeof($rows)) $this->_output($rows[0]);
                 else $this->_error('No such beamline setup');
 
             } else $this->_output(array(

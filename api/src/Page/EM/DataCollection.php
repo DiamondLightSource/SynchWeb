@@ -94,7 +94,7 @@ trait DataCollection
             $dataCollectionId = $this->db->id();
 
             $this->db->end_transaction();
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             error_log("Failed to add DataCollection to database.");
             $this->_error("Failed to add DataCollection to database.", 500);
         }

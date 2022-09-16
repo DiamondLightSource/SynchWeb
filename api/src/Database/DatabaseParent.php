@@ -51,10 +51,10 @@ interface DatabaseInterface
     public function __construct($user, $pass, $db, $port);
 
     // Prepared Query
-    public function pq($query, $arguments);
+    public function pq($query, $args);
 
     // Paginated Query
-    public function paginate($query, $arguments);
+    public function paginate($query, $args);
 
     // Read binary
     public function read($field);
