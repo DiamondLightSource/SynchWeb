@@ -503,8 +503,9 @@ class Shipment extends Page
             }
 
             if ($this->has_arg('s')) {
-                $where .= " AND lower(r.facilitycode) LIKE lower(CONCAT(CONCAT('%', :".(sizeof($args)+1)."), '%'))";
-                array_push($args, $this->arg('s'));
+                $st = sizeof($args) + 1;
+                $where .= " AND (lower(r.facilitycode) LIKE lower(CONCAT(CONCAT('%', :".($st)."), '%')) OR lower(CONCAT(p.proposalcode,p.proposalnumber)) LIKE lower(CONCAT(CONCAT('%',:".($st + 1)."), '%')))";
+                array_push($args, $this->arg('s'), $this->arg('s'));
             }
 
             if ($this->has_arg('t')) {
