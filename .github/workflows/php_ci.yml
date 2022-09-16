@@ -6,9 +6,11 @@ on:
   pull_request:
     branches: [ "master" ]
 
-permissions:
-  contents: read
-
+defaults:
+  run:
+    shell: bash
+    working-directory: api
+    
 jobs:
   build:
 
@@ -16,9 +18,13 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: 5.4
 
     - name: Validate composer.json and composer.lock
-      run: composer validate --strict
+      run: composer validate
 
     - name: Cache Composer packages
       id: composer-cache
@@ -45,7 +51,6 @@ jobs:
       - name: PHPUnit Tests
         uses: php-actions/phpunit@v2
         with:
-          dir: api
           bootstrap: vendor/autoload.php
           configuration: test/phpunit.xml
           args: --coverage-text
