@@ -548,21 +548,30 @@ class Sample extends Page
         function _sub_samples() {
             $where = '';
             $having = '';
+            $first_inner_select_where = '';
+            $second_inner_select_where = '';
             $args = array($this->proposalid);
 
             if ($this->has_arg('sid')) {
                 $where .= ' AND s.blsampleid=:'.(sizeof($args)+1);
-                array_push($args, $this->arg('sid'));
+                $first_inner_select_where .= ' AND s.blsampleid=:'.(sizeof($args) + 2);
+                $second_inner_select_where .= ' AND s.blsampleid=:'.(sizeof($args) + 3);
+                array_push($args, $this->arg('sid'), $this->arg('sid'), $this->arg('sid'));
             }
 
             if ($this->has_arg('ssid')) {
                 $where .= ' AND ss.blsubsampleid=:'.(sizeof($args)+1);
-                array_push($args, $this->arg('ssid'));
+                $first_inner_select_where .= ' AND ss.blsubsampleid=:'.(sizeof($args) + 2);
+                $second_inner_select_where .= ' AND ss.blsubsampleid=:'.(sizeof($args) + 3);
+
+                array_push($args, $this->arg('ssid'), $this->arg('ssid'), $this->arg('ssid'));
             }
 
             if ($this->has_arg('cid')) {
                 $where .= ' AND c.containerid=:'.(sizeof($args)+1);
-                array_push($args, $this->arg('cid'));
+                $first_inner_select_where .= ' AND s.containerid=:'.(sizeof($args) + 2);
+                $second_inner_select_where .= ' AND s.containerid=:'.(sizeof($args) + 3);
+                array_push($args, $this->arg('cid'), $this->arg('cid'), $this->arg('cid'));
             }
 
             if ($this->has_arg('queued')) {
@@ -578,46 +587,130 @@ class Sample extends Page
             }
 
             $this->db->wait_rep_sync(true);
-            $subs = $this->db->pq("SELECT pr.acronym as protein, s.name as sample, dp.experimentkind, dp.preferredbeamsizex, dp.preferredbeamsizey, round(dp.exposuretime,6) as exposuretime, dp.requiredresolution, dp.boxsizex, dp.boxsizey, dp.monochromator, dp.axisstart, dp.axisrange, dp.numberofimages, dp.transmission, dp.energy, count(sss.blsampleid) as samples, s.location, ss.diffractionplanid, pr.proteinid, ss.blsubsampleid, ss.blsampleid, ss.comments, ss.positionid, po.posx as x, po.posy as y, po.posz as z, po2.posx as x2, po2.posy as y2, po2.posz as z2, IF(cqs.containerqueuesampleid IS NOT NULL AND cqs.containerqueueid IS NULL, 1, 0) as readyforqueue, cq.containerqueueid, count(distinct IF(dc.overlap != 0,dc.datacollectionid,NULL)) as sc, count(distinct IF(dc.overlap = 0 AND dc.axisrange = 0,dc.datacollectionid,NULL)) as gr, count(distinct IF(dc.overlap = 0 AND dc.axisrange > 0,dc.datacollectionid,NULL)) as dc, count(distinct so.screeningid) as ai, count(distinct app.autoprocprogramid) as ap, count(distinct IF(dcg.experimenttype LIKE 'XRF map', dc.datacollectionid, NULL)) as xm, count(distinct IF(dcg.experimenttype LIKE 'XRF spectrum', dc.datacollectionid, NULL)) as xs, count(distinct IF(dcg.experimenttype LIKE 'Energy scan', dc.datacollectionid, NULL)) as es, round(min(st.rankingresolution),2) as scresolution, max(ssw.completeness) as sccompleteness, round(min(apss.resolutionlimithigh),2) as dcresolution, round(max(apss.completeness),1) as dccompleteness, cq2.completedtimestamp as queuecompleted
-              FROM blsubsample ss
-              LEFT OUTER JOIN position po ON po.positionid = ss.positionid
-              LEFT OUTER JOIN position po2 ON po2.positionid = ss.position2id
-              LEFT OUTER JOIN blsample sss on ss.blsubsampleid = sss.blsubsampleid
-              INNER JOIN blsample s ON s.blsampleid = ss.blsampleid
-              INNER JOIN crystal cr ON cr.crystalid = s.crystalid
-              INNER JOIN protein pr ON pr.proteinid = cr.proteinid
-              INNER JOIN container c ON c.containerid = s.containerid
-              INNER JOIN dewar d ON d.dewarid = c.dewarid
-              INNER JOIN shipping sh ON sh.shippingid = d.shippingid
-              INNER JOIN proposal p ON p.proposalid = sh.proposalid
-              
-              
-              LEFT OUTER JOIN containerqueuesample cqs ON cqs.blsubsampleid = ss.blsubsampleid
-              LEFT OUTER JOIN containerqueue cq ON cqs.containerqueueid = cq.containerqueueid AND cq.completedtimestamp IS NULL
+            $ss_query = "SELECT
+                pr.acronym as protein,
+                s.name as sample,
+                dp.experimentkind,
+                dp.preferredbeamsizex,
+                dp.preferredbeamsizey,
+                round(dp.exposuretime,6) as exposuretime,
+                dp.requiredresolution,
+                dp.boxsizex,
+                dp.boxsizey,
+                dp.monochromator,
+                dp.axisstart,
+                dp.axisrange,
+                dp.numberofimages,
+                dp.transmission,
+                dp.energy,
+                count(sss.blsampleid) as samples,
+                s.location,
+                ss.diffractionplanid,
+                pr.proteinid,
+                ss.blsubsampleid,
+                ss.blsampleid,
+                ss.source,
+                ss.blsampleimageid,
+                ss.comments,
+                ss.positionid,
+                po.posx as x,
+                po.posy as y,
+                po.posz as z,
+                po2.posx as x2,
+                po2.posy as y2,
+                po2.posz as z2,
+                IF(cqs.containerqueuesampleid IS NOT NULL AND cqs.containerqueueid IS NULL, 1, 0) as readyforqueue,
+                cq.containerqueueid,
+                count(distinct IF(dc.overlap != 0,
+                dc.datacollectionid,NULL)) as sc,
+                count(distinct IF(dc.overlap = 0 AND dc.axisrange = 0,dc.datacollectionid,NULL)) as gr,
+                count(distinct IF(dc.overlap = 0 AND dc.axisrange > 0,dc.datacollectionid,NULL)) as dc,
+                count(distinct so.screeningid) as ai,
+                count(distinct app.autoprocprogramid) as ap,
+                count(distinct IF(dcg.experimenttype LIKE 'XRF map', dc.datacollectionid, NULL)) as xm,
+                count(distinct IF(dcg.experimenttype LIKE 'XRF spectrum', dc.datacollectionid, NULL)) as xs,
+                count(distinct IF(dcg.experimenttype LIKE 'Energy scan', dc.datacollectionid, NULL)) as es,
+                round(min(st.rankingresolution),2) as scresolution,
+                max(ssw.completeness) as sccompleteness,
+                round(min(apss.resolutionlimithigh),2) as dcresolution,
+                round(max(apss.completeness),1) as dccompleteness,
+                cq2.completedtimestamp as queuecompleted
+                FROM (
+                    SELECT ss.blsubsampleid
+                    FROM (
+                        SELECT s.blsampleid, max(si.blsampleimageid) AS blsampleimageid
+                      FROM blsample s
+                          INNER JOIN blsampleimage si ON si.blsampleid = s.blsampleid
+                      WHERE 1=1 $first_inner_select_where
+                      GROUP BY s.blsampleid
+                    ) qq
+                    JOIN blsubsample ss ON ss.blsampleimageid = qq.blsampleimageid
+                    WHERE ss.source = 'auto'
+            
+                    UNION ALL
+            
+                    SELECT ss.blsubsampleid
+                    FROM blsubsample ss
+                        LEFT JOIN blsample s on ss.blsampleid = s.blsampleid
+                    WHERE ss.source = 'manual' $second_inner_select_where
+                ) q
+                JOIN blsubsample ss ON ss.blsubsampleid = q.blsubsampleid
+                LEFT OUTER JOIN position po ON po.positionid = ss.positionid
+                LEFT OUTER JOIN position po2 ON po2.positionid = ss.position2id
+                LEFT OUTER JOIN blsample sss on ss.blsubsampleid = sss.blsubsampleid
+                INNER JOIN blsample s ON s.blsampleid = ss.blsampleid
+                INNER JOIN crystal cr ON cr.crystalid = s.crystalid
+                INNER JOIN protein pr ON pr.proteinid = cr.proteinid
+                INNER JOIN container c ON c.containerid = s.containerid
+                INNER JOIN dewar d ON d.dewarid = c.dewarid
+                INNER JOIN shipping sh ON sh.shippingid = d.shippingid
+                INNER JOIN proposal p ON p.proposalid = sh.proposalid
 
-              LEFT OUTER JOIN containerqueuesample cqs2 ON cqs2.blsubsampleid = ss.blsubsampleid
-              LEFT OUTER JOIN containerqueue cq2 ON cq2.containerqueueid = cqs2.containerqueueid AND cq2.completedtimestamp IS NOT NULL
-              
 
-              LEFT OUTER JOIN diffractionplan dp ON ss.diffractionplanid = dp.diffractionplanid
+                LEFT OUTER JOIN containerqueuesample cqs ON cqs.blsubsampleid = ss.blsubsampleid
+                LEFT OUTER JOIN containerqueue cq ON cqs.containerqueueid = cq.containerqueueid AND cq.completedtimestamp IS NULL
+                
+                LEFT OUTER JOIN containerqueuesample cqs2 ON cqs2.blsubsampleid = ss.blsubsampleid
+                LEFT OUTER JOIN containerqueue cq2 ON cq2.containerqueueid = cqs2.containerqueueid AND cq2.completedtimestamp IS NOT NULL
+                
+                
+                LEFT OUTER JOIN diffractionplan dp ON ss.diffractionplanid = dp.diffractionplanid
+                
+                LEFT OUTER JOIN datacollection dc ON ss.blsubsampleid = dc.blsubsampleid
+                LEFT OUTER JOIN datacollectiongroup dcg on dc.datacollectiongroupid = dcg.datacollectiongroupid
+                LEFT OUTER JOIN screening sc ON dc.datacollectionid = sc.datacollectionid
+                LEFT OUTER JOIN screeningoutput so ON sc.screeningid = so.screeningid
+                
+                LEFT OUTER JOIN screeningstrategy st ON st.screeningoutputid = so.screeningoutputid AND sc.shortcomments LIKE '%EDNA%'
+                LEFT OUTER JOIN screeningstrategywedge ssw ON ssw.screeningstrategyid = st.screeningstrategyid
+                
+                LEFT OUTER JOIN autoprocintegration ap ON ap.datacollectionid = dc.datacollectionid
+                LEFT OUTER JOIN autoprocscaling_has_int aph ON aph.autoprocintegrationid = ap.autoprocintegrationid
+                LEFT OUTER JOIN autoprocscalingstatistics apss ON apss.autoprocscalingid = aph.autoprocscalingid
+                LEFT OUTER JOIN autoprocprogram app ON app.autoprocprogramid = ap.autoprocprogramid AND app.processingstatus = 1
 
-              LEFT OUTER JOIN datacollection dc ON ss.blsubsampleid = dc.blsubsampleid
-              LEFT OUTER JOIN datacollectiongroup dcg on dc.datacollectiongroupid = dcg.datacollectiongroupid
-              LEFT OUTER JOIN screening sc ON dc.datacollectionid = sc.datacollectionid
-              LEFT OUTER JOIN screeningoutput so ON sc.screeningid = so.screeningid
-              
-              LEFT OUTER JOIN screeningstrategy st ON st.screeningoutputid = so.screeningoutputid AND sc.shortcomments LIKE '%EDNA%'
-              LEFT OUTER JOIN screeningstrategywedge ssw ON ssw.screeningstrategyid = st.screeningstrategyid
-              
-              LEFT OUTER JOIN autoprocintegration ap ON ap.datacollectionid = dc.datacollectionid
-              LEFT OUTER JOIN autoprocscaling_has_int aph ON aph.autoprocintegrationid = ap.autoprocintegrationid
-              LEFT OUTER JOIN autoprocscalingstatistics apss ON apss.autoprocscalingid = aph.autoprocscalingid
-              LEFT OUTER JOIN autoprocprogram app ON app.autoprocprogramid = ap.autoprocprogramid AND app.processingstatus = 1
-
-              WHERE p.proposalid=:1 AND ss.source='manual' $where
-              GROUP BY pr.acronym, s.name, dp.experimentkind, dp.preferredbeamsizex, dp.preferredbeamsizey, dp.exposuretime, dp.requiredresolution, s.location, ss.diffractionplanid, pr.proteinid, ss.blsubsampleid, ss.blsampleid, ss.comments, ss.positionid, po.posx, po.posy, po.posz
-              $having
-              ORDER BY ss.blsubsampleid", $args);
+                WHERE p.proposalid=:1 $where
+                GROUP BY pr.acronym,
+                    s.name,
+                    dp.experimentkind,
+                    dp.preferredbeamsizex,
+                    dp.preferredbeamsizey,
+                    dp.exposuretime,
+                    dp.requiredresolution,
+                    s.location,
+                    ss.diffractionplanid,
+                    pr.proteinid,
+                    ss.blsubsampleid,
+                    ss.blsampleid,
+                    ss.source,
+                    ss.comments,
+                    ss.positionid,
+                    po.posx,
+                    po.posy,
+                    po.posz
+                $having
+                ORDER BY ss.blsubsampleid";
+            $subs = $this->db->pq($ss_query, $args);
 
             $this->db->wait_rep_sync(false);
 
@@ -627,7 +720,9 @@ class Sample extends Page
                 if (!sizeof($subs)) $this->_error('No such sub sample');
                 else $this->_output($subs[0]);
 
-            } else $this->_output($subs);
+            } else {
+                $this->_output($subs);
+            }
         }
 
         function _update_sub_sample() {

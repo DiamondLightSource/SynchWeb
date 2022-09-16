@@ -64,8 +64,10 @@ class Proposal extends Page
                               'SESSIONID' => '\d+',
                               'ROLE' => '([\w\s-])+',
                               'REMOTE' => '\d',
-                               );
-        
+
+                              // Updating Used Time when a session is closed
+                              'Total Time' => '.*'
+        );
 
         public static $dispatch = array(array('(/:prop)', 'get', '_get_proposals'),
                                         array('/', 'post', '_add_proposal'),
@@ -85,13 +87,26 @@ class Proposal extends Page
                                         array('/bls/:ty', 'get', '_get_beamlines'),
                                         array('/type', 'get', '_get_types'),
                                         array('/lookup', 'get', '_lookup'),
+                                        array('/bl/:prop', 'get', '_get_beamline_from_proposal'),
 
                                         array('/auto', 'get', '_auto_visit'),
                                         array('/auto', 'delete', '_close_auto_visit'),
+                                        array('/auto', 'patch', '_update_auto_visit'),
                             );
         
         
-        
+        function _get_beamline_from_proposal(){
+            if(!$this->has_arg('prop')) $this->_error('No proposal specified');
+
+            $bl = $this->db->pq("SELECT beamLineName
+                FROM BLSession bls
+                INNER JOIN Proposal p ON bls.proposalId = p.proposalId
+                WHERE CONCAT(p.proposalCode, p.proposalNumber) = :1", array($this->arg('prop')))[0];
+
+            if(empty($bl)) $this->_error('Beamline not found!');
+
+            $this->_output($bl);
+        }
         
 
         function _get_beamlines() {
@@ -1150,8 +1165,26 @@ class Proposal extends Page
 
 
         # ------------------------------------------------------------------------
-        # Close visit for autocollect
+        # Close visit for auto-collect
         function _close_auto_visit() {
+            $this->_perform_visit_action();
+        }
+
+        # ------------------------------------------------------------------------
+        # Update Session with used time report for auto-collect in UAS and update session end date on Ispyb
+        function _update_auto_visit() {
+            $session_update_data = array();
+            if ($this->has_arg('Total Time')) {
+                $session_update_data['usedTimeReport'] = array(
+                    'log' => array(
+                        'Total Time' => $this->arg('Total Time')
+                    )
+                );
+            }
+            $this->_perform_visit_action($session_update_data);
+        }
+
+        function _perform_visit_action($close_session_data = array()) {
             global $auto, $auto_bls, $auto_user, $auto_pass;
 
             if (!(in_array($_SERVER["REMOTE_ADDR"], $auto))) $this->_error('You do not have access to that resource');
@@ -1170,7 +1203,7 @@ class Proposal extends Page
 
             if ($cont['SESSIONID']) {
                 $uas = new UAS($auto_user, $auto_pass);
-                $code = $uas->close_session($cont['EXTERNALID']);
+                $code = $uas->close_session($cont['EXTERNALID'], $close_session_data);
 
                 if ($code == 200) {
                     // Don't wait for UAS sync - set end Date in ISPyB now as well
@@ -1186,6 +1219,5 @@ class Proposal extends Page
             } else {
                 $this->_error('That container does not have a session');
             }
-
         }
 }
