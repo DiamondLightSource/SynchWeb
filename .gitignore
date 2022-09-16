@@ -29,3 +29,5 @@ client/index.html
 
 api/config.php
 api/vendor
+api/tests/.phpunit.result.cache
+api/tests/_coverage

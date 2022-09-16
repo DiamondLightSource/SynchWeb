@@ -1,0 +1,28 @@
+name: CI
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: php-actions/composer@v5
+
+  phplint:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+        - uses: michaelw90/PHP-Lint@master
+
+  phptest:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: PHPUnit Tests
+        uses: php-actions/phpunit@v2
+        with:
+          dir: api
+          bootstrap: vendor/autoload.php
+          configuration: test/phpunit.xml
+          args: --coverage-text
