@@ -644,7 +644,7 @@ class Proposal extends Page
             $args = array();
 
             if ($this->has_arg('SHPKEY')) {
-                list($sessionid, $personid) = split('-', $this->arg('SHPKEY'));
+                list($sessionid, $personid) = explode('-', $this->arg('SHPKEY'));
                 $where .= " shp.sessionid=:1 AND shp.personid=:2";
                 array_push($args, $sessionid);
                 array_push($args, $personid);
@@ -691,7 +691,7 @@ class Proposal extends Page
         # Update a user on a visit
         function _update_visit_user() {
             if (!$this->user->can('manage_vusers')) $this->_error('No access');
-            list($sessionid, $personid) = split('-', $this->arg('SHPKEY'));
+            list($sessionid, $personid) = explode('-', $this->arg('SHPKEY'));
 
             $chk = $this->db->pq("SELECT personid, sessionid FROM session_has_person WHERE sessionid=:1 AND personid=:2", array($sessionid, $personid));
             if (!sizeof($chk)) $this->_error('The specified user is not registered on that visit');
@@ -710,7 +710,7 @@ class Proposal extends Page
         # Remove user from a visit
         function _remove_visit_user() {
             if (!$this->user->can('manage_vusers')) $this->_error('No access');
-            list($sessionid, $personid) = split('-', $this->arg('SHPKEY'));
+            list($sessionid, $personid) = explode('-', $this->arg('SHPKEY'));
 
             $chk = $this->db->pq("SELECT personid FROM session_has_person WHERE sessionid=:1 AND personid=:2", array($sessionid, $personid));
             if (!sizeof($chk)) $this->_error('The specified user is not registered on that visit');
