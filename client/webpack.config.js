@@ -49,6 +49,9 @@ module.exports = (env, argv) => ({
     },
   },
   resolve: {
+    fallback: {
+        util: require.resolve("util/")
+    },
     alias: {
       marionette: 'backbone.marionette/lib/backbone.marionette.min',
 
@@ -124,101 +127,99 @@ module.exports = (env, argv) => ({
   },
   module: {
     rules: [
-      {
-        test: /\.html$/,
-        use: [
-          {
-            loader: 'underscore-template-loader',
-            options: {
-              engine: 'underscore',
+        {
+            test: /\.vue$/,
+            use: [
+                {
+                loader: 'vue-loader',
+                }
+            ]
+        },
+        {
+            test: /\.html$/,
+            use: [
+            {
+                loader: 'underscore-template-loader',
+                options: {
+                engine: 'underscore',
+                }
             }
-          }
-        ],
-        exclude: [
-          path.resolve(__dirname, 'src/js/templates/vue')
-        ]
-      },
-      {
-        test: /\.xml$/,
-        use: [
-          {
-            loader: 'raw-loader',
-          }
-        ]
-      },
-      // Font loader - url should be relative to entry main.scss file
-      {
-        test: /\.(woff|woff2|eot|ttf|otf)$/,
-        use: {
-          loader: 'file-loader',
-          options: {
-            name: '[name].[ext]',
-            outputPath: '../../assets/fonts', // output path is relative to main module outputPath
-            publicPath: '/assets/fonts'
-          }
+            ],
+            exclude: [
+            path.resolve(__dirname, 'src/js/templates/vue')
+            ]
+        },
+        {
+            test: /\.xml$/,
+            use: [
+                {
+                loader: 'raw-loader',
+                }
+            ]
+        },
+        // Font loader - url should be relative to entry main.scss file
+        {
+            test: /\.(woff|woff2|eot|ttf|otf)$/,
+            use: {
+                loader: 'file-loader',
+                options: {
+                name: '[name].[ext]',
+                outputPath: '../../assets/fonts', // output path is relative to main module outputPath
+                publicPath: '/assets/fonts'
+                }
+            }
+        },
+        // SVG could be images or fonts so use more explicit test here...
+        {
+            test: /font-awesome[\\\/].+\.(svg)$/,
+            use: {
+                loader: 'file-loader',
+                options: {
+                name: '[name].[ext]',
+                outputPath: '../../assets/fonts',
+                publicPath: '/assets/fonts'
+                }
+            }
+        },
+        {
+            test: /templates[\\\/]vue[\\\/].+\.html$/,
+            use: ['html-loader']
+        },
+        // We need to help Caman load properly
+        // Caman adds to the window object within a browser
+        // The import loader ensures it it recognised as browser env not NodeJS
+        {
+            test: /caman\.min\.js$/,
+            use: "imports-loader?exports=>undefined,require=>false,this=>window"
+        },
+        {
+            test: /\.(sa|sc|c)ss$/,
+            use: [
+                // Extract the CSS into separate files
+                { 
+                loader: MiniCssExtractPlugin.loader,
+                options: {
+                }
+                },
+                "css-loader", // translates CSS into CommonJS
+                "postcss-loader",
+            ]
+        },
+        {
+            test: /\.(png|gif)$/,
+            use: [
+                {
+                loader: 'url-loader',
+                options: {
+                    limit: 4096, // Anything less than this limit is inlined
+                    name: '[path][name].[ext]',
+                    outputPath: '../../assets',
+                    publicPath: '/assets',
+                    context: 'src',
+                }
+                }
+            ]
         }
-      },
-      // SVG could be images or fonts so use more explicit test here...
-      {
-        test: /font-awesome[\\\/].+\.(svg)$/,
-        use: {
-          loader: 'file-loader',
-          options: {
-            name: '[name].[ext]',
-            outputPath: '../../assets/fonts',
-            publicPath: '/assets/fonts'
-          }
-        }
-      },
-      {
-        test: /\.vue$/,
-        use: [
-          {
-            loader: 'vue-loader',
-          }
-        ]
-      },
-      {
-        test: /templates[\\\/]vue[\\\/].+\.html$/,
-        use: ['html-loader']
-      },
-      // We need to help Caman load properly
-      // Caman adds to the window object within a browser
-      // The import loader ensures it it recognised as browser env not NodeJS
-      {
-        test: /caman\.min\.js$/,
-        use: "imports-loader?exports=>undefined,require=>false,this=>window"
-      },
-      {
-        test: /\.(sa|sc|c)ss$/,
-        use: [
-          // Extract the CSS into separate files
-          { 
-            loader: MiniCssExtractPlugin.loader,
-            options: {
-              hmr: true,
-              reloadAll: true,
-            }
-          },
-          "css-loader", // translates CSS into CommonJS
-          "postcss-loader",
-        ]
-      },
-      {
-        test: /\.(png|gif)$/,
-        use: [
-          {
-            loader: 'url-loader',
-            options: {
-              limit: 4096, // Anything less than this limit is inlined
-              name: '[path][name].[ext]',
-              outputPath: '../../assets',
-              publicPath: '/assets',
-              context: 'src',
-            }
-          }
-        ]
-      }
     ]
   },
 
