@@ -929,7 +929,7 @@ class DC extends Page
                     
                     $dc['FILETEMPLATE'] = preg_replace('/.*\/'.$this->arg('prop').'-'.$dc['VN'].'\//', '', $dc['FILETEMPLATE']);
                     
-                    $nf = array(1 => array('EXPOSURETIME'), 2 => array('AXISSTART', 'RESOLUTION', 'TRANSMISSION'));
+                    $nf = array(2 => array('EXPOSURETIME', 'AXISSTART', 'RESOLUTION', 'TRANSMISSION'));
                     $this->profile('edge');  
                 
                 // MCA Scans
