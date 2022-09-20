@@ -345,7 +345,7 @@ export default {
       return this.appOption['timezone']
     },
     todayDate() {
-      return DateTime.now().setZone(this.timezone)
+      return DateTime.local().setZone(this.timezone)
     },
     currentSelectedMonth() {
       return this.months[this.currentMonth]
@@ -412,7 +412,7 @@ export default {
   beforeRouteEnter(to, from, next) {
     next((vm) => {
       const zone = vm.$store.getters.getAppOptions.timezone
-      const dateTime = DateTime.now().setZone(zone)
+      const dateTime = DateTime.local().setZone(zone)
       vm.currentMonth = dateTime.month - 1
       vm.currentYear = dateTime.year
       vm.currentDay = dateTime.day
