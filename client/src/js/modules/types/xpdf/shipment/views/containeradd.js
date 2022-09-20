@@ -93,8 +93,7 @@ define([
             e.preventDefault()
 
             this.model.set({
-                NAME: this.ui.name[0].value,
-                BARCODE: this.ui.registry[0].options[this.ui.registry[0].options.selectedIndex].innerText,
+                NAME: this.ui.registry[0].options[this.ui.registry[0].options.selectedIndex].innerText,
                 CONTAINERREGISTRYID: this.ui.registry[0].value
             })
 
