@@ -63,14 +63,11 @@ export default {
 
     this.$validator.extend('non_zero_numeric', (value) => {
       const validateNonZeroNumericValues = (val) => {
-        if (isNullOrUndefined(val) || val === '' || val <= 0) {
+        if (isNullOrUndefined(val) || val === '' || Number(val) <= 0) {
           return false;
         }
 
-        const parsedValue = parseInt(val);
-
-        // eslint-disable-next-line
-        return parsedValue === parsedValue;
+        return Number.isInteger(Number(val))
       }
 
       if (Array.isArray(value)) {
