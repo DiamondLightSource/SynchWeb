@@ -403,7 +403,7 @@
       </extended-validation-provider>
 
       <extended-validation-provider
-        :ref="`sample_${sampleIndex}_minimum_resolution`"
+        :ref="`sample_${sampleIndex}_no_to_collect`"
         class="tw-px-2 tw-w-24"
         :name="`Sample ${sampleIndex + 1} No to Collect`"
         :rules="sample['PROTEINID'] > -1 ? `required_if:sample ${sampleIndex + 1} screening method,best|non_zero_numeric|min_value:1|max_value:5`: ''"
