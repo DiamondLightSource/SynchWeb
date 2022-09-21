@@ -127,6 +127,13 @@ module.exports = (env, argv) => ({
   },
   module: {
     rules: [
+        // uncomment to include linting as automatic part of building webpack bundle
+        // {
+        //     enforce: 'pre',
+        //     test: /\.(js|vue)$/,
+        //     loader: 'eslint-loader',
+        //     exclude: /node_modules/
+        // },
         {
             test: /\.vue$/,
             use: [

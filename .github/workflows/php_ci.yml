@@ -12,12 +12,16 @@ defaults:
     working-directory: api
     
 jobs:
-  build:
+  checkout:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
 
+  phpbuild:
+    needs: checkout
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
     - name: Setup PHP
       uses: shivammathur/setup-php@v2
       with:
@@ -39,7 +43,7 @@ jobs:
       run: composer install --prefer-dist --no-progress
 
   phplint:
-    needs: build
+    needs: phpbuild
     runs-on: ubuntu-latest
     steps:
       - name: Psalm Linting
@@ -48,7 +52,7 @@ jobs:
           security_analysis: true
 
   phptest:
-    needs: build
+    needs: phpbuild
     runs-on: ubuntu-latest
     steps:
       - name: PHPUnit Tests
@@ -57,3 +61,13 @@ jobs:
           bootstrap: vendor/autoload.php
           configuration: test/phpunit.xml
           args: --coverage-text
+
+  unit_test-lint:
+    needs: checkout
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+              npm ci
+              npm run build
+              npm run test
+              npm run lint
