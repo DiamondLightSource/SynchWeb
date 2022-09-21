@@ -90,6 +90,7 @@ export default {
     filters: {
         link: function(url) {
             // Make sure all menu options are absolute paths
+            if (!url) url = ''
             return (url[0] !== '/') ? '/' + url : url
         }
     },

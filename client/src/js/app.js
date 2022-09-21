@@ -32,8 +32,6 @@ function(Backbone, Marionette, _, $, HeaderView, SideBarView, DialogRegion, Logi
 
   window.app = new Marionette.Application()
 
-  console.log('CONFIG', config)
-
   // Moved to here so its available on app start
   app.options = new Options()
 
@@ -57,8 +55,6 @@ function(Backbone, Marionette, _, $, HeaderView, SideBarView, DialogRegion, Logi
           var kv = v.split(/=/)
           pairs[kv[0]] = kv[1]
       })
-
-      console.log('pairs', pairs)
 
       if ('prop' in pairs) sessionStorage.setItem('prop', pairs.prop)
   }
