@@ -419,6 +419,7 @@
             :quiet="true"
             v-model="SCREENINGCOLLECTVALUE"
             @value-changed="inputChanged"
+            @input="handleCollectBestNValue($event, 'SCREENINGCOLLECTVALUE', 'SCREENINGCOLLECTVALUE', sample['SAMPLEGROUP'])"
           />
 
         </template>

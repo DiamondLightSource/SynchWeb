@@ -290,6 +290,16 @@ export default {
     },
     doAddNewProteinOption(protein) {
 
+    },
+    handleCollectBestNValue(value, fieldToUpdate, triggerField, triggerValue) {
+      if (this['SAMPLEGROUP']) {
+        this.$emit('update-samples-with-sample-group', {
+          value,
+          fieldToUpdate,
+          triggerField,
+          triggerValue
+        })
+      }
     }
   },
   inject: [
