@@ -126,6 +126,7 @@
           @clone-container-column="onCloneColumn"
           @clone-container-row="onCloneRow"
           @bulk-update-samples="onUpdateSamples"
+          @update-samples-with-sample-group="handleSampleFieldChangeWithSampleGroups"
         />
       </div>
 
