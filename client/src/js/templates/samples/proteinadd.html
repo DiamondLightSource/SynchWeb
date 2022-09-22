@@ -39,7 +39,12 @@
             
             <li>
                 <label>Sequence
-                    <span class="small">Used to automatically run MrBump</span>
+                    <span class="small">
+                        A single protein sequence in single character format e.g. YPKN.
+                        No other characters or lines. Complexes are not supported at this time.
+                        This sequence is required for MrBUMP and will be used to generate an Alphafold model for future downstream processing tasks.
+                        This sequence will be used for the model building step of any Big EP phasing runs.
+                    </span>
                 </label>
                 <span class="seq tw-inline-block tw-w-2/3"><textarea name="SEQUENCE" ></textarea></span>
             </li>
@@ -85,7 +90,14 @@
             <% } %>
             
             <li>
-                <label>PDB File</label>
+                <label>
+                    PDB File
+                    <span class="small">
+                        A PDB format file of the protein, or subdomain.
+                        This is required to trigger the DIMPLE downstream processing task and is also used as an additional input to MrBUMP.
+                        Multiple PDB files can be provided and the best match will be used for the downstream task.
+                    </span>
+                </label>
                 <span>PDB files can be added on the next page</span>
             </li>
         </ul>
