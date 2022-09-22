@@ -1,7 +1,7 @@
 module.exports = {
     extends: [
-        'eslint:recommended',
-        "plugin:backbone/recommended"
+        // add more generic rulesets here, such as:
+        'plugin:vue/recommended' // Vue.js 2.x rules
       ],
       "ignorePatterns": ["temp.js", "**/vendor/**"],
       rules: {
