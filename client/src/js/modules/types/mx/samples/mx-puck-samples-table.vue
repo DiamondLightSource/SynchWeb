@@ -250,15 +250,6 @@ export default {
     }
   },
   computed: {
-    tableColumns() {
-      const columnsMap = {
-        basic: this.basicColumns,
-        extraFields: this.extraFieldsColumns,
-        unattended: this.udcColumns
-      }
-
-      return [...this.requiredColumns, ...columnsMap[this.currentTab]]
-    },
     ...mapGetters({ samples: 'samples/samples' }),
     basicColumns() {
       return [

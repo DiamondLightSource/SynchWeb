@@ -482,6 +482,28 @@ export default {
       sampleClone.NAME = this.generateSampleNameForPucks(baseName)
 
       return sampleClone
+    },
+    handleSampleFieldChangeWithSampleGroups(args) {
+      const { value, fieldToUpdate, triggerField, triggerValue } = args
+
+      if (fieldToUpdate === 'SCREENINGCOLLECTVALUE' && triggerField === 'SAMPLEGROUP') {
+        const relatedSample = this.samples.find(sample => Number(sample['SAMPLEGROUP']) === Number(triggerValue))
+        if (relatedSample) {
+          this.$store.commit('samples/updateSamplesField', {
+            path: `samples/${value}/${fieldToUpdate}`,
+            value: relatedSample['SCREENINGCOLLECTVALUE']
+          })
+        }
+      } else if (fieldToUpdate === 'SCREENINGCOLLECTVALUE' && triggerField === 'SCREENINGCOLLECTVALUE') {
+        this.samples.forEach((sample, sampleIndex) => {
+          if (Number(sample['SAMPLEGROUP']) === Number(triggerValue)) {
+            this.$store.commit('samples/updateSamplesField', {
+              path: `samples/${sampleIndex}/${fieldToUpdate}`,
+              value
+            })
+          }
+        })
+      }
     }
   },
   computed: {

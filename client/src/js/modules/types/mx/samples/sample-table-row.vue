@@ -74,6 +74,7 @@
           @create-new-option="createNewSampleGroup"
           v-model="SAMPLEGROUP"
           @value-changed="inputChanged"
+          @input="handleCollectBestNValue(sampleIndex, 'SCREENINGCOLLECTVALUE', 'SAMPLEGROUP', SAMPLEGROUP)"
         >
         </combo-box>
       </template>
@@ -86,6 +87,7 @@
       :currentTab="currentTab"
       :sampleIndex="sampleIndex"
       :containerId="containerId"
+      v-on="$listeners"
     />
 
     <div class="actions-column tw-py-1 tw-text-right">
