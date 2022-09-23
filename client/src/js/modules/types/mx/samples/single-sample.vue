@@ -136,8 +136,8 @@
         class="tw-w-full"
       >
         <base-input-select
-          :options="anomalousOptionsList"
           v-model="ANOMALOUSSCATTERER"
+          :options="anomalousOptionsList"
           input-class="tw-w-48 tw-h-8"
           outer-class="tw-w-full tw-flex"
           label-class="tw-w-1/5"
@@ -232,10 +232,10 @@
                   :vid="`sample ${sampleLocation + 1} cell-c`"
                 >
                   <base-input-text
+                    v-model="CELL_C"
                     input-class="tw-w-12 tw-h-8 single-sample-input"
                     :error-message="errors[0]"
                     type="number"
-                    v-model="CELL_C"
                     :step="0.01"
                     :quiet="true"
                     :error-class="errors[0] ? 'ferror' : ''"
@@ -252,10 +252,10 @@
                   :vid="`sample ${sampleLocation + 1} cell-alpha`"
                 >
                   <base-input-text
+                    v-model="CELL_ALPHA"
                     input-class="tw-w-12 tw-h-8 single-sample-input"
                     :quiet="true"
                     type="number"
-                    v-model="CELL_ALPHA"
                     :step="0.01"
                     :error-message="errors[0]"
                     :error-class="errors[0] ? 'ferror' : ''"
@@ -272,10 +272,10 @@
                   :vid="`sample ${sampleLocation + 1} cell-beta`"
                 >
                   <base-input-text
+                    v-model="CELL_BETA"
                     input-class="tw-w-12 tw-h-8 single-sample-input"
                     type="number"
                     :step="0.01"
-                    v-model="CELL_BETA"
                     :error-message="errors[0]"
                     :error-class="errors[0] ? 'ferror' : ''"
                     :quiet="true"
@@ -292,10 +292,10 @@
                   :vid="`sample ${sampleLocation + 1} cell-gamma`"
                 >
                   <base-input-text
+                    v-model="CELL_GAMMA"
                     input-class="tw-w-12 tw-h-8 single-sample-input"
                     type="number"
                     :step="0.01"
-                    v-model="CELL_GAMMA"
                     :error-message="errors[0]"
                     :error-class="errors[0] ? 'ferror' : ''"
                     :quiet="true"
