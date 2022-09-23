@@ -53,7 +53,7 @@ define(['marionette',
             this.listenTo(this.model, 'change reset', this.render, this)
         },
 
-        render() {
+        render: function() {
             if (this.model.get('APLOADED')) {
                 this.$el.text(this.model.get('AUTOINTEGRATIONS').length)
             } else this.$el.text('')

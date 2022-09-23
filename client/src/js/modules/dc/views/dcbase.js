@@ -27,7 +27,7 @@ define(['marionette',
             bcom: '.button.comments',
         },
 
-        onRender() {
+        onRender: function() {
             if (this.ui.batt) this.getOption('attachments') ? this.ui.batt.show() : this.ui.batt.hide()
             if (this.ui.bcom) this.getOption('comments') ? this.ui.bcom.show() : this.ui.bcom.hide()
 

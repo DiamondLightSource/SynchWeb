@@ -1,3 +1,4 @@
+/* eslint no-useless-escape: "off"*/
 define(['backbone', 'backbone-validation'], function(Backbone) {
 
     _.extend(Backbone.Validation.patterns, {

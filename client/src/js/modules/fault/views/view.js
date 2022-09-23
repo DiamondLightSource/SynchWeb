@@ -54,8 +54,8 @@ Editable, utils, XHRImage, template, Backbone) {
         },
         
         onRender: function() {
+            var self = this
             if (app.personid == this.model.get('PERSONID') || app.personid == this.model.get('ASSIGNEEID') || app.user_can('fault_global')) {
-                var self = this
             
                 this.beamlines = new Beamlines()
                 this.beamlines.fetch()
@@ -138,7 +138,6 @@ Editable, utils, XHRImage, template, Backbone) {
 
             if (this.model.get('ATTACH_IMAGE')) {
                 var img = new XHRImage()
-                var self = this
                 img.onload = function() {
                     var tag = $('<img alt="'+self.model.get('ATTACHMENT')+'" />')
                     tag.attr('src', img.src)

@@ -5,15 +5,15 @@ define(['backbone', 'models/wfile'], function(Backbone, File) {
         urlRoot: '/imaging/inspection/images',
 
         validation: {
-          	CONTAINERINSPECTIONID: {
-          		required: true,
-          		pattern: 'number',
-          	},
+              CONTAINERINSPECTIONID: {
+                  required: true,
+                  pattern: 'number',
+              },
 
-          	BLSAMPLEID: {
-          		required: true,
-          		pattern: 'number',	
-          	}
+              BLSAMPLEID: {
+                  required: true,
+                  pattern: 'number',	
+              }
         },
 
         urlFor: function(ty) {

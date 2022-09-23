@@ -10,7 +10,7 @@ define(['marionette',
         },
 
         search: function(page) {
-        	controller.search_cell(null,null,null,null,null,null,null,page)
+            controller.search_cell(null,null,null,null,null,null,null,page)
         }
     }
     

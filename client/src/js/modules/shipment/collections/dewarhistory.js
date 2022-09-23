@@ -1,15 +1,15 @@
 define(['backbone.paginator', 'modules/shipment/models/dewarhistory'], function(PageableCollection, DewarHistory) {
     
     return PageableCollection.extend({
-    	model: DewarHistory,
-    	mode: 'server',
+        model: DewarHistory,
+        mode: 'server',
         url: function() { return '/shipment/dewars/history'+(this.id ? '/did/'+this.id : '') },
             
         initialize: function(models, options) {
             if (options) this.id = options.id
         },
 
-    	state: {
+        state: {
             pageSize: 15,
         },
             

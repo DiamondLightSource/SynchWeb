@@ -3,10 +3,7 @@
  * Available via the MIT or new BSD license.
  * see: http://github.com/requirejs/text for details
  */
-/*jslint regexp: true */
-/*global require, XMLHttpRequest, ActiveXObject,
-  define, window, process, Packages,
-  java, location, Components, FileUtils */
+/* eslint no-useless-escape: "off"*/
 
 define(['module'], function (module) {
     'use strict';
@@ -62,7 +59,9 @@ define(['module'], function (module) {
                     progId = progIds[i];
                     try {
                         xhr = new ActiveXObject(progId);
-                    } catch (e) {}
+                    } catch (e) {
+                        console.error("Error with ActiveXObject: ", e)
+                    }
 
                     if (xhr) {
                         progIds = [progId];  // so faster next time

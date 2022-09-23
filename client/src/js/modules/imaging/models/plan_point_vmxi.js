@@ -1,11 +1,13 @@
 define(['backbone'], function(Backbone) {
     
     return Backbone.Model.extend({
-        idAttribute: 'DIFFRACTIONPLANID',
-        urlRoot: '/sample/plan',
+        defaults: {
+            WAVELENGTH: 12658,
+            AXISEND: 0,
+        },
 
         initialize: function(attrs, options) {
-            this.on('change:AXISRANGE change:NUMBEROFIMAGES change:AXISSTART', this.calculateAxisEnd)
+            this.on('change:AXISRANGE change:NUMBEROFIMAGES change:AXISSTART', this.calculateAxisEnd, this)
             this.calculateAxisEnd()
 
             if (options && options.beamlinesetup) {
@@ -17,6 +19,9 @@ define(['backbone'], function(Backbone) {
             }
         },
 
+        idAttribute: 'DIFFRACTIONPLANID',
+        urlRoot: '/sample/plan',
+
         calculateAxisEnd: function() {
             this.set('AXISEND', parseFloat(this.get('AXISSTART'))+(parseInt(this.get('NUMBEROFIMAGES'))*parseFloat(this.get('AXISRANGE'))))
             this.trigger('computed:changed')
@@ -26,12 +31,6 @@ define(['backbone'], function(Backbone) {
             return [
                 'AXISEND'
             ]
-        },
-
-
-        defaults: {
-            WAVELENGTH: 12658,
-            AXISEND: 0,
         },
 
         validation: {

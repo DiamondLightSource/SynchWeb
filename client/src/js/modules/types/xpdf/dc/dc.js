@@ -52,15 +52,15 @@ define([
             for(var key in params){
 
                 if(typeof params[key] == 'object'){
-                    output = output + '<li class=\"parent\" id=\"' + key + '_' + level +  '\" style=\"font-weight:bold\">' + key + '</li>'
+                    output = output + '<li class="parent" id="' + key + '_' + level +  '" style="font-weight:bold">' + key + '</li>'
                     level++
-                    output = output + '<li id=\"' + key + '_' + level + '\" style=\"display:none\"><ul style=\"padding-left: ' + 10*level + 'px\">'
+                    output = output + '<li id="' + key + '_' + level + '" style="display:none"><ul style="padding-left: ' + 10*level + 'px">'
                     output = this.buildScanParams(params[key], output, level)
                     output = output + '</ul></li>'
                     level--
                 } else {
                     // position absolute for better formatted wrapped text, though it does break some margin/padding inheritance
-                    output = output + '<li><span style=\"font-weight: bold\">' + key + ':</span> <span style=\"position:absolute\">' + params[key] + '</span></li>'
+                    output = output + '<li><span style="font-weight: bold">' + key + ':</span> <span style="position:absolute">' + params[key] + '</span></li>'
                 }
             }
             return output

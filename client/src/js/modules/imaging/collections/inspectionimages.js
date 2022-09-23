@@ -1,15 +1,15 @@
 define(['backbone.paginator', 'modules/imaging/models/inspectionimage'], function(PageableCollection, InspectionImage) {
        
-  	return PageableCollection.extend({
-	    model: InspectionImage,
-	    mode: 'client',
-	    url: '/imaging/inspection/images',
-	                                      
-	    state: {
-	      	pageSize: 9999,
-	    },
+      return PageableCollection.extend({
+        model: InspectionImage,
+        mode: 'client',
+        url: '/imaging/inspection/images',
+                                          
+        state: {
+              pageSize: 9999,
+        },
 
-	    initialize: function(options) {
+        initialize: function(options) {
             this.on('change:isSelected', this.onSelectedChanged, this)
         },
         
@@ -22,5 +22,5 @@ define(['backbone.paginator', 'modules/imaging/models/inspectionimage'], functio
             // this.trigger('selected:change', this.findWhere({ isSelected: true }))
         },
       
-  	})
+      })
 })

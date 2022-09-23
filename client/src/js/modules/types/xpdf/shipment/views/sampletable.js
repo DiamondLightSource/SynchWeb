@@ -191,7 +191,7 @@ define(['backgrid',
         },
     })
 
-
+    // this overrides the SampleTableView passed into the function - is this deliberate?
     var SampleTableView = SampleTableView.extend({
         template: table,
         childView: GridRow,

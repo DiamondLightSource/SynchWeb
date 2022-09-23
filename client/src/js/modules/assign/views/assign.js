@@ -372,9 +372,10 @@ define(['marionette', 'backbone', 'views/pages',
         
         
         onShow: function() {
+            var pucks = 10
             if (this.getOption('visit').get('BL') in app.config.pucks) {
-                var pucks = app.config.pucks[this.getOption('visit').get('BL')]
-            } else var pucks = 10
+                pucks = app.config.pucks[this.getOption('visit').get('BL')]
+            }
             
             var positions = new Backbone.Collection(_.map(_.range(1,pucks+1), function(i) { return { id: i } }))
             this.scview = new SampleChangerView({

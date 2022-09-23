@@ -1,7 +1,7 @@
 define(['backbone', 'collections/samplegroupsamples'], function(Backbone, SampleGroupSamples) {
   return Backbone.Model.extend({
     idAttribute: 'BLSAMPLEGROUPID',
-    urlRoot() {
+    urlRoot: function() {
       return `/sample/groups/${this.sampleGroupId}/samples`
     },
 

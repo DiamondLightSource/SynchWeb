@@ -2,6 +2,44 @@ define(['backbone'], function(Backbone) {
 
   var Search = Backbone.View.extend({
     /** @property */
+    events: {
+        "keyup input[type=search]": "search",
+        "click a[data-backgrid-action=clear]": "clear",
+        "submit": "search"
+    },
+      
+    /**
+       @param {Object} options
+       @param {Backbone.Collection} options.collection
+       @param {string} [options.name]
+       @param {string} [options.value]
+       @param {string} [options.placeholder]
+       @param {function(Object): string} [options.template]
+    */
+    initialize: function (options) {
+        Search.__super__.initialize.apply(this, arguments);
+        this.name = options.name || this.name;
+        this.value = options.value || this.value;
+        this.placeholder = options.placeholder || this.placeholder
+        this.template = options.template || this.template;
+            
+        //this.url = options.url || this.url
+        if (options.url == false) this.url = false
+        this.urlFragment = options.urlFragment || this.urlFragment
+
+        // Persist the query on pagination
+        var collection = this.collection, self = this;
+        if (Backbone.PageableCollection &&
+            collection instanceof Backbone.PageableCollection &&
+            collection.mode == "server") {
+            collection.queryParams[this.name] = function () {
+            return self.searchBox().val() || null;
+            };
+        }
+        this.search = _.debounce(this.search, 400)
+    },
+  
+    /** @property */
     tagName: 'div',
 
     /** @property */
@@ -10,13 +48,6 @@ define(['backbone'], function(Backbone) {
     /** @property {function(Object, ?Object=): string} template */
     template: function (data) {
       return '<input type="search" ' + (data.placeholder ? 'placeholder="' + data.placeholder + '"' : '') + ' name="' + data.name + '" ' + (data.value ? 'value="' + data.value + '"' : '') + '/>'
-    },
-
-    /** @property */
-    events: {
-      "keyup input[type=search]": "search",
-      "click a[data-backgrid-action=clear]": "clear",
-      "submit": "search"
     },
 
     /** @property {string} [name='q'] Query key */
@@ -33,37 +64,6 @@ define(['backbone'], function(Backbone) {
 
     url: true,
     urlFragment: 's',
-      
-    /**
-       @param {Object} options
-       @param {Backbone.Collection} options.collection
-       @param {string} [options.name]
-       @param {string} [options.value]
-       @param {string} [options.placeholder]
-       @param {function(Object): string} [options.template]
-    */
-    initialize: function (options) {
-      Search.__super__.initialize.apply(this, arguments);
-      this.name = options.name || this.name;
-      this.value = options.value || this.value;
-      this.placeholder = options.placeholder || this.placeholder
-      this.template = options.template || this.template;
-        
-      //this.url = options.url || this.url
-      if (options.url == false) this.url = false
-      this.urlFragment = options.urlFragment || this.urlFragment
-
-      // Persist the query on pagination
-      var collection = this.collection, self = this;
-      if (Backbone.PageableCollection &&
-          collection instanceof Backbone.PageableCollection &&
-          collection.mode == "server") {
-        collection.queryParams[this.name] = function () {
-          return self.searchBox().val() || null;
-        };
-      }
-      this.search = _.debounce(this.search, 400)
-    },
 
     /**
        Event handler. Clear the search box and reset the internal search value.
@@ -132,11 +132,9 @@ define(['backbone'], function(Backbone) {
       }
       else collection.fetch({data: data, reset: true});
         if (this.url) {
-            if (this.urlFragment) {
-                var url = window.location.pathname.replace(new RegExp('\\/'+this.urlFragment+'\\/(\\w|-)+'), '')+(this.value ? '/'+this.urlFragment+'/'+this.value : '')
-            } else {
-                var url = window.location.pathname.replace(/\/\w+$/, '')+(this.value ? '/'+this.value : '')
-            }
+            var url = this.urlFragment ?
+                window.location.pathname.replace(new RegExp('\\/'+this.urlFragment+'\\/(\\w|-)+'), '')+(this.value ? '/'+this.urlFragment+'/'+this.value : '') :
+                window.location.pathname.replace(/\/\w+$/, '')+(this.value ? '/'+this.value : '')
             window.history.pushState({}, '', url)
         }
     },

@@ -5,25 +5,25 @@ define(['backbone'], function(Backbone) {
         urlRoot: '/imaging/inspection',
 
         validation: {
-        	CONTAINERID: {
-        		required: true,
-        		pattern: 'number',
-        	},
+            CONTAINERID: {
+                required: true,
+                pattern: 'number',
+            },
 
-        	INSPECTIONTYPEID: {
-        		required: true,
-        		pattern: 'number',
-        	},
+            INSPECTIONTYPEID: {
+                required: true,
+                pattern: 'number',
+            },
 
-        	TEMPERATURE: {
-        		required: true,
-        		pattern: 'number',
-        	},
+            TEMPERATURE: {
+                required: true,
+                pattern: 'number',
+            },
 
-        	BLTIMESTAMP: {
-        		required: true,
-        		pattern: 'datetime',
-        	}
+            BLTIMESTAMP: {
+                required: true,
+                pattern: 'datetime',
+            }
         },
       
     })

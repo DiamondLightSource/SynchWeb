@@ -1,19 +1,19 @@
 define(['backbone.paginator', 'modules/imaging/models/inspection', 'utils/kvcollection'], 
-	function(PageableCollection, Inspection, KVCollection) {
+    function(PageableCollection, Inspection, KVCollection) {
        
-  	return PageableCollection.extend(_.extend({}, KVCollection, {
-		model: Inspection,
-		mode: 'server',
-		url: '/imaging/inspection',
+      return PageableCollection.extend(_.extend({}, KVCollection, {
+        model: Inspection,
+        mode: 'server',
+        url: '/imaging/inspection',
 
-		keyAttribute: 'TITLE',
+        keyAttribute: 'TITLE',
         valueAttribute: 'CONTAINERINSPECTIONID',
-		                                  
-		state: {
-		  	pageSize: 15,
-		},
+                                          
+        state: {
+              pageSize: 15,
+        },
 
-		parseState: function(r, q, state, options) {
+        parseState: function(r, q, state, options) {
             return { totalRecords: r.total }
         },
             
@@ -21,5 +21,5 @@ define(['backbone.paginator', 'modules/imaging/models/inspection', 'utils/kvcoll
             return r.data
         },
       
-  	}))
+      }))
 })

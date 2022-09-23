@@ -174,7 +174,7 @@ define(['marionette', 'templates/stats/breakdown.html',
 
                 var vis = _.where(this.model.get('data'), { type: 'visit_ns' })
                 var vids = _.unique(_.pluck(vis, 'visit'))
-                var cols = utils.shuffle(utils.getColors(vids.length))
+                cols = utils.shuffle(utils.getColors(vids.length))
                 _.each(vis, function(v) {
                     v.color = cols[vids.indexOf(v.visit)]
                 })

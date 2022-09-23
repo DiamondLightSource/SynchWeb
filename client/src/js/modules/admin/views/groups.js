@@ -22,20 +22,19 @@ define(['marionette', 'backbone',
         template, table, rowtemplate, rowtemplatenew,
         ptable, prowtemplate, prowtemplatenew) {
     
-	var GridRow = ValidatedRow.extend({
+    var GridRow = ValidatedRow.extend({
         getTemplate: function() {
             return this.model.get('new') || this.model.get('edit') ? rowtemplatenew : rowtemplate
         },
         tagName: 'tr',
         
         events: {
-        	'click': 'rowClick',
-        	'click a.cancel': 'cancel',
-        	'click a.edit': 'edit',
+            'click': 'rowClick',
+            'click a.cancel': 'cancel',
+            'click a.edit': 'edit',
         },
 
         edit: function(e) {
-        	console.log('edit')
             e.preventDefault()
             this.model.set('edit', true)
             this.render()
@@ -45,17 +44,17 @@ define(['marionette', 'backbone',
         cancel: function(e) {
             e.preventDefault()
 
-        	if (this.model.get('new')) {
-        		this.model.collection.remove(this.model)	
-        	} else {
-        		this.model.set('edit', false)
-        		this.render()
-        	}
+            if (this.model.get('new')) {
+                this.model.collection.remove(this.model)	
+            } else {
+                this.model.set('edit', false)
+                this.render()
+            }
         },
 
         rowClick: function(e) {
-        	if (this.model.get('new') || this.model.get('edit')) return
-        	app.trigger('group:show', this.model.get('USERGROUPID'))
+            if (this.model.get('new') || this.model.get('edit')) return
+            app.trigger('group:show', this.model.get('USERGROUPID'))
         },
         
         setData: function() {
@@ -103,25 +102,25 @@ define(['marionette', 'backbone',
         
 
         childEvents: {
-        	'row:click': 'rowClick',
+            'row:click': 'rowClick',
         },
 
         rowClick: function(view, m) {
-        	this.trigger('row:click', m)
+            this.trigger('row:click', m)
         },
 
 
     })
 
 
-	var EmptyGroupsView = EmptyView.extend({
-		template: _.template('<td colspan="6">No groups defined</td>')
-	})
+    var EmptyGroupsView = EmptyView.extend({
+        template: _.template('<td colspan="6">No groups defined</td>')
+    })
 
-	var GroupsView = TableView.extend({
-		emptyView: EmptyGroupsView,
-		className: 'groups',
-	})
+    var GroupsView = TableView.extend({
+        emptyView: EmptyGroupsView,
+        className: 'groups',
+    })
 
 
     var EmptyPermsView = EmptyView.extend({
@@ -146,24 +145,24 @@ define(['marionette', 'backbone',
 
 
     return Marionette.LayoutView.extend({
-    	className: 'content',
-    	template: template,
-    	regions: {
+        className: 'content',
+        template: template,
+        regions: {
             grps: '.groups',
-    		prms: '.perms',
-    	},
+            prms: '.perms',
+        },
 
-    	events: {
+        events: {
             'click .add_group': 'addGroup',
-    		'click .add_perm': 'addPerm',
-    	},
+            'click .add_perm': 'addPerm',
+        },
 
-    	addGroup: function(e) {
-    		e.preventDefault()
-    		this.groups.add(new Group({
-    			new: true
-    		}))
-    	},
+        addGroup: function(e) {
+            e.preventDefault()
+            this.groups.add(new Group({
+                new: true
+            }))
+        },
 
         addPerm: function(e) {
             e.preventDefault()
@@ -173,22 +172,21 @@ define(['marionette', 'backbone',
         },
 
 
-    	initialize: function(options) {
-    		this.groups = new Groups()
-    		this.groups.fetch()
+        initialize: function(options) {
+            this.groups = new Groups()
+            this.groups.fetch()
 
             this.perms = new Permissions()
             this.perms.fetch()
-    	},
+        },
 
-    	onRender: function(){
-    		var groupview = new GroupsView({ collection: this.groups })
-    		this.grps.show(groupview)
+        onRender: function(){
+            var groupview = new GroupsView({ collection: this.groups })
+            this.grps.show(groupview)
 
             var prmsview = new PermsView({ collection: this.perms })
             this.prms.show(prmsview)
-    	},
+        },
 
     })
-
 })

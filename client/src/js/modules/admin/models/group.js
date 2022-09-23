@@ -10,12 +10,11 @@ define(['backbone'], function(Backbone) {
         },
 
         validation: {
-        	NAME: {
-        		required: true,
-        		pattern: 'word',
-        	}
+            NAME: {
+                required: true,
+                pattern: 'word',
+            }
         }
 
-    })
-    
+    })  
 })

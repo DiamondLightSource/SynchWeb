@@ -1,9 +1,9 @@
 define(['views/table'], function(TableView) {
 
     return TableView.extend({
-    	backgrid: {
-        	emptyText: 'No history available',
-    	},
+        backgrid: {
+            emptyText: 'No history available',
+        },
         className: 'history',
         columns: [
             { name: 'ARRIVAL', label: 'Date', cell: 'string', editable: false },

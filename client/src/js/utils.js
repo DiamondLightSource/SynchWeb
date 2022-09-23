@@ -18,10 +18,6 @@ define(['backbone',
        return date
     },
       
-      
-      
-      
-      
     // Reasonable default plot options
     default_plot: {
       grid: {
@@ -229,7 +225,7 @@ define(['backbone',
             try {
                 json = $.parseJSON(xhr.responseText)
             } catch(err) {
-
+                console.error("Error parsing response: ", err)
             }
         }
         if (json.message) app.alert({ message: json.message })

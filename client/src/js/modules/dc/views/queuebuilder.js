@@ -12,13 +12,12 @@ define(['backbone',
         
       
     var DC = Backbone.Model.extend({
-        initialize: function(attrs, options) {
-            this.on('change', this.addDist.bind(this))
-            this.addDist()
-        },
-        
         defaults: {
             COMMENTS: '',
+        },
+        initialize: function(attrs, options) {
+            this.on('change', this.addDist.bind(this), this)
+            this.addDist()
         },
         
         addDist: function() {
@@ -229,7 +228,7 @@ define(['backbone',
             this.table = new TableView({ collection: this.collection, columns: columns, tableClass: 'samples', filter: 'sSearch', loading: true, backgrid: { emptyText: 'No samples assigned' } })
             
             
-            var columns = [
+            var queueColumns = [
                 { name: 'SAMPLE', label: 'Sample', cell: 'string', editable: false },
                 { name: 'ACRONYM', label: 'Protein', cell: 'string', editable: false },
                 //{ name: 'DIR', label: 'Directory', cell: 'string', editable: false },
@@ -245,7 +244,7 @@ define(['backbone',
                 { label: '', cell: RemoveCell, editable: false },
             ]
             
-            this.queuetable = new TableView({ collection: this.queue, columns: columns, tableClass: 'queue', backgrid: { emptyText: 'No samples queued' } })
+            this.queuetable = new TableView({ collection: this.queue, columns: queueColumns, tableClass: 'queue', backgrid: { emptyText: 'No samples queued' } })
         },
         
 

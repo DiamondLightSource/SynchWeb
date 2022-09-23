@@ -3,17 +3,17 @@ define(['backbone',
     'modules/imaging/models/screencomponentgroup'],
     function(Backbone, PageableCollection, ComponentGroup) {
        
-  	return PageableCollection.extend({
-	    model: ComponentGroup,
-	    mode: 'client',
-	    url: '/imaging/screen/groups',
+      return PageableCollection.extend({
+        model: ComponentGroup,
+        mode: 'client',
+        url: '/imaging/screen/groups',
 
-	    state: {
-	      	pageSize: 15,
-	    },
+        state: {
+              pageSize: 15,
+        },
 
 
-	    initialize: function(options) {
+        initialize: function(options) {
             this.on('change:isSelected', this.onSelectedChanged, this)
         },
         
@@ -41,5 +41,5 @@ define(['backbone',
             return Backbone.sync('update', this, options)
         },
       
-  	})
+      })
 })
