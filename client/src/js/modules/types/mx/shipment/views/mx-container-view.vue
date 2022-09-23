@@ -205,7 +205,7 @@ export default {
       required: true
     }
   },
-  data: function() {
+  data() {
     return {
       container: {},
       containerId: 0,
@@ -257,7 +257,7 @@ export default {
       return this.$store.getters['samples/getContainerSamplesGroupData']
     },
   },
-  created: function() {
+  created() {
     // Get samples for this container id
     this.fetchShipments()
     this.loadContainerData()
@@ -285,13 +285,18 @@ export default {
       await this.getSampleGroups()
       await this.fetchSampleGroupSamples()
 
-      this.samplesCollection = new Samples(null, { state: { pageSize: 9999 } })
+      this.samplesCollection = new Samples(null, {state: {pageSize: 9999}})
       this.samplesCollection.queryParams.cid = this.containerId
       await this.getSamples(this.samplesCollection)
     },
     // Callback from pagination
     onUpdateHistory(payload) {
-      let collection = new ContainerHistory( null, {state: { pageSize: payload.pageSize, currentPage: payload.currentPage}})
+      let collection = new ContainerHistory(null, {
+        state: {
+          pageSize: payload.pageSize,
+          currentPage: payload.currentPage
+        }
+      })
       this.getHistory(collection)
     },
     // Effectively a patch request to update specific fields
@@ -299,7 +304,7 @@ export default {
       let params = {}
       params[parameter] = this.container[parameter]
 
-      await this.$store.dispatch('saveModel', { model: this.containerModel, attributes: params })
+      await this.$store.dispatch('saveModel', {model: this.containerModel, attributes: params})
       this.$store.commit('notifications/addNotification', {
         title: 'Success:',
         message: 'Container has been successfully updated',
@@ -336,15 +341,15 @@ export default {
         statusList.forEach(t => {
           if (Number(s.get(t)) > 0) status = t
         })
-        s.set({ STATUS: status })
+        s.set({STATUS: status})
         const payload = this.populateInitialSampleGroupValue(s.toJSON())
         this.$store.commit('samples/setSample', {
           index: Number(s.get('LOCATION')) - 1,
-          data: { ...payload, VALID: 1 }
+          data: {...payload, VALID: 1}
         })
       })
     },
-    onContainerCellClicked: function(location) {
+    onContainerCellClicked: function (location) {
       this.sampleLocation = location - 1
     },
     onQueueContainer() {
@@ -392,7 +397,7 @@ export default {
       try {
         this.displayQueueModal = false
         await this.toggleContainerQueue(false, this.containerId)
-        this.$emit('update-container-state', { CONTAINERQUEUEID: null })
+        this.$emit('update-container-state', {CONTAINERQUEUEID: null})
         this.$nextTick(() => {
           this.loadContainerData()
           // TODO: Toggle Auto in the samples table
@@ -408,7 +413,7 @@ export default {
       }
     },
     async fetchContainers() {
-      this.containersCollection = new Containers(null, { state: { pageSize: 9999 } })
+      this.containersCollection = new Containers(null, {state: {pageSize: 9999}})
       this.containersCollection.queryParams.did = this.containersSamplesGroupData.dewarId
 
       const result = await this.$store.dispatch('getCollection', this.containersCollection)
@@ -418,7 +423,7 @@ export default {
       }))
     },
     async fetchDewars() {
-      this.dewarsCollection = new Dewars(null, { state: { pageSize: 9999 } })
+      this.dewarsCollection = new Dewars(null, {state: {pageSize: 9999}})
       this.dewarsCollection.queryParams.sid = this.containersSamplesGroupData.shipmentId
 
       const result = await this.$store.dispatch('getCollection', this.dewarsCollection)
@@ -428,7 +433,7 @@ export default {
       }))
     },
     async fetchShipments() {
-      this.shipmentsCollection = new Shipments(null, { state: { pageSize: 9999 } })
+      this.shipmentsCollection = new Shipments(null, {state: {pageSize: 9999}})
 
       const result = await this.$store.dispatch('getCollection', this.shipmentsCollection)
       this.shipments = result.toJSON().map(shipment => ({
@@ -484,11 +489,6 @@ export default {
     containersSamplesGroupData(newValues) {
       this.updateContainerSampleGroupsData(newValues)
     },
-  },
-  provide() {
-    return {
-      $editingRow: () => this.editingSampleLocation
-    }
   }
 }
 </script>
