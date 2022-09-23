@@ -1,15 +1,18 @@
 <template>
   <validation-provider
     :ref="ref"
+    v-slot="{ errors, flags: { changed } }"
     :rules="rules"
     :name="name"
     :tag="tag"
     :vid="vid"
-    v-slot="{ errors, flags: { changed } }"
     :slim="slim"
   >
     <div :class="{'tw-bg-dark-amber': changed, [classNames]: true }">
-      <slot :errors="errors" :inputChanged="updateFieldFlags"></slot>
+      <slot
+        :errors="errors"
+        :input-changed="updateFieldFlags"
+      />
     </div>
   </validation-provider>
 </template>
@@ -17,7 +20,7 @@
 import { ValidationProvider } from 'vee-validate';
 
 export default {
-  name: 'extended-validation-provider',
+  name: 'ExtendedValidationProvider',
   components: {
     'validation-provider': ValidationProvider
   },

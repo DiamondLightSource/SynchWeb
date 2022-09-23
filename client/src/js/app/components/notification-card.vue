@@ -4,28 +4,33 @@ It is designed to work with transient notifications and for a persistent notific
 It uses slots for title and header so it can be overridded by a parent component
 -->
 <template>
-    <div class="tw-hidden md:tw-flex tw-p-4 tw-rounded tw-justify-between tw-border-2" :class="notificationClass(notification.level)">
-        <div class="tw-flex">
-            <slot name="title">
-                <p class="tw-font-bold">{{notification.title}}</p>
-            </slot>
-            <slot name="message">
-                <p v-html="notification.message" class="tw-pl-2"></p>
-            </slot>
-        </div>
-        <div class="tw-flex">
-            <!-- Placeholder for any buttons, icons etc. -->
-            <slot name="actions"></slot> 
-        </div>
+  <div
+    class="tw-hidden md:tw-flex tw-p-4 tw-rounded tw-justify-between tw-border-2"
+    :class="notificationClass(notification.level)"
+  >
+    <div class="tw-flex">
+      <slot name="title">
+        <p class="tw-font-bold">
+          {{ notification.title }}
+        </p>
+      </slot>
+      <slot name="message">
+        <p
+          class="tw-pl-2"
+          v-html="notification.message"
+        />
+      </slot>
     </div>
+    <div class="tw-flex">
+      <!-- Placeholder for any buttons, icons etc. -->
+      <slot name="actions" /> 
+    </div>
+  </div>
 </template>
 
 <script>
 export default {
-    name: 'notification-card',
-    props: {
-        'notification': Object // with level, message, title properties
-    },
+    name: 'NotificationCard',
     filters: {
         // Simple filter to convert text to upper case
         upper: function (value) {
@@ -35,6 +40,9 @@ export default {
                 return value.toString().toUpperCase()
             }
         }
+    },
+    props: {
+        'notification': Object // with level, message, title properties
     },
     methods: {
         // Determine classes to set based on message level

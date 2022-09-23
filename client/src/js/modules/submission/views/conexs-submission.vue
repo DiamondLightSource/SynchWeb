@@ -1,465 +1,1039 @@
 <template>
-    <div>
-        <button name="orcaTabButton" ref="orcaTabButton" class="button" v-on:click="tabDisplay($event)">ORCA</button>
-        <button name="fdmnesTabButton" ref="fdmnesTabButton" class="button" v-on:click="tabDisplay($event)">FDMNES</button>
-        <button name="quantumEspressoTabButton" ref="quantumEspressoTabButton" class="button" v-on:click="tabDisplay($event)">Quantum Espresso</button>
+  <div>
+    <button
+      ref="orcaTabButton"
+      name="orcaTabButton"
+      class="button"
+      @click="tabDisplay($event)"
+    >
+      ORCA
+    </button>
+    <button
+      ref="fdmnesTabButton"
+      name="fdmnesTabButton"
+      class="button"
+      @click="tabDisplay($event)"
+    >
+      FDMNES
+    </button>
+    <button
+      ref="quantumEspressoTabButton"
+      name="quantumEspressoTabButton"
+      class="button"
+      @click="tabDisplay($event)"
+    >
+      Quantum Espresso
+    </button>
         &nbsp;&nbsp;&nbsp;&nbsp;
-        <span>Cluster status: {{ clusterStatus }}</span>&nbsp;&nbsp;&nbsp;<i v-if="clusterStatus != 'Running' && clusterStatus != 'Sleeping' && clusterStatus != 'Unavailable'" class="fa icon grey fa-cog fa-spin"></i>
-        <br />
-        <br />
-        <form v-on:submit.prevent="onSubmit" method="post" id="submit-orca" v-bind:class="{loading: isLoading}">
-            <br />
-            <label class="left">Input file already exists (*.inp)?</label>
-            <input type="file" ref="inputFile" v-on:change="setInputFile($event)"/>
-            <button type="button" ref="clearInputFile" name="clearInputFile" class="button" v-on:click="clearFile($event)">Clear </button>
-            <br /><br />
-            <div v-if="form != 'orca'">
-                <label v-if="form == 'fdmnes'" class="left">Element:</label>
-                <select v-if="form == 'fdmnes'" name="element" v-model="element" v-on:change="overviewBuilder()">
-                    <option v-for="e in elements">{{ e['element'] }}</option>
-                </select>
+    <span>Cluster status: {{ clusterStatus }}</span>&nbsp;&nbsp;&nbsp;<i
+      v-if="clusterStatus != 'Running' && clusterStatus != 'Sleeping' && clusterStatus != 'Unavailable'"
+      class="fa icon grey fa-cog fa-spin"
+    />
+    <br>
+    <br>
+    <form
+      id="submit-orca"
+      method="post"
+      :class="{loading: isLoading}"
+      @submit.prevent="onSubmit"
+    >
+      <br>
+      <label class="left">Input file already exists (*.inp)?</label>
+      <input
+        ref="inputFile"
+        type="file"
+        @change="setInputFile($event)"
+      >
+      <button
+        ref="clearInputFile"
+        type="button"
+        name="clearInputFile"
+        class="button"
+        @click="clearFile($event)"
+      >
+        Clear
+      </button>
+      <br><br>
+      <div v-if="form != 'orca'">
+        <label
+          v-if="form == 'fdmnes'"
+          class="left"
+        >Element:</label>
+        <select
+          v-if="form == 'fdmnes'"
+          v-model="element"
+          name="element"
+          @change="overviewBuilder()"
+        >
+          <option v-for="e in elements">
+            {{ e['element'] }}
+          </option>
+        </select>
                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 
-                <label class="notLeft">Absorption edge:</label>
-                <select name="absorbEdge" v-if="form == 'fdmnes'" v-model="edge" v-on:change="overviewBuilder()">
-                    <option v-for="edge in fdmnes_abs_edge">{{ edge }}</option>
-                </select>
-                <select name="absorbEdge" v-if="form == 'qe'" v-model="edge" v-on:change="overviewBuilder()">
-                    <option v-for="edge in qe_abs_edge">{{ edge }}</option>
-                </select>
+        <label class="notLeft">Absorption edge:</label>
+        <select
+          v-if="form == 'fdmnes'"
+          v-model="edge"
+          name="absorbEdge"
+          @change="overviewBuilder()"
+        >
+          <option v-for="edge in fdmnes_abs_edge">
+            {{ edge }}
+          </option>
+        </select>
+        <select
+          v-if="form == 'qe'"
+          v-model="edge"
+          name="absorbEdge"
+          @change="overviewBuilder()"
+        >
+          <option v-for="edge in qe_abs_edge">
+            {{ edge }}
+          </option>
+        </select>
                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-            </div>
-            <section id="orcaTab" v-bind:style="{display: orcaDisplay}">
-                <div style="float:right; width:40%; height:30%">
-                    <p>ORCA is an ab initio, DFT, and semi-empirical SCF-MO package developed by Frank Neese et al. at the Max Planck Institut für Kohlenforschung.</p>
-                    <span>ORCA webpage at Max-Planck-Institut: <a href="https://www.kofo.mpg.de/en/research/services/orca">https://www.kofo.mpg.de/en/research/services/orca</a></span>
-                    <br/>
-                    <span>ORCA manual: <a href="https://www.kofo.mpg.de/412442/orca_manual-opt.pdf">https://www.kofo.mpg.de/412442/orca_manual-opt.pdf</a></span>
-                    <br/>
-                    <span>ORCA input library website: <a href="https://sites.google.com/site/orcainputlibrary/home">https://sites.google.com/site/orcainputlibrary/home</a></span>
-                    <br/><br/>
-                    <p>If you publish calculation results performed with ORCA code please cite the original papers:</p>
-                    <p><i>F. Neese, Wiley Interdisciplinary Reviews: Computational Molecular Science 2, 73 (2012).</i></p>
-                    <p><i>F. Neese, Wiley Interdisciplinary Reviews: Computational Molecular Science 8, e1327 (2018).</i></p>
-                    <br/>
-                    <p>
-                        In general, the input file is a free format ASCII file and can contain one or more keyword lines that start with a
-                        "!" sign, one or more input blocks enclosed between an "%" sign and "end" that provide finer control over specific
-                        aspects of the calculation, and finally the specification of the coordinates for the system along with the charge and
-                        multiplicity provided either with a %coords block, or more usually enclosed within two "*" symbols. Here is an
-                        example of a simple input file that contains all three input elements:
-                    </p>
-                    <br/>
+      </div>
+      <section
+        id="orcaTab"
+        :style="{display: orcaDisplay}"
+      >
+        <div style="float:right; width:40%; height:30%">
+          <p>ORCA is an ab initio, DFT, and semi-empirical SCF-MO package developed by Frank Neese et al. at the Max Planck Institut für Kohlenforschung.</p>
+          <span>ORCA webpage at Max-Planck-Institut: <a href="https://www.kofo.mpg.de/en/research/services/orca">https://www.kofo.mpg.de/en/research/services/orca</a></span>
+          <br>
+          <span>ORCA manual: <a href="https://www.kofo.mpg.de/412442/orca_manual-opt.pdf">https://www.kofo.mpg.de/412442/orca_manual-opt.pdf</a></span>
+          <br>
+          <span>ORCA input library website: <a href="https://sites.google.com/site/orcainputlibrary/home">https://sites.google.com/site/orcainputlibrary/home</a></span>
+          <br><br>
+          <p>If you publish calculation results performed with ORCA code please cite the original papers:</p>
+          <p><i>F. Neese, Wiley Interdisciplinary Reviews: Computational Molecular Science 2, 73 (2012).</i></p>
+          <p><i>F. Neese, Wiley Interdisciplinary Reviews: Computational Molecular Science 8, e1327 (2018).</i></p>
+          <br>
+          <p>
+            In general, the input file is a free format ASCII file and can contain one or more keyword lines that start with a
+            "!" sign, one or more input blocks enclosed between an "%" sign and "end" that provide finer control over specific
+            aspects of the calculation, and finally the specification of the coordinates for the system along with the charge and
+            multiplicity provided either with a %coords block, or more usually enclosed within two "*" symbols. Here is an
+            example of a simple input file that contains all three input elements:
+          </p>
+          <br>
 
-                    <p>! BLYP DKH2 def2-SVP def2/J SlowConv NoFinalGrid # This is a comment</p>
-                    <br/>
+          <p>! BLYP DKH2 def2-SVP def2/J SlowConv NoFinalGrid # This is a comment</p>
+          <br>
 
-                    <p>%maxcore 5024 # global scratch memory limit (in MB) per processing core.</p>
-                    <br />
+          <p>%maxcore 5024 # global scratch memory limit (in MB) per processing core.</p>
+          <br>
 
-                    <p>%pal nprocs 4 # requested number of CPUs</p>
-                    <span>end</span>
-                    <br/><br/>
+          <p>%pal nprocs 4 # requested number of CPUs</p>
+          <span>end</span>
+          <br><br>
 
-                    <span>* xyz 0 1</span>
-                    <br/>
-                    <span>C &nbsp; 0.0 &nbsp; 0.0 &nbsp; 0.0</span>
-                    <br/>
-                    <span>O &nbsp; 0.0 &nbsp; 0.0 &nbsp; 1.13</span>
-                    <br/>
-                    <span>*</span>
-                    <br/><br/>
+          <span>* xyz 0 1</span>
+          <br>
+          <span>C &nbsp; 0.0 &nbsp; 0.0 &nbsp; 0.0</span>
+          <br>
+          <span>O &nbsp; 0.0 &nbsp; 0.0 &nbsp; 1.13</span>
+          <br>
+          <span>*</span>
+          <br><br>
 
-                    <p>
-                        The input may contain several blocks, which consist of logically related data that can be user controlled. The program tries to choose sensible default values for all of these variables.
-                        However, it is impossible to give defaults that are equally sensible for all systems. In general the defaults are slightly on the conservative side and more aggressive cutoffs etc. can
-                        be chosen by the user and may help to speed things up for actual systems or give higher accuracy if desired. One-liner explanation (starts with !, order of the keywords is not important)
-                    </p>
-                    <br />
+          <p>
+            The input may contain several blocks, which consist of logically related data that can be user controlled. The program tries to choose sensible default values for all of these variables.
+            However, it is impossible to give defaults that are equally sensible for all systems. In general the defaults are slightly on the conservative side and more aggressive cutoffs etc. can
+            be chosen by the user and may help to speed things up for actual systems or give higher accuracy if desired. One-liner explanation (starts with !, order of the keywords is not important)
+          </p>
+          <br>
 
-                    <p>!Keywords Functional Hamiltonian BasisSet AuxBasisSet</p>
-                    <br />
+          <p>!Keywords Functional Hamiltonian BasisSet AuxBasisSet</p>
+          <br>
 
-                    <p>BLYP &nbsp; - generalized gradient approximation (GGA) DFT functional; see Table 6.2: Density functionals available in ORCA.</p>
-                    <p>DKH2 &nbsp; - scalar relativistic Douglas-Kroll-Hess Hamiltonian of 2nd order; see Table 6.2: Density functionals available in ORCA.</p>
-                    <p>def2-SVP &nbsp; - basis set for H-Rn; see Table 9.8: Basis sets availability.</p>
-                    <p>def2/J &nbsp; - Coulomb-fitting auxiliary basis sets (AuxJ); see Table 9.8: Basis sets availability.</p>
-                    <p>UKS &nbsp; - selects spin unrestricted SCF method; Table 6.1: Main keywords that can be used in the simple input of ORCA.</p>
-                    <p>RKS &nbsp; - selects restricted closed-shell SCF method.</p>
-                    <p>SlowConv &nbsp; - selects appropriate SCF converger criteria for difficult cases. Most transition metal complexes fall into this category.</p>
-                    <p>NoFinalGrid &nbsp; - turns the final integration grid feature off.</p>
-                    <br />
+          <p>BLYP &nbsp; - generalized gradient approximation (GGA) DFT functional; see Table 6.2: Density functionals available in ORCA.</p>
+          <p>DKH2 &nbsp; - scalar relativistic Douglas-Kroll-Hess Hamiltonian of 2nd order; see Table 6.2: Density functionals available in ORCA.</p>
+          <p>def2-SVP &nbsp; - basis set for H-Rn; see Table 9.8: Basis sets availability.</p>
+          <p>def2/J &nbsp; - Coulomb-fitting auxiliary basis sets (AuxJ); see Table 9.8: Basis sets availability.</p>
+          <p>UKS &nbsp; - selects spin unrestricted SCF method; Table 6.1: Main keywords that can be used in the simple input of ORCA.</p>
+          <p>RKS &nbsp; - selects restricted closed-shell SCF method.</p>
+          <p>SlowConv &nbsp; - selects appropriate SCF converger criteria for difficult cases. Most transition metal complexes fall into this category.</p>
+          <p>NoFinalGrid &nbsp; - turns the final integration grid feature off.</p>
+          <br>
 
 
-                    <p>Reading geometry from file.xyz in XMol format with coordinates in Ångström and a 2-line header that contains the number of atoms and a description line:</p>
-                    <br/>
+          <p>Reading geometry from file.xyz in XMol format with coordinates in Ångström and a 2-line header that contains the number of atoms and a description line:</p>
+          <br>
 
-                    <p>4</p>
-                    <p>description line</p>
-                    <p>C &nbsp; 0.000000000 &nbsp; 0.000000000 &nbsp; 0.000000000</p>
-                    <p>O &nbsp; 2.362157486 &nbsp; 0.000000000 &nbsp; 0.000000000</p>
-                    <p>H &nbsp; -1.109548835 &nbsp; 1.774545300 &nbsp; 0.000000000</p>
-                    <p>H &nbsp; -1.109548835 &nbsp; -1.774545300 &nbsp; 0.000000000</p>
-                    <br/>
-                </div>
-                <ul>
-                    <li>
-                        <label class="left" >Which technique?</label>
-                        <input type="radio" id="Xas" name="technique" value="Xas" checked="checked" v-model="technique" v-on:change="overviewBuilder()">
-                        <label class="notLeft" style="margin-left:5px" for="Xas">XAS</label>
+          <p>4</p>
+          <p>description line</p>
+          <p>C &nbsp; 0.000000000 &nbsp; 0.000000000 &nbsp; 0.000000000</p>
+          <p>O &nbsp; 2.362157486 &nbsp; 0.000000000 &nbsp; 0.000000000</p>
+          <p>H &nbsp; -1.109548835 &nbsp; 1.774545300 &nbsp; 0.000000000</p>
+          <p>H &nbsp; -1.109548835 &nbsp; -1.774545300 &nbsp; 0.000000000</p>
+          <br>
+        </div>
+        <ul>
+          <li>
+            <label class="left">Which technique?</label>
+            <input
+              id="Xas"
+              v-model="technique"
+              type="radio"
+              name="technique"
+              value="Xas"
+              checked="checked"
+              @change="overviewBuilder()"
+            >
+            <label
+              class="notLeft"
+              style="margin-left:5px"
+              for="Xas"
+            >XAS</label>
                         &nbsp;&nbsp;&nbsp;
-                        <input type="radio" id="Xes" name="technique" value="Xes" v-model="technique" v-on:change="overviewBuilder()">
-                        <label class="notLeft" style="margin-left:5px" for="Xes">XES</label>
-                    </li>
-                    <li>
-                        <label class="left">Functional:</label>
-                        <select name="functional" v-model="functional" v-on:change="overviewBuilder()" title="BLYP is a generalized gradient approximation (GGA) DFT functional;
-B3LYP is a hybrid DFT GGA functional (20% HF exchange).">
-                            <option>BLYP</option>
-                            <option>B3LYP</option>
-                        </select>
+            <input
+              id="Xes"
+              v-model="technique"
+              type="radio"
+              name="technique"
+              value="Xes"
+              @change="overviewBuilder()"
+            >
+            <label
+              class="notLeft"
+              style="margin-left:5px"
+              for="Xes"
+            >XES</label>
+          </li>
+          <li>
+            <label class="left">Functional:</label>
+            <select
+              v-model="functional"
+              name="functional"
+              title="BLYP is a generalized gradient approximation (GGA) DFT functional;
+B3LYP is a hybrid DFT GGA functional (20% HF exchange)."
+              @change="overviewBuilder()"
+            >
+              <option>BLYP</option>
+              <option>B3LYP</option>
+            </select>
                         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 
-                        <label class="notLeft">Basis:</label>
-                        <select name="basis" v-model="basis" v-on:change="overviewBuilder()" title="These basis sets are all-electron for elements H-Kr, and automatically load Stuttgart-Dresden effective core potentials for elements Rb-Rn.
+            <label class="notLeft">Basis:</label>
+            <select
+              v-model="basis"
+              name="basis"
+              title="These basis sets are all-electron for elements H-Kr, and automatically load Stuttgart-Dresden effective core potentials for elements Rb-Rn.
 def2-SVP is a valence double-zeta basis set with 'new' polarization functions.
-def2-SV(P) is the same with slightly reduced polarization.">
-                            <option>def2-SVP</option>
-                            <option>def2-SV(P)</option>
-                        </select>
-                    </li>
-                    <li>
-                        <label class="left">Charge value:</label>
-                        <input type="text" name="charge" v-model="charge" v-on:change="overviewBuilder()" v-bind:class="{ferror: errors.has('charge')}" v-validate="'required|decimal'" title="Total charge of the system" />
-                        <label class="notLeft">Multiplicity value:</label>
-                        <input type="text" name="multiplicity" v-model="multiplicity" v-on:change="overviewBuilder()" v-bind:class="{ferror: errors.has('multiplicity')}" v-validate="'required|decimal'" title="The multiplicity = 2S+1" />
-                        <label class="notLeft" style="margin-right:5px">Solvent:</label>
-                        <select name="solvent" v-model="solvent" v-on:change="overviewBuilder()" title="Add solvent if necessary">
-                            <option v-for="s in orca_solvents">{{ s['name'] }}</option>
-                        </select>
-                    </li>
-                    <li v-if="technique == 'Xas'">
-                        <label class="left">OrbWin[0] Start:</label>
-                        <input type="text" name="orbWin0Start" v-model="orbWin0Start" v-on:change="overviewBuilder()" v-bind:class="{ferror: errors.has('orbWin0Start')}" v-validate="'required|numeric|min_value:0'" title="orbwin[0] - Start, Stop, -1, -1
+def2-SV(P) is the same with slightly reduced polarization."
+              @change="overviewBuilder()"
+            >
+              <option>def2-SVP</option>
+              <option>def2-SV(P)</option>
+            </select>
+          </li>
+          <li>
+            <label class="left">Charge value:</label>
+            <input
+              v-model="charge"
+              v-validate="'required|decimal'"
+              type="text"
+              name="charge"
+              :class="{ferror: errors.has('charge')}"
+              title="Total charge of the system"
+              @change="overviewBuilder()"
+            >
+            <label class="notLeft">Multiplicity value:</label>
+            <input
+              v-model="multiplicity"
+              v-validate="'required|decimal'"
+              type="text"
+              name="multiplicity"
+              :class="{ferror: errors.has('multiplicity')}"
+              title="The multiplicity = 2S+1"
+              @change="overviewBuilder()"
+            >
+            <label
+              class="notLeft"
+              style="margin-right:5px"
+            >Solvent:</label>
+            <select
+              v-model="solvent"
+              name="solvent"
+              title="Add solvent if necessary"
+              @change="overviewBuilder()"
+            >
+              <option v-for="s in orca_solvents">
+                {{ s['name'] }}
+              </option>
+            </select>
+          </li>
+          <li v-if="technique == 'Xas'">
+            <label class="left">OrbWin[0] Start:</label>
+            <input
+              v-model="orbWin0Start"
+              v-validate="'required|numeric|min_value:0'"
+              type="text"
+              name="orbWin0Start"
+              :class="{ferror: errors.has('orbWin0Start')}"
+              title="orbwin[0] - Start, Stop, -1, -1
 e.g. 0,0,-1,-1 # Selecting the alpha set (orbwin[0]). Selecting donor orbital range : 0 to 0 (the lowest energy
-orbital only, means K-edge) and acceptor orbital range: -1 to -1 (meaning all virtual orbitals)"/>
-                        <span v-if="errors.has('orbWin0Start')" class="errormessage ferror">{{ errors.first('orbWin0Start') }}</span>
+orbital only, means K-edge) and acceptor orbital range: -1 to -1 (meaning all virtual orbitals)"
+              @change="overviewBuilder()"
+            >
+            <span
+              v-if="errors.has('orbWin0Start')"
+              class="errormessage ferror"
+            >{{ errors.first('orbWin0Start') }}</span>
 
-                        <label class="notLeft">OrbWin[0] Stop:</label>
-                        <input type="text" name="orbWin0Stop" v-model="orbWin0Stop" v-on:change="overviewBuilder()" v-bind:class="{ferror: errors.has('orbWin0Stop')}" v-validate="'required|numeric|min_value:0'" title="orbwin[0] - Start, Stop, -1, -1
+            <label class="notLeft">OrbWin[0] Stop:</label>
+            <input
+              v-model="orbWin0Stop"
+              v-validate="'required|numeric|min_value:0'"
+              type="text"
+              name="orbWin0Stop"
+              :class="{ferror: errors.has('orbWin0Stop')}"
+              title="orbwin[0] - Start, Stop, -1, -1
 e.g. 0,0,-1,-1 # Selecting the alpha set (orbwin[0]). Selecting donor orbital range : 0 to 0 (the lowest energy
-orbital only, means K-edge) and acceptor orbital range: -1 to -1 (meaning all virtual orbitals)"/>
-                        <span v-if="errors.has('orbWin0Stop')" class="errormessage ferror">{{ errors.first('orbWin0Stop') }}</span>
-                    </li>
-                    <li v-if="technique == 'Xas'">
-                        <label class="left">OrbWin[1] Start:</label>
-                        <input type="text" name="orbWin1Start" v-model="orbWin1Start" v-on:change="overviewBuilder()" v-bind:class="{ferror: errors.has('orbWin1Start')}" v-validate="'required|numeric|min_value:0'" title="orbwin[1] - Start, Stop, -1, -1
-e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not necessary if system is closed-shell."/>
-                        <span v-if="errors.has('orbWin1Start')" class="errormessage ferror">{{ errors.first('orbWin1Start') }}</span>
+orbital only, means K-edge) and acceptor orbital range: -1 to -1 (meaning all virtual orbitals)"
+              @change="overviewBuilder()"
+            >
+            <span
+              v-if="errors.has('orbWin0Stop')"
+              class="errormessage ferror"
+            >{{ errors.first('orbWin0Stop') }}</span>
+          </li>
+          <li v-if="technique == 'Xas'">
+            <label class="left">OrbWin[1] Start:</label>
+            <input
+              v-model="orbWin1Start"
+              v-validate="'required|numeric|min_value:0'"
+              type="text"
+              name="orbWin1Start"
+              :class="{ferror: errors.has('orbWin1Start')}"
+              title="orbwin[1] - Start, Stop, -1, -1
+e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not necessary if system is closed-shell."
+              @change="overviewBuilder()"
+            >
+            <span
+              v-if="errors.has('orbWin1Start')"
+              class="errormessage ferror"
+            >{{ errors.first('orbWin1Start') }}</span>
 
-                        <label class="notLeft">OrbWin[1] Stop:</label>
-                        <input type="text" name="orbWin1Stop" v-model="orbWin1Stop" v-on:change="overviewBuilder()" v-bind:class="{ferror: errors.has('orbWin1Stop')}" v-validate="'required|numeric|min_value:0'" title="orbwin[1] - Start, Stop, -1, -1
+            <label class="notLeft">OrbWin[1] Stop:</label>
+            <input
+              v-model="orbWin1Stop"
+              v-validate="'required|numeric|min_value:0'"
+              type="text"
+              name="orbWin1Stop"
+              :class="{ferror: errors.has('orbWin1Stop')}"
+              title="orbwin[1] - Start, Stop, -1, -1
 e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not necessary if system is closed-shell.
-"/>
-                        <span v-if="errors.has('orbWin1Stop')" class="errormessage ferror">{{ errors.first('orbWin1Stop') }}</span>
-                    </li>
-                    <li>
-                        <label class="left">Load structure (.xyz, .gmnt):</label>
-                        <input type="file" ref="orcaStructureFile" v-on:change="setStructureFile($event); overviewBuilder($event)" title="Use file for structure (must be in correct format) or manually add structure using Atoms"/>
-                        <button type="button" ref="clearStructureFile" name="clearStructureFile" class="button" v-on:click="clearFile($event)">Clear</button>
-                    </li>
-                </ul>
-            </section>
+"
+              @change="overviewBuilder()"
+            >
+            <span
+              v-if="errors.has('orbWin1Stop')"
+              class="errormessage ferror"
+            >{{ errors.first('orbWin1Stop') }}</span>
+          </li>
+          <li>
+            <label class="left">Load structure (.xyz, .gmnt):</label>
+            <input
+              ref="orcaStructureFile"
+              type="file"
+              title="Use file for structure (must be in correct format) or manually add structure using Atoms"
+              @change="setStructureFile($event); overviewBuilder($event)"
+            >
+            <button
+              ref="clearStructureFile"
+              type="button"
+              name="clearStructureFile"
+              class="button"
+              @click="clearFile($event)"
+            >
+              Clear
+            </button>
+          </li>
+        </ul>
+      </section>
 
-            <section id="fdmnesTab" v-bind:style="{display: fdmnesDisplay}">
-                <div style="float:right; width:40%; height:30%">
-                    <p>FDMNES (Finite Difference Method Near Edge Structure) is to provide a user friendly code, which is able to simulate a broad range of x-ray spectroscopies, beyond the muffin tin approximation. This ab initio (first principles) approach which is based upon the finite difference method, aims to eliminate all methodological parameters and go beyond the limitations of the spherical muffin tin approximation. It includes density functional theory and time-dependent density functional theory.</p>
-                    <span>FDMNES webpage: <a href="http://fdmnes.neel.cnrs.fr/">http://fdmnes.neel.cnrs.fr/</a></span>
-                    <br/>
-                    <span>FDMNES theory and input: <a href="https://research.ncl.ac.uk/media/sites/researchwebsites/collaborativenetworkforx-rayspectroscopy/Joly_FDMNES_CONEXS_Newcastle.pdf">HJoly_FDMNES_CONEXS_Newcastle.pdf</a></span>
-                    <br/><br/>
-                    <p>If you publish calculation results performed with FDMNES code please cite the original papers:</p>
-                    <p><i>J. Phys.: Condens. Matter 21, 345501 (2009).</i></p>
-                    <p><i>J. Chem. Theory Comput. 11, 4512-4521 (2015).</i></p>
-                    <p><i>J. Synchrotron Rad. 23, 551-559 (2016).</i></p>
-                </div>
-                <br />
-                <ul>
-                    <li>
-                        <label class="left">Green?</label>
-                        <input type="checkbox" v-model="fdmnes_method" v-on:change="overviewBuilder()" />
+      <section
+        id="fdmnesTab"
+        :style="{display: fdmnesDisplay}"
+      >
+        <div style="float:right; width:40%; height:30%">
+          <p>FDMNES (Finite Difference Method Near Edge Structure) is to provide a user friendly code, which is able to simulate a broad range of x-ray spectroscopies, beyond the muffin tin approximation. This ab initio (first principles) approach which is based upon the finite difference method, aims to eliminate all methodological parameters and go beyond the limitations of the spherical muffin tin approximation. It includes density functional theory and time-dependent density functional theory.</p>
+          <span>FDMNES webpage: <a href="http://fdmnes.neel.cnrs.fr/">http://fdmnes.neel.cnrs.fr/</a></span>
+          <br>
+          <span>FDMNES theory and input: <a href="https://research.ncl.ac.uk/media/sites/researchwebsites/collaborativenetworkforx-rayspectroscopy/Joly_FDMNES_CONEXS_Newcastle.pdf">HJoly_FDMNES_CONEXS_Newcastle.pdf</a></span>
+          <br><br>
+          <p>If you publish calculation results performed with FDMNES code please cite the original papers:</p>
+          <p><i>J. Phys.: Condens. Matter 21, 345501 (2009).</i></p>
+          <p><i>J. Chem. Theory Comput. 11, 4512-4521 (2015).</i></p>
+          <p><i>J. Synchrotron Rad. 23, 551-559 (2016).</i></p>
+        </div>
+        <br>
+        <ul>
+          <li>
+            <label class="left">Green?</label>
+            <input
+              v-model="fdmnes_method"
+              type="checkbox"
+              @change="overviewBuilder()"
+            >
 
-                        <label class="notLeft">Crystal?</label>
-                        <select name="crystal" v-model="crystal" v-on:change="overviewBuilder()">
-                            <option>Crystal</option>
-                            <option>Molecule</option>
-                        </select>
-                    </li>
-                    <li>
-                        <label class="left">Load structure (.cif, .pdb):</label>
-                        <input type="file" ref="fdmnesStructureFile" v-on:change="setStructureFile($event); overviewBuilder($event)"/>
-                        <button type="button" ref="clearStructureFile" name="clearStructureFile" class="button" v-on:click="clearFile($event)">Clear</button>
-                    </li>
-                </ul>
-            </section>
+            <label class="notLeft">Crystal?</label>
+            <select
+              v-model="crystal"
+              name="crystal"
+              @change="overviewBuilder()"
+            >
+              <option>Crystal</option>
+              <option>Molecule</option>
+            </select>
+          </li>
+          <li>
+            <label class="left">Load structure (.cif, .pdb):</label>
+            <input
+              ref="fdmnesStructureFile"
+              type="file"
+              @change="setStructureFile($event); overviewBuilder($event)"
+            >
+            <button
+              ref="clearStructureFile"
+              type="button"
+              name="clearStructureFile"
+              class="button"
+              @click="clearFile($event)"
+            >
+              Clear
+            </button>
+          </li>
+        </ul>
+      </section>
 
-            <section id="quantumEspressoTab" v-bind:style="{display: quantumEspressoDisplay}">
-                <div style="float:right; width:40%; height:30%">
-                    <p>Quantum ESPRESSO (Quantum opEn-Source Package for Research in Electronic Structure, Simulation, and Optimisation) is a suite of applications for ab-initio electronic structure calculations using plane waves and pseudopotentials.</p>
-                    <p>
-                    <span>Quantum ESPRESSO webpage: <a href="https://www.quantum-espresso.org/">https://www.quantum-espresso.org</a></span>
-                    <br/>
-                    <span>Pw.x input descriptions: <a href="https://www.quantum-espresso.org/Doc/INPUT_PW.html">https://www.quantum-espresso.org/Doc/INPUT_PW.html</a></span>
-                    <br/>
-                    <span>XSPECTRA input descriptions: <a href="https://github.com/QEF/q-e/blob/master/XSpectra/Doc/INPUT_XSPECTRA">https://github.com/QEF/q-e/blob/master/XSpectra/Doc/INPUT_XSPECTRA</a></span>
-                    <br/><br/>
-                    <p>If you publish calculation results performed with QE code please cite the original papers:</p>
-                    <p><i>Journal of Physics: Condensed Matter 21, 395502 (2009).</i></p>
-                    <p><i>Phys. Rev. B 80, 075102 (2009)</i></p>
-                    <p><i>Phys. Rev. B 87, 205105 (2013)</i></p>
-                    <p><i>Journal of Physics: Condensed Matter 29, 465901 (2017).</i></p>
-                    <p><i>The Journal of Chemical Physics 152, 154105 (2020).</i></p>
-                    <br/><br/>
-                    <p> X-ray absorption simulations in quantum espresso are carried out in two steps. Firstly using the pw.x code and then using the xspectra.x code. The input files for these to codes are ASCII files separated into cards (or blocks). The beginning of a block is denoted by an & symbol and the name of the card, the card is closed with a "/", for example:</p>
-                    <p> &CONTROL … /. </p>
-                    <p> For pw.x the input cards must be given in the order: control, system, electrons. Information on the geometry is given in the input file and can be provided as a set of atomic coordinates in Angstrom and a set of cell parameters also in Angstroms.</p>
-                    <br/><br/>
-                    <p>Materials Project provides open web-based access to computed information on known and predicted materials.</p>
-                    <span><a href="https://materialsproject.org/">https://materialsproject.org/</a></span>
-                    <p>If you use the Materials Project as a resource in your research, please cite the following work:</p>
-                    <p><i>APL Materials, 2013, 1(1), 011002.</i></p>
-                </div>
-                <br />
-                <br /><br />
-                <label>Cards</label>
-                <br /><br />
-                <button type="button" name="systemCardBtn" ref="systemCardBtn" class="button" v-on:click="cardDisplay($event)">SYSTEM</button>
-                <button type="button" name="atomicPositionCardBtn" ref="atomicPositionCardBtn" class="button" v-on:click="cardDisplay($event)">ATOMIC_POSITION</button>
-                <button type="button" name="cellParamsCardBtn" ref="cellParamsCardBtn" class="button" v-on:click="cardDisplay($event)">CELL_PARAMETERS</button>
-                <button type="button" name="mpApiBtn" ref="mpApiBtn" class="button" v-on:click="cardDisplay($event)">MATERIALS_PROJECT</button>
+      <section
+        id="quantumEspressoTab"
+        :style="{display: quantumEspressoDisplay}"
+      >
+        <div style="float:right; width:40%; height:30%">
+          <p>Quantum ESPRESSO (Quantum opEn-Source Package for Research in Electronic Structure, Simulation, and Optimisation) is a suite of applications for ab-initio electronic structure calculations using plane waves and pseudopotentials.</p>
+          <p>
+            <span>Quantum ESPRESSO webpage: <a href="https://www.quantum-espresso.org/">https://www.quantum-espresso.org</a></span>
+            <br>
+            <span>Pw.x input descriptions: <a href="https://www.quantum-espresso.org/Doc/INPUT_PW.html">https://www.quantum-espresso.org/Doc/INPUT_PW.html</a></span>
+            <br>
+            <span>XSPECTRA input descriptions: <a href="https://github.com/QEF/q-e/blob/master/XSpectra/Doc/INPUT_XSPECTRA">https://github.com/QEF/q-e/blob/master/XSpectra/Doc/INPUT_XSPECTRA</a></span>
+            <br><br>
+          </p><p>If you publish calculation results performed with QE code please cite the original papers:</p>
+          <p><i>Journal of Physics: Condensed Matter 21, 395502 (2009).</i></p>
+          <p><i>Phys. Rev. B 80, 075102 (2009)</i></p>
+          <p><i>Phys. Rev. B 87, 205105 (2013)</i></p>
+          <p><i>Journal of Physics: Condensed Matter 29, 465901 (2017).</i></p>
+          <p><i>The Journal of Chemical Physics 152, 154105 (2020).</i></p>
+          <br><br>
+          <p> X-ray absorption simulations in quantum espresso are carried out in two steps. Firstly using the pw.x code and then using the xspectra.x code. The input files for these to codes are ASCII files separated into cards (or blocks). The beginning of a block is denoted by an & symbol and the name of the card, the card is closed with a "/", for example:</p>
+          <p> &CONTROL … /. </p>
+          <p> For pw.x the input cards must be given in the order: control, system, electrons. Information on the geometry is given in the input file and can be provided as a set of atomic coordinates in Angstrom and a set of cell parameters also in Angstroms.</p>
+          <br><br>
+          <p>Materials Project provides open web-based access to computed information on known and predicted materials.</p>
+          <span><a href="https://materialsproject.org/">https://materialsproject.org/</a></span>
+          <p>If you use the Materials Project as a resource in your research, please cite the following work:</p>
+          <p><i>APL Materials, 2013, 1(1), 011002.</i></p>
+        </div>
+        <br>
+        <br><br>
+        <label>Cards</label>
+        <br><br>
+        <button
+          ref="systemCardBtn"
+          type="button"
+          name="systemCardBtn"
+          class="button"
+          @click="cardDisplay($event)"
+        >
+          SYSTEM
+        </button>
+        <button
+          ref="atomicPositionCardBtn"
+          type="button"
+          name="atomicPositionCardBtn"
+          class="button"
+          @click="cardDisplay($event)"
+        >
+          ATOMIC_POSITION
+        </button>
+        <button
+          ref="cellParamsCardBtn"
+          type="button"
+          name="cellParamsCardBtn"
+          class="button"
+          @click="cardDisplay($event)"
+        >
+          CELL_PARAMETERS
+        </button>
+        <button
+          ref="mpApiBtn"
+          type="button"
+          name="mpApiBtn"
+          class="button"
+          @click="cardDisplay($event)"
+        >
+          MATERIALS_PROJECT
+        </button>
 
-                <br /><br />
+        <br><br>
 
-                <section id="systemCard" name="systemCard" v-if="card == 'system' && quantumEspressoDisplay == 'inline'">
-                    <ul>
-                        <li>
-                            <label class="left">Conductivity:</label>
-                            <select name="conductivity" v-model="conductivity" v-on:change="overviewBuilder()">
-                                <option>metallic</option>
-                                <option>semiconductor</option>
-                                <option>insulator</option>
-                            </select>
-                        </li>
-                    </ul>
-                </section>
+        <section
+          v-if="card == 'system' && quantumEspressoDisplay == 'inline'"
+          id="systemCard"
+          name="systemCard"
+        >
+          <ul>
+            <li>
+              <label class="left">Conductivity:</label>
+              <select
+                v-model="conductivity"
+                name="conductivity"
+                @change="overviewBuilder()"
+              >
+                <option>metallic</option>
+                <option>semiconductor</option>
+                <option>insulator</option>
+              </select>
+            </li>
+          </ul>
+        </section>
 
-                <section id="atomicPositionCard" name="atomicPositionCard" v-if="card == 'position' && quantumEspressoDisplay == 'inline'">
-                    <ul>
-                        <li>
-                            <label class="left">ATOMIC_POSITIONS:</label>
-                            <select name="atomicPositionType" v-model="atomicPositionType" v-on:change="overviewBuilder()">
-                                <option>bohr</option>
-                                <option>angstrom</option>
-                                <option>crystal</option>
-                            </select>
-                        </li>
-                        <li>
-                            <label class="left">Atoms:</label>
-                            <table-component
-                                :headers="qeAtomHeaders"
-                                :data="atomData"
-                                actions="Actions"
-                                addRow="addRow"
-                                style="width:40%"
-                            >
-                                <template slot="actions" slot-scope="{ row }">
-                                    <button type="button" class="button" v-on:click="removeAtom(row.ID); overviewBuilder()">Remove</button> 
-                                </template>
-                                <template slot="addRow" slot-scope="{ row }">
-                                    <td>
-                                        <select name="atom" v-model="atom">
-                                            <option v-for="e in ppElements">{{ e['element'] }}</option>
-                                        </select>
-                                    </td>
-                                    <td><input type="text" v-model="atomX" name="atomX" v-bind:class="{ferror: errors.has('atomX')}" v-validate="'required|decimal|min_value:-100|max_value:100'"/></td>
-                                    <td><input type="text" v-model="atomY" name="atomY" v-bind:class="{ferror: errors.has('atomY')}" v-validate="'required|decimal|min_value:-100|max_value:100'"/></td>
-                                    <td><input type="text" v-model="atomZ" name="atomZ" v-bind:class="{ferror: errors.has('atomZ')}" v-validate="'required|decimal|min_value:-100|max_value:100'"/></td>
-                                    <td><input type="checkbox" title="Only one atom can be marked as absorbing" v-model="absorbingAtom" :disabled="absorbingAtomDisabled"/></td>
-                                    <td><button class="button" type="button" v-on:click="addAtom(); overviewBuilder()">Add</button></td>
-                                </template>
-                            </table-component>
-                        </li>
-                    </ul>
-                </section>
-                <section id="cellParametersCard" name="cellParametersCard" v-if="card =='cellParams' && quantumEspressoDisplay == 'inline'">
-                    <ul>
-                        <li>
-                            <label class="left">Cell Parameters Type:</label>
-                            <select name="cellParamsType" v-model="cellParamsType" v-on:change="overviewBuilder()">
-                                <option>bohr</option>
-                                <option>angstrom</option>
-                            </select>
-                        </li>
-                        <li>
-                            <label class="left">Cell Parameters:</label>
-                            <table-component
-                                :headers="[{key: 'X', title: 'X'}, {key: 'Y', title: 'Y'}, {key: 'Z', title: 'Z'}]"
-                                :data="cellParamData"
-                                actions="Vector"
-                                style="width:40%"
-                            >
-                                <template slot="actions" slot-scope="{ row }">
-                                    <span>{{ 'V'+row.ID }}</span>
-                                </template>
-                                <template slot="content" slot-scope="{ row }">
-                                    <td><input type="text" v-model="row.X" :name="row.ID+'X'" v-bind:class="{ferror: errors.has(row.ID+'X')}" v-validate="'required|decimal|min_value:-100|max_value:100'" v-on:change="overviewBuilder()"/></td>
-                                    <td><input type="text" v-model="row.Y" :name="row.ID+'Y'" v-bind:class="{ferror: errors.has(row.ID+'Y')}" v-validate="'required|decimal|min_value:-100|max_value:100'" v-on:change="overviewBuilder()"/></td>
-                                    <td><input type="text" v-model="row.Z" :name="row.ID+'Z'" v-bind:class="{ferror: errors.has(row.ID+'Z')}" v-validate="'required|decimal|min_value:-100|max_value:100'" v-on:change="overviewBuilder()"/></td>
-                                </template>
-                            </table-component>
-                        </li>
-                    </ul>
-                </section>
-                <section id="mpApiCard" name="mpApiCard" v-if="card =='mpApi' && quantumEspressoDisplay == 'inline'">
-                    <ul>
-                        <li>
-                            <label class="left">Your personal MP token:</label>
-                            <input style="width: 30%" type="text" v-model="mpApiToken" name="mpApiToken"/>
-                        </li>
-                        <li>
-                            <label class="left">Material ID (e.g., mp-100):</label>
-                            <input style="width: 30%" type="text" v-model="mpApiId" name="mpApiId"/>
-                        </li>
-                        <li>
-                            <label class="left">Which atom is absorbing (counting from 1)?:</label>
-                            <input type="number" min="1" max="100" v-model="mpApiAtom" name="mpApiAtom"/>
-                        </li>
-                        <li>
-                            <button type="button" ref="fetchMpapiInput" name="fetchMpapiInput" class="button" v-on:click="fetchMpApi($event)">Fetch from MP api</button>
-                        </li>
-                    </ul>
-                </section>
-            </section>
-
-            <ul>
-                <!-- This gets pushed out of alignment because li tags inside a form are considered flex containers. This means the helper text floating right is in the way and pushes it out
-                    We can fix it by adding display: block but the same will happen to other elements if the page is resized. -->
-                <li>
-                    <label v-if="quantumEspressoDisplay != 'inline'" class="left">Atoms:</label>
-                    <table-component
-                        :headers="atomHeaders"
-                        :data="atomData"
-                        actions="Actions"
-                        addRow="addRow"
-                        v-if="orcaDisplay == 'inline' || fdmnesDisplay == 'inline'"
-                        title="Define system structure as atom and position (Angstrom)"
-                        style="padding-bottom: 0px"
+        <section
+          v-if="card == 'position' && quantumEspressoDisplay == 'inline'"
+          id="atomicPositionCard"
+          name="atomicPositionCard"
+        >
+          <ul>
+            <li>
+              <label class="left">ATOMIC_POSITIONS:</label>
+              <select
+                v-model="atomicPositionType"
+                name="atomicPositionType"
+                @change="overviewBuilder()"
+              >
+                <option>bohr</option>
+                <option>angstrom</option>
+                <option>crystal</option>
+              </select>
+            </li>
+            <li>
+              <label class="left">Atoms:</label>
+              <table-component
+                :headers="qeAtomHeaders"
+                :data="atomData"
+                actions="Actions"
+                add-row="addRow"
+                style="width:40%"
+              >
+                <template
+                  slot="actions"
+                  slot-scope="{ row }"
+                >
+                  <button
+                    type="button"
+                    class="button"
+                    @click="removeAtom(row.ID); overviewBuilder()"
+                  >
+                    Remove
+                  </button> 
+                </template>
+                <template
+                  slot="addRow"
+                  slot-scope="{ row }"
+                >
+                  <td>
+                    <select
+                      v-model="atom"
+                      name="atom"
                     >
-                        <template slot="actions" slot-scope="{ row }">
-                            <button type="button" class="button" v-on:click="removeAtom(row.ID); overviewBuilder()">Remove</button> 
-                        </template>
-                        <template slot="addRow" slot-scope="{ row }">
-                            <td>
-                                <select name="atom" v-model="atom" v-bind:class="{ferror: errors.has('atom')}" v-validate="'required'">
-                                    <option v-for="e in elements">{{ e['element'] }}</option>
-                                </select>
-                            </td>
-                            <td><input type="text" v-model="atomX" name="atomX" v-bind:class="{ferror: errors.has('atomX')}" v-validate="atomRules"/></td>
-                            <td><input type="text" v-model="atomY" name="atomY" v-bind:class="{ferror: errors.has('atomY')}" v-validate="atomRules"/></td>
-                            <td><input type="text" v-model="atomZ" name="atomZ" v-bind:class="{ferror: errors.has('atomZ')}" v-validate="atomRules"/></td>
-                            <td><button class="button" type="button" v-on:click="addAtom(); overviewBuilder()">Add</button></td>
-                        </template>
-                    </table-component>
-                </li>
-
-                <li v-if="fdmnesDisplay == 'inline'">
-                    <label class="left">Params:</label>
-                    <table-component
-                        :headers="fdmnesParameterHeaders"
-                        :data="fdmnesParams"
-                        style="padding-bottom: 0px"
-                    >
-                        <template slot="content" slot-scope="{ row }">
-                            <td><input type="text" v-model="fdmnesParams[0].A" name="fdmnesParamA" v-bind:class="{ferror: errors.has('fdmnesParamA')}" v-validate="'required|decimal|min_value:-100|max_value:100'" v-on:change="overviewBuilder()"/></td>
-                            <td><input type="text" v-model="fdmnesParams[0].B" name="fdmnesParamB" v-bind:class="{ferror: errors.has('fdmnesParamB')}" v-validate="'required|decimal|min_value:-100|max_value:100'" v-on:change="overviewBuilder()"/></td>
-                            <td><input type="text" v-model="fdmnesParams[0].C" name="fdmnesParamC" v-bind:class="{ferror: errors.has('fdmnesParamC')}" v-validate="'required|decimal|min_value:-100|max_value:100'" v-on:change="overviewBuilder()"/></td>
-                            <td><input type="text" v-model="fdmnesParams[0].Alpha" name="fdmnesParamAlpha" v-bind:class="{ferror: errors.has('fdmnesParamAlpha')}" v-validate="'required|decimal|min_value:0|max_value:180'" v-on:change="overviewBuilder()"/></td>
-                            <td><input type="text" v-model="fdmnesParams[0].Beta" name="fdmnesParamBeta" v-bind:class="{ferror: errors.has('fdmnesParamBeta')}" v-validate="'required|decimal|min_value:0|max_value:180'" v-on:change="overviewBuilder()"/></td>
-                            <td><input type="text" v-model="fdmnesParams[0].Gamma" name="fdmnesParamGamma" v-bind:class="{ferror: errors.has('fdmnesParamGamma')}" v-validate="'required|decimal|min_value:0|max_value:180'" v-on:change="overviewBuilder()"/></td>
-                        </template>
-                    </table-component>
-                </li>
-
-                <li>
-                    <label class="left">Overview (cannot edit!):</label>
-                    <textarea id="fileContents" v-bind:value="inputFileContents" v-bind:rows="textAreaRows" v-bind:cols="textAreaColumns" style="width:auto;height:auto" title="Job overview to be submitted to the calculation cluster" readonly>
-                    </textarea>
-                </li>
-
-                <li>
-                    <label class="left">Save input file:</label>
-                    <button type="button" class="button" v-on:click="downloadFileContents()">Download</button>
-                </li>
-                <li v-if="orcaDisplay == 'inline'">
-                    <label class="left">Spectrum Type:</label>
-                    <select name="orcaSpectrumType" v-model="orcaSpectrumType">
-                        <option v-for="s in orcaMapKeyword">{{ s }}</option>
+                      <option v-for="e in ppElements">
+                        {{ e['element'] }}
+                      </option>
                     </select>
-                    <label class="notLeft">Start Value (eV):</label>
+                  </td>
+                  <td>
+                    <input
+                      v-model="atomX"
+                      v-validate="'required|decimal|min_value:-100|max_value:100'"
+                      type="text"
+                      name="atomX"
+                      :class="{ferror: errors.has('atomX')}"
+                    >
+                  </td>
+                  <td>
+                    <input
+                      v-model="atomY"
+                      v-validate="'required|decimal|min_value:-100|max_value:100'"
+                      type="text"
+                      name="atomY"
+                      :class="{ferror: errors.has('atomY')}"
+                    >
+                  </td>
+                  <td>
+                    <input
+                      v-model="atomZ"
+                      v-validate="'required|decimal|min_value:-100|max_value:100'"
+                      type="text"
+                      name="atomZ"
+                      :class="{ferror: errors.has('atomZ')}"
+                    >
+                  </td>
+                  <td>
+                    <input
+                      v-model="absorbingAtom"
+                      type="checkbox"
+                      title="Only one atom can be marked as absorbing"
+                      :disabled="absorbingAtomDisabled"
+                    >
+                  </td>
+                  <td>
+                    <button
+                      class="button"
+                      type="button"
+                      @click="addAtom(); overviewBuilder()"
+                    >
+                      Add
+                    </button>
+                  </td>
+                </template>
+              </table-component>
+            </li>
+          </ul>
+        </section>
+        <section
+          v-if="card =='cellParams' && quantumEspressoDisplay == 'inline'"
+          id="cellParametersCard"
+          name="cellParametersCard"
+        >
+          <ul>
+            <li>
+              <label class="left">Cell Parameters Type:</label>
+              <select
+                v-model="cellParamsType"
+                name="cellParamsType"
+                @change="overviewBuilder()"
+              >
+                <option>bohr</option>
+                <option>angstrom</option>
+              </select>
+            </li>
+            <li>
+              <label class="left">Cell Parameters:</label>
+              <table-component
+                :headers="[{key: 'X', title: 'X'}, {key: 'Y', title: 'Y'}, {key: 'Z', title: 'Z'}]"
+                :data="cellParamData"
+                actions="Vector"
+                style="width:40%"
+              >
+                <template
+                  slot="actions"
+                  slot-scope="{ row }"
+                >
+                  <span>{{ 'V'+row.ID }}</span>
+                </template>
+                <template
+                  slot="content"
+                  slot-scope="{ row }"
+                >
+                  <td>
+                    <input
+                      v-model="row.X"
+                      v-validate="'required|decimal|min_value:-100|max_value:100'"
+                      type="text"
+                      :name="row.ID+'X'"
+                      :class="{ferror: errors.has(row.ID+'X')}"
+                      @change="overviewBuilder()"
+                    >
+                  </td>
+                  <td>
+                    <input
+                      v-model="row.Y"
+                      v-validate="'required|decimal|min_value:-100|max_value:100'"
+                      type="text"
+                      :name="row.ID+'Y'"
+                      :class="{ferror: errors.has(row.ID+'Y')}"
+                      @change="overviewBuilder()"
+                    >
+                  </td>
+                  <td>
+                    <input
+                      v-model="row.Z"
+                      v-validate="'required|decimal|min_value:-100|max_value:100'"
+                      type="text"
+                      :name="row.ID+'Z'"
+                      :class="{ferror: errors.has(row.ID+'Z')}"
+                      @change="overviewBuilder()"
+                    >
+                  </td>
+                </template>
+              </table-component>
+            </li>
+          </ul>
+        </section>
+        <section
+          v-if="card =='mpApi' && quantumEspressoDisplay == 'inline'"
+          id="mpApiCard"
+          name="mpApiCard"
+        >
+          <ul>
+            <li>
+              <label class="left">Your personal MP token:</label>
+              <input
+                v-model="mpApiToken"
+                style="width: 30%"
+                type="text"
+                name="mpApiToken"
+              >
+            </li>
+            <li>
+              <label class="left">Material ID (e.g., mp-100):</label>
+              <input
+                v-model="mpApiId"
+                style="width: 30%"
+                type="text"
+                name="mpApiId"
+              >
+            </li>
+            <li>
+              <label class="left">Which atom is absorbing (counting from 1)?:</label>
+              <input
+                v-model="mpApiAtom"
+                type="number"
+                min="1"
+                max="100"
+                name="mpApiAtom"
+              >
+            </li>
+            <li>
+              <button
+                ref="fetchMpapiInput"
+                type="button"
+                name="fetchMpapiInput"
+                class="button"
+                @click="fetchMpApi($event)"
+              >
+                Fetch from MP api
+              </button>
+            </li>
+          </ul>
+        </section>
+      </section>
+
+      <ul>
+        <!-- This gets pushed out of alignment because li tags inside a form are considered flex containers. This means the helper text floating right is in the way and pushes it out
+                    We can fix it by adding display: block but the same will happen to other elements if the page is resized. -->
+        <li>
+          <label
+            v-if="quantumEspressoDisplay != 'inline'"
+            class="left"
+          >Atoms:</label>
+          <table-component
+            v-if="orcaDisplay == 'inline' || fdmnesDisplay == 'inline'"
+            :headers="atomHeaders"
+            :data="atomData"
+            actions="Actions"
+            add-row="addRow"
+            title="Define system structure as atom and position (Angstrom)"
+            style="padding-bottom: 0px"
+          >
+            <template
+              slot="actions"
+              slot-scope="{ row }"
+            >
+              <button
+                type="button"
+                class="button"
+                @click="removeAtom(row.ID); overviewBuilder()"
+              >
+                Remove
+              </button> 
+            </template>
+            <template
+              slot="addRow"
+              slot-scope="{ row }"
+            >
+              <td>
+                <select
+                  v-model="atom"
+                  v-validate="'required'"
+                  name="atom"
+                  :class="{ferror: errors.has('atom')}"
+                >
+                  <option v-for="e in elements">
+                    {{ e['element'] }}
+                  </option>
+                </select>
+              </td>
+              <td>
+                <input
+                  v-model="atomX"
+                  v-validate="atomRules"
+                  type="text"
+                  name="atomX"
+                  :class="{ferror: errors.has('atomX')}"
+                >
+              </td>
+              <td>
+                <input
+                  v-model="atomY"
+                  v-validate="atomRules"
+                  type="text"
+                  name="atomY"
+                  :class="{ferror: errors.has('atomY')}"
+                >
+              </td>
+              <td>
+                <input
+                  v-model="atomZ"
+                  v-validate="atomRules"
+                  type="text"
+                  name="atomZ"
+                  :class="{ferror: errors.has('atomZ')}"
+                >
+              </td>
+              <td>
+                <button
+                  class="button"
+                  type="button"
+                  @click="addAtom(); overviewBuilder()"
+                >
+                  Add
+                </button>
+              </td>
+            </template>
+          </table-component>
+        </li>
+
+        <li v-if="fdmnesDisplay == 'inline'">
+          <label class="left">Params:</label>
+          <table-component
+            :headers="fdmnesParameterHeaders"
+            :data="fdmnesParams"
+            style="padding-bottom: 0px"
+          >
+            <template
+              slot="content"
+              slot-scope="{ row }"
+            >
+              <td>
+                <input
+                  v-model="fdmnesParams[0].A"
+                  v-validate="'required|decimal|min_value:-100|max_value:100'"
+                  type="text"
+                  name="fdmnesParamA"
+                  :class="{ferror: errors.has('fdmnesParamA')}"
+                  @change="overviewBuilder()"
+                >
+              </td>
+              <td>
+                <input
+                  v-model="fdmnesParams[0].B"
+                  v-validate="'required|decimal|min_value:-100|max_value:100'"
+                  type="text"
+                  name="fdmnesParamB"
+                  :class="{ferror: errors.has('fdmnesParamB')}"
+                  @change="overviewBuilder()"
+                >
+              </td>
+              <td>
+                <input
+                  v-model="fdmnesParams[0].C"
+                  v-validate="'required|decimal|min_value:-100|max_value:100'"
+                  type="text"
+                  name="fdmnesParamC"
+                  :class="{ferror: errors.has('fdmnesParamC')}"
+                  @change="overviewBuilder()"
+                >
+              </td>
+              <td>
+                <input
+                  v-model="fdmnesParams[0].Alpha"
+                  v-validate="'required|decimal|min_value:0|max_value:180'"
+                  type="text"
+                  name="fdmnesParamAlpha"
+                  :class="{ferror: errors.has('fdmnesParamAlpha')}"
+                  @change="overviewBuilder()"
+                >
+              </td>
+              <td>
+                <input
+                  v-model="fdmnesParams[0].Beta"
+                  v-validate="'required|decimal|min_value:0|max_value:180'"
+                  type="text"
+                  name="fdmnesParamBeta"
+                  :class="{ferror: errors.has('fdmnesParamBeta')}"
+                  @change="overviewBuilder()"
+                >
+              </td>
+              <td>
+                <input
+                  v-model="fdmnesParams[0].Gamma"
+                  v-validate="'required|decimal|min_value:0|max_value:180'"
+                  type="text"
+                  name="fdmnesParamGamma"
+                  :class="{ferror: errors.has('fdmnesParamGamma')}"
+                  @change="overviewBuilder()"
+                >
+              </td>
+            </template>
+          </table-component>
+        </li>
+
+        <li>
+          <label class="left">Overview (cannot edit!):</label>
+          <textarea
+            id="fileContents"
+            :value="inputFileContents"
+            :rows="textAreaRows"
+            :cols="textAreaColumns"
+            style="width:auto;height:auto"
+            title="Job overview to be submitted to the calculation cluster"
+            readonly
+          />
+        </li>
+
+        <li>
+          <label class="left">Save input file:</label>
+          <button
+            type="button"
+            class="button"
+            @click="downloadFileContents()"
+          >
+            Download
+          </button>
+        </li>
+        <li v-if="orcaDisplay == 'inline'">
+          <label class="left">Spectrum Type:</label>
+          <select
+            v-model="orcaSpectrumType"
+            name="orcaSpectrumType"
+          >
+            <option v-for="s in orcaMapKeyword">
+              {{ s }}
+            </option>
+          </select>
+          <label class="notLeft">Start Value (eV):</label>
                     &nbsp;
-                    <input type="text" name="orcaStartValue" v-model="orcaStartValue" v-bind:class="{ferror: errors.has('orcaStartValue')}" v-validate="'required|decimal'">
+          <input
+            v-model="orcaStartValue"
+            v-validate="'required|decimal'"
+            type="text"
+            name="orcaStartValue"
+            :class="{ferror: errors.has('orcaStartValue')}"
+          >
                     &nbsp;
-                    <label class="notLeft">Stop Value (eV):</label>
+          <label class="notLeft">Stop Value (eV):</label>
                     &nbsp;
-                    <input type="text" name="orcaStopValue" v-model="orcaStopValue" v-bind:class="{ferror: errors.has('orcaStopValue')}" v-validate="'required|decimal'">
+          <input
+            v-model="orcaStopValue"
+            v-validate="'required|decimal'"
+            type="text"
+            name="orcaStopValue"
+            :class="{ferror: errors.has('orcaStopValue')}"
+          >
                     &nbsp;
-                    <label class="notLeft">Broadening (eV):</label>
+          <label class="notLeft">Broadening (eV):</label>
                     &nbsp;
-                    <input type="text" name="orcaBroadening" v-model="orcaBroadening" v-bind:class="{ferror: errors.has('orcaBroadening')}" v-validate="'required|decimal|min_value:0|max_value:100'">
-                </li>
-                <li v-if="orcaDisplay == 'inline'">
-                    <input type="checkbox" name="orcaLicense" value="accepted" v-model="orcaLicense">
+          <input
+            v-model="orcaBroadening"
+            v-validate="'required|decimal|min_value:0|max_value:100'"
+            type="text"
+            name="orcaBroadening"
+            :class="{ferror: errors.has('orcaBroadening')}"
+          >
+        </li>
+        <li v-if="orcaDisplay == 'inline'">
+          <input
+            v-model="orcaLicense"
+            type="checkbox"
+            name="orcaLicense"
+            value="accepted"
+          >
                     &nbsp;
-                    <label class="notleft" style="font-size:14px; color:red">  Please tick here to comply with ORCA license agreement <a href="https://orcaforum.kofo.mpg.de/app.php/privacypolicy/policy">https://orcaforum.kofo.mpg.de/app.php/privacypolicy/policy</a></label>
+          <label
+            class="notleft"
+            style="font-size:14px; color:red"
+          >  Please tick here to comply with ORCA license agreement <a href="https://orcaforum.kofo.mpg.de/app.php/privacypolicy/policy">https://orcaforum.kofo.mpg.de/app.php/privacypolicy/policy</a></label>
                     <!-- <label v-if="orcaLicense" class="left">Thanks!</label> -->
                     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                </li>
-                <!-- Here vertical align does not really work -->
-                <li style="vertical-align:middle; position: relative;">
-                    <label class="left">CPUs: </label>
-                    <input type="text" name="cpus" v-model="cpus" v-on:change="overviewBuilder()" v-bind:class="{ferror: errors.has('cpus')}" v-validate="'required|numeric|min_value:1|max_value:10'"/>
-                    <span v-if="errors.has('cpus')" class="errormessage ferror">{{ errors.first('cpus') }}</span>
+        </li>
+        <!-- Here vertical align does not really work -->
+        <li style="vertical-align:middle; position: relative;">
+          <label class="left">CPUs: </label>
+          <input
+            v-model="cpus"
+            v-validate="'required|numeric|min_value:1|max_value:10'"
+            type="text"
+            name="cpus"
+            :class="{ferror: errors.has('cpus')}"
+            @change="overviewBuilder()"
+          >
+          <span
+            v-if="errors.has('cpus')"
+            class="errormessage ferror"
+          >{{ errors.first('cpus') }}</span>
                     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                    <label class="notLeft">Memory required in Gb:</label>
-                    <input type="text" name="memory" v-model="memory" v-on:change="overviewBuilder()" v-bind:class="{ferror: errors.has('memory')}" v-validate="'required|numeric|min_value:1|max_value:32'"/>
+          <label class="notLeft">Memory required in Gb:</label>
+          <input
+            v-model="memory"
+            v-validate="'required|numeric|min_value:1|max_value:32'"
+            type="text"
+            name="memory"
+            :class="{ferror: errors.has('memory')}"
+            @change="overviewBuilder()"
+          >
                     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                    <span v-if="errors.has('memory')" class="errormessage ferror">{{ errors.first('memory') }}</span>
-                    <button type="button" class="button submit" name="orcaSubmit" v-on:click="onSubmit($event)" :disabled="isSubmitDisabled || (!orcaLicense && orcaDisplay=='inline')">SUBMIT</button>
-                </li>
-                <li>
-                    <span style="font-size:13px">On successful submission, your results will be sent to the e-mail address associated with your fedid</span>
-                </li>
+          <span
+            v-if="errors.has('memory')"
+            class="errormessage ferror"
+          >{{ errors.first('memory') }}</span>
+          <button
+            type="button"
+            class="button submit"
+            name="orcaSubmit"
+            :disabled="isSubmitDisabled || (!orcaLicense && orcaDisplay=='inline')"
+            @click="onSubmit($event)"
+          >
+            SUBMIT
+          </button>
+        </li>
+        <li>
+          <span style="font-size:13px">On successful submission, your results will be sent to the e-mail address associated with your fedid</span>
+        </li>
 
-                <hr style="border:1px solid #ccc"/>
+        <hr style="border:1px solid #ccc">
 
-                <li v-if="jobData.length">
-                    <label class="left">Your Job Status'</label>
-                    <table-component
-                        :headers="[{key: 'jobID', title: 'Job ID'}, {key: 'jobType', title: 'Job Type'}, {key: 'jobStatus', title: 'Job Status'}]"
-                        :data="jobData"
-                        actions="Actions"
-                        title="Status of requested and running jobs"
-                    >
-                        <template slot="actions" slot-scope="{ row }">
-                            <button type="button" :ref="'job'+row.jobID" class="button" v-on:click="killJob(row.jobID)">Kill Job</button>
-                        </template>
-
-                    </table-component>
-                </li>
-            </ul>
-
-        </form>
-    </div>
+        <li v-if="jobData.length">
+          <label class="left">Your Job Status'</label>
+          <table-component
+            :headers="[{key: 'jobID', title: 'Job ID'}, {key: 'jobType', title: 'Job Type'}, {key: 'jobStatus', title: 'Job Status'}]"
+            :data="jobData"
+            actions="Actions"
+            title="Status of requested and running jobs"
+          >
+            <template
+              slot="actions"
+              slot-scope="{ row }"
+            >
+              <button
+                :ref="'job'+row.jobID"
+                type="button"
+                class="button"
+                @click="killJob(row.jobID)"
+              >
+                Kill Job
+              </button>
+            </template>
+          </table-component>
+        </li>
+      </ul>
+    </form>
+  </div>
 </template>
 
 <script>
@@ -468,10 +1042,10 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
 
     export default {
         name: 'ConexsSubmission',
-        props: {},
         components: {
             'table-component': Table,
         },
+        props: {},
 
         data: function(){
             return {

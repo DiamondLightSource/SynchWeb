@@ -7,7 +7,7 @@ TODO - move the score colour methods to a utility class
 -->
 <template>
   <div>
-    <div id="puck"></div>
+    <div id="puck" />
   </div>
 </template>
 

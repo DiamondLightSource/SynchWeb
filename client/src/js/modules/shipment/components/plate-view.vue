@@ -8,7 +8,10 @@ TODO - move the score colour methods to a utility class
 -->
 <template>
   <div>
-    <div id="plate" class="tw-w-full"></div>
+    <div
+      id="plate"
+      class="tw-w-full"
+    />
   </div>
 </template>
 
@@ -19,7 +22,7 @@ import { scaleThreshold as d3ScaleThreshold} from 'd3-scale'
 import { scaleOrdinal as d3ScaleOrdinal} from 'd3-scale'
 import { interpolateViridis as d3InterpolateViridis} from 'd3-scale-chromatic'
 export default {
-  name: 'plate-view',
+  name: 'PlateView',
   props: {
     container: {
       type: Object,

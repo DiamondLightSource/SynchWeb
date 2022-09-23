@@ -2,35 +2,55 @@
   <div>
     <h2>Screen Components</h2>
 
-    <button class="button" v-if="screenComponents.length > 0 && editable" @click="addNewComponent">Add Component</button>
+    <button
+      v-if="screenComponents.length > 0 && editable"
+      class="button"
+      @click="addNewComponent"
+    >
+      Add Component
+    </button>
 
     <custom-table-component
       class="tw-w-full screen-component-group-table"
       :data-list="formattedScreenComponents"
       :headers="headers"
-      no-data-text="No components for this group">
-      <template v-slot:tableHeaders>
-        <td class="tw-w-5/12 tw-py-2 tw-text-center">Component</td>
-        <td class="tw-w-2/12 tw-py-2 tw-text-center">Concentration</td>
-        <td class="tw-w-2/12 tw-py-2 tw-text-center">pH</td>
-        <td class="tw-w-3/12 tw-py-2"></td>
+      no-data-text="No components for this group"
+    >
+      <template #tableHeaders>
+        <td class="tw-w-5/12 tw-py-2 tw-text-center">
+          Component
+        </td>
+        <td class="tw-w-2/12 tw-py-2 tw-text-center">
+          Concentration
+        </td>
+        <td class="tw-w-2/12 tw-py-2 tw-text-center">
+          pH
+        </td>
+        <td class="tw-w-3/12 tw-py-2" />
       </template>
-      <template v-slot:addNew>
-        <tr v-if="newComponent.isEditing" class="tw-w-full">
+      <template #addNew>
+        <tr
+          v-if="newComponent.isEditing"
+          class="tw-w-full"
+        >
           <td class="tw-w-5/12 tw-py-2 tw-text-center">
             <combo-box
+              v-model="newComponent.COMPONENTID"
               class="tw-w-48 protein-select tw-mr-2"
               :data="globalProteins"
-              textField="ACRONYM"
-              valueField="PROTEINID"
-              defaultText=""
+              text-field="ACRONYM"
+              value-field="PROTEINID"
+              default-text=""
               size="small"
-              v-model="newComponent.COMPONENTID"
               :exclude-element-class-list="['custom-add']"
-              :can-create-new-item="false">
-              <template v-slot:default="{ option }">
+              :can-create-new-item="false"
+            >
+              <template #default="{ option }">
                 <span class="tw-flex tw-justify-between tw-w-full">
-                  <span class="tw-"><i v-if="option.SAFETYLEVEL === 'GREEN'" class="fa fa-check green"></i></span>
+                  <span class="tw-"><i
+                    v-if="option.SAFETYLEVEL === 'GREEN'"
+                    class="fa fa-check green"
+                  /></span>
                   {{ option['ACRONYM'] }}
                 </span>
               </template>
@@ -38,78 +58,140 @@
           </td>
           <td class="tw-w-2/12 tw-py-2 tw-text-center ">
             <div class="tw-flex tw-w-full tw-items-center">
-              <base-input-text class="tw-flex-1" v-model="newComponent.CONCENTRATION"/> <span class="tw-ml-2">{{ newComponent['UNIT'] }}</span>
+              <base-input-text
+                v-model="newComponent.CONCENTRATION"
+                class="tw-flex-1"
+              /> <span class="tw-ml-2">{{ newComponent['UNIT'] }}</span>
             </div>
           </td>
-          <td class="tw-w-2/12 tw-py-2 tw-text-center"><base-input-text class="tw-flex-1" v-model="newComponent.PH" :disabled="!newComponent.HASPH"/></td>
+          <td class="tw-w-2/12 tw-py-2 tw-text-center">
+            <base-input-text
+              v-model="newComponent.PH"
+              class="tw-flex-1"
+              :disabled="!newComponent.HASPH"
+            />
+          </td>
           <td class="tw-w-3/12 tw-py-2">
             <div class="tw-w-full tw-flex tw-justify-end tw-items-center">
-              <button v-if="newComponent.toSave" class="button tw-p-2 tw-mr-1" @click="saveNewComponent"><i class="fa fa-pencil"></i> <span>Save</span></button>
-              <button class="button tw-p-2 tw-ml-1" @click="cancelNew"><i class="fa fa-times"></i> <span>Cancel</span></button>
+              <button
+                v-if="newComponent.toSave"
+                class="button tw-p-2 tw-mr-1"
+                @click="saveNewComponent"
+              >
+                <i class="fa fa-pencil" /> <span>Save</span>
+              </button>
+              <button
+                class="button tw-p-2 tw-ml-1"
+                @click="cancelNew"
+              >
+                <i class="fa fa-times" /> <span>Cancel</span>
+              </button>
             </div>
           </td>
         </tr>
       </template>
-      <template v-slot:slotData="{ dataList }">
+      <template #slotData="{ dataList }">
         <custom-table-row
-          class="tw-w-full"
           v-for="(result, rowIndex) in dataList"
           :key="rowIndex"
+          class="tw-w-full"
           :result="result"
-          :row-index="rowIndex">
-          <template v-slot:default="{ result, rowIndex }">
+          :row-index="rowIndex"
+        >
+          <template #default="{ result, rowIndex }">
             <td class="tw-w-5/12 tw-py-2 tw-text-center">
               <combo-box
                 v-if="result.isEditing"
+                v-model="result.COMPONENTID"
                 class="tw-w-48 protein-select tw-mr-2"
                 :data="globalProteins"
-                textField="ACRONYM"
-                valueField="PROTEINID"
-                defaultText=""
+                text-field="ACRONYM"
+                value-field="PROTEINID"
+                default-text=""
                 size="small"
-                v-model="result.COMPONENTID"
                 :exclude-element-class-list="['custom-add']"
-                :can-create-new-item="false">
-                <template v-slot:default="{ option }">
+                :can-create-new-item="false"
+              >
+                <template #default="{ option }">
                   <span class="tw-flex tw-justify-between tw-w-full">
-                    <span class="tw-"><i v-if="option.SAFETYLEVEL === 'GREEN'" class="fa fa-check green"></i></span>
+                    <span class="tw-"><i
+                      v-if="option.SAFETYLEVEL === 'GREEN'"
+                      class="fa fa-check green"
+                    /></span>
                     {{ option['ACRONYM'] }}
                   </span>
                 </template>
               </combo-box>
-              <p v-else>{{ result['COMPONENT'] }}</p>
+              <p v-else>
+                {{ result['COMPONENT'] }}
+              </p>
             </td>
             <td class="tw-w-2/12 tw-py-2 tw-text-center">
               <div class="tw-flex tw-w-full tw-items-center">
-                <base-input-text v-if="result.isEditing" class="tw-flex-1" v-model="result.CONCENTRATION" />
-                <p v-else>{{ result.CONCENTRATION }}</p>
+                <base-input-text
+                  v-if="result.isEditing"
+                  v-model="result.CONCENTRATION"
+                  class="tw-flex-1"
+                />
+                <p v-else>
+                  {{ result.CONCENTRATION }}
+                </p>
                 <span class="tw-ml-2">{{ result.UNIT }}</span>
               </div>
             </td>
             <td class="tw-w-2/12 tw-py-2 tw-text-center">
-              <base-input-text v-if="result.isEditing && result.HASPH" class="tw-ml-2 tw-flex-1" v-model="result.PH" />
-              <p v-else>{{ result.PH }}</p>
+              <base-input-text
+                v-if="result.isEditing && result.HASPH"
+                v-model="result.PH"
+                class="tw-ml-2 tw-flex-1"
+              />
+              <p v-else>
+                {{ result.PH }}
+              </p>
             </td>
             <td class="tw-w-3/12">
-              <div class="tw-w-full tw-flex tw-justify-end tw-items-center" v-if="editable">
-                <button class="button tw-mr-1" @click="editRow(rowIndex)"><i class="fa fa-pencil"></i> <span>Edit</span></button>
-                <button class="button tw-ml-1" @click="deleteRow(rowIndex)"><i class="fa fa-times"></i> <span>Delete</span></button>
+              <div
+                v-if="editable"
+                class="tw-w-full tw-flex tw-justify-end tw-items-center"
+              >
+                <button
+                  class="button tw-mr-1"
+                  @click="editRow(rowIndex)"
+                >
+                  <i class="fa fa-pencil" /> <span>Edit</span>
+                </button>
+                <button
+                  class="button tw-ml-1"
+                  @click="deleteRow(rowIndex)"
+                >
+                  <i class="fa fa-times" /> <span>Delete</span>
+                </button>
               </div>
             </td>
           </template>
         </custom-table-row>
-
       </template>
-      <template v-slot:noData>
+      <template #noData>
         <custom-table-row class="tw-w-full tw-bg-table-body-background-odd">
-          <td colspan="5" class="tw-text-center tw-py-2">No components for this group</td>
+          <td
+            colspan="5"
+            class="tw-text-center tw-py-2"
+          >
+            No components for this group
+          </td>
         </custom-table-row>
       </template>
     </custom-table-component>
 
-    <div v-if="canSave && editable" class="tw-w-full">
-      <button class="button" @click="$emit('add-component-to-group')">
-        <span><i class="fa fa-plus"></i> </span> Add Group
+    <div
+      v-if="canSave && editable"
+      class="tw-w-full"
+    >
+      <button
+        class="button"
+        @click="$emit('add-component-to-group')"
+      >
+        <span><i class="fa fa-plus" /> </span> Add Group
       </button>
     </div>
   </div>
@@ -124,7 +206,7 @@ import { cloneDeep } from 'lodash-es'
 import ComboBox from 'app/components/combo-box.vue'
 
 export default {
-  name: 'screen-component-group',
+  name: 'ScreenComponentGroup',
   components: {
     'combo-box': ComboBox,
     'custom-table-row':CustomTableRow,
@@ -175,6 +257,22 @@ export default {
         { key: 'PH', title: 'pH'},
       ],
       formattedScreenComponents: []
+    }
+  },
+  watch: {
+    screenComponents: {
+      deep: true,
+      immediate: true,
+      handler: 'formatScreenComponents'
+    },
+    'newComponent.COMPONENTID': {
+      immediate: true,
+      handler: 'populateSelectedComponent'
+    },
+    screenComponentGroup: {
+      deep: true,
+      immediate: true,
+      handler: 'formatScreenComponents'
     }
   },
   methods: {
@@ -232,22 +330,6 @@ export default {
 
       }
     },
-  },
-  watch: {
-    screenComponents: {
-      deep: true,
-      immediate: true,
-      handler: 'formatScreenComponents'
-    },
-    'newComponent.COMPONENTID': {
-      immediate: true,
-      handler: 'populateSelectedComponent'
-    },
-    screenComponentGroup: {
-      deep: true,
-      immediate: true,
-      handler: 'formatScreenComponents'
-    }
   }
 }
 </script>

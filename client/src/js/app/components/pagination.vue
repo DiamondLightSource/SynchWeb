@@ -8,24 +8,52 @@ Sends a page-changed event with page number and page size as payload
 Set totalRecords(0), initalPage (1), pageSizes([]) and number of page links (0..5)
 -->
 <template>
-    <div class="content">
-        <select v-model="perPage" v-on:change="onPageSizeChange">
-            <option v-for="(option, index) in pageSizes" v-bind:key="index" v-bind:value="option">{{option}}</option>
-        </select>
-        <button v-on:click.prevent="onFirst" class="button">
-            <i class="fa fa-angle-double-left"></i>
-        </button>
-        <button v-on:click.prevent="onPrev" class="button">
-            <i class="fa fa-angle-left"></i>
-        </button>
-        <button v-for="(page, index) in pages" :key="index" @click.prevent="onSetPage(page)" :class="['button tw-w-8 tw-mx-1 tw-px-2', page == currentPage ? 'tw-border tw-border-green-500' : '']">{{page}}</button>
-        <button v-on:click.prevent="onNext" class="button">
-            <i class="fa fa-angle-right"></i>
-        </button>
-        <button v-on:click.prevent="onLast" class="button">
-            <i class="fa fa-angle-double-right"></i>
-        </button>
-    </div>
+  <div class="content">
+    <select
+      v-model="perPage"
+      @change="onPageSizeChange"
+    >
+      <option
+        v-for="(option, index) in pageSizes"
+        :key="index"
+        :value="option"
+      >
+        {{ option }}
+      </option>
+    </select>
+    <button
+      class="button"
+      @click.prevent="onFirst"
+    >
+      <i class="fa fa-angle-double-left" />
+    </button>
+    <button
+      class="button"
+      @click.prevent="onPrev"
+    >
+      <i class="fa fa-angle-left" />
+    </button>
+    <button
+      v-for="(page, index) in pages"
+      :key="index"
+      :class="['button tw-w-8 tw-mx-1 tw-px-2', page == currentPage ? 'tw-border tw-border-green-500' : '']"
+      @click.prevent="onSetPage(page)"
+    >
+      {{ page }}
+    </button>
+    <button
+      class="button"
+      @click.prevent="onNext"
+    >
+      <i class="fa fa-angle-right" />
+    </button>
+    <button
+      class="button"
+      @click.prevent="onLast"
+    >
+      <i class="fa fa-angle-double-right" />
+    </button>
+  </div>
 </template>
 
 <script>
@@ -88,6 +116,10 @@ export default {
           return result
         },
     },
+
+    created: function() {
+        this.currentPage = Math.max(1, Math.min(this.initialPage, this.maxPages))
+    },
     methods: {
         onFirst: function() {
             this.currentPage = 1
@@ -122,10 +154,6 @@ export default {
             }
             this.$emit('page-changed', payload)
         }
-    },
-
-    created: function() {
-        this.currentPage = Math.max(1, Math.min(this.initialPage, this.maxPages))
     },
 }
 </script>

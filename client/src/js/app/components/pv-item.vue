@@ -1,12 +1,20 @@
 <template>
-  <div class="tw-p-1 tw-rounded" :class="`${pvStatusClassName}`">
-    <h6 :class="[titleClassNames]">{{ pvItem['NAME'] }}</h6>
-    <p :class="[valueClassNames]" v-html="pvItemValue"></p>
+  <div
+    class="tw-p-1 tw-rounded"
+    :class="`${pvStatusClassName}`"
+  >
+    <h6 :class="[titleClassNames]">
+      {{ pvItem['NAME'] }}
+    </h6>
+    <p
+      :class="[valueClassNames]"
+      v-html="pvItemValue"
+    />
   </div>
 </template>
 <script>
 export default {
-  name: 'pv-item',
+  name: 'PvItem',
   props: {
     pvItem: {
       required: true,
@@ -22,7 +30,6 @@ export default {
     }
   },
   data() { return {} },
-  methods: {},
   computed: {
     pvStatusClassName() {
       const key = this.pvItem['NAME']
@@ -55,6 +62,7 @@ export default {
 
       return ''
     }
-  }
+  },
+  methods: {}
 }
 </script>

@@ -3,7 +3,7 @@
 -->
 <template>
   <!-- This is a placeholder to show dialog boxes from marionette views -->
-  <div id="dialog"></div>
+  <div id="dialog" />
 </template>
 
 <script>

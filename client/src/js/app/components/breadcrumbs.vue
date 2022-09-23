@@ -1,12 +1,20 @@
 <template>
-    <section class="bread">
-        <ul id="breadcrumbs">
-            <li v-for="(item, index) in bc" :key="index">
-                <router-link v-if="item.url" :to="item.url">{{item.title}}</router-link>
-                <span v-else>{{item.title}}</span>
-            </li>
-        </ul>
-    </section>
+  <section class="bread">
+    <ul id="breadcrumbs">
+      <li
+        v-for="(item, index) in bc"
+        :key="index"
+      >
+        <router-link
+          v-if="item.url"
+          :to="item.url"
+        >
+          {{ item.title }}
+        </router-link>
+        <span v-else>{{ item.title }}</span>
+      </li>
+    </ul>
+  </section>
 </template>
 
 <script>

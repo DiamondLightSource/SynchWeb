@@ -4,7 +4,7 @@
       v-if="typeOfView === 'marionette'"
       :key="$route.fullPath"
       :options="options"
-      :fetchOnLoad="true"
+      :fetch-on-load="true"
       :mview="mview"
       :breadcrumbs="bc"
     />
@@ -69,7 +69,7 @@ let dc_views = {
 }
 
 export default {
-    name: 'dc',
+    name: 'Dc',
     components: {
         'marionette-view': MarionetteView,
         'em-dc-list': EmDcList,

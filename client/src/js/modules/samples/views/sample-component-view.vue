@@ -8,12 +8,32 @@
       :value="abundance"
       @input="updateProteinAbundance"
     />
-    <p v-else>{{ abundance }}</p>
+    <p v-else>
+      {{ abundance }}
+    </p>
     <div class="tw-flex tw-items-center">
       <span class="tw-mr-2">{{ concentrationType }}</span>
-      <button v-if="isNewSample && editInline" class="button" @click="addComponent"><i class="fa fa-check"></i></button>
-      <button v-if="editInline || (editInline && isNewSample) || (viewLink && !isNewSample) || editable" class="button" @click="removeComponent"><i class="fa fa-times"></i></button>
-      <router-link v-if="viewLink && !isGlobalProtein" :to="`/proteins/pid/${proteinId}`" class="button"><i class="fa fa-search"></i> View All</router-link>
+      <button
+        v-if="isNewSample && editInline"
+        class="button"
+        @click="addComponent"
+      >
+        <i class="fa fa-check" />
+      </button>
+      <button
+        v-if="editInline || (editInline && isNewSample) || (viewLink && !isNewSample) || editable"
+        class="button"
+        @click="removeComponent"
+      >
+        <i class="fa fa-times" />
+      </button>
+      <router-link
+        v-if="viewLink && !isGlobalProtein"
+        :to="`/proteins/pid/${proteinId}`"
+        class="button"
+      >
+        <i class="fa fa-search" /> View All
+      </router-link>
     </div>
   </div>
 </template>
@@ -22,7 +42,7 @@
 import BaseInputText from 'app/components/base-input-text.vue'
 import { ValidationProvider } from 'vee-validate'
 export default {
-  name: 'sample-component-view',
+  name: 'SampleComponentView',
   components: {
     'validation-provider': ValidationProvider,
     'base-input-text': BaseInputText

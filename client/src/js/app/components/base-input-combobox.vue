@@ -16,11 +16,16 @@ Slots include:
 -->
 <template>
   <div :class="outerClass">
-
     <!-- The label which includes an optional subtitle -->
-    <label v-if="label" :for="id">{{label}}
+    <label
+      v-if="label"
+      :for="id"
+    >{{ label }}
       <slot name="description">
-        <span v-if="description" class="small">{{description}}</span>
+        <span
+          v-if="description"
+          class="small"
+        >{{ description }}</span>
       </slot>
     </label>
 
@@ -29,9 +34,9 @@ Slots include:
       Note for a combobox this will never be shown.
     -->
     <select
-      hidden
-      ref="inputRef"
       :id="id"
+      ref="inputRef"
+      hidden
       :name="name"
       :value="localValue"
       :disabled="disabled"
@@ -40,22 +45,56 @@ Slots include:
       @change="updateValue"
       @focus="$emit('focus')"
     >
-      <option v-show="defaultText" disabled value="">{{defaultText}}</option>
-      <option v-for="option in options" :key="option[optionValueKey]" :value="option[optionValueKey]" :class="getOptionClass(option[optionClassKey])">{{option[optionTextKey]}}</option>
+      <option
+        v-show="defaultText"
+        disabled
+        value=""
+      >
+        {{ defaultText }}
+      </option>
+      <option
+        v-for="option in options"
+        :key="option[optionValueKey]"
+        :value="option[optionValueKey]"
+        :class="getOptionClass(option[optionClassKey])"
+      >
+        {{ option[optionTextKey] }}
+      </option>
     </select>
 
-    <span v-if="inline && !editable" class="btn-edit" @click="onEdit" @mouseover="showEditIcon = true" @mouseleave="showEditIcon = false">{{ inlineText }} <span v-show="showEditIcon"><i :class="['fa', 'fa-edit']"></i> Edit</span></span>
-    <button v-if="inline && editable" @mousedown="onSave" class="button">OK</button>
+    <span
+      v-if="inline && !editable"
+      class="btn-edit"
+      @click="onEdit"
+      @mouseover="showEditIcon = true"
+      @mouseleave="showEditIcon = false"
+    >{{ inlineText }} <span v-show="showEditIcon"><i :class="['fa', 'fa-edit']" /> Edit</span></span>
+    <button
+      v-if="inline && editable"
+      class="button"
+      @mousedown="onSave"
+    >
+      OK
+    </button>
     <!-- Use a cancel button with inline edit mode - because getting the combobox to play with onblur events tricky -->
-    <button v-if="inline && editable" @mousedown="onCancel" class="button">Cancel</button>
+    <button
+      v-if="inline && editable"
+      class="button"
+      @mousedown="onCancel"
+    >
+      Cancel
+    </button>
 
     <!-- Placeholder for any error message placed after the input -->
     <slot name="error-msg">
-      <span v-show="errorMessage" :class="errorClass">{{ errorMessage }}</span>
+      <span
+        v-show="errorMessage"
+        :class="errorClass"
+      >{{ errorMessage }}</span>
     </slot>
 
     <!-- Placeholder for any buttons that should be placed after the input -->
-    <slot name="actions"></slot>
+    <slot name="actions" />
   </div>
 </template>
 
@@ -145,6 +184,15 @@ export default {
       comboBoxParent: null,
     }
   },
+  computed: {
+    // If a user passes in an error Message, add the error class to the input
+    classObject() {
+      return [ this.inputClass,  this.errorMessage ? this.errorClass : '']
+    },
+    inlineText() {
+      return this.initialText || this.localValue
+    }
+  },
   watch: {
     // Because we are using a cached local value (for inline edit mode) we should react to the passed prop change
     value: function(newVal) {
@@ -157,15 +205,6 @@ export default {
         this.hideCombobox()
         this.showEditIcon = false
       }
-    }
-  },
-  computed: {
-    // If a user passes in an error Message, add the error class to the input
-    classObject() {
-      return [ this.inputClass,  this.errorMessage ? this.errorClass : '']
-    },
-    inlineText() {
-      return this.initialText || this.localValue
     }
   },
   created() {

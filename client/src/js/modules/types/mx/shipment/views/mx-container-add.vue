@@ -4,22 +4,30 @@
 
     <div class="tw-flex tw-flex-col">
       <!-- Wrap the form in an observer component so we can check validation state on submission -->
-      <validation-observer ref="containerForm" v-slot="{ invalid, errors }">
-
+      <validation-observer
+        ref="containerForm"
+        v-slot="{ invalid, errors }"
+      >
         <!-- Old Add containers had an assign button here - try leaving it out as there is a menu item for /assign -->
-        <form class="tw-flex" method="post" id="add_container" @submit.prevent="onSubmit">
-
+        <form
+          id="add_container"
+          class="tw-flex"
+          method="post"
+          @submit.prevent="onSubmit"
+        >
           <!-- Left hand side is form controls -->
           <div class="form tw-w-1/2">
-
             <div class="tw-mb-2 tw-py-2">
               <span class="label">Shipment</span>
-              <span><a class="tw-underline" :href="'/shipments/sid/'+dewar.SHIPPINGID">{{dewar.SHIPPINGNAME}}</a></span>
+              <span><a
+                class="tw-underline"
+                :href="'/shipments/sid/'+dewar.SHIPPINGID"
+              >{{ dewar.SHIPPINGNAME }}</a></span>
             </div>
 
             <div class="tw-mb-2 tw-py-2">
               <span class="label">Dewar</span>
-              <span>{{dewar.CODE}}</span>
+              <span>{{ dewar.CODE }}</span>
             </div>
 
             <div class="tw-mb-2 tw-py-2">
@@ -27,160 +35,222 @@
                 v-model="CONTAINERTYPEID"
                 label="Container Type"
                 :groups="groupedContainerTypes"
-                optionValueKey="CONTAINERTYPEID"
-                optionTextKey="NAME"
-                defaultText="Please select a container type"
+                option-value-key="CONTAINERTYPEID"
+                option-text-key="NAME"
+                default-text="Please select a container type"
               />
             </div>
 
             <div v-show="plateType === 'puck'">
               <base-input-select
-                outer-class="tw-mb-2 tw-py-2"
                 v-model="CONTAINERREGISTRYID"
+                outer-class="tw-mb-2 tw-py-2"
                 label="Registered Container"
                 name="CONTAINERREGISTRYID"
                 :options="containerRegistry"
-                optionValueKey="CONTAINERREGISTRYID"
-                optionTextKey="BARCODE"
+                option-value-key="CONTAINERREGISTRYID"
+                option-text-key="BARCODE"
               />
 
-              <validation-provider tag="div" class="tw-mb-2 tw-py-2" rules="required" name="Container Name" vid="container-name" v-slot="{ errors }">
+              <validation-provider
+                v-slot="{ errors }"
+                tag="div"
+                class="tw-mb-2 tw-py-2"
+                rules="required"
+                name="Container Name"
+                vid="container-name"
+              >
                 <base-input-text
-                  label="Container Name"
                   v-model="NAME"
-                  :errorMessage="errors[0]"
+                  label="Container Name"
+                  :error-message="errors[0]"
                 />
               </validation-provider>
 
               <base-input-select
-                outer-class="autoprocessing_options tw-mb-2 tw-py-2"
                 v-model="PROCESSINGPIPELINEID"
+                outer-class="autoprocessing_options tw-mb-2 tw-py-2"
                 label="Priority Processing"
                 description="Other data reduction pipelines will run on a lower priority queue"
                 name="PIPELINE"
                 :options="processingPipelines"
-                optionValueKey="PROCESSINGPIPELINEID"
-                optionTextKey="NAME"
+                option-value-key="PROCESSINGPIPELINEID"
+                option-text-key="NAME"
               />
 
               <div class="tw-mb-2 tw-py-2">
                 <label>Show all space groups</label>
-                <base-input-checkbox name="SHOW SPACEGROUP" v-model="SPACEGROUP" />
+                <base-input-checkbox
+                  v-model="SPACEGROUP"
+                  name="SHOW SPACEGROUP"
+                />
               </div>
 
               <div class="tw-mb-2 tw-py-2">
                 <label>Queue For UDC</label>
-                <base-input-checkbox name="Queue For UDC" v-model="QUEUEFORUDC"/>
+                <base-input-checkbox
+                  v-model="QUEUEFORUDC"
+                  name="Queue For UDC"
+                />
               </div>
             </div>
 
             <div v-show="plateType === 'plate'">
               <div class="tw-flex tw-w-full tw-relative">
-                <base-input-text outer-class="tw-mb-2 tw-py-2 tw-flex tw-flex-1" v-model="BARCODE" label="Barcode" name="Barcode"/>
-                <span class="barcode-message tw-text-xs tw-ml-4 tw-bg-content-light-background tw-rounded tw-p-2 tw-absolute" v-if="barcodeMessage">{{ barcodeMessage }}</span>
+                <base-input-text
+                  v-model="BARCODE"
+                  outer-class="tw-mb-2 tw-py-2 tw-flex tw-flex-1"
+                  label="Barcode"
+                  name="Barcode"
+                />
+                <span
+                  v-if="barcodeMessage"
+                  class="barcode-message tw-text-xs tw-ml-4 tw-bg-content-light-background tw-rounded tw-p-2 tw-absolute"
+                >{{ barcodeMessage }}</span>
               </div>
 
-              <validation-provider tag="div" class="tw-mb-2 tw-py-2" rules="required" name="Container Name" vid="container-name" v-slot="{ errors }">
+              <validation-provider
+                v-slot="{ errors }"
+                tag="div"
+                class="tw-mb-2 tw-py-2"
+                rules="required"
+                name="Container Name"
+                vid="container-name"
+              >
                 <base-input-text
-                  label="Container Name"
                   v-model="NAME"
-                  :errorMessage="errors[0]"
+                  label="Container Name"
+                  :error-message="errors[0]"
                 />
               </validation-provider>
 
               <base-input-select
-                outer-class="tw-mb-2 tw-py-2"
                 v-model="REQUESTEDIMAGERID"
+                outer-class="tw-mb-2 tw-py-2"
                 label="Requested Imager"
                 description="Imager this container should go into"
                 name="REQUESTERIMAGER"
                 :options="imagingImagers"
-                optionValueKey="IMAGERID"
-                optionTextKey="NAME"
+                option-value-key="IMAGERID"
+                option-text-key="NAME"
               />
 
               <base-input-select
-                outer-class="tw-mb-2 tw-py-2"
                 v-model="SCHEDULEID"
+                outer-class="tw-mb-2 tw-py-2"
                 label="Imaging Schedule"
                 description="Requested Imaging Schedule"
                 name="IMAGING SCHEDULE"
                 :options="imagingSchedules"
-                optionValueKey="SCHEDULEID"
-                optionTextKey="NAME"
+                option-value-key="SCHEDULEID"
+                option-text-key="NAME"
               >
-                <template v-slot:actions>
-                  <a href="#" @click="viewSchedule" class="button view_sch tw-w-16 tw-text-center tw-h-6"><i class="fa fa-search"></i> View</a>
+                <template #actions>
+                  <a
+                    href="#"
+                    class="button view_sch tw-w-16 tw-text-center tw-h-6"
+                    @click="viewSchedule"
+                  ><i class="fa fa-search" /> View</a>
                 </template>
               </base-input-select>
 
               <base-input-select
-                outer-class="tw-mb-2 tw-py-2"
                 v-model="SCREENID"
+                outer-class="tw-mb-2 tw-py-2"
                 label="Crystallisation Screen"
                 description="Crystallisation screen that was used for this container"
                 name="CRYSTALLISATION SCREEN"
                 :options="imagingScreens"
-                optionValueKey="SCREENID"
-                optionTextKey="NAME"
+                option-value-key="SCREENID"
+                option-text-key="NAME"
               />
             </div>
 
             <div v-show="plateType === 'pcr'">
-              <base-input-text outer-class="tw-mb-2 tw-py-2" v-model="BARCODE" label="Barcode" name="Barcode" />
+              <base-input-text
+                v-model="BARCODE"
+                outer-class="tw-mb-2 tw-py-2"
+                label="Barcode"
+                name="Barcode"
+              />
 
-              <validation-provider tag="div" class="tw-mb-2 tw-py-2" rules="required" name="Container Name" vid="container-name" v-slot="{ errors }">
+              <validation-provider
+                v-slot="{ errors }"
+                tag="div"
+                class="tw-mb-2 tw-py-2"
+                rules="required"
+                name="Container Name"
+                vid="container-name"
+              >
                 <base-input-text
-                  label="Container Name"
                   v-model="NAME"
-                  :errorMessage="errors[0]"
+                  label="Container Name"
+                  :error-message="errors[0]"
                 />
               </validation-provider>
 
               <base-input-select
-                outer-class="tw-mb-2 tw-py-2"
                 v-model="EXPERIMENTTYPEID"
+                outer-class="tw-mb-2 tw-py-2"
                 label="Experiment Type"
                 name="EXPERIMENTTYPE"
                 default-text="-"
                 :options="experimentTypes"
-                optionValueKey="value"
-                optionTextKey="name"
+                option-value-key="value"
+                option-text-key="name"
               />
 
               <base-input-select
-                outer-class="tw-mb-2 tw-py-2"
                 v-model="STORAGETEMPERATURES"
+                outer-class="tw-mb-2 tw-py-2"
                 label="Experiment Type"
                 name="STORAGETEMPERATURES"
                 default-text="-"
                 :options="storageTemperatures"
-                optionValueKey="value"
-                optionTextKey="name"
+                option-value-key="value"
+                option-text-key="name"
               />
             </div>
 
-            <validation-provider tag="div" class="tw-mb-2 tw-py-2" rules="required" name="owner">
+            <validation-provider
+              tag="div"
+              class="tw-mb-2 tw-py-2"
+              rules="required"
+              name="owner"
+            >
               <base-input-select
+                v-model="PERSONID"
                 outer-class="tw-flex tw-w-full tw-items-center"
                 label="Owner"
                 description="This user will be emailed with container updates. Check your email is up to date!"
                 name="PERSONID"
-                v-model="PERSONID"
                 :options="users"
-                optionValueKey="PERSONID"
-                optionTextKey="FULLNAME"
+                option-value-key="PERSONID"
+                option-text-key="FULLNAME"
               >
-                <template v-slot:error-msg>
-                  <span v-show="!ownerEmail" class="emsg tw-bg-content-light-background tw-text-xxs tw-ml-1 tw-p-1 tw-h-6">Please update your email address by clicking view</span>
+                <template #error-msg>
+                  <span
+                    v-show="!ownerEmail"
+                    class="emsg tw-bg-content-light-background tw-text-xxs tw-ml-1 tw-p-1 tw-h-6"
+                  >Please update your email address by clicking view</span>
                 </template>
-                <template v-slot:actions>
-                  <a :href="`/contacts/user/${PERSONID}`" class="button edit_user tw-w-16 tw-text-center tw-h-6 tw-text-xxs"><i class="fa fa-search"></i> View</a>
+                <template #actions>
+                  <a
+                    :href="`/contacts/user/${PERSONID}`"
+                    class="button edit_user tw-w-16 tw-text-center tw-h-6 tw-text-xxs"
+                  ><i class="fa fa-search" /> View</a>
                 </template>
               </base-input-select>
             </validation-provider>
 
-            <base-input-text outerClass="tw-mb-2 tw-py-2" id="comments" v-model="COMMENTS" name="COMMENTS" description="Comment for the container" label="Comments"/>
+            <base-input-text
+              id="comments"
+              v-model="COMMENTS"
+              outer-class="tw-mb-2 tw-py-2"
+              name="COMMENTS"
+              description="Comment for the container"
+              label="Comments"
+            />
           </div>
 
           <!-- Right hand side is container graphic -->
@@ -188,10 +258,11 @@
             <div class="tw-justify-end">
               <valid-container-graphic
                 ref="containerGraphic"
-                :containerType="containerType"
+                :container-type="containerType"
                 :samples="samples"
                 :valid-samples="validSamples"
-                @cell-clicked="onContainerCellClicked"/>
+                @cell-clicked="onContainerCellClicked"
+              />
             </div>
           </div>
         </form>
@@ -199,8 +270,8 @@
         <div>
           <!-- Sample specific fields -->
           <component
-            ref="sampleEditor"
             :is="sampleComponent"
+            ref="sampleEditor"
             @save-sample="onSaveSample"
             @clone-sample="onCloneSample"
             @clear-sample="onClearSample"
@@ -219,16 +290,34 @@
           The properties errors and invalid come from the validation observer.
           Each validation provider should provide a vid to key the error and a name for the error message.
         -->
-        <div class="tw-w-full tw-bg-red-200 tw-border tw-border-red-500 tw-rounded tw-p-1 tw-mb-4" v-show="invalid">
-          <p class="tw-font-bold">Please fix the errors on the form</p>
-          <div v-for="(error, index) in errors" :key="index">
-            <p v-show="error.length > 0" class="tw-black">{{error[0]}}</p>
+        <div
+          v-show="invalid"
+          class="tw-w-full tw-bg-red-200 tw-border tw-border-red-500 tw-rounded tw-p-1 tw-mb-4"
+        >
+          <p class="tw-font-bold">
+            Please fix the errors on the form
+          </p>
+          <div
+            v-for="(error, index) in errors"
+            :key="index"
+          >
+            <p
+              v-show="error.length > 0"
+              class="tw-black"
+            >
+              {{ error[0] }}
+            </p>
           </div>
         </div>
 
         <div class="">
-          <button name="submit" type="submit" @click.prevent="onSubmit" :class="['button submit tw-text-base tw-px-4 tw-py-2', invalid ? 'tw-border tw-border-red-500 tw-bg-red-500': '']">
-            <i class="fa fa-plus"></i>
+          <button
+            name="submit"
+            type="submit"
+            :class="['button submit tw-text-base tw-px-4 tw-py-2', invalid ? 'tw-border tw-border-red-500 tw-bg-red-500': '']"
+            @click.prevent="onSubmit"
+          >
+            <i class="fa fa-plus" />
             Add Container
           </button>
         </div>
@@ -240,27 +329,33 @@
         v-if="displayImagerScheduleModal"
         size="large"
         :hide-ok-button="true"
-        @close-modal-action="closeModalAction">
+        @close-modal-action="closeModalAction"
+      >
         <template>
           <div class="tw-bg-modal-header-background tw-py-1 tw-pl-4 tw-pr-2 tw-rounded-sm tw-flex tw-w-full tw-justify-between tw-items-center tw-relative">
             <p>View Schedule</p>
             <button
-                class="tw-flex tw-items-center tw-border tw-rounded-sm tw-border-content-border tw-bg-white tw-text-content-page-color tw-p-1"
-                @click="closeModalAction">
-              <i class="fa fa-times"></i>
+              class="tw-flex tw-items-center tw-border tw-rounded-sm tw-border-content-border tw-bg-white tw-text-content-page-color tw-p-1"
+              @click="closeModalAction"
+            >
+              <i class="fa fa-times" />
             </button>
           </div>
           <div class="tw-py-3 tw-px-4 tw-border-b tw-border-content-border">
             <div class="tw-border-b tw-border-content-border">
-              <h3 class="tw-text-2xl">Schedule for {{ selectedSchedule.NAME }}</h3>
+              <h3 class="tw-text-2xl">
+                Schedule for {{ selectedSchedule.NAME }}
+              </h3>
             </div>
 
             <div class="tw-w-full">
-              <table-component :data="imagingScheduleComponents" :headers="schedulingComponentHeader"/>
+              <table-component
+                :data="imagingScheduleComponents"
+                :headers="schedulingComponentHeader"
+              />
             </div>
           </div>
         </template>
-
       </custom-dialog-box>
     </portal>
   </div>
@@ -300,7 +395,6 @@ const INITIAL_CONTAINER_TYPE = {
 
 export default {
   name: 'MxAddContainer',
-  mixins: [ContainerMixin],
   components: {
     'base-input-groupselect': BaseInputGroupSelect,
     'base-input-select': BaseInputSelect,
@@ -315,6 +409,7 @@ export default {
     'single-sample-plate': SingleSample,
     'mx-puck-samples-table': MxPuckSamplesTable
   },
+  mixins: [ContainerMixin],
   props: {
     'mview':[Function, Promise], // The marionette view could be lazy loaded or static import
     'breadcrumbs' : Array,

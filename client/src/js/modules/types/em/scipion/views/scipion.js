@@ -22,7 +22,6 @@ define([
 
     return VueWrapper.extend({
         vueView: Vue.extend({
-            template: template,
 
             data: function () {
                 return {
@@ -188,7 +187,8 @@ define([
                 onContinue: function () {
                     app.navigate('dc/visit/' + this.visit['VISIT'], {trigger: true});
                 }
-            }
+            },
+            template: template
         })
     })
 });

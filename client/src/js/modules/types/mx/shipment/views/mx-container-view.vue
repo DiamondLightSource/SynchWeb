@@ -1,65 +1,89 @@
 <template>
   <div class="content">
-    <h1>Container {{container.NAME}}</h1>
+    <h1>Container {{ container.NAME }}</h1>
 
-    <p class="help">This page shows the contents of the selected container. Samples can be added and edited by clicking the pencil icon, and removed by clicking the x</p>
+    <p class="help">
+      This page shows the contents of the selected container. Samples can be added and edited by clicking the pencil icon, and removed by clicking the x
+    </p>
 
-    <p v-if="container.CONTAINERSTATUS === 'processing'" class="message alert">This container is currently assigned and in use on a beamline sample changer. Unassign it to make it editable</p>
+    <p
+      v-if="container.CONTAINERSTATUS === 'processing'"
+      class="message alert"
+    >
+      This container is currently assigned and in use on a beamline sample changer. Unassign it to make it editable
+    </p>
 
-    <validation-observer ref="containerForm" v-slot="{ invalid, errors }">
+    <validation-observer
+      ref="containerForm"
+      v-slot="{ invalid, errors }"
+    >
       <div class="tw-flex puck_wrap">
-
         <div class="form vform tw-w-2/3">
           <ul>
             <li>
               <span class="label">Name</span>
-              <base-input-text v-model="container.NAME" :inline="true" @save="save('NAME')"/>
+              <base-input-text
+                v-model="container.NAME"
+                :inline="true"
+                @save="save('NAME')"
+              />
             </li>
 
             <li>
               <span class="label">Shipment</span>
-              <span><a class="tw-underline" :href="'/shipments/sid/'+container.SHIPPINGID">{{container.SHIPMENT}}</a></span>
+              <span><a
+                class="tw-underline"
+                :href="'/shipments/sid/'+container.SHIPPINGID"
+              >{{ container.SHIPMENT }}</a></span>
             </li>
 
             <li>
               <span class="label">Dewar</span>
-              <span>{{container.DEWAR}}</span>
+              <span>{{ container.DEWAR }}</span>
             </li>
             <li>
               <span class="label">Container Type</span>
-              <span>{{container.CONTAINERTYPE}}</span>
+              <span>{{ container.CONTAINERTYPE }}</span>
             </li>
             <li>
               <span class="label">Owner</span>
               <base-input-select
                 v-model="container.OWNER"
                 :options="users"
-                optionValueKey="PERSONID"
+                option-value-key="PERSONID"
                 :inline="true"
+                option-text-key="FULLNAME"
                 @save="save('OWNERID')"
-                optionTextKey="FULLNAME"/>
+              />
             </li>
-            <li v-if="isPuck" class="tw-flex tw-flex-row tw-w-full">
+            <li
+              v-if="isPuck"
+              class="tw-flex tw-flex-row tw-w-full"
+            >
               <span class="label">Registered Container</span>
               <base-input-select
-                :initial-text="container.REGISTRY ? container.REGISTRY : 'Select From Registry'"
                 v-model="container.CONTAINERREGISTRYID"
+                :initial-text="container.REGISTRY ? container.REGISTRY : 'Select From Registry'"
                 name="CONTAINERREGISTRYID"
                 :options="containerRegistry"
                 :inline="true"
-                optionValueKey="CONTAINERREGISTRYID"
-                optionTextKey="BARCODE"
+                option-value-key="CONTAINERREGISTRYID"
+                option-text-key="BARCODE"
                 @save="save('CONTAINERREGISTRYID')"
               />
-              <span class="tw-relative"><router-link :to="`/containers/registry/${container.CONTAINERREGISTRYID}`" class="tw-absolute top-5 tw-text-content-page-color" >[View]</router-link></span>
+              <span class="tw-relative"><router-link
+                :to="`/containers/registry/${container.CONTAINERREGISTRYID}`"
+                class="tw-absolute top-5 tw-text-content-page-color"
+              >[View]</router-link></span>
             </li>
             <li>
               <span class="label">Barcode</span>
               <base-input-text
                 v-model="container.BARCODE"
                 :inline="true"
-                initialText="Click to edit"
-                @save="save('BARCODE')"/>
+                initial-text="Click to edit"
+                @save="save('BARCODE')"
+              />
             </li>
             <li v-if="container.PIPELINE">
               <span class="label">Priority Processing</span>
@@ -67,26 +91,37 @@
                 v-model="container.PIPELINE"
                 name="PIPELINE"
                 :options="processingPipelines"
-                optionValueKey="PROCESSINGPIPELINEID"
+                option-value-key="PROCESSINGPIPELINEID"
                 :inline="true"
-                optionTextKey="NAME"
+                option-text-key="NAME"
               />
             </li>
 
             <li>
               <span class="label">Automated Collection</span>
               <span v-if="containerQueueId">
-                This container was queued for auto collection on {{container['QUEUEDTIMESTAMP']}}
-                <a @click="onUnQueueContainer" class="tw-cursor-pointer button unqueue"><i class="fa fa-times"></i> Unqueue</a>
+                This container was queued for auto collection on {{ container['QUEUEDTIMESTAMP'] }}
+                <a
+                  class="tw-cursor-pointer button unqueue"
+                  @click="onUnQueueContainer"
+                ><i class="fa fa-times" /> Unqueue</a>
               </span>
               <span v-else>
-                <a @click="onQueueContainer" class="tw-cursor-pointer button queue"><i class="fa fa-plus"></i> Queue</a> this container for Auto Collect
+                <a
+                  class="tw-cursor-pointer button queue"
+                  @click="onQueueContainer"
+                ><i class="fa fa-plus" /> Queue</a> this container for Auto Collect
               </span>
             </li>
 
             <li>
               <span class="label">Comments</span>
-              <base-input-text v-model="container.COMMENTS" :inline="true" @save="save('COMMENTS')" inlineText="Click to edit"/>
+              <base-input-text
+                v-model="container.COMMENTS"
+                :inline="true"
+                inline-text="Click to edit"
+                @save="save('COMMENTS')"
+              />
             </li>
 
             <li class="clearfix">
@@ -95,28 +130,32 @@
                 <table-component
                   :headers="containerHistoryHeaders"
                   :data="containerHistory"
-                  noDataText="No history available"/>
+                  no-data-text="No history available"
+                />
                 <pagination-component @page-changed="onUpdateHistory" />
               </div>
             </li>
           </ul>
         </div> <!-- End Container Form Elements -->
 
-        <div class="puck tw-w-2/3" title="Click to jump to a position in the puck">
+        <div
+          class="puck tw-w-2/3"
+          title="Click to jump to a position in the puck"
+        >
           <valid-container-graphic
-            :containerType="containerType"
+            :container-type="containerType"
             :samples="samples"
             :valid-samples="validSamples"
-            @cell-clicked="onContainerCellClicked"/>
+            @cell-clicked="onContainerCellClicked"
+          />
         </div>
-
       </div> <!-- End flex puck wrap-->
 
       <div class="table sample">
         <component
           :is="sampleComponent"
           ref="samples"
-          :containerId="containerId"
+          :container-id="containerId"
           :invalid="invalid"
           @save-sample="onSaveSample"
           @clone-sample="onCloneSample"
@@ -129,10 +168,23 @@
         />
       </div>
 
-      <div class="tw-w-full tw-bg-red-200 tw-border tw-border-red-500 tw-rounded tw-p-1 tw-mb-4" v-show="invalid">
-        <p class="tw-font-bold">Please fix the errors on the form</p>
-        <div v-for="(error, index) in errors" :key="index">
-          <p v-show="error.length > 0" class="tw-black">{{error[0]}}</p>
+      <div
+        v-show="invalid"
+        class="tw-w-full tw-bg-red-200 tw-border tw-border-red-500 tw-rounded tw-p-1 tw-mb-4"
+      >
+        <p class="tw-font-bold">
+          Please fix the errors on the form
+        </p>
+        <div
+          v-for="(error, index) in errors"
+          :key="index"
+        >
+          <p
+            v-show="error.length > 0"
+            class="tw-black"
+          >
+            {{ error[0] }}
+          </p>
         </div>
       </div>
     </validation-observer>
@@ -141,17 +193,22 @@
       <custom-dialog-box
         v-if="displayQueueModal"
         @perform-modal-action="performModalAction(modal[currentModal].actions.confirm)"
-        @close-modal-action="closeModalAction(modal[currentModal].actions.cancel)">
+        @close-modal-action="closeModalAction(modal[currentModal].actions.cancel)"
+      >
         <template>
           <div class="tw-bg-modal-header-background tw-py-1 tw-pl-4 tw-pr-2 tw-rounded-sm tw-flex tw-w-full tw-justify-between tw-items-center tw-relative">
             <p>Queue Container?</p>
             <button
               class="tw-flex tw-items-center tw-border tw-rounded-sm tw-border-content-border tw-bg-white tw-text-content-page-color tw-p-1"
-              @click="closeModalAction(modal[currentModal].actions.cancel)">
-              <i class="fa fa-times"></i>
+              @click="closeModalAction(modal[currentModal].actions.cancel)"
+            >
+              <i class="fa fa-times" />
             </button>
           </div>
-          <div class="tw-py-3 tw-px-4" v-html="modal[currentModal].message"></div>
+          <div
+            class="tw-py-3 tw-px-4"
+            v-html="modal[currentModal].message"
+          />
         </template>
       </custom-dialog-box>
     </portal>
@@ -181,8 +238,7 @@ import ValidContainerGraphic from 'modules/types/mx/samples/valid-container-grap
 
 
 export default {
-  name: 'mx-container-view',
-  mixins: [ContainerMixin],
+  name: 'MxContainerView',
   components: {
     'base-input-text': BaseInputText,
     'base-input-textarea': BaseInputTextArea,
@@ -196,6 +252,7 @@ export default {
     'validation-observer': ValidationObserver,
     'validation-provider': ValidationProvider
   },
+  mixins: [ContainerMixin],
   props: {
     containerModel: {
       type: Object,
@@ -251,6 +308,11 @@ export default {
   computed: {
     containersSamplesGroupData() {
       return this.$store.getters['samples/getContainerSamplesGroupData']
+    },
+  },
+  watch: {
+    containersSamplesGroupData(newValues) {
+      this.updateContainerSampleGroupsData(newValues)
     },
   },
   created: function() {
@@ -472,11 +534,6 @@ export default {
       sample.INITIALSAMPLEGROUP = matchingSampleGroup ? matchingSampleGroup['BLSAMPLEGROUPID'] : ''
       return sample
     }
-  },
-  watch: {
-    containersSamplesGroupData(newValues) {
-      this.updateContainerSampleGroupsData(newValues)
-    },
   }
 }
 </script>

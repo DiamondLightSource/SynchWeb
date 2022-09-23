@@ -1,9 +1,13 @@
 <template>
-    <!-- This is a placeholder to show dialog boxes from marionette views -->
-    <div id="custom-dialog" class="tw-fixed tw-w-full tw-h-full tw-bg-transparent tw-top-0 tw-z-50 tw-left-0 tw-table tw-bottom-0">
-      <div class="tw-table-cell">
-        <div class="tw-flex tw-flex-col tw-justify-center tw-h-full">
-          <div :class="{
+  <!-- This is a placeholder to show dialog boxes from marionette views -->
+  <div
+    id="custom-dialog"
+    class="tw-fixed tw-w-full tw-h-full tw-bg-transparent tw-top-0 tw-z-50 tw-left-0 tw-table tw-bottom-0"
+  >
+    <div class="tw-table-cell">
+      <div class="tw-flex tw-flex-col tw-justify-center tw-h-full">
+        <div
+          :class="{
             [widthClass]: true,
             'tw-h-auto': true,
             'tw-m-auto': true,
@@ -11,18 +15,30 @@
             'tw-rounded-sm': true,
             'tw-border': true,
             'tw-bg-white': true
-          }">
-            <div class="tw-p-1">
-              <slot></slot>
-            </div>
-            <div class="tw-border-t tw-border-content-border tw-p-3 tw-flex tw-w-full tw-justify-end">
-              <button v-if="!hideOkButton" class="ui-button ui-corner-all ui-widget tw-mr-px" @click="$emit('perform-modal-action')">Ok</button>
-              <button class="ui-button ui-corner-all ui-widget tw-ml-px" @click="$emit('close-modal-action')">Cancel</button>
-            </div>
+          }"
+        >
+          <div class="tw-p-1">
+            <slot />
+          </div>
+          <div class="tw-border-t tw-border-content-border tw-p-3 tw-flex tw-w-full tw-justify-end">
+            <button
+              v-if="!hideOkButton"
+              class="ui-button ui-corner-all ui-widget tw-mr-px"
+              @click="$emit('perform-modal-action')"
+            >
+              Ok
+            </button>
+            <button
+              class="ui-button ui-corner-all ui-widget tw-ml-px"
+              @click="$emit('close-modal-action')"
+            >
+              Cancel
+            </button>
           </div>
         </div>
       </div>
     </div>
+  </div>
 </template>
 
 <script>

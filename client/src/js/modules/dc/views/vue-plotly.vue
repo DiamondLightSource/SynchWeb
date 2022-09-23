@@ -1,7 +1,7 @@
 <template>
-    <div>
-        <plotly></plotly>
-    </div>
+  <div>
+    <plotly />
+  </div>
 </template>
 
 <script>
@@ -9,6 +9,10 @@
 
     export default {
         name: 'PlotlyChart',
+        
+        components: {
+            'plotly': Plotly,
+        },
         props: {
             data: {
                 type: Object,
@@ -18,10 +22,6 @@
                 type: Object,
                 required: false,
             },
-        },
-        
-        components: {
-            'plotly': Plotly,
         },
 
         mounted: function(){

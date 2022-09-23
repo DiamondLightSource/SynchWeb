@@ -1,22 +1,23 @@
 <template>
   <div class="tw-flex tw-w-full">
     <div
-      class="tw-rounded tw-p-2 tw-mx-1"
       v-for="(filter, filterIndex) in filterData"
       :key="filterIndex"
+      class="tw-rounded tw-p-2 tw-mx-1"
       :class="{
         'tw-bg-content-filter-background': selected !== retrieveFilterValue(filter),
         'tw-bg-content-filter-current-background': selected === retrieveFilterValue(filter) ,
         'tw-cursor-pointer': selected !== retrieveFilterValue(filter)
       }"
-      @click="onSelect(valueField ? filter[valueField] : filter)">
+      @click="onSelect(valueField ? filter[valueField] : filter)"
+    >
       {{ textField ? filter[textField] : filter }}
     </div>
   </div>
 </template>
 <script>
 export default {
-  name: 'filter-pills',
+  name: 'FilterPills',
   props: {
     filterData: {
       type: Array,

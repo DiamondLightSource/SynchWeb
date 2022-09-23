@@ -1,14 +1,14 @@
 <template>
-    <section>
-        <marionette-view 
-            v-if="loaded" 
-            :key="$route.fullPath" 
-            :options="options" 
-            :fetchOnLoad="true" 
-            :mview="mview" 
-            :breadcrumbs="bc">
-        </marionette-view>
-    </section>
+  <section>
+    <marionette-view 
+      v-if="loaded" 
+      :key="$route.fullPath" 
+      :options="options" 
+      :fetch-on-load="true" 
+      :mview="mview" 
+      :breadcrumbs="bc"
+    />
+  </section>
 </template>
 
 <script>
@@ -30,7 +30,7 @@ let StatsViews = {
 
 
 export default {
-    name: 'stats-visit-view',
+    name: 'StatsVisitView',
     components: {
         'marionette-view': MarionetteView
     },

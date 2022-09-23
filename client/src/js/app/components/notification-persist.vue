@@ -4,20 +4,26 @@ For example when a new container is created, the message can include a link to g
 When the navigation changes, the persistent notification will be reset via the watcher
 -->
 <template>
-    <div v-if="notification.message" id="notification-panel">
-        <notification-card :notification="notification">
-            <template v-slot:actions>
-                <i @click.prevent="onClose" class="fa fa-times"/>
-            </template>
-        </notification-card>
-    </div>
+  <div
+    v-if="notification.message"
+    id="notification-panel"
+  >
+    <notification-card :notification="notification">
+      <template #actions>
+        <i
+          class="fa fa-times"
+          @click.prevent="onClose"
+        />
+      </template>
+    </notification-card>
+  </div>
 </template>
 
 <script>
 import NotificationCard from 'app/components/notification-card.vue'
 
 export default {
-    name: 'notification-persist',
+    name: 'NotificationPersist',
     components: {
         'notification-card': NotificationCard
     },

@@ -1,38 +1,85 @@
 <template>
-    <div id="vue-login" class="content">
-        <hero-title v-show="!skipHome"/>
+  <div
+    id="vue-login"
+    class="content"
+  >
+    <hero-title v-show="!skipHome" />
 
-        <h1>Login</h1>
-        <p v-if="sso">Redirect to Single Sign On</p>
+    <h1>Login</h1>
+    <p v-if="sso">
+      Redirect to Single Sign On
+    </p>
 
-        <!-- Wrap the form in an observer component so we can check validation state on submission -->
-        <validation-observer ref="observer" v-slot="{ invalid }">
-            <form class="tw-w-full tw-mt-8">
-                <ul>
-                    <li class="tw-flex-col md:tw-flex-row tw-mb-4">
-                        <label class="md:tw-w-5/12 tw-p-2 tw-text-left md:tw-text-right" for="username">Username (Fedid)</label>
-                        <validation-provider rules="required|alpha_dash" v-slot="{ errors }" name="username">
-                            <input v-bind:class="[{ferror: errors.length}, 'tw-shadow tw-border tw-rounded tw-w-64 tw-py-2 tw-px-3 tw-text-gray-700 tw-leading-tight focus:tw-outline-none focus:tw-shadow-outline']" v-model="username" type="text" :name="name"/>
-                            <p v-if="errors.length" class="tw-mt-2 md:tw-ml-2 tw-px-2 tw-border-l-2 tw-border-red-500 tw-text-red-800">{{ errors[0] }}</p>
-                        </validation-provider>
-                    </li>
-                    <li class="tw-flex-col md:tw-flex-row tw-mb-4">
-                        <label class="md:tw-w-5/12 tw-p-2 tw-text-left md:tw-text-right" for="password">Password</label>
-                        <validation-provider rules="required" v-slot="{ errors }" name="password">
-                            <input v-bind:class="[{ferror: errors.length}, 'tw-shadow tw-border tw-rounded tw-w-64 tw-py-2 tw-px-3 tw-text-gray-700 tw-leading-tight focus:tw-outline-none focus:tw-shadow-outline']" v-model="password" type="password" :name="name"/>
-                            <p v-if="errors.length" class="tw-mt-2 md:tw-ml-2 tw-px-2 tw-border-l-2 tw-border-red-500 tw-text-red-800">{{ errors[0] }}</p>
-                        </validation-provider>
-                    </li>
-                    <li class="tw-flex-col md:tw-flex-row tw-mb-4">
-                        <!-- Spacer to align login button neatly -->
-                        <div class="md:tw-w-5/12 tw-px-2"></div>
-                        <button :disabled="invalid" class="tw-px-8 tw-py-2 tw-w-64 tw-border tw-border-gray-400 button submit" v-on:click.prevent="onSubmit">Login</button>
-                    </li>
-                </ul>
-            </form>
-        </validation-observer>
-
-    </div>
+    <!-- Wrap the form in an observer component so we can check validation state on submission -->
+    <validation-observer
+      ref="observer"
+      v-slot="{ invalid }"
+    >
+      <form class="tw-w-full tw-mt-8">
+        <ul>
+          <li class="tw-flex-col md:tw-flex-row tw-mb-4">
+            <label
+              class="md:tw-w-5/12 tw-p-2 tw-text-left md:tw-text-right"
+              for="username"
+            >Username (Fedid)</label>
+            <validation-provider
+              v-slot="{ errors }"
+              rules="required|alpha_dash"
+              name="username"
+            >
+              <input
+                v-model="username"
+                :class="[{ferror: errors.length}, 'tw-shadow tw-border tw-rounded tw-w-64 tw-py-2 tw-px-3 tw-text-gray-700 tw-leading-tight focus:tw-outline-none focus:tw-shadow-outline']"
+                type="text"
+                :name="name"
+              >
+              <p
+                v-if="errors.length"
+                class="tw-mt-2 md:tw-ml-2 tw-px-2 tw-border-l-2 tw-border-red-500 tw-text-red-800"
+              >
+                {{ errors[0] }}
+              </p>
+            </validation-provider>
+          </li>
+          <li class="tw-flex-col md:tw-flex-row tw-mb-4">
+            <label
+              class="md:tw-w-5/12 tw-p-2 tw-text-left md:tw-text-right"
+              for="password"
+            >Password</label>
+            <validation-provider
+              v-slot="{ errors }"
+              rules="required"
+              name="password"
+            >
+              <input
+                v-model="password"
+                :class="[{ferror: errors.length}, 'tw-shadow tw-border tw-rounded tw-w-64 tw-py-2 tw-px-3 tw-text-gray-700 tw-leading-tight focus:tw-outline-none focus:tw-shadow-outline']"
+                type="password"
+                :name="name"
+              >
+              <p
+                v-if="errors.length"
+                class="tw-mt-2 md:tw-ml-2 tw-px-2 tw-border-l-2 tw-border-red-500 tw-text-red-800"
+              >
+                {{ errors[0] }}
+              </p>
+            </validation-provider>
+          </li>
+          <li class="tw-flex-col md:tw-flex-row tw-mb-4">
+            <!-- Spacer to align login button neatly -->
+            <div class="md:tw-w-5/12 tw-px-2" />
+            <button
+              :disabled="invalid"
+              class="tw-px-8 tw-py-2 tw-w-64 tw-border tw-border-gray-400 button submit"
+              @click.prevent="onSubmit"
+            >
+              Login
+            </button>
+          </li>
+        </ul>
+      </form>
+    </validation-observer>
+  </div>
 </template>
 
 <script>
@@ -46,6 +93,19 @@ export default {
         'hero-title': Hero,
         'validation-provider': ValidationProvider,
         'validation-observer': ValidationObserver,
+    },
+    beforeRouteEnter: function(to, from, next) {
+        if (to.query.redirect) {
+            next(vm => {
+                if (vm.sso) console.log("Login should be in sso mode")
+                else {
+                    console.log("Login save redirect url")
+                    vm.saveUrl(to.query.redirect)
+                }
+            })
+        } else {
+            next()
+        }
     },
     props: [
         'redirect' // For future if we need to handle cas authentication and multiple redirects
@@ -125,19 +185,6 @@ export default {
             if (url) {
                 this.redirectUrl = url
             }
-        }
-    },
-    beforeRouteEnter: function(to, from, next) {
-        if (to.query.redirect) {
-            next(vm => {
-                if (vm.sso) console.log("Login should be in sso mode")
-                else {
-                    console.log("Login save redirect url")
-                    vm.saveUrl(to.query.redirect)
-                }
-            })
-        } else {
-            next()
         }
     },
 }
