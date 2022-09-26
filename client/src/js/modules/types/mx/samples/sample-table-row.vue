@@ -97,9 +97,10 @@
           <a class="button tw-cursor-pointer tw-mx-1" @click="closeSampleEditing"><i class="fa fa-times"></i></a>
         </span>
         <span v-else>
-          <a class="button tw-cursor-pointer tw-mx-1" @click="editRow(sample)"><i class="fa fa-pencil"></i></a>
-          <router-link v-if="sample['BLSAMPLEID']" class="button tw-mx-1" :to="`/samples/sid/${sample['BLSAMPLEID']}`" ><i class="fa fa-search"></i></router-link>
-          <a class="button tw-cursor-pointer tw-mx-1" v-if="sample['BLSAMPLEID']" @click="onAddToSampleGroup"><i class="fa fa-cubes"></i></a>
+          <a class="button tw-py-1 tw-cursor-pointer tw-mx-1" v-if="sample['BLSAMPLEID']" @click="moveSampleToAnotherContainer(sampleIndex)"><i class="fa fa-exchange"></i></a>
+          <a class="button tw-py-1 tw-cursor-pointer tw-mx-1" @click="editRow(sample)"><i class="fa fa-pencil"></i></a>
+          <router-link v-if="sample['BLSAMPLEID']" class="button tw-py-1 tw-mx-1" :to="`/samples/sid/${sample['BLSAMPLEID']}`" ><i class="fa fa-search"></i></router-link>
+          <a class="button tw-cursor-pointer tw-py-1 tw-mx-1" v-if="sample['BLSAMPLEID']" @click="onAddToSampleGroup"><i class="fa fa-cubes"></i></a>
         </span>
       </span>
       <span v-else>
@@ -116,7 +117,7 @@ import TabbedColumnsView from 'modules/types/mx/samples/tabbed-columns-view.vue'
 import ComboBox from 'app/components/combo-box.vue'
 import {ValidationObserver, ValidationProvider} from 'vee-validate'
 import MxSampleTableMixin from 'modules/types/mx/samples/sample-table-mixin.js'
-import ExtendedValidationProvider from "app/components/extended-validation-provider.vue";
+import ExtendedValidationProvider from 'app/components/extended-validation-provider.vue'
 
 export default {
   name: 'sample-table-row',
@@ -168,6 +169,9 @@ export default {
     onAddToSampleGroup() {
       this.displaySampleGroupModal = true
     },
+    moveSampleToAnotherContainer(sampleIndex) {
+      this.$emit('open-move-container-form', sampleIndex)
+    }
   },
 }
 </script>
