@@ -117,65 +117,16 @@
         @perform-modal-action="performModalAction"
         @close-modal-action="closeModalAction">
         <template v-slot:default>
-          <div class="tw-w-full" v-if="currentModal === 'sampleGroups'">
-            <div class="tw-bg-modal-header-background tw-py-1 tw-pl-4 tw-pr-2 tw-rounded-sm tw-flex tw-w-full tw-justify-between tw-items-center tw-relative">
-              <p>Sample Groups</p>
-              <button
+          <div class="tw-bg-modal-header-background tw-py-1 tw-pl-4 tw-pr-2 tw-rounded-sm tw-flex tw-w-full tw-justify-between tw-items-center tw-relative tw-border tw-border-content-border">
+            <p class="tw-font-bold tw-text-content-page-color">{{ displayedModalTitle }}</p>
+            <button
                 class="tw-flex tw-items-center tw-border tw-rounded-sm tw-border-content-border tw-bg-white tw-text-content-page-color tw-p-1"
                 @click="closeModalAction">
-                <i class="fa fa-times"></i>
-              </button>
-            </div>
-            <div class="tw-py-3 tw-px-4">
-
-              <base-input-select
-                class="tw-py-5"
-                option-text-key="text"
-                option-value-key="value"
-                :options="shipments"
-                inputClass="tw-w-full tw-h-6"
-                :value="containerSamplesGroupData['shipmentId']"
-                @input="onSampleGroupDataChange($event, 'shipmentId')"
-                label="Shipment:"
-                outerClass="tw-w-full tw-flex"
-                labelClass="tw-w-3/5 tw-font-bold"
-              />
-
-              <base-input-select
-                class="tw-py-5"
-                option-text-key="text"
-                option-value-key="value"
-                :options="dewars"
-                inputClass="tw-w-full tw-h-6"
-                :value="containerSamplesGroupData['dewarId']"
-                @input="onSampleGroupDataChange($event, 'dewarId')"
-                label="Dewars:"
-                outerClass="tw-w-full tw-flex"
-                labelClass="tw-w-3/5 tw-font-bold"
-              />
-
-              <base-input-select
-                class="tw-py-5"
-                option-text-key="text"
-                option-value-key="value"
-                :options="containers"
-                inputClass="tw-w-full tw-h-6"
-                :value="containerSamplesGroupData['containerId']"
-                @input="onSampleGroupDataChange($event, 'containerId')"
-                label="Containers:"
-                outerClass="tw-w-full tw-flex"
-                labelClass="tw-w-3/5 tw-font-bold"
-              />
-
-              <div class="tw-w-full tw-flex tw-justify-end tw-py-4">
-                <button class="button" @click="createNewSampleGroup">
-                  <span class="fa fa-plus"></span> &nbsp; Create Group
-                </button>
-              </div>
-            </div>
+              <i class="fa fa-times"></i>
+            </button>
           </div>
 
-          <move-sample-to-container v-if="currentModal === 'moveContainer'" :sample-name="selectedSample['NAME']"/>
+          <move-sample-to-container v-if="currentModal === 'moveSample'" :sample="selectedSample" v-on:close-modal="closeModalAction" v-on="$listeners"/>
         </template>
       </custom-dialog-box>
     </portal>
@@ -240,6 +191,7 @@ export default {
       updateSamplesFieldWithData: debounce(searchText => this.updateSelectedFieldValue(searchText), 1000),
       currentModal: '',
       selectedSample: null,
+      displayedModalTitle: ''
     }
   },
   props: {
@@ -490,6 +442,7 @@ export default {
       this.displayModal = false
       this.editingRow = null
       this.currentModal = ''
+      this.displayedModalTitle = ''
       this.$emit('update-editing-row', null)
     },
     performModalAction() {},
@@ -541,7 +494,8 @@ export default {
     },
     openMoveSampleToContainer(sampleIndex) {
       this.selectedSample = this.samples[sampleIndex]
-      this.currentModal = 'moveContainer'
+      this.currentModal = 'moveSample'
+      this.displayedModalTitle = 'Move Sample To Container'
       this.$nextTick(() => {
         this.displayModal = true
       })

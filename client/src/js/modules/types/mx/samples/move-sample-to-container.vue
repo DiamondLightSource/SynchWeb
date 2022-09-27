@@ -1,8 +1,8 @@
 <template>
-  <div class="tw-p-3 content tw-bg-content-fill-color tw-w-full">
-    <h1>Move {{ sampleName }}</h1>
+  <div class="tw-p-3 content tw-w-full">
+    <h2>Move {{ sample['NAME'] }}</h2>
 
-    <validation-observer ref="moveContainerForm" v-slot="{ invalid }" tag="form">
+    <validation-observer ref="moveContainerForm" v-slot="{ invalid }" tag="div" class="tw-mt-4">
       <validation-provider v-slot="{ errors }" vid="shipment" name="shipment" rules="required" tag="div" class="tw-flex tw-items-center tw-mb-4">
         <label class="tw-mr-3 tw-w-32">Shipment</label>
         <combo-box
@@ -48,22 +48,27 @@
           :isDisabled="!DEWARID || containers.length < 1"
           :exclude-element-class-list="['custom-add']"
         />
+        <p v-if="containerMessage">{{ containerMessage }}</p>
       </validation-provider>
 
       <validation-provider v-slot="{ errors }" vid="containers" name="containers" rules="required" tag="div" class="tw-flex tw-items-center tw-mb-4">
         <label class="tw-mr-3 tw-w-32">Locations</label>
-        <combo-box
-          :data="availableLocation"
-          class="tw-w-full location-select"
-          textField="TEXT"
-          valueField="VALUE"
-          :inputIndex="3"
-          defaultText="Select a Location"
-          size="small"
-          v-model="LOCATION"
-          :isDisabled="!CONTAINERID || availableLocation.length < 1"
-          :exclude-element-class-list="['custom-add']"
-        />
+        <div class="tw-w-full">
+          <combo-box
+            :data="availableLocation"
+            class="tw-w-full location-select"
+            textField="TEXT"
+            valueField="VALUE"
+            :inputIndex="3"
+            defaultText="Select a Location"
+            size="small"
+            v-model="LOCATION"
+            :isDisabled="!CONTAINERID || availableLocation.length < 1"
+            :exclude-element-class-list="['custom-add']"
+          />
+          <p v-if="loaded && availableLocation.length < 1">Selected container is full</p>
+        </div>
+
       </validation-provider>
 
       <button class="button tw-mb-3" :disabled="invalid" @click="moveSampleToContainer">Move Container</button>
@@ -90,7 +95,7 @@ export default {
     'validation-observer': ValidationObserver
   },
   props: {
-    sampleName: {
+    sample: {
       type: String,
       required: true
     }
@@ -106,7 +111,9 @@ export default {
       containers: [],
       availableLocation: [],
       dewarDescription: 'Select a Dewar',
-      containerDescription: 'Select a Container'
+      containerDescription: 'Select a Container',
+      loaded: false,
+      containerMessage: '',
     }
   },
   created() {
@@ -133,18 +140,38 @@ export default {
       this.containers = results.toJSON()
     },
     async fetchContainerSamples() {
+      this.loaded = false
+      this.containerMessage = ''
       const selectedContainer = this.containers.find(container => Number(container['CONTAINERID']) === Number(this.CONTAINERID))
-      const result = await this.$store.dispatch('fetchDataFromApi', {
-        url: `/sample/cid/${this.CONTAINERID}?page=1&per_page=9999`,
-        requestType: 'fetching samples from container'
-      })
 
-      const filledLocations = result.data.map(item => ({ TEXT: Number(item.LOCATION), VALUE: Number(item.LOCATION) }))
-      const locationField = Array(Number(selectedContainer['CAPACITY'])).fill('').map((item, index) => ({ TEXT: index + 1, VALUE: index + 1 }))
+      if (selectedContainer['CONTAINERSTATUS'] !== 'processing') {
+        const result = await this.$store.dispatch('fetchDataFromApi', {
+          url: `/sample/cid/${this.CONTAINERID}?page=1&per_page=9999`,
+          requestType: 'fetching samples from container'
+        })
 
-      this.availableLocation = differenceBy(locationField, filledLocations, 'TEXT')
+        const filledLocations = result.data.map(item => ({ TEXT: Number(item.LOCATION), VALUE: Number(item.LOCATION) }))
+        const locationField = Array(Number(selectedContainer['CAPACITY'])).fill('').map((item, index) => ({ TEXT: index + 1, VALUE: index + 1 }))
+
+        this.availableLocation = differenceBy(locationField, filledLocations, 'TEXT')
+      } else {
+        this.containerMessage = 'This container is currently assigned and in use on a beamline sample changer. Unassign it to make it selectable'
+      }
+      this.loaded = true
     },
-    moveSampleToContainer() {}
+    async moveSampleToContainer() {
+      const validated = await this.$refs.moveContainerForm.validate()
+
+      if (validated) {
+        this.$emit('save-sample-move', {
+          CONTAINERID: Number(this.CONTAINERID),
+          BLSAMPLEID: Number(this.sample['BLSAMPLEID']),
+          LOCATION: Number(this.LOCATION)
+        })
+
+        this.$emit('close-modal')
+      }
+    }
   },
   watch: {
     SHIPPINGID(newValue) {

@@ -129,6 +129,7 @@
           @clone-container-row="onCloneRow"
           @bulk-update-samples="onUpdateSamples"
           @update-samples-with-sample-group="handleSampleFieldChangeWithSampleGroups"
+          @save-sample-move="saveSampleMove"
         />
       </div>
 
@@ -285,7 +286,7 @@ export default {
       await this.getSampleGroups()
       await this.fetchSampleGroupSamples()
 
-      this.samplesCollection = new Samples(null, {state: {pageSize: 9999}})
+      this.samplesCollection = new Samples(null, { state: { pageSize: 9999 } })
       this.samplesCollection.queryParams.cid = this.containerId
       await this.getSamples(this.samplesCollection)
     },
@@ -304,7 +305,7 @@ export default {
       let params = {}
       params[parameter] = this.container[parameter]
 
-      await this.$store.dispatch('saveModel', {model: this.containerModel, attributes: params})
+      await this.$store.dispatch('saveModel', { model: this.containerModel, attributes: params })
       this.$store.commit('notifications/addNotification', {
         title: 'Success:',
         message: 'Container has been successfully updated',
@@ -341,11 +342,11 @@ export default {
         statusList.forEach(t => {
           if (Number(s.get(t)) > 0) status = t
         })
-        s.set({STATUS: status})
+        s.set({ STATUS: status })
         const payload = this.populateInitialSampleGroupValue(s.toJSON())
         this.$store.commit('samples/setSample', {
           index: Number(s.get('LOCATION')) - 1,
-          data: {...payload, VALID: 1}
+          data: { ...payload, VALID: 1 }
         })
       })
     },
@@ -397,7 +398,7 @@ export default {
       try {
         this.displayQueueModal = false
         await this.toggleContainerQueue(false, this.containerId)
-        this.$emit('update-container-state', {CONTAINERQUEUEID: null})
+        this.$emit('update-container-state', { CONTAINERQUEUEID: null })
         this.$nextTick(() => {
           this.loadContainerData()
           // TODO: Toggle Auto in the samples table
@@ -413,7 +414,7 @@ export default {
       }
     },
     async fetchContainers() {
-      this.containersCollection = new Containers(null, {state: {pageSize: 9999}})
+      this.containersCollection = new Containers(null, { state: { pageSize: 9999 } })
       this.containersCollection.queryParams.did = this.containersSamplesGroupData.dewarId
 
       const result = await this.$store.dispatch('getCollection', this.containersCollection)
@@ -423,7 +424,7 @@ export default {
       }))
     },
     async fetchDewars() {
-      this.dewarsCollection = new Dewars(null, {state: {pageSize: 9999}})
+      this.dewarsCollection = new Dewars(null, { state: { pageSize: 9999 } })
       this.dewarsCollection.queryParams.sid = this.containersSamplesGroupData.shipmentId
 
       const result = await this.$store.dispatch('getCollection', this.dewarsCollection)
@@ -433,7 +434,7 @@ export default {
       }))
     },
     async fetchShipments() {
-      this.shipmentsCollection = new Shipments(null, {state: {pageSize: 9999}})
+      this.shipmentsCollection = new Shipments(null, { state: { pageSize: 9999 } })
 
       const result = await this.$store.dispatch('getCollection', this.shipmentsCollection)
       this.shipments = result.toJSON().map(shipment => ({
@@ -483,6 +484,21 @@ export default {
     },
     updateEditingSampleLocation(value) {
       this.editingSampleLocation = value
+    },
+    async saveSampleMove(data) {
+      try {
+        this.$store.commit('loading', true)
+        await this.$store.dispatch('saveDataToApi', {
+          url: `/sample/move/${data['BLSAMPLEID']}`,
+          data,
+          requestType: 'moving sample to another container'
+        })
+
+        await this.loadSampleGroupInformation()
+        this.$refs.containerForm.reset()
+      } finally {
+        this.$store.commit('loading', false)
+      }
     }
   },
   watch: {
