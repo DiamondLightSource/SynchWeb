@@ -234,10 +234,6 @@ export default {
     }
   },
   props: {
-    currentlyEditingRow: {
-      type: Number,
-      default: -1
-    },
     proteins: {
       type: Array,
       default: () => ([])
@@ -483,7 +479,7 @@ export default {
     },
     closeModalAction() {
       this.displaySampleGroupModal = false
-      this.editingRow = null
+      this.$emit('update-editing-row', null)
     },
     performModalAction() {
     },
@@ -537,9 +533,6 @@ export default {
     }
   },
   watch: {
-    currentlyEditingRow(newValue) {
-      this.editingRow = newValue
-    },
     selectedFieldValue: {
       handler: 'updateSamplesFieldWithData',
     }
