@@ -50,7 +50,6 @@ jobs:
         uses: docker://vimeo/psalm-github-actions
         with:
           security_analysis: true
-
   phptest:
     needs: phpbuild
     runs-on: ubuntu-latest
