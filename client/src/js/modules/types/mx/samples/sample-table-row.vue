@@ -97,7 +97,7 @@
           <a class="button tw-cursor-pointer tw-mx-1" @click="closeSampleEditing"><i class="fa fa-times"></i></a>
         </span>
         <span v-else>
-          <a class="button tw-py-1 tw-cursor-pointer tw-mx-1" v-if="sample['BLSAMPLEID']" @click="moveSampleToAnotherContainer(sampleIndex)"><i class="fa fa-exchange"></i></a>
+          <a class="button tw-py-1 tw-cursor-pointer tw-mx-1" v-if="sample['BLSAMPLEID'] && !isContainerProcessing" @click="moveSampleToAnotherContainer(sampleIndex)"><i class="fa fa-exchange"></i></a>
           <a class="button tw-py-1 tw-cursor-pointer tw-mx-1" @click="editRow(sample)"><i class="fa fa-pencil"></i></a>
           <router-link v-if="sample['BLSAMPLEID']" class="button tw-py-1 tw-mx-1" :to="`/samples/sid/${sample['BLSAMPLEID']}`" ><i class="fa fa-search"></i></router-link>
           <a class="button tw-cursor-pointer tw-py-1 tw-mx-1" v-if="sample['BLSAMPLEID']" @click="onAddToSampleGroup"><i class="fa fa-cubes"></i></a>
