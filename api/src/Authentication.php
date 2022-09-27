@@ -134,7 +134,7 @@ class Authentication
 		    }
 
 		    # Remove tokens more than 10 seconds old, they should have been used
-		    $this->db->pq("DELETE FROM SW_onceToken WHERE TIMESTAMPDIFF('SECOND', recordTimeStamp, CURRENT_TIMESTAMP) > 10");
+		    $this->db->pq("DELETE FROM SW_onceToken WHERE recordTimeStamp < NOW() - INTERVAL 10 SECOND");
 
             if ($need_auth) $this->check_auth();
 		}
