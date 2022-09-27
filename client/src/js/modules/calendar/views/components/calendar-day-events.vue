@@ -19,7 +19,7 @@ export default {
       required: true
     },
     visitsData: {
-      type: Object,
+      type: Array,
       required: true
     },
     day: {
@@ -50,7 +50,7 @@ export default {
     groupVisitsByTime() {
       if (this.visitsData) {
         this.visitsByTime = this.visitsData.reduce((acc, curr) => {
-          const visitHour = new Date(curr['STISO']).getUTCHours()
+          const visitHour = curr['STISO'].hour
 
           const hourString = String(visitHour).length > 1 ? `${visitHour}:00` : `0${visitHour}:00`
 
