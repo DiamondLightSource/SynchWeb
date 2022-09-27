@@ -259,13 +259,22 @@ const store = new Vuex.Store({
       })
     },
     // post data to the backend that is not attached to any model
-    async saveDataToApi({ state, commit, rootState }, { url, data, requestType }) {
+    async saveDataToApi({ state, commit, rootState }, args) {
+      const { url, data, requestType, ...others } = args
       return await Backbone.ajax({
         url: app.apiurl + url,
         type: 'POST',
         data,
+        ...others,
 
         success: function(response) {
+          commit('notifications/addNotification', {
+            title: 'Action Successful',
+            message: requestType,
+            level: 'success'
+          }, {
+            root: true
+          })
           return response
         },
         error: function() {
@@ -280,13 +289,22 @@ const store = new Vuex.Store({
       })
     },
     // update data to the backend that is not attached to any model
-    async updateDataToApi({ state, commit, rootState }, { url, data, requestType, updateType }) {
+    async updateDataToApi({ state, commit, rootState }, args) {
+      const { url, data, requestType, type, ...others } = args
       return await Backbone.ajax({
         url: app.apiurl + url,
-        type: updateType,
+        type,
         data,
+        ...others,
 
         success: function(response) {
+          commit('notifications/addNotification', {
+            title: 'Update Successful',
+            message: requestType,
+            level: 'success'
+          }, {
+            root: true
+          })
           return response
         },
         error: function() {
