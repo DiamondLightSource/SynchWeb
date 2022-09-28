@@ -23,7 +23,7 @@
         <combo-box
           :data="dewars"
           class="tw-w-full dewar-select"
-          textField="BARCODE"
+          textField="CODE"
           valueField="DEWARID"
           :inputIndex="1"
           defaultText="Select a Dewar"
@@ -48,10 +48,9 @@
           :isDisabled="!DEWARID || containers.length < 1"
           :exclude-element-class-list="['custom-add']"
         />
-        <p v-if="containerMessage">{{ containerMessage }}</p>
       </validation-provider>
 
-      <validation-provider v-slot="{ errors }" vid="containers" name="containers" rules="required" tag="div" class="tw-flex tw-items-center tw-mb-4">
+      <validation-provider v-slot="{ errors }" vid="containers" name="containers" rules="required" tag="div" class="tw-flex tw-items-center tw-mb-3">
         <label class="tw-mr-3 tw-w-32">Locations</label>
         <div class="tw-w-full">
           <combo-box
@@ -66,12 +65,15 @@
             :isDisabled="!CONTAINERID || availableLocation.length < 1"
             :exclude-element-class-list="['custom-add']"
           />
-          <p v-if="loaded && availableLocation.length < 1">Selected container is full</p>
         </div>
-
       </validation-provider>
 
-      <button class="button tw-mb-3" :disabled="invalid" @click="moveSampleToContainer">Move Container</button>
+      <div class="tw-mb-5">
+        <p class="tw-text-content-inactive" v-if="containerMessage">{{ containerMessage }}</p>
+        <p class="tw-text-content-inactive" v-if="loaded && availableLocation.length < 1">Selected container is full</p>
+      </div>
+
+      <button class="button tw-mb-3" :disabled="invalid" @click="moveSampleToContainer">Move Sample</button>
     </validation-observer>
   </div>
 </template>
