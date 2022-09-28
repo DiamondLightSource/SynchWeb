@@ -1,4 +1,4 @@
-name: Build and Test PHP
+name: Build and Test SynchWeb
 
 on:
   push:
@@ -9,10 +9,10 @@ on:
 defaults:
   run:
     shell: bash
-    working-directory: api
     
 jobs:
   checkout:
+    name: Checkout code
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
@@ -20,12 +20,13 @@ jobs:
   phpbuild:
     needs: checkout
     runs-on: ubuntu-latest
+    working-directory: SynchWeb/api
 
     steps:
-    - name: Setup PHP
+    - name: Setup PHP 7.3
       uses: shivammathur/setup-php@v2
       with:
-        php-version: 7.4
+        php-version: 7.3
 
     - name: Validate composer.json and composer.lock
       run: composer validate
@@ -45,14 +46,17 @@ jobs:
   phplint:
     needs: phpbuild
     runs-on: ubuntu-latest
+    working-directory: SynchWeb/api
     steps:
       - name: Psalm Linting
         uses: docker://vimeo/psalm-github-actions
         with:
           security_analysis: true
+
   phptest:
     needs: phpbuild
     runs-on: ubuntu-latest
+    working-directory: SynchWeb/api
     steps:
       - name: PHPUnit Tests
         uses: php-actions/phpunit@v2
@@ -61,9 +65,11 @@ jobs:
           configuration: test/phpunit.xml
           args: --coverage-text
 
-  unit_test-lint:
+  js_build_lint_and_test:
+    name: JavaScript build, lint and test
     needs: checkout
     runs-on: ubuntu-latest
+    working-directory: SynchWeb/client
     steps:
       - run: |
               npm ci
