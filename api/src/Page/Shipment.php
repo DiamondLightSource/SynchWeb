@@ -1560,7 +1560,7 @@ class Shipment extends Page
                   INNER JOIN shipping sh ON sh.shippingid = d.shippingid
                   INNER JOIN proposal p ON p.proposalid = sh.proposalid
                   INNER JOIN containerqueuesample cqs ON cqs.blsubsampleid = ss.blsubsampleid
-                  WHERE p.proposalid=:1 AND c.containerid=:2 AND cqs.containerqueueid IS NULL AND ss.source='manual'", array($this->proposalid, $this->arg('CONTAINERID')));
+                  WHERE p.proposalid=:1 AND c.containerid=:2 AND cqs.containerqueueid IS NULL", array($this->proposalid, $this->arg('CONTAINERID')));
 
                 foreach ($samples as $s) {
                     $this->db->pq("UPDATE containerqueuesample SET containerqueueid=:1 WHERE containerqueuesampleid=:2", array($qid, $s['CONTAINERQUEUESAMPLEID']));
