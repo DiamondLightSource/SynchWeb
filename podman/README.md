@@ -12,6 +12,7 @@ connection string data to an ISPyB database - i.e. via the `$isb` variable.
 ## Setup
 1. Clone this repository: `git clone https://github.com/DiamondLightSource/SynchWeb.git`
 1. Adjust `Dockerfile` to point to the correct release/branch to clone into the container
+(if PHP 5.4 is wanting to be used, use the `Dockerfile-php-5.4` file).
 1. Add `config.php` to same directory as the `Dockerfile` - adjusting details as appropriate 
 for the Production environment deployment (at a minimum setting a valid value for `$isb`)
 1. Update `php.ini` to include any settings whose default values you
