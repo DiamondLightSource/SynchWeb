@@ -42,8 +42,11 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-        - uses: michaelw90/PHP-Lint@master
-
+      - name: Psalm Linting
+        uses: docker://vimeo/psalm-github-actions
+        with:
+          security_analysis: true
+          
   phptest:
     needs: build
     runs-on: ubuntu-latest
