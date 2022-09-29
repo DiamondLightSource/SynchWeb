@@ -158,6 +158,7 @@ class Sample extends Page
                               array('/:sid', 'put', '_update_sample_full'),
                               array('', 'post', '_add_sample'),
                               array('/simple', 'post', '_add_simple_sample'),
+                              array('/move/:sid', 'post', '_move_sample_to_another_container'), // Should be a PATCH request but for some weird reason the request body for PATCH requests converts all integers to string, and then it fails validation.
 
                               array('/components', 'post', '_add_sample_component'),
                               array('/components/:scid', 'delete', '_remove_sample_component'),
@@ -1433,6 +1434,53 @@ class Sample extends Page
             $a['VALID_SAMPLE_GROUP'] = $is_valid_sample_group;
 
             return $a;
+        }
+
+        # Move Container
+        function _move_sample_to_another_container() {
+            if (!$this->has_arg('CONTAINERID')) $this->_error('No container specified');
+            if (!$this->has_arg('BLSAMPLEID')) $this->_error('No sample specified');
+            if (!$this->has_arg('LOCATION')) $this->_error('No location specified');
+
+            $check_container = $this->db->pq("SELECT c.containerid
+                FROM container c
+                INNER JOIN dewar d ON c.dewarid = d.dewarid
+                INNER JOIN shipping s ON s.shippingid = d.shippingid
+                INNER JOIN proposal p ON p.proposalid = s.proposalid
+                WHERE c.containerid=:1 AND p.proposalid=:2",
+                array($this->arg('CONTAINERID'), $this->proposalid)
+            );
+
+            if (sizeof($check_container) < 1) {
+                $this->_error('This container does not exist');
+            }
+
+            $check_sample = $this->db->pq("SELECT bls.blsampleid
+                FROM blsample bls
+                INNER JOIN container c ON bls.containerid = c.containerid
+                INNER JOIN dewar d ON c.dewarid = d.dewarid
+                INNER JOIN shipping s ON s.shippingid = d.shippingid
+                INNER JOIN proposal p ON p.proposalid = s.proposalid
+                WHERE bls.blsampleid=:1 AND p.proposalid=:2",
+                array($this->arg('BLSAMPLEID'), $this->proposalid)
+            );
+
+            if (sizeof($check_sample) < 1) {
+                $this->_error('Sample does not exist');
+            }
+
+            $container_samples = $this->db->pq("SELECT s.blsampleid, s.location FROM blsample s WHERE s.containerid=:1", array($this->arg('CONTAINERID')));
+            $filled_locations = array_map(function($item) { return $item['LOCATION']; }, $container_samples);
+
+            if (in_array($this->arg('LOCATION'), $filled_locations)) {
+                $this->_error('Specified location already has sample in it');
+            }
+
+            $this->db->pq(
+                "UPDATE blsample SET containerid=:1, location=:2 WHERE blsampleid=:3",
+                array($this->arg('CONTAINERID'), $this->arg('LOCATION'), $this->arg('BLSAMPLEID'))
+            );
+            $this->_output(array('message' => 'Sample moved successfully'));
         }
 
         

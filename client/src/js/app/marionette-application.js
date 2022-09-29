@@ -46,7 +46,7 @@ var MarionetteApplication = (function () {
                     options.data.append('prop', prop)
 
                 // JSON content
-                } else if (options.contentType == 'application/json' || options.type == 'DELETE') {
+                } else if (options.contentType === 'application/json' || options.type === 'DELETE') {
                     if (options.data) var tmp = JSON.parse(options.data)
                     else var tmp = {}
 
