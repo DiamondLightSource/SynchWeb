@@ -1,10 +1,13 @@
-// define(['backbone'], function(Backbone) {
+define(['backbone'], function(Backbone) {
     
-//     return Backbone.Model.extend({
-//         idAttribute: '',
-//         urlRoot: '',
-            
-//         validation: {
-//         }
-//     })
-// })
+    return Backbone.Model.extend({
+      idAttribute: 'proposalID', //change this
+      urlRoot: '/summary/example',
+      // urlRoot: '/summary/results',
+        
+      
+        
+    })
+         
+  })
+  
