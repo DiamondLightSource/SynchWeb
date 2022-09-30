@@ -14,6 +14,7 @@
     }
   ],
   "require": {
+    "alfallouji/dhl_api": "dev-master#8a1699a5",
     "apereo/phpcas": "1.3.8",
     "ezyang/htmlpurifier": "4.12.0",
     "firebase/php-jwt": "2.2.0",
@@ -25,8 +26,7 @@
     "stomp-php/stomp-php": "3.0.6",
     "symfony/http-foundation": "^2.8",
     "symfony/filesystem": "^2.8",
-    "mpdf/qrcode": "^1.2",
-    "mtcmedia/dhl-api": "^2.0"
+    "mpdf/qrcode": "^1.2"
   },
   "autoload": {
     "psr-4": {
