@@ -56,19 +56,30 @@ Main items to change include:
 - database connection parameters (user, password, host, port)
 - authentication type (cas, ldap, dummy/no authentication)
 
-### Build backend
+### Build back end
 ```sh
 $ cd SynchWeb/api
 $ composer install
 ```
 
-### Run backend tests
+### Run back end tests
 Tests are available for the PHP code under `api/tests`.  To run these, go to the `api` directory and use:
 
 ```sh
-./vendor/bin/phpunit --verbose tests
+$ cd SynchWeb/api
+$ ./vendor/bin/phpunit --verbose tests
 ```
 Note, a single test can be run by specifying that instead of the `tests` directory.
+
+### Run front end tests for Vue.js
+Testing on the front end is restricted to the newer Vue.js code as it is 
+anticipated that the older code will eventually be migrated to this form.
+To run these tests, 
+
+```sh
+$ cd SynchWeb/client
+$ npm run test
+```
 
 ### Developing the client application
 It is possible to run the client code on a local machine and connect to an existing SynchWeb installation on a server.
