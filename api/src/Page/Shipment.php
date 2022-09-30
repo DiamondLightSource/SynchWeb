@@ -9,8 +9,6 @@ use SynchWeb\ImagingShared;
 
 class Shipment extends Page
 {
-        
-
         public static $arg_list = array('did' => '\d+',
                               'cid' => '\d+',
                               'sid' => '\d+',
@@ -2164,7 +2162,7 @@ class Shipment extends Page
             if (!$this->has_arg('prop')) $this->_error('No proposal specified');
             if (!$this->has_arg('sid')) $this->_error('No shipping id specified');
 
-            if (!$this->has_arg('DECLAREDVALUE')) $this->_error('No delcared value specified');
+            if (!$this->has_arg('DECLAREDVALUE')) $this->_error('No declared value specified');
             if (!$this->has_arg('DESCRIPTION')) $this->_error('No description specified');
             if (!$this->has_arg('DEWARS')) $this->_error('No dewars specified');
             if (!is_array($this->arg('DEWARS'))) $this->_error('No dewars specified');
@@ -2463,7 +2461,7 @@ class Shipment extends Page
             if (!$this->has_arg('prop')) $this->_error('No proposal specified');
             if (!$this->has_arg('sid')) $this->_error('No shipping id specified');
 
-            if (!$this->has_arg('DECLAREDVALUE')) $this->_error('No delcared value specified');
+            if (!$this->has_arg('DECLAREDVALUE')) $this->_error('No declared value specified');
             if (!$this->has_arg('DEWARS')) $this->_error('No dewars specified');
             if (!is_array($this->arg('DEWARS'))) $this->_error('No dewars specified');
             

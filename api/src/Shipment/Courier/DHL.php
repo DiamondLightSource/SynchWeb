@@ -2,17 +2,17 @@
 
 namespace SynchWeb\Shipment\Courier;
 
-use DHL\Client\Web as WebserviceClient;
-use DHL\Datatype\AM\PieceType;
-use DHL\Datatype\GB\Piece;
-use DHL\Entity\AM\GetQuote;
-use DHL\Entity\GB\BookPURequest;
-use DHL\Entity\GB\BookPUResponse;
-use DHL\Entity\GB\CancelPURequest;
-use DHL\Entity\GB\CancelPUResponse;
-use DHL\Entity\GB\KnownTrackingRequest as Tracking;
-use DHL\Entity\GB\ShipmentRequest;
-use DHL\Entity\GB\ShipmentResponse;
+use Mtc\Dhl\Client\Web as WebserviceClient;
+use Mtc\Dhl\Datatype\AM\PieceType;
+use Mtc\Dhl\Datatype\EU\Piece;
+use Mtc\Dhl\Entity\AM\GetQuote;
+use Mtc\Dhl\Entity\EU\BookPURequest;
+use Mtc\Dhl\Entity\EU\BookPUResponse;
+use Mtc\Dhl\Entity\EU\CancelPURequest;
+use Mtc\Dhl\Entity\EU\CancelPUResponse;
+use Mtc\Dhl\Entity\EU\KnownTrackingRequest;
+use Mtc\Dhl\Entity\EU\ShipmentRequest;
+use Mtc\Dhl\Entity\EU\ShipmentResponse;
 
 class DHL
 {
@@ -107,7 +107,7 @@ class DHL
     {
         if (!array_key_exists('AWB', $options)) return;
 
-        $request = new Tracking();
+        $request = new KnownTrackingRequest();
         $request->SiteID = $this->_user;
         $request->Password = $this->_password;
         $request->MessageReference = '12345678901234567890' . (string)time();
@@ -116,6 +116,7 @@ class DHL
         $request->AWBNumber = $options['AWB'];
         $request->LevelOfDetails = array_key_exists('LAST_ONLY', $options) ? 'LAST_CHECK_POINT_ONLY' : 'ALL_CHECK_POINTS';
         $request->PiecesEnabled = 'S';
+
 
         if ($this->log) file_put_contents('logs/trackingrequest_' . date('Ymd-Hi') . '_' . str_replace(' ', '_', $options['AWB'] . '.xml'), $request->toXML());
 
