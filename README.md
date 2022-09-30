@@ -12,7 +12,7 @@ For development, a simple environment can be setup by using scripts provided [he
 ### Requirements
 To build SynchWeb on a machine you will need [npm](https://docs.npmjs.com/) and [composer](https://getcomposer.org/)
 
-You will also need php5 on the build machine.
+You will also need an appropriate version of PHP on the build machine.
 
 If not using the development VMs you will also need an instance of the ISPyB database [here](https://github.com/DiamondLightSource/ispyb-database)
 
@@ -56,10 +56,29 @@ Main items to change include:
 - database connection parameters (user, password, host, port)
 - authentication type (cas, ldap, dummy/no authentication)
 
-### Build backend end
+### Build back end
 ```sh
 $ cd SynchWeb/api
 $ composer install
+```
+
+### Run back end tests
+Tests are available for the PHP code under `api/tests`.  To run these, go to the `api` directory and use:
+
+```sh
+$ cd SynchWeb/api
+$ ./vendor/bin/phpunit --verbose tests
+```
+Note, a single test can be run by specifying that instead of the `tests` directory.
+
+### Run front end tests for Vue.js
+Testing on the front end is restricted to the newer Vue.js code as it is 
+anticipated that the older code will eventually be migrated to this form.
+To run these tests, 
+
+```sh
+$ cd SynchWeb/client
+$ npm run test
 ```
 
 ### Developing the client application
@@ -79,7 +98,6 @@ The command line options available are described in this table. These override t
 | env.port | Webpack dev server port |
 | env.proxy.target | Full address of the SynchWeb PHP backend server (can include port if required) |
 | env.proxy.secure | Flag to set if connecting to an https address for the SynchWeb backend |
-
 
 Acknowledgements
 ----------------
