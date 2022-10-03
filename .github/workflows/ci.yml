@@ -42,7 +42,7 @@ jobs:
       - name: PHPUnit Tests
         uses: php-actions/phpunit@v3
         with:
-          bootstrap: vendor/autoload.php
+          bootstrap: api/vendor/autoload.php
           configuration: api/tests/phpunit.xml
           args: --coverage-text
 
