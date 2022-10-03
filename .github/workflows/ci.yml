@@ -9,7 +9,7 @@ on:
 defaults:
   run:
     shell: bash
-    working-directory: ./api
+    working-directory: api
     
 jobs:
   checkout:
@@ -69,7 +69,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: JavaScript build, lint and test
-        working-directory: ./client
+        working-directory: client
         run: |
               npm ci
               npm run build
