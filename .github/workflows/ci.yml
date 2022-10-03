@@ -40,10 +40,10 @@ jobs:
         run: composer install --prefer-dist --no-progress
 
       - name: PHPUnit Tests
-        uses: php-actions/phpunit@v2
+        uses: php-actions/phpunit@v3
         with:
           bootstrap: vendor/autoload.php
-          configuration: ./tests/phpunit.xml
+          configuration: api/tests/phpunit.xml
           args: --coverage-text
 
       - name: Psalm Linting
