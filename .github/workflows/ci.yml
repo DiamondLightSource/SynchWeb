@@ -43,7 +43,7 @@ jobs:
         uses: php-actions/phpunit@v2
         with:
           bootstrap: vendor/autoload.php
-          configuration: tests/phpunit.xml
+          configuration: ./tests/phpunit.xml
           args: --coverage-text
 
       - name: Psalm Linting
