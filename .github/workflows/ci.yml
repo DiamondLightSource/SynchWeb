@@ -9,53 +9,36 @@ on:
 defaults:
   run:
     shell: bash
-    working-directory: api
+    working-directory: ./api
     
 jobs:
-  checkout:
-    name: Checkout code
+  php-build:
+    name: Checkout, build, test and lint PHP code
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-  phpbuild:
-    needs: checkout
-    runs-on: ubuntu-latest
-
-    steps:
-    - name: Setup PHP 7.3
-      uses: shivammathur/setup-php@v2
-      with:
-        php-version: 7.3
-
-    - name: Validate composer.json and composer.lock
-      run: composer validate
-
-    - name: Cache Composer packages
-      id: composer-cache
-      uses: actions/cache@v3
-      with:
-        path: vendor
-        key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
-        restore-keys: |
-          ${{ runner.os }}-php-
-
-    - name: Install dependencies
-      run: composer install --prefer-dist --no-progress
-
-  phplint:
-    needs: phpbuild
-    runs-on: ubuntu-latest
-    steps:
-      - name: Psalm Linting
-        uses: docker://vimeo/psalm-github-actions
+      - name: Setup PHP 7.3
+        uses: shivammathur/setup-php@v2
         with:
-          security_analysis: true
+          php-version: 7.3
 
-  phptest:
-    needs: phpbuild
-    runs-on: ubuntu-latest
-    steps:
+      - name: Validate composer.json and composer.lock
+        run: composer validate
+
+      - name: Cache Composer packages
+        id: composer-cache
+        uses: actions/cache@v3
+        with:
+          path: vendor
+          key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-php-
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress
+
       - name: PHPUnit Tests
         uses: php-actions/phpunit@v2
         with:
@@ -63,13 +46,20 @@ jobs:
           configuration: test/phpunit.xml
           args: --coverage-text
 
-  js_build_lint_and_test:
+      - name: Psalm Linting
+        uses: docker://vimeo/psalm-github-actions
+        with:
+          security_analysis: true
+
+  js_build:
     name: JavaScript build, lint and test
-    needs: checkout
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
       - name: JavaScript build, lint and test
-        working-directory: client
+        working-directory: ./client
         run: |
               npm ci
               npm run build
