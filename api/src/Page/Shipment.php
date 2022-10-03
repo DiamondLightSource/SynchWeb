@@ -918,15 +918,15 @@ class Shipment extends Page
         }
 
         function _dewar_tracking($dewar) {
-            if ($dewar['TRACKINGNUMBERFROMSYNCHROTRON']) $status = $this->dhl->get_tracking_info(array('AWB' => $dewar['TRACKINGNUMBERFROMSYNCHROTRON']));
-            else $status = $this->dhl->get_tracking_info(array('AWB' => (string)($dewar['TRACKINGNUMBERTOSYNCHROTRON'])));
+            $trackingNumber = $dewar['TRACKINGNUMBERFROMSYNCHROTRON'] ? $dewar['TRACKINGNUMBERFROMSYNCHROTRON'] : $dewar['TRACKINGNUMBERTOSYNCHROTRON'];
+
+            $status = $this->dhl->get_tracking_info(array('AWB' => (string)$trackingNumber));
 
             if ($status->Response->Status) $this->_error($status->Response->Status);
             else {
                 if ($status->AWBInfo->Status->ActionStatus != 'success') $this->_error((string)$status->AWBInfo->Status->ActionStatus);
                 else {
                     $events = array();
-                    // print_r($status->AWBInfo->ShipmentInfo);
                     $i = 1;
                     foreach ($status->AWBInfo->ShipmentInfo->ShipmentEvent as $e) {
                         $st = (string)$e->ServiceEvent->EventCode;

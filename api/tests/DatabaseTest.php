@@ -88,4 +88,8 @@ final class DatabaseTest extends TestCase
 
         Database::get();
     }
+
+    public function tearDown():void {
+        Mockery::close();
+    }
 }
