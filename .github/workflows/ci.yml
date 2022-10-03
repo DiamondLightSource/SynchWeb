@@ -9,6 +9,7 @@ on:
 defaults:
   run:
     shell: bash
+    working-directory: SynchWeb/api
     
 jobs:
   checkout:
@@ -20,7 +21,6 @@ jobs:
   phpbuild:
     needs: checkout
     runs-on: ubuntu-latest
-    working-directory: SynchWeb/api
 
     steps:
     - name: Setup PHP 7.3
@@ -46,7 +46,6 @@ jobs:
   phplint:
     needs: phpbuild
     runs-on: ubuntu-latest
-    working-directory: SynchWeb/api
     steps:
       - name: Psalm Linting
         uses: docker://vimeo/psalm-github-actions
@@ -56,7 +55,6 @@ jobs:
   phptest:
     needs: phpbuild
     runs-on: ubuntu-latest
-    working-directory: SynchWeb/api
     steps:
       - name: PHPUnit Tests
         uses: php-actions/phpunit@v2
@@ -69,9 +67,10 @@ jobs:
     name: JavaScript build, lint and test
     needs: checkout
     runs-on: ubuntu-latest
-    working-directory: SynchWeb/client
     steps:
-      - run: |
+      - name: JavaScript build, lint and test
+        working-directory: SynchWeb/client
+        run: |
               npm ci
               npm run build
               npm run test
