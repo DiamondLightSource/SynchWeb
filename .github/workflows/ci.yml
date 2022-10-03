@@ -42,10 +42,14 @@ jobs:
 
       - name: PHPUnit Tests
         uses: php-actions/phpunit@v3
+        env:
+          XDEBUG_MODE: coverage
         with:
           bootstrap: api/vendor/autoload.php
           configuration: api/tests/phpunit.xml
+          php_extensions: xdebug
           args: --coverage-text
+          php-version: 7.3
 
       - name: Psalm Linting
         uses: docker://vimeo/psalm-github-actions
