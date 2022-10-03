@@ -387,15 +387,9 @@ class Page
 
         }
         
-        # Error messages as json object, should probably return a different
-        # http code as well
+        # Stop the app and trigger an http response with the given message and code.
         function _error($msg, $code=400) {
-            //header('HTTP/1.1 400 Bad Request');
-            //header('Content-type:application/json');
-            //print 
-
             $this->app->halt($code, json_encode(array('status' => $code, 'message' => $msg)));
-            //exit();
         }
         
         
