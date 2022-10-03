@@ -40,6 +40,13 @@
     # Update the ldap(s) prefix, hostname and search settings as required
     $ldap_server = 'ldaps://ldap.example.com';
     $ldap_search = 'ou=people,dc=example,dc=com';
+    # Specify the LDAP server type, can be either 
+    # "openldap" (default) or "activedirectory"
+    $ldap_server_type = "openldap";
+    # If using "activedirectory" then specify the legacy domain name.
+    # i.e. "MYDOMAIN" rather than "mydomain.com" 
+    # This will be prepended onto the username (e.g. MYDOMAIN\mylogin)
+    $active_directory_domain = "MYDOMAIN";
 
     # Upload directory
     # - used for user image uploads
