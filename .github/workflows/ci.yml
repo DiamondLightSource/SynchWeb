@@ -24,7 +24,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: 7.3
-          extensions: mysqlnd
+          extensions: mysqlnd, mysqli
           tools: psalm
 
       - name: Validate composer.json and composer.lock
@@ -42,6 +42,14 @@ jobs:
       - name: Install dependencies
         run: composer install --prefer-dist --no-progress
 
+      - name: Psalm Linting
+        uses: docker://vimeo/psalm-github-actions
+        with:
+          security_analysis: true
+
+      - name: Run Psalm
+        run: psalm --output-format=github
+
       - name: PHPUnit Tests
         uses: php-actions/phpunit@v3
         env:
@@ -52,14 +60,6 @@ jobs:
           php_extensions: xdebug
           args: --coverage-text
           php_version: 7.3
-
-      - name: Psalm Linting
-        uses: docker://vimeo/psalm-github-actions
-        with:
-          security_analysis: true
-
-      - name: Run Psalm
-        run: psalm --output-format=github
 
   js_build:
     name: JavaScript build, test and lint
