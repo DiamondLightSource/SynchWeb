@@ -38,5 +38,10 @@
     "php-mock/php-mock-phpunit": "^2.6",
     "mockery/mockery": "^1.5",
     "vimeo/psalm": "^4.27"
+  },
+  "config": {
+    "platform": {
+      "php": "^7.3"
+    }
   }
 }
