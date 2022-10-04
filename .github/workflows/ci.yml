@@ -58,7 +58,6 @@ jobs:
 
       - name: Psalm Linting
         uses: docker://vimeo/psalm-github-actions
-        working-directory: ./api
         with:
           security_analysis: true
 
