@@ -27,6 +27,9 @@ jobs:
           extensions: mysqlnd, mysqli, mysql
           tools: psalm
 
+      - name: Install php-mysqlnd
+        run: sudo apt-get install -y php-mysqlnd          
+
       - name: Validate composer.json and composer.lock
         run: composer validate
 
