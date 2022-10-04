@@ -42,13 +42,8 @@ jobs:
       - name: Install dependencies
         run: composer install --prefer-dist --no-progress
 
-      - name: Psalm Linting
-        uses: docker://vimeo/psalm-github-actions
-        with:
-          security_analysis: true
-
       - name: Run Psalm
-        run: psalm --output-format=github
+        run: psalm -c psalm.config --output-format=github
 
       - name: PHPUnit Tests
         uses: php-actions/phpunit@v3
@@ -60,6 +55,12 @@ jobs:
           php_extensions: xdebug
           args: --coverage-text
           php_version: 7.3
+
+      - name: Psalm Linting
+        uses: docker://vimeo/psalm-github-actions
+        working-directory: ./api
+        with:
+          security_analysis: true
 
   js_build:
     name: JavaScript build, test and lint
