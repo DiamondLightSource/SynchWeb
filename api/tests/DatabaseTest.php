@@ -26,7 +26,7 @@ final class DatabaseTest extends TestCase
         $dbtype = "MySql";
         $isb  = array('user' => 'user', 'pass' => 'pass', 'db' => 'localhost/ispyb', 'port' => '80');
 
-        $this->expectException(\Exception::class);
+        $this->expectException(\mysqli_sql_exception::class);
         Database::get();
     }
 
