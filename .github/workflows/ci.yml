@@ -52,7 +52,7 @@ jobs:
         with:
           bootstrap: api/vendor/autoload.php
           configuration: api/tests/phpunit.xml
-          php_extensions: xdebug, mysqli
+          php_extensions: xdebug mysqli
           args: --coverage-text
           php_version: 7.3
 
