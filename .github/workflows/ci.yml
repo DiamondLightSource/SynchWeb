@@ -43,7 +43,7 @@ jobs:
         run: composer install --prefer-dist --no-progress
 
       - name: Run Psalm
-        run: psalm -c psalm.config --output-format=github
+        run: psalm --output-format=github
 
       - name: PHPUnit Tests
         uses: php-actions/phpunit@v3
