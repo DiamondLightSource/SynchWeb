@@ -28,7 +28,7 @@ jobs:
           tools: psalm
 
       - name: Install php-mysqlnd
-        run: sudo apt-get install -y php-mysqlnd          
+        run: sudo apt-get install -y php7.3-mysql
 
       - name: Validate composer.json and composer.lock
         run: composer validate
