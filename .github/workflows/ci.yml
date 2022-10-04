@@ -24,6 +24,8 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: 7.3
+          extensions: mysqlnd
+          tools: psalm
 
       - name: Validate composer.json and composer.lock
         run: composer validate
@@ -55,6 +57,9 @@ jobs:
         uses: docker://vimeo/psalm-github-actions
         with:
           security_analysis: true
+
+      - name: Run Psalm
+        run: psalm --output-format=github
 
   js_build:
     name: JavaScript build, test and lint
