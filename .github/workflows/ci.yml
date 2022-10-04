@@ -46,10 +46,10 @@ jobs:
           XDEBUG_MODE: coverage
         with:
           bootstrap: vendor/autoload.php
-          configuration: tests/phpunit.xml
+          configuration: api/tests/phpunit.xml
           php_extensions: xdebug
           args: --coverage-text
-          php-version: 7.3
+          php_version: 7.3
 
       - name: Psalm Linting
         uses: docker://vimeo/psalm-github-actions
