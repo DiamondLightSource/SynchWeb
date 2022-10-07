@@ -29,56 +29,88 @@ date_default_timezone_set($timezone);
 
 session_cache_limiter(false);
 
-$app = new Slim(array(
-    'mode' => $mode == 'production' ? 'production' : 'development'
-));
+$app = setupApplication($app, $mode);
 
-$app->configureMode('production', function () use ($app) {
-    $app->config(array(
-        'log.enable' => true,
-        'debug' => false
-    ));
-});
+register_shutdown_function('session_write_close'); // prevents unexpected effects when using objects as save handlers
 
-$app->configureMode('development', function () use ($app) {
-    $app->config(array(
-        'log.enable' => false,
-        'debug' => true
-    ));
-});
-
-$app->get('/options', function () use ($app) {
-    global $motd, $authentication_type, $cas_url, $cas_sso, $package_description, $facility_courier_countries, $facility_courier_countries_nde, $dhl_enable, $dhl_link, $scale_grid, $preset_proposal, $timezone, $valid_components, $enabled_container_types;
-    $app->contentType('application/json');
-    $app->response()->body(json_encode(array('motd' => $motd, 'authentication_type' => $authentication_type, 'cas_url' => $cas_url, 'cas_sso' => $cas_sso, 'package_description' => $package_description, 'facility_courier_countries' => $facility_courier_countries, 'facility_courier_countries_nde' => $facility_courier_countries_nde, 'dhl_enable' => $dhl_enable, 'dhl_link' => $dhl_link, 'scale_grid' => $scale_grid, 'preset_proposal' => $preset_proposal, 'timezone' => $timezone, 'valid_components' => $valid_components, 'enabled_container_types' => $enabled_container_types)));
-});
-
-// the following prevents unexpected effects when using objects as save handlers
-register_shutdown_function('session_write_close');
-
-$port = array_key_exists('port', $isb) ? $isb['port'] : null;
-
-// MySQL database class hard-coded
-$db = new MySQL($isb['user'], $isb['pass'], $isb['db'], $port);
-
-// Alternatively, use dynamic class instantiation.
-// Database type ($dbtype) specified in config.php.
-// $db = Database::get();
-
-$db->set_app($app);
-
-$auth = new Authentication($app, $db);
+setupDependencyInjectionContainer($app, $isb, $port);
+    
+$auth = $app->container['auth'];
 $auth->check_auth_required();
 
-$login = $auth->get_user();
-$user = new User($login, $db, $app);
-
+$user = $app->container['user'];
+    
 if ($user->login) {
+    $db = $app->container['db'];
     $chk = $db->pq("SELECT TIMESTAMPDIFF('SECOND', datetime, CURRENT_TIMESTAMP) AS lastupdate, comments FROM adminactivity WHERE username LIKE :1", array($user->login));
     if (sizeof($chk)) {
         if ($chk[0]['LASTUPDATE'] > 20) $db->pq("UPDATE adminactivity SET datetime=CURRENT_TIMESTAMP WHERE username=:1", array($user->login));
     }
 }
 
-$type = new Dispatch($app, $db, $user);
-$type->dispatch();
+$app->container['dispatch']->dispatch();
+
+function setupApplication($app, $mode) : Slim {
+    $app = new Slim(array(
+        'mode' => $mode == 'production' ? 'production' : 'development'
+    ));
+    
+    $app->configureMode('production', function () use ($app) {
+        $app->config(array(
+            'log.enable' => true,
+            'debug' => false
+        ));
+    });
+    
+    $app->configureMode('development', function () use ($app) {
+        $app->config(array(
+            'log.enable' => false,
+            'debug' => true
+        ));
+    });
+    
+    $app->get('/options', function () use ($app) {
+        global $motd, $authentication_type, $cas_url, $cas_sso, $package_description, 
+            $facility_courier_countries, $facility_courier_countries_nde, 
+            $dhl_enable, $dhl_link, $scale_grid, $preset_proposal, $timezone, 
+            $valid_components, $enabled_container_types;
+        $app->contentType('application/json');
+        $app->response()->body(json_encode(array(
+            'motd' => $motd,
+            'authentication_type' => $authentication_type,
+            'cas_url' => $cas_url,
+            'cas_sso' => $cas_sso,
+            'package_description' => $package_description,
+            'facility_courier_countries' => $facility_courier_countries,
+            'facility_courier_countries_nde' => $facility_courier_countries_nde,
+            'dhl_enable' => $dhl_enable,
+            'dhl_link' => $dhl_link,
+            'scale_grid' => $scale_grid,
+            'preset_proposal' => $preset_proposal,
+            'timezone' => $timezone,
+            'valid_components' => $valid_components,
+            'enabled_container_types' => $enabled_container_types
+        )));
+    });
+    return $app;
+}
+
+function setupDependencyInjectionContainer($app, $isb, $port)  {
+    $app->container->singleton('db', function() use($isb, $port, $app) { 
+        $port = array_key_exists('port', $isb) ? $isb['port'] : null;
+        return new MySQL($app, $isb['user'], $isb['pass'], $isb['db'], $port); 
+    });
+    
+    $app->container->singleton('auth', function() use($app) {
+        return new Authentication($app, $app->container['db']); 
+    });
+    
+    $app->container->singleton('user', function() use($app) {
+        return new User($app->container['auth']->get_user(), $app->container['db'], $app); 
+    });
+    
+    $app->container->singleton('dispatch', function() use($app) {
+        return new Dispatch($app, $app->container['db'], $app->container['user']); 
+    });
+}
+

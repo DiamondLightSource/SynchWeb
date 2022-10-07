@@ -19,8 +19,9 @@ class MySQL extends DatabaseParent implements DatabaseInterface
     var $errors = 0;
     var $wsrep_sync = False;
 
-    function __construct($user, $pass, $db, $port = null)
+    function __construct($app, $user, $pass, $db, $port = null)
     {
+        $this->app = $app;
         mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT); // throw exceptions.
         list($host, $dbn) = explode('/', $db);
         if (!$port) $port = ini_get("mysqli.default_port");

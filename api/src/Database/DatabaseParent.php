@@ -7,16 +7,11 @@ class DatabaseParent
     public $debug = False;
     public $stats = False;
     public $stat;
-    private $app;
+    protected $app;
 
     function type()
     {
         return $this->type;
-    }
-
-    public function set_app($app)
-    {
-        $this->app = $app;
     }
 
     public function set_stats($st)
@@ -48,7 +43,7 @@ class DatabaseParent
 
 interface DatabaseInterface
 {
-    public function __construct($user, $pass, $db, $port);
+    public function __construct($app, $user, $pass, $db, $port);
 
     // Prepared Query
     public function pq($query, $args);
