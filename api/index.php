@@ -16,7 +16,7 @@ limitations under the License.
 */
 
 use Slim\Slim;
-use SynchWeb\Authentication;
+use SynchWeb\Authentication\AuthenticationService;
 use SynchWeb\Database\Type\MySQL;
 use SynchWeb\Dispatch;
 use SynchWeb\User;
@@ -102,7 +102,7 @@ function setupDependencyInjectionContainer($app, $isb, $port)  {
     });
     
     $app->container->singleton('auth', function() use($app) {
-        return new Authentication($app, $app->container['db']); 
+        return new AuthenticationService($app, $app->container['db']); 
     });
     
     $app->container->singleton('user', function() use($app) {
