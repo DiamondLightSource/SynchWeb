@@ -6,7 +6,7 @@ use Slim\Slim;
 use Mockery;
 use PHPUnit\Framework\TestCase;
 use SynchWeb\Authentication\AuthenticationService;
-use SynchWeb\Database\Type\MySQL;
+use SynchWeb\DataLayer\AuthenticationData;
 use SynchWeb\Authentication\Output;
 
 require_once __DIR__ . '/Utils/Functions.php';
@@ -25,7 +25,7 @@ final class AuthenticationServiceTest extends TestCase
 
     private $serviceStub;
     private $slimStub;
-    private $dbStub;
+    private $dataLayerStub;
 
     protected function setUp(): void
     {
@@ -33,7 +33,7 @@ final class AuthenticationServiceTest extends TestCase
         $this->slimStub = Mockery::mock('Slim\Slim');
         $this->slimStub->shouldReceive('post')->times(1)->andReturn(new AppStub());
         $this->slimStub->shouldReceive('get')->times(3);
-        $this->dbStub = $this->getMockBuilder(MySQL::class)
+        $this->dataLayerStub = $this->getMockBuilder(AuthenticationData::class)
             ->disableOriginalConstructor()
             ->disableOriginalClone()
             ->disableArgumentCloning()
@@ -50,12 +50,12 @@ final class AuthenticationServiceTest extends TestCase
 
     public function testConstructorSetsUpExpectedRoutes(): void
     {
-        new AuthenticationService($this->slimStub, $this->dbStub);
+        new AuthenticationService($this->slimStub, $this->dataLayerStub);
     }
 
     public function testGetUserInitiallyReturnsNull(): void
     {
-        $authService = new AuthenticationService($this->slimStub, $this->dbStub);
+        $authService = new AuthenticationService($this->slimStub, $this->dataLayerStub);
         $this->assertNull($authService->getUser());
     }
 
@@ -72,7 +72,7 @@ final class AuthenticationServiceTest extends TestCase
     {
         $response = new \Slim\Http\Response();
         $this->slimStub->shouldReceive('response')->times(1)->andReturn($response);
-        $authService = new AuthenticationService($this->slimStub, $this->dbStub, false); // a bit of a hack - if the service uses exit() it is untestable as this will end the process prematurely
+        $authService = new AuthenticationService($this->slimStub, $this->dataLayerStub, false); // a bit of a hack - if the service uses exit() it is untestable as this will end the process prematurely
         $authService->check();
 
         $this->assertContains('Content-Type: application/json', Output::$headers);
@@ -86,7 +86,7 @@ final class AuthenticationServiceTest extends TestCase
         $response = new \Slim\Http\Response();
         $this->slimStub->shouldReceive('response')->times(1)->andReturn($response);
 
-        $authService = new AuthenticationService($this->slimStub, $this->dbStub, false);
+        $authService = new AuthenticationService($this->slimStub, $this->dataLayerStub, false);
         $authService->validateAuthentication();
 
         $this->assertContains('Content-Type: application/json', Output::$headers);

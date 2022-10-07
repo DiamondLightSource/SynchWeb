@@ -5,9 +5,11 @@ namespace SynchWeb\Authentication;
 use JWT;
 use Slim\Slim;
 
+use SynchWeb\DataLayer\AuthenticationData;
+
 class AuthenticationService
 {
-    private $app, $db, $user, $exitOnError;
+    private $app, $dataLayer, $user, $exitOnError;
 
     // Array of authentication types and corresponding authentication class names.
     // Value is class name in SynchWeb\Authentication\Type namespace.
@@ -19,10 +21,10 @@ class AuthenticationService
         'simple' => 'Simple'
     );
 
-    function __construct(Slim $app, $db, $exitOnError = true)
+    function __construct(Slim $app, AuthenticationData $dataLayer, $exitOnError = true)
     {
         $this->app = $app;
-        $this->db = $db;
+        $this->dataLayer = $dataLayer;
         $this->exitOnError = $exitOnError;
 
         $this->setupRoutes();
@@ -54,9 +56,7 @@ class AuthenticationService
         $user = $this->authenticateByType($authentication_type)->check();
 
         if ($user) {
-            $userc = $this->db->pq("SELECT personid FROM person WHERE login=:1", array($user));
-
-            if (sizeof($userc)) {
+            if ($this->dataLayer->isUserLoggedIn($user)) {
                 $this->returnResponse(200, $this->generateJwtToken($user));
             }
         }
@@ -129,13 +129,9 @@ class AuthenticationService
     private function processOneTimeUseTokens(): bool
     {
         $need_auth = true;
-        $once = $this->app->request()->get('token');
-        if ($once) {
-            $token = $this->db->pq("SELECT o.validity, pe.personid, pe.login, CONCAT(p.proposalcode, p.proposalnumber) as prop 
-		    		FROM SW_onceToken o
-		    		INNER JOIN proposal p ON p.proposalid = o.proposalid
-		    		INNER JOIN person pe ON pe.personid = o.personid
-		    		WHERE token=:1", array($once));
+        $token = $this->app->request()->get('token');
+        if ($token) {
+            $token = $this->dataLayer->getOneTimeUseToken($token);
             if (sizeof($token)) {
                 $token = $token[0];
                 $qs = $_SERVER['QUERY_STRING'] ? (preg_replace('/(&amp;)?token=\w+/', '', str_replace('&', '&amp;', $_SERVER['QUERY_STRING']))) : null;
@@ -146,7 +142,7 @@ class AuthenticationService
                     $_REQUEST['prop'] = $token['PROP'];
                     $this->user = $token['LOGIN'];
                     $need_auth = false;
-                    $this->db->pq("DELETE FROM SW_onceToken WHERE token=:1", array($once));
+                    $this->dataLayer->deleteOneTimeUseToken($token);
                 }
             }
             else {
@@ -155,7 +151,7 @@ class AuthenticationService
         }
 
         # Remove tokens more than 10 seconds old, they should have been used
-        $this->db->pq("DELETE FROM SW_onceToken WHERE TIMESTAMPDIFF('SECOND', recordTimeStamp, CURRENT_TIMESTAMP) > 10");
+        $this->dataLayer->deleteOldOneTimeUseTokens();
         return $need_auth;
     }
 
@@ -278,8 +274,7 @@ class AuthenticationService
         if (!$password)
             $this->returnError(400, 'No password specified');
 
-        $user = $this->db->pq("SELECT personid FROM person WHERE login=:1", array($login));
-        if (!sizeof($user)) {
+        if (!$this->dataLayer->isUserLoggedIn($login)) {
             $this->returnError(400, 'Invalid Credentials');
         }
 
