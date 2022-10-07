@@ -14,7 +14,7 @@ class Database
 
     public static function get()
     {
-        global $dbtype, $isb;
+        global $dbtype, $isb, $app;
 
         // Global variable is named $dbtype in config.php.
         $database_type = $dbtype;
@@ -35,7 +35,7 @@ class Database
                 $port = array_key_exists('port', $isb) ? $isb['port'] : null;
 
                 // Return instance of database class.    
-                return new $full_class_name($isb['user'], $isb['pass'], $isb['db'], $port);
+                return new $full_class_name($app, $isb['user'], $isb['pass'], $isb['db'], $port);
             } else {
                 error_log("Database class '$full_class_name' does not exist.");
             }

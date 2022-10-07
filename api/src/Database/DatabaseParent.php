@@ -9,24 +9,20 @@ class DatabaseParent
     public $stat;
     protected $app;
 
-    function type()
-    {
+    function type() {
         return $this->type;
     }
 
-    public function set_stats($st)
-    {
+    public function set_stats($st) {
         $this->stats = $st;
     }
 
-    public function set_debug($debug)
-    {
+    public function set_debug($debug) {
         if ($this->app) $this->app->contentType('text/html');
         $this->debug = $debug;
     }
 
-    public function error($title, $msg)
-    {
+    public function error($title, $msg) {
         header('HTTP/1.1 503 Service Unavailable');
         // header('Content-type:application/json');
         print json_encode(array('title' => $title, 'msg' => $msg));
@@ -34,9 +30,7 @@ class DatabaseParent
         exit();
     }
 
-
-    function __destruct()
-    {
+    function __destruct() {
         // $this->close();
     }
 }

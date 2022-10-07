@@ -7,28 +7,43 @@ use Slim\Slim;
 
 class AuthenticationService
 {
-    protected $app, $db, $user;
+    private $app, $db, $user, $exitOnError;
 
-    function __construct(Slim $app, $db)
+    // Array of authentication types and corresponding authentication class names.
+    // Value is class name in SynchWeb\Authentication\Type namespace.
+    // Key is lower case representation of class name.
+    private $authentication_types = array(
+        'cas' => 'CAS',
+        'dummy' => 'Dummy',
+        'ldap' => 'LDAP',
+        'simple' => 'Simple'
+    );
+
+    function __construct(Slim $app, $db, $exitOnError = true)
     {
         $this->app = $app;
         $this->db = $db;
+        $this->exitOnError = $exitOnError;
 
+        $this->setupRoutes();
+    }
+
+    private function setupRoutes()
+    {
         $this->app->post('/authenticate', array(&$this, 'authenticate'))->conditions(array(
             'login' => '[A-z0-9]+',
             'password' => '.*',
         ));
 
         $this->app->get('/authenticate/check', array(&$this, 'check'));
-        $this->app->get('/authenticate/key', array(&$this, 'generate_jwt_key'));
+        $this->app->get('/authenticate/key', array(&$this, 'returnResponseWithJwtKey'));
         $this->app->get('/authenticate/logout', array(&$this, 'logout'));
     }
 
-    function get_user()
+    function getUser()
     {
         return $this->user;
     }
-
 
     // For SSO check if we are already logged in elsewhere
     // - if a mechanism exists to do this
@@ -38,27 +53,19 @@ class AuthenticationService
 
         $user = $this->authenticateByType($authentication_type)->check();
 
-        if (!$user)
-            $this->_error(400, 'No previous session');
+        if ($user) {
+            $userc = $this->db->pq("SELECT personid FROM person WHERE login=:1", array($user));
 
-        $userc = $this->db->pq("SELECT personid FROM person WHERE login=:1", array($user));
-
-        if (sizeof($userc))
-            $this->_output(200, $this->generate_jwt($user));
-        else
-            $this->_error(400, 'No previous session');
+            if (sizeof($userc)) {
+                $this->returnResponse(200, $this->generateJwtToken($user));
+            }
+        }
+        $this->returnError(400, 'No previous session');
     }
 
-
-    // Check if this request needs authentication
-    // We allow some pages unauthorised access based on IP, or calendar hash
-    function check_auth_required()
+    private function checkAuthRequiredForSpecificSituations($parts): bool
     {
         global $blsr, $bcr, $img, $auto;
-
-        $parts = explode('/', $this->app->request->getResourceUri());
-        if (sizeof($parts))
-            array_shift($parts);
 
         $need_auth = true;
         # Work around to allow beamline sample registration without CAS authentication
@@ -112,13 +119,17 @@ class AuthenticationService
 
         }
 
-        if (sizeof($parts) > 0) {
+        if ($need_auth && sizeof($parts) > 0) {
             if ($parts[0] == 'authenticate' || $parts[0] == 'options')
                 $need_auth = false;
         }
+        return $need_auth;
+    }
 
-        # One time use tokens
-        $once = $this->app->request->get('token');
+    private function processOneTimeUseTokens(): bool
+    {
+        $need_auth = true;
+        $once = $this->app->request()->get('token');
         if ($once) {
             $token = $this->db->pq("SELECT o.validity, pe.personid, pe.login, CONCAT(p.proposalcode, p.proposalnumber) as prop 
 		    		FROM SW_onceToken o
@@ -139,31 +150,48 @@ class AuthenticationService
                 }
             }
             else {
-                $this->_error(400, 'Invalid one time authorisation token');
+                $this->returnError(400, 'Invalid one time authorisation token');
             }
         }
 
         # Remove tokens more than 10 seconds old, they should have been used
         $this->db->pq("DELETE FROM SW_onceToken WHERE TIMESTAMPDIFF('SECOND', recordTimeStamp, CURRENT_TIMESTAMP) > 10");
-
-        if ($need_auth)
-            $this->check_auth();
+        return $need_auth;
     }
 
+    private function getUrlParameters()
+    {
+        $parts = explode('/', $this->app->request()->getResourceUri());
+        if (sizeof($parts)) {
+            array_shift($parts); // drop the first part of the url - i.e. the domain name
+        }
+        return $parts;
+    }
 
+    // Check if this request needs authentication
+    // We allow some pages unauthorised access based on IP, or calendar hash
+    function validateAuthentication()
+    {
+        $need_auth = $this->processOneTimeUseTokens();
+        if ($need_auth) {
+            $parts = $this->getUrlParameters();
+            $need_auth = $this->checkAuthRequiredForSpecificSituations($parts);
+        }
+        if ($need_auth) {
+            $this->checkForAndValidateAuthenticationToken();
+        }
+    }
 
     // Generate a new JWT encryption key
-    function generate_jwt_key()
+    function returnResponseWithJwtKey()
     {
-        $this->_output(200, array('key' => base64_encode(openssl_random_pseudo_bytes(64))));
+        $this->returnResponse(200, array('key' => base64_encode(openssl_random_pseudo_bytes(64))));
     }
 
-
     // Generates a JWT token with the login embedded
-    function generate_jwt($login)
+    private function generateJwtToken($login)
     {
         global $jwt_key;
-        $key = base64_decode($jwt_key);
 
         $now = time();
         $data = array(
@@ -181,21 +209,15 @@ class AuthenticationService
         return array('jwt' => $jwt);
     }
 
-
-    // Checks any supplied JWT is valid
-    function check_auth()
+    private function checkForAndValidateAuthenticationToken()
     {
         global $jwt_key;
-        $key = base64_decode($jwt_key);
 
-        // $auth_header = $this->app->request->headers->get('authorization');
         $headers = getallheaders();
-
+        $auth_header = '';
         if (array_key_exists('Authorization', $headers)) {
             $auth_header = $headers['Authorization'];
         }
-        else
-            $auth_header = '';
 
         if ($auth_header) {
             list($jwt) = sscanf($auth_header, 'Bearer %s');
@@ -204,35 +226,34 @@ class AuthenticationService
                 $token = JWT::decode($jwt, $jwt_key, array('HS512'));
                 $this->user = $token->data->login;
 
-            // Invalid token
             }
             catch (\Exception $e) {
-                $this->_error(401, 'Invalid authorisation token');
+                $this->returnError(401, 'Invalid authorisation token');
             }
 
         }
         else {
-            $this->_error(401, 'No authorisation token provided');
+            $this->returnError(401, 'No authorisation token provided');
         }
     }
 
-
-
     // Send correct for errors
-    function _output($code, $message)
+    private function returnResponse($code, $message)
     {
-        $this->app->response->setStatus($code);
+        $this->app->response()->setStatus($code);
 
-        // Cant call $app->halt as app not yet running, just end process
+        // Can't call $app->halt as app not yet running, just end process
         header('X-PHP-Response-Code: ' . $code, true, $code);
         header('Content-Type: application/json');
         print json_encode($message);
-        exit();
+        if ($this->exitOnError) {
+            exit();
+        }
     }
 
-    function _error($code, $message)
+    private function returnError($code, $message)
     {
-        $this->_output($code, array('error' => $message));
+        $this->returnResponse($code, array('error' => $message));
     }
 
 
@@ -253,20 +274,20 @@ class AuthenticationService
         }
 
         if (!$login)
-            $this->_error(400, 'No login specified');
+            $this->returnError(400, 'No login specified');
         if (!$password)
-            $this->_error(400, 'No password specified');
+            $this->returnError(400, 'No password specified');
 
         $user = $this->db->pq("SELECT personid FROM person WHERE login=:1", array($login));
         if (!sizeof($user)) {
-            $this->_error(400, 'Invalid Credentials');
+            $this->returnError(400, 'Invalid Credentials');
         }
 
         if ($this->authenticateByType($authentication_type)->authenticate($login, $password)) {
-            $this->_output(200, $this->generate_jwt($login));
+            $this->returnResponse(200, $this->generateJwtToken($login));
         }
         else {
-            $this->_error(400, 'Invalid Credentials');
+            $this->returnError(400, 'Invalid Credentials');
         }
     }
 
@@ -280,35 +301,23 @@ class AuthenticationService
     // The value passed by the calling method derives from $authentication_type, a global variable specified in config.php.
     private function authenticateByType($authentication_type)
     {
-        // Array of authentication types and corresponding authentication class names.
-        // Value is class name in SynchWeb\Authentication\Type namespace.
-        // Key is lower case representation of class name.
-        $authentication_types = array(
-            'cas' => 'CAS',
-            'dummy' => 'Dummy',
-            'ldap' => 'LDAP',
-            'simple' => 'Simple'
-        );
-
         if (!$authentication_type) {
             error_log("Authentication method not specified in config.php.");
 
-            $authentication_type = 'CAS';
+            $authentication_type = 'cas';
         }
 
         // Determine fully-qualified class name of authentication class corresponding to $authentication_type.
-
         $full_class_name = null;
 
-        if (key_exists(strtolower($authentication_type), $authentication_types)) {
-            $full_class_name = 'SynchWeb\\Authentication\\Type\\' . $authentication_types[$authentication_type];
+        if (key_exists(strtolower($authentication_type), $this->authentication_types)) {
+            $full_class_name = 'SynchWeb\\Authentication\\Type\\' . $this->authentication_types[$authentication_type];
         }
         else {
             error_log("Authentication method '$authentication_type' not configured.");
         }
 
         // Return instance of authentication class.
-
         if (class_exists($full_class_name)) {
             return new $full_class_name();
         }
@@ -316,6 +325,6 @@ class AuthenticationService
             error_log("Authentication class '$full_class_name' does not exist.");
         }
 
-        $this->_error(500, 'Authentication not possible due to a configuration error.');
+        $this->returnError(500, 'Authentication not possible due to a configuration error.');
     }
 }

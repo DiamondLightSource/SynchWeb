@@ -9,7 +9,7 @@ use Mockery;
 final class DatabaseTest extends TestCase
 {
     use \phpmock\phpunit\PHPMock;
-    use \Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
+    use \Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration; // needed for tests with only Mockery assertions
 
     public function testCanBeInstantiated(): void
     {
@@ -22,7 +22,7 @@ final class DatabaseTest extends TestCase
 
     public function testGetThrowsExceptionDueToInvalidConnectionDetails(): void
     {
-        global $isb, $dbtype;
+        global $isb, $dbtype, $app;
         $dbtype = "MySql";
         $isb  = array('user' => 'user', 'pass' => 'pass', 'db' => 'localhost/ispyb', 'port' => '80');
 
@@ -77,14 +77,15 @@ final class DatabaseTest extends TestCase
     */
     public function testMySQLObjectCreatedWithExpectedParameters(): void
     {
-        global $isb, $dbtype;
+        global $isb, $dbtype, $app;
         $dbtype = "MySql";
         $isb  = array('user' => 'user', 'pass' => 'pass', 'db' => 'localhost/ispyb', 'port' => '80');
+        $app = null;
 
         $dblMock = Mockery::mock('overload:SynchWeb\Database\Type\MySQL');
         $dblMock->shouldReceive('__construct')
             ->once()
-            ->with($isb['user'], $isb['pass'], $isb['db'], $isb['port']);
+            ->with($app, $isb['user'], $isb['pass'], $isb['db'], $isb['port']);
 
         Database::get();
     }

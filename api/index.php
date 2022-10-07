@@ -36,7 +36,7 @@ register_shutdown_function('session_write_close'); // prevents unexpected effect
 setupDependencyInjectionContainer($app, $isb, $port);
     
 $auth = $app->container['auth'];
-$auth->check_auth_required();
+$auth->validateAuthentication();
 
 $user = $app->container['user'];
     
@@ -106,7 +106,7 @@ function setupDependencyInjectionContainer($app, $isb, $port)  {
     });
     
     $app->container->singleton('user', function() use($app) {
-        return new User($app->container['auth']->get_user(), $app->container['db'], $app); 
+        return new User($app->container['auth']->getUser(), $app->container['db'], $app); 
     });
     
     $app->container->singleton('dispatch', function() use($app) {

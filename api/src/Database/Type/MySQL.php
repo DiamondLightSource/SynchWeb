@@ -19,8 +19,7 @@ class MySQL extends DatabaseParent implements DatabaseInterface
     var $errors = 0;
     var $wsrep_sync = False;
 
-    function __construct($app, $user, $pass, $db, $port = null)
-    {
+    function __construct($app, $user, $pass, $db, $port = null) {
         $this->app = $app;
         mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT); // throw exceptions.
         list($host, $dbn) = explode('/', $db);
@@ -34,22 +33,19 @@ class MySQL extends DatabaseParent implements DatabaseInterface
     }
 
     // wsrep_sync_wait waits for cluster replication on a mariadb cluster
-    function wait_rep_sync($state=false)
-    {
+    function wait_rep_sync($state=false) {
         $ver = $this->conn->server_info;
         if (stripos($ver, 'maria')) {
             $this->pq("SET SESSION wsrep_sync_wait=:1", array($state ? 1 : 0));
         }
     }
 
-    function start_transaction()
-    {
+    function start_transaction() {
         $this->transaction = True;
         $this->conn->autocommit(False);
     }
 
-    function end_transaction()
-    {
+    function end_transaction() {
         if ($this->errors > 0) $this->conn->rollback();
         else $this->conn->commit();
 
@@ -60,9 +56,7 @@ class MySQL extends DatabaseParent implements DatabaseInterface
         $this->errors = 0;
     }
 
-
-    function paginate($query, $args = array())
-    {
+    function paginate($query, $args = array()) {
         // MySQL is Limit Start Row, Number
         // Oracle subselect is Start Row, End Row
         if (sizeof($args)) $args[sizeof($args) - 1] = $args[sizeof($args) - 1] - $args[sizeof($args) - 2];
@@ -70,8 +64,7 @@ class MySQL extends DatabaseParent implements DatabaseInterface
     }
 
 
-    function oracle2mysql($query, $args)
-    {
+    function oracle2mysql($query, $args) {
         // Allow for Oracle style :1, :2 out of order
         preg_match_all('/\:(\d+)/', $query, $mat);
         $rearranged_args = array();
@@ -341,8 +334,7 @@ class MySQL extends DatabaseParent implements DatabaseInterface
         return $query;
     }
 
-    function pq($query, $args = array(), $upperCaseKeys = true)
-    {
+    function pq($query, $args = array(), $upperCaseKeys = true) {
         list($query, $args) = $this->oracle2mysql($query, $args);
         $query = $this->tablelookup($query);
 
@@ -454,8 +446,7 @@ class MySQL extends DatabaseParent implements DatabaseInterface
 
     }
 
-    function get_result($Statement)
-    {
+    function get_result($Statement) {
         $RESULT = array();
         $Statement->store_result();
         for ($i = 0; $i < $Statement->num_rows; $i++) {
@@ -470,8 +461,7 @@ class MySQL extends DatabaseParent implements DatabaseInterface
         return $RESULT;
     }
 
-    function refs($arr)
-    {
+    function refs($arr) {
         $refs = array();
         foreach ($arr as $key => $value) {
             $refs[$key] = &$arr[$key];
@@ -479,24 +469,15 @@ class MySQL extends DatabaseParent implements DatabaseInterface
         return $refs;
     }
 
-
-    function read($field)
-    {
+    function read($field) {
         return $field;
     }
 
-
-    function id()
-    {
+    function id() {
         return $this->conn->insert_id;
     }
 
-
-    function close()
-    {
-        // if (!$this->conn->connect_error) $this->conn->close();
+    function close() {
         if ($this->conn) $this->conn->close();
     }
-
-
 }
