@@ -5,7 +5,7 @@ namespace SynchWeb\Authentication;
 use JWT;
 use Slim\Slim;
 
-use SynchWeb\DataLayer\AuthenticationData;
+use SynchWeb\Model\Services\AuthenticationData;
 
 class AuthenticationService
 {
@@ -251,8 +251,6 @@ class AuthenticationService
     {
         $this->returnResponse($code, array('error' => $message));
     }
-
-
 
     // Calls the relevant Authentication Mechanism
     function authenticate()

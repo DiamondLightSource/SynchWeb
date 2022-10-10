@@ -14,7 +14,7 @@
 
 use Slim\Slim;
 use SynchWeb\Authentication\AuthenticationService;
-use SynchWeb\DataLayer\AuthenticationData;
+use SynchWeb\Model\Services\AuthenticationData;
 use SynchWeb\Database\Type\MySQL;
 use SynchWeb\Dispatch;
 use SynchWeb\User;

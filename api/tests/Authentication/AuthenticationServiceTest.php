@@ -6,7 +6,7 @@ use Slim\Slim;
 use Mockery;
 use PHPUnit\Framework\TestCase;
 use SynchWeb\Authentication\AuthenticationService;
-use SynchWeb\DataLayer\AuthenticationData;
+use SynchWeb\Model\Services\AuthenticationData;
 use SynchWeb\Authentication\Output;
 
 require_once __DIR__ . '/Utils/Functions.php';
