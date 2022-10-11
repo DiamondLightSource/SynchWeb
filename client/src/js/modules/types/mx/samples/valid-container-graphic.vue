@@ -3,8 +3,7 @@
     <div v-if="containerComponent" class="tw-flex">
       <div class="tw-w-full tw-m-1 tw-p-2">
         <div v-if="containerGraphicHeader" class="tw-w-full content">
-          <h2>{{ containerGraphicHeader }}</h2>
-          <p>{{ containerComponent }}</p>
+          <p class="tw-text-xl tw-font-medium">{{ containerGraphicHeader }}</p>
         </div>
         <component
           :key="graphicKey"
