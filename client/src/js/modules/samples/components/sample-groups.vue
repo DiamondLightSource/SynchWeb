@@ -3,8 +3,8 @@
     <h1>Sample Group Management</h1>
 
     <div class="r tw-mb-2">
-      <button @click="onAddSampleGroup" class="button">
-        <i class="fa fa-plus"></i> Add Sample Group
+      <button @click="onAddSampleGroup" class="button tw-text-lg">
+        <i class="fa fa-plus"></i> Create Sample Group
       </button>
     </div>
     <custom-table-component :data-list="groups" table-class="tw-w-full">
@@ -25,7 +25,7 @@
             <td class="tw-w-4/12 tw-py-1 tw-pl-2">{{ result['SAMPLEGROUPSAMPLES'] }}</td>
             <td class="tw-w-2/12 tw-py-1 tw-pr-2">
               <span class="tw-flex tw-w-full tw-justify-end">
-                <button title="View Sample Groups" @click="selectSampleGroup(result)" class="button"><i class="fa fa-folder-open"></i> </button>
+                <button title="View Sample Group" @click="selectSampleGroup(result)" class="button"><i class="fa fa-folder-open"></i> </button>
               </span>
             </td>
           </template>
@@ -43,7 +43,7 @@
     <div v-if="sampleGroupId" class="content">
       <h1>{{ sampleGroupName || 'Sample Group' }}</h1>
       <div class="tw-flex tw-justify-end">
-        <button v-if="sampleGroupId" @click="onEditSampleGroup(sampleGroupId)" class="button">
+        <button v-if="sampleGroupId" @click="onEditSampleGroup(sampleGroupId)" class="button tw-text-lg">
           <i class="fa fa-plus"></i> Edit Sample Group
         </button>
       </div>
@@ -147,11 +147,11 @@ export default {
     },
     async onEditSampleGroup() {
       await this.$store.commit('sampleGroups/resetSelectedSampleGroups')
-      await this.$router.push('/samples/groups/edit/id/' + this.sampleGroupId)
+      await this.$router.push('/samples/groups/edit/' + this.sampleGroupId)
     },
     async onAddSampleGroup() {
       await this.$store.commit('sampleGroups/resetSelectedSampleGroups')
-      await this.$router.push({ name: 'samples-group-edit' })
+      await this.$router.push({ name: 'samples-group-create' })
     },
     // Wrap the method to get collection as promise
     async getSampleGroups() {

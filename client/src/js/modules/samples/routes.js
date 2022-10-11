@@ -19,7 +19,7 @@ const CrystalViewWrapper = () => import(/* webpackChunkName: "samples" */ 'modul
 const CrystalAddWrapper = () => import(/* webpackChunkName: "samples" */ 'modules/samples/components/crystal-add-wrapper.vue')
 
 const SampleGroups = () => import(/* webpackChunkName: "samples" */ 'modules/samples/components/sample-groups.vue')
-const SampleGroupEdit = () => import(/* webpackChunkName: "samples" */ 'modules/samples/components/sample-group-edit.vue')
+const SampleGroupCreateAndEdit = () => import(/* webpackChunkName: "samples" */ 'js/modules/samples/components/sample-group-create-and-edit.vue')
 
 app.addInitializer(function() {
   app.on('samples:show', function() {
@@ -245,12 +245,9 @@ const routes = [
     }
   },
   {
-    path: '/samples/groups/edit(/id/)?:gid([0-9]+)?',
-    name: 'samples-group-edit',
-    component: SampleGroupEdit,
-    props: route => ({
-      gid: +route.params.gid || null
-    }),
+    path: '/samples/group/new',
+    name: 'samples-group-create',
+    component: SampleGroupCreateAndEdit,
     beforeEnter: (to, from, next) => {
       // Start the loading animation
       app.loading()
@@ -270,6 +267,32 @@ const routes = [
       app.loading(false)
     }
   },
+  {
+    path: '/samples/groups/edit/:gid',
+    name: 'samples-group-edit',
+    component: SampleGroupCreateAndEdit,
+    props: route => ({
+      gid: +route.params.gid
+    }),
+    beforeEnter: (to, from, next) => {
+      // Start the loading animation
+      app.loading()
+
+      const currentProposal = store.getters['proposal/currentProposal']
+
+      if (!currentProposal) {
+        store.commit('notifications/addNotification', {
+          title: 'Error',
+          message: 'Proposal not found',
+          level: 'error'
+        })
+        next('/404')
+      } else {
+        next()
+      }
+      app.loading(false)
+    }
+  }
 ]
 
 export default routes
