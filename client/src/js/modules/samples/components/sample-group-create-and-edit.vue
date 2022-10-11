@@ -27,62 +27,56 @@
     </div>
 
     <div class="content">
-      <h2>Containers</h2>
+      <h2>Select Containers</h2>
       <p class="tw-text-xs tw-mb-3">Select a shipment to see all associated containers</p>
-      <div class="tw-flex tw-flex-row tw-w-full">
-        <div class="tw-mr-2">
-          <p class="tw-mb-2">Shipment</p>
-          <combo-box
-            class="tw-w-48 tw-mb-4 shipment-select"
-            :data="shipments"
-            value-field="SHIPPINGID"
-            text-field="SHIPPINGNAME"
-            default-text="Select a Shipment"
-            :input-index="0"
-            v-model="shipmentId"
-          />
+      <p class="tw-mb-2">Shipment</p>
+      <combo-box
+        class="tw-w-48 tw-mb-4 shipment-select"
+        :data="shipments"
+        value-field="SHIPPINGID"
+        text-field="SHIPPINGNAME"
+        default-text="Select a Shipment"
+        :input-index="0"
+        v-model="shipmentId"/>
+      <div class="tw-flex md:tw-flex-row tw-flex-col tw-w-full">
+        <containers-list
+          class="md:tw-w-1/2 tw-w-full tw-mx-2"
+          v-if="proposalObject.BEAMLINENAME"
+          :showImaging="false"
+          :tableHeaders="containerHeaders"
+          :query-params="queryParams"
+          :table-actions="true"
+          action-class="tw-w-2/12 tw-py-2 tw-pl-2"
+          v-on:row-clicked="onContainerSelected"
+          v-on:unselect-container="unselectContainer">
+          <template v-slot:containers-table-action="{ result, rowIndex }">
+            <router-link class="button button-notext atp" :to="`/containers/cid/${result.CONTAINERID}`">
+              <i class="fa fa-info"></i> <span>See Details</span>
+            </router-link>
+          </template>
+        </containers-list>
+
+        <div v-if="containerSelected" class="md:tw-w-1/2 tw-w-full tw-mx-2">
+          <puck-table-view
+            v-if="selectedContainerType.NAME && selectedContainerType.NAME.toLowerCase() === 'puck'"
+            :selected-samples="selectedSamplesInGroups[selectedContainerId]"
+            :samples="samples"
+            :container-name="selectedContainerName"
+            @cell-clicked="addSelectedCells"
+            @unselect-cell="deselectCells"/>
+
+          <valid-container-graphic
+            v-else-if="selectedContainerType.NAME && selectedContainerType.NAME.toLowerCase() !== 'puck'"
+            :container-type="selectedContainerType"
+            :valid-samples="selectedSamplesInGroups[selectedContainerId]"
+            :container-identifier="selectedContainerName"
+            color-attribute="VALID"
+            :samples="samples"
+            :containerGraphicHeader="selectedContainerName"
+            @cell-clicked="addSelectedCells"
+            @unselect-cell="deselectCells"/>
         </div>
       </div>
-
-      <containers-list
-        v-if="proposalObject.BEAMLINENAME"
-        :showImaging="false"
-        :tableHeaders="containerHeaders"
-        :query-params="queryParams"
-        :table-actions="true"
-        action-class="tw-w-2/12 tw-py-2 tw-pl-2"
-        v-on:row-clicked="onContainerSelected"
-        v-on:unselect-container="unselectContainer"
-      >
-        <template v-slot:containers-table-action="{ result, rowIndex }">
-          <router-link class="button button-notext atp" :to="`/containers/cid/${result.CONTAINERID}`">
-            <i class="fa fa-info"></i> <span>See Details</span>
-          </router-link>
-        </template>
-      </containers-list>
-    </div>
-
-    <div v-if="containerSelected" class="tw-w-full">
-      <puck-table-view
-        v-if="selectedContainerType.NAME && selectedContainerType.NAME.toLowerCase() === 'puck'"
-        :selected-samples="selectedSamplesInGroups[selectedContainerId]"
-        :samples="samples"
-        :container-name="selectedContainerName"
-        @cell-clicked="addSelectedCells"
-        @unselect-cell="deselectCells"
-      />
-
-      <valid-container-graphic
-        v-else-if="selectedContainerType.NAME && selectedContainerType.NAME.toLowerCase() !== 'puck'"
-        :container-type="selectedContainerType"
-        :valid-samples="selectedSamplesInGroups[selectedContainerId]"
-        :container-identifier="selectedContainerName"
-        color-attribute="VALID"
-        :samples="samples"
-        :containerGraphicHeader="selectedContainerName"
-        @cell-clicked="addSelectedCells"
-        @unselect-cell="deselectCells"
-      />
     </div>
 
     <validation-observer class="tw-w-full" ref="sampleGroupName" v-slot="{ invalid, errors }" tag="div">
@@ -119,14 +113,13 @@
 <script>
 import { mapGetters } from 'vuex'
 import { ValidationObserver, ValidationProvider } from 'vee-validate'
-import { differenceBy, uniqBy, get as lodashGet, values, keys, has, pick, map, differenceWith, isEqual } from 'lodash-es'
+import { differenceBy, uniqBy, get as lodashGet, keys, has, pick, map, differenceWith, isEqual } from 'lodash-es'
 
 import BaseButton from 'app/components/base-button.vue'
 import BaseInputText from 'app/components/base-input-text.vue'
 import HelpBanner from 'app/components/help-banner.vue'
 import ContainersList from 'modules/shipment/components/containers-list.vue'
 
-import SampleGroupsCollection from 'collections/samplegroups.js'
 import SamplesCollection from 'collections/samples.js'
 import SampleGroupSamplesCollection from 'collections/samplegroupsamples.js'
 import ContainerModel from 'models/container.js'
@@ -163,7 +156,6 @@ export default {
   data() {
     return {
       groupName: '',
-      lockName: !!this.gid,
       containerHeaders: [
         { title: 'Name', key: 'NAME', columnClass: 'tw-w-4/12 tw-py-2 tw-pl-2' },
         { title: 'Container Type', key: 'CONTAINERTYPE', columnClass: 'tw-w-3/12 tw-py-2 tw-pl-2' },
@@ -173,7 +165,6 @@ export default {
       containerSelected: false,
       selectedContainerName: '',
       samples: [],
-      sampleGroup: null,
       selectedContainerType: {},
       sampleKeys: [
         'BLSAMPLEID',
@@ -219,7 +210,6 @@ export default {
   },
   created: function () {
     this.getContainerTypes()
-    this.sampleGroup = new SampleGroupsCollection()
     this.containerSamples = new SamplesCollection()
     this.containerModel = new ContainerModel()
     this.shipmentsCollection = new Shipments()
@@ -268,13 +258,17 @@ export default {
           const savedSamples = result.toJSON()
           this.sampleGroupId = savedSamples[0].BLSAMPLEGROUPID
           let message = 'Saved samples to group - ' + this.groupName
-          this.$store.commit('notifications/addNotification', {title: 'Success', message: message, level: 'success'})
+          this.$store.commit('notifications/addNotification', { title: 'Success', message: message, level: 'success' })
         }
 
-        await this.getSampleGroupInformation()
-
         if (!this.gid) {
-          await this.$router.replace({ path: `/samples/groups/edit/id/${this.sampleGroupId}` })
+          this.groupName = ''
+          this.sampleGroupId = ''
+          this.$refs.sampleGroupName.reset()
+
+          this.initialSampleInGroupModels = new SampleGroupSamplesCollection()
+          this.initialSamplesInGroup = []
+          this.$store.commit('sampleGroups/resetSelectedSampleGroups', {})
         }
       } catch (error) {
         this.$store.commit('notifications/addNotification', { title: 'Error', message: error.message, level: 'error' })
@@ -305,7 +299,7 @@ export default {
         this.containerSelected = true
       }
     },
-    async saveSampleGroupName(loading = false) {
+    async saveSampleGroupName() {
       const validField = await this.$refs.sampleGroupName.validate()
       if (validField) {
         let attributes = null
@@ -454,7 +448,8 @@ export default {
       $shipmentId: () => this.shipmentId,
       $restrictLoading: () => true,
       $labelAsButtons: true,
-      $displayHelpMessage: true
+      $displayHelpMessage: true,
+      $displayContainersFilters: () => false
     }
   },
   beforeRouteLeave(to, from , next) {
@@ -476,8 +471,8 @@ export default {
   font-family: 'Maven Pro', sans-serif;
 }
 >>> .shipment-select .items-list, >>> .dewars-select .items-list {
-  min-height: 40px;
-  max-height: 100px;
+  min-height: 120px;
+  max-height: 200px;
   overflow-y: auto;
 }
 </style>

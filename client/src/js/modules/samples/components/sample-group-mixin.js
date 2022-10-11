@@ -49,8 +49,6 @@ export default {
 
         this.$set(this.sampleGroupContainers, containerId, containerSamples)
       }
-
-
     },
     getContainerTypeForContainer(container) {
       const containerType = this.containerTypes.find(type => type['NAME'].toLowerCase() === container['CONTAINERTYPE'].toLowerCase())
