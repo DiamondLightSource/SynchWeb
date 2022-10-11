@@ -9,7 +9,11 @@ use SynchWeb\Model\Services\AuthenticationData;
 
 class AuthenticationService
 {
-    private $app, $dataLayer, $user, $exitOnError;
+    private $app;
+    private $dataLayer;
+    private $exitOnError;
+
+    private $loginId = "";
 
     // Array of authentication types and corresponding authentication class names.
     // Value is class name in SynchWeb\Authentication\Type namespace.
@@ -21,7 +25,7 @@ class AuthenticationService
         'simple' => 'Simple'
     );
 
-    function __construct(Slim $app, AuthenticationData $dataLayer, $exitOnError = true)
+    public function __construct(Slim $app, AuthenticationData $dataLayer, $exitOnError = true)
     {
         $this->app = $app;
         $this->dataLayer = $dataLayer;
@@ -44,7 +48,13 @@ class AuthenticationService
 
     function getUser()
     {
-        return $this->user;
+        if (!$this->loginId) {
+            $this->validateAuthentication();
+        }
+        if ($this->loginId) {
+            return $this->dataLayer->getUser($this->loginId);
+        }
+        return null;
     }
 
     // For SSO check if we are already logged in elsewhere
@@ -53,11 +63,11 @@ class AuthenticationService
     {
         global $authentication_type;
 
-        $user = $this->authenticateByType($authentication_type)->check();
+        $userId = $this->authenticateByType($authentication_type)->check();
 
-        if ($user) {
-            if ($this->dataLayer->isUserLoggedIn($user)) {
-                $this->returnResponse(200, $this->generateJwtToken($user));
+        if ($userId) {
+            if ($this->dataLayer->isUserLoggedIn($userId)) {
+                $this->returnResponse(200, $this->generateJwtToken($userId));
             }
         }
         $this->returnError(400, 'No previous session');
@@ -140,7 +150,7 @@ class AuthenticationService
 
                 if ($this->app->request->getResourceUri() . $qs == $token['VALIDITY']) {
                     $_REQUEST['prop'] = $token['PROP'];
-                    $this->user = $token['LOGIN'];
+                    $this->loginId = $token['LOGIN'];
                     $need_auth = false;
                     $this->dataLayer->deleteOneTimeUseToken($token);
                 }
@@ -175,6 +185,13 @@ class AuthenticationService
         }
         if ($need_auth) {
             $this->checkForAndValidateAuthenticationToken();
+        }
+    }
+
+    function updateActivityTimestamp()
+    {
+        if ($this->loginId) {
+            $this->dataLayer->updateActivityTimestamp($this->loginId);
         }
     }
 
@@ -220,8 +237,7 @@ class AuthenticationService
 
             try {
                 $token = JWT::decode($jwt, $jwt_key, array('HS512'));
-                $this->user = $token->data->login;
-
+                $this->loginId = $token->data->login;
             }
             catch (\Exception $e) {
                 $this->returnError(401, 'Invalid authorisation token');

@@ -4,13 +4,15 @@ namespace SynchWeb\Model;
 
 class User
 {
-    public string $loginId;
-    public int $personId;
-    public string $givenName;
-    public string $familyName;
-    private array $perms;
-    private array $groups;
-    private array $cache;
+    public $loginId; // Note, types are introduced in PHP 7.4 - worth updating these definitions to be typed when this is available
+    public $personId;
+    public $givenName;
+    public $familyName;
+    public $perms;
+    private $groups;
+    private $cache;
+
+    private $adminType = "";
 
     private $allowed_caches = array('shipment', 'container');
 
@@ -25,7 +27,7 @@ class User
         $this->cache = $cache;
     }
 
-    function hasPermissions($permission)
+    function hasPermission($permission)
     {
         return in_array($permission, $this->perms);
     }
@@ -49,6 +51,20 @@ class User
             return true;
         }
         return false;
+    }
+
+    function getAdminType()
+    {
+        if (!$this->adminType) {
+            foreach ($this->perms as $p) {
+                if (strpos($p, '_admin')) {
+                    $parts = explode('_', $p);
+                    $this->adminType = $parts[0];
+                    break;
+                }
+            }
+        }
+        return $this->adminType;
     }
 
     function __toString()

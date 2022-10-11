@@ -15,9 +15,9 @@
 use Slim\Slim;
 use SynchWeb\Authentication\AuthenticationService;
 use SynchWeb\Model\Services\AuthenticationData;
+use SynchWeb\Model\User;
 use SynchWeb\Database\Type\MySQL;
 use SynchWeb\Dispatch;
-use SynchWeb\User;
 
 require 'vendor/autoload.php';
 
@@ -35,17 +35,7 @@ setupDependencyInjectionContainer($app, $isb, $port);
 
 $auth = $app->container['auth'];
 $auth->validateAuthentication();
-
-$user = $app->container['user'];
-
-if ($user->login) {
-    $db = $app->container['db'];
-    $chk = $db->pq("SELECT TIMESTAMPDIFF('SECOND', datetime, CURRENT_TIMESTAMP) AS lastupdate, comments FROM adminactivity WHERE username LIKE :1", array($user->login));
-    if (sizeof($chk)) {
-        if ($chk[0]['LASTUPDATE'] > 20)
-            $db->pq("UPDATE adminactivity SET datetime=CURRENT_TIMESTAMP WHERE username=:1", array($user->login));
-    }
-}
+$auth->updateActivityTimestamp();
 
 $app->container['dispatch']->dispatch();
 
@@ -111,7 +101,7 @@ function setupDependencyInjectionContainer($app, $isb, $port)
     });
 
     $app->container->singleton('user', function () use ($app) {
-        return new User($app->container['auth']->getUser(), $app->container['db'], $app);
+        return $app->container['auth']->getUser();
     });
 
     $app->container->singleton('dispatch', function () use ($app) {

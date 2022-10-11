@@ -75,4 +75,13 @@ class AuthenticationData
         }
         return $user;
     }
+
+    function updateActivityTimestamp($loginId)
+    {
+        $chk = $this->db->pq("SELECT TIMESTAMPDIFF('SECOND', datetime, CURRENT_TIMESTAMP) AS lastupdate, comments FROM adminactivity WHERE username LIKE :1", array($loginId));
+        if (sizeof($chk)) {
+            if ($chk[0]['LASTUPDATE'] > 20)
+                $this->db->pq("UPDATE adminactivity SET datetime=CURRENT_TIMESTAMP WHERE username=:1", array($loginId));
+        }
+    }
 }

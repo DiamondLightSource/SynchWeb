@@ -30,6 +30,26 @@ final class UserTest extends TestCase
         $this->assertEquals($familyName, $user->familyName);
     }
 
+    public function testUserHasNoAdminTypeWhenNotSet(): void
+    {
+        $perm1 = "read";
+        $perm2 = "write";
+
+        $user = new User("blah", 231312, "frod", "blegs", array($perm1, $perm2), array(), array());
+
+        $this->assertEmpty($user->getAdminType());
+    }
+
+    public function testUserHasCorrectAdminTypeWhenNotSet(): void
+    {
+        $perm1 = "read_admin";
+        $perm2 = "write";
+
+        $user = new User("blah", 231312, "frod", "blegs", array($perm1, $perm2), array(), array());
+
+        $this->assertEquals("read", ($user->getAdminType()));
+    }
+
     public function testUserHasExceptectedPermissions(): void
     {
         $perm1 = "read";
@@ -37,8 +57,8 @@ final class UserTest extends TestCase
 
         $user = new User("blah", 231312, "frod", "blegs", array($perm1, $perm2), array(), array());
 
-        $this->assertTrue($user->hasPermissions($perm1));
-        $this->assertTrue($user->hasPermissions($perm2));
+        $this->assertTrue($user->hasPermission($perm1));
+        $this->assertTrue($user->hasPermission($perm2));
     }
 
     public function testUserDoesNotHaveUnexceptectedPermissions(): void
@@ -48,9 +68,9 @@ final class UserTest extends TestCase
 
         $user = new User("blah", 231312, "frod", "blegs", array($perm1, $perm2), array(), array());
 
-        $this->assertFalse($user->hasPermissions("cigar"));
-        $this->assertFalse($user->hasPermissions(null));
-        $this->assertFalse($user->hasPermissions(array()));
+        $this->assertFalse($user->hasPermission("cigar"));
+        $this->assertFalse($user->hasPermission(null));
+        $this->assertFalse($user->hasPermission(array()));
     }
 
     public function testUserIsInExceptectedGroups(): void

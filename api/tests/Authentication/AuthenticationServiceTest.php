@@ -55,7 +55,11 @@ final class AuthenticationServiceTest extends TestCase
 
     public function testGetUserInitiallyReturnsNull(): void
     {
-        $authService = new AuthenticationService($this->slimStub, $this->dataLayerStub);
+        $request = $this->setupMockRequest();
+        $this->slimStub->shouldReceive('request')->times(2)->andReturn($request);
+        $response = new \Slim\Http\Response();
+        $this->slimStub->shouldReceive('response')->times(1)->andReturn($response);
+        $authService = new AuthenticationService($this->slimStub, $this->dataLayerStub, false);
         $this->assertNull($authService->getUser());
     }
 
