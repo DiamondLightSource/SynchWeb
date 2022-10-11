@@ -3,6 +3,7 @@
 namespace SynchWeb\Model;
 
 use PHPUnit\Framework\TestCase;
+use Slim\Slim;
 use SynchWeb\Model\User;
 
 final class UserTest extends TestCase
@@ -50,7 +51,7 @@ final class UserTest extends TestCase
         $this->assertEquals("read", ($user->getAdminType()));
     }
 
-    public function testUserHasExceptectedPermissions(): void
+    public function testUserHasExpectedPermissions(): void
     {
         $perm1 = "read";
         $perm2 = "write";
@@ -61,7 +62,7 @@ final class UserTest extends TestCase
         $this->assertTrue($user->hasPermission($perm2));
     }
 
-    public function testUserDoesNotHaveUnexceptectedPermissions(): void
+    public function testUserDoesNotHaveUnexpectedPermissions(): void
     {
         $perm1 = "read";
         $perm2 = "write";
@@ -71,6 +72,23 @@ final class UserTest extends TestCase
         $this->assertFalse($user->hasPermission("cigar"));
         $this->assertFalse($user->hasPermission(null));
         $this->assertFalse($user->hasPermission(array()));
+    }
+
+    public function testUserCanWithoutExpectedPermissionsHaltsRequest(): void
+    {
+        $perm1 = "read";
+        $perm2 = "write";
+
+        $user = new User("blah", 231312, "frod", "blegs", array($perm1, $perm2), array(), array());
+        $appStub = $this->getMockBuilder(Slim::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['halt'])
+            ->getMock();
+        $appStub->expects($this->once())
+            ->method('halt')
+            ->with(403, $this->anything());
+
+        $user->can("bogus", $appStub);
     }
 
     public function testUserIsInExceptectedGroups(): void

@@ -112,13 +112,9 @@ class Page
                         }
                     }
                 }
-
-            // get default type from type of admin
             }
-            else {
-                if ($this->user) {
-                    $ty = $this->user->getAdminType();
-                }
+            else if ($this->user) {
+                $ty = $this->user->getAdminType();
             }
             // Possible we set ty to null while trying to get type from beamline
             $this->ty = $ty ? $ty : 'gen';
@@ -203,7 +199,7 @@ class Page
 
         // Beamline Sample Registration
         }
-        else if ($this->blsr() && !$this->user->login) {
+        else if ($this->blsr() && !$this->user->loginId) {
             $auth = false;
 
             if ($this->has_arg('visit')) {
@@ -221,7 +217,7 @@ class Page
 
         // Barcode Scanners
         }
-        else if ($this->bcr() && !$this->user->login) {
+        else if ($this->bcr() && !$this->user->loginId) {
             $auth = true;
 
         // Normal validation
@@ -247,7 +243,7 @@ class Page
                         FROM proposal p
                         INNER JOIN blsession s ON p.proposalid = s.proposalid
                         INNER JOIN session_has_person shp ON shp.sessionid = s.sessionid
-                        WHERE shp.personid=:1", array($this->user->personid));
+                        WHERE shp.personid=:1", array($this->user->personId));
 
                 foreach ($rows as $row) {
                     array_push($this->visits, strtolower($row['VIS']));
@@ -394,19 +390,15 @@ class Page
 
         if ($this->user) {
             $com = 'ISPyB2: ' . ($com ? $com : $_SERVER['REQUEST_URI']);
-            $chk = $this->db->pq("SELECT comments FROM adminactivity WHERE username LIKE :1", array($this->user->login));
+            $chk = $this->db->pq("SELECT comments FROM adminactivity WHERE username LIKE :1", array($this->user->loginId));
 
             if (sizeof($chk)) {
-                $this->db->pq("UPDATE adminactivity SET action=:1, comments=:2, datetime=SYSDATE WHERE username=:3", array($action, $com, $this->user->login));
-
-
+                $this->db->pq("UPDATE adminactivity SET action=:1, comments=:2, datetime=SYSDATE WHERE username=:3", array($action, $com, $this->user->loginId));
             }
             else {
-                $this->db->pq("INSERT INTO adminactivity (adminactivityid, username, action, comments, datetime) VALUES (s_adminactivity.nextval, :1, :2, :3, SYSDATE)", array($this->user->login, $action, $com));
+                $this->db->pq("INSERT INTO adminactivity (adminactivityid, username, action, comments, datetime) VALUES (s_adminactivity.nextval, :1, :2, :3, SYSDATE)", array($this->user->loginId, $action, $com));
             }
-
         }
-
         return true;
     }
 
@@ -557,11 +549,6 @@ class Page
                 }
             }
         }
-
-        # Retrieve cookie args
-        // if ($this->user) {
-        //     if (array_key_exists('ispyb_prop_'.$this->user->login, $_COOKIE) && !array_key_exists('prop', $parsed)) $parsed['prop'] = $_COOKIE['ispyb_prop_'.$this->user->login];
-        // }
         $this->args = $parsed;
     }
 
@@ -836,17 +823,6 @@ class Page
     }
 
 
-    // Deprecated - now set in javascript
-    # ------------------------------------------------------------------------
-    # Set cookie for current proposal
-    function cookie($val)
-    {
-        if ($this->user) {
-            setcookie('ispyb_prop_' . $this->user, $val, time() + 31536000, '/');
-        }
-    }
-
-
     # ------------------------------------------------------------------------
     # Talk to channel archiver to get a pv
     function _get_archive($pv, $s, $e, $n = 100)
@@ -1011,7 +987,7 @@ class Page
         try {
             error_log("Sending message" . var_export($zocalo_message, true));
             $queue = new Queue($zocalo_server, $zocalo_username, $zocalo_password);
-            $queue->send($zocalo_queue, $zocalo_message, true, $this->user->login);
+            $queue->send($zocalo_queue, $zocalo_message, true, $this->user->loginId);
         }
         catch (Exception $e) {
             $message = $e->getMessage();
@@ -1020,5 +996,10 @@ class Page
                 $this->_error($message, $error_code);
             }
         }
+    }
+
+    protected function haltIfLackingPermission($permission)
+    {
+        $this->user->can($permission, $this->app);
     }
 }

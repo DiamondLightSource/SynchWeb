@@ -102,7 +102,7 @@ class Users extends Page
 
     function _get_groups()
     {
-        $this->user->can('manage_groups');
+        $this->haltIfLackingPermission('manage_groups');
 
         $where = '';
         $args = array();
@@ -131,7 +131,7 @@ class Users extends Page
 
     function _add_group()
     {
-        $this->user->can('manage_groups');
+        $this->haltIfLackingPermission('manage_groups');
 
         if (!$this->has_arg('NAME'))
             $this->_error('No group name');
@@ -143,7 +143,7 @@ class Users extends Page
 
     function _update_group()
     {
-        $this->user->can('manage_groups');
+        $this->haltIfLackingPermission('manage_groups');
         $group = $this->db->pq("SELECT usergroupid FROM usergroup WHERE usergroupid = :1", array($this->arg('gid')));
 
         if (!sizeof($group))
@@ -157,7 +157,7 @@ class Users extends Page
 
     function _add_group_permission()
     {
-        $this->user->can('manage_groups');
+        $this->haltIfLackingPermission('manage_groups');
 
         $group = $this->db->pq("SELECT usergroupid FROM usergroup WHERE usergroupid=:1", array($this->arg('gid')));
         if (!sizeof($group))
@@ -177,7 +177,7 @@ class Users extends Page
 
     function _remove_group_permission()
     {
-        $this->user->can('manage_groups');
+        $this->haltIfLackingPermission('manage_groups');
 
         $chk = $this->db->pq("SELECT usergroupid FROM usergroup_has_permission WHERE usergroupid=:1 and permissionid=:2", array($this->arg('gid'), $this->arg('pid')));
         if (!sizeof($chk))
@@ -191,8 +191,6 @@ class Users extends Page
 
     function _get_users()
     {
-        // $this->user->can('manage_groups');
-
         $args = array();
         $where = 'p.login IS NOT NULL';
         $join = '';
@@ -339,8 +337,8 @@ class Users extends Page
 
     function _check_login()
     {
-        if (!$this->user->can('manage_users'))
-            $this->_error('No access');
+        $this->haltIfLackingPermission('manage_users');
+
         if (!$this->has_arg('LOGIN'))
             $this->_error('No login specified');
 
@@ -355,8 +353,7 @@ class Users extends Page
 
     function _add_user()
     {
-        if (!$this->user->can('manage_users'))
-            $this->_error('No access');
+        $this->haltIfLackingPermission('manage_users');
 
         if (!$this->has_arg('LOGIN'))
             $this->_error('No login specified');
@@ -424,7 +421,7 @@ class Users extends Page
 
     function _add_group_user()
     {
-        $this->user->can('manage_groups');
+        $this->haltIfLackingPermission('manage_groups');
 
         $user = $this->db->pq("SELECT personid FROM person WHERE personid=:1", array($this->arg('peid')));
         if (!sizeof($user))
@@ -444,7 +441,7 @@ class Users extends Page
 
     function _remove_group_user()
     {
-        $this->user->can('manage_groups');
+        $this->haltIfLackingPermission('manage_groups');
 
         $chk = $this->db->pq("SELECT usergroupid FROM usergroup_has_person WHERE usergroupid=:1 and personid=:2", array($this->arg('gid'), $this->arg('peid')));
         if (!sizeof($chk))
@@ -460,7 +457,7 @@ class Users extends Page
 
     function _get_permissions()
     {
-        $this->user->can('manage_perms');
+        $this->haltIfLackingPermission('manage_perms');
 
         $args = array();
         $where = '';
@@ -528,7 +525,7 @@ class Users extends Page
 
     function _add_permission()
     {
-        $this->user->can('manage_perms');
+        $this->haltIfLackingPermission('manage_perms');
 
         if (!$this->has_arg('TYPE'))
             $this->_error('No permission type');
@@ -541,7 +538,7 @@ class Users extends Page
 
     function _update_permission()
     {
-        $this->user->can('manage_perms');
+        $this->haltIfLackingPermission('manage_perms');
 
         $perm = $this->db->pq("SELECT permissionid FROM permission WHERE permissionid = :1", array($this->arg('pid')));
         if (!sizeof($perm))

@@ -32,6 +32,15 @@ class User
         return in_array($permission, $this->perms);
     }
 
+    function can($permission, $app)
+    {
+        if ($this->hasPermission($permission)) {
+            return true;
+        }
+        $app->halt(403, json_encode(array('status' => 403, 'message' => 'Access Denied', 'title' => 'You do not have the permission: ' . $permission)));
+    }
+
+
     function isInGroup($group)
     {
         return in_array($group, $this->groups);
