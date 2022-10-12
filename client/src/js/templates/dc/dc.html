@@ -32,9 +32,9 @@
         <li class="comment" title="Click to edit the comment for this data collection">Comment: <span class="COMMENTS"><%-COMMENTS%></span></li>
         <% if (!STATE) { %><li>Status: <span class="b">Stopped</span></li><% } %>
     </ul>
-    
+
     <div class="holder">
-    <% if (DCT == "Serial" && OVERLAP != 0) { %>
+    <% if (DCT == "Data Collection" && OVERLAP != 0) { %>
         <h1 title="Click to show EDNA/mosflm/xia2 strategies" class="strat">Strategies<span><i class="fa fa-spinner fa-spin"></i></span></h1>
         <div class="strategies"></div>
     <% } else if (DCT == "Data Collection" || DCT == "Serial" ) { %>
