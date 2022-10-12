@@ -37,7 +37,7 @@
             
             <div class="tw-bg-table-header-background tw-h-12 tw-w-64">
                 <div class="tw-absolute tw-mt-3 tw-ml-3 tw-text-xl tw-font-semibold tw-text-white">
-                Filter
+                    <slot name="sidebar-title" />
                 </div>
             </div>
 
