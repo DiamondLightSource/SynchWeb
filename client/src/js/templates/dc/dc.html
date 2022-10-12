@@ -34,10 +34,10 @@
     </ul>
     
     <div class="holder">
-    <% if (DCT == "SAD" && OVERLAP != 0) { %>
+    <% if (DCT == "Serial" && OVERLAP != 0) { %>
         <h1 title="Click to show EDNA/mosflm/xia2 strategies" class="strat">Strategies<span><i class="fa fa-spinner fa-spin"></i></span></h1>
         <div class="strategies"></div>
-    <% } else if (DCT == "SAD" || DCT == "Serial Fixed" ) { %>
+    <% } else if (DCT == "Data Collection" || DCT == "Serial" ) { %>
         <h1 title="Click to show autoprocessing results such as Fast_DP and XIA2" class="ap">Auto Processing<span><i class="fa fa-spinner fa-spin"></i></span></h1>
         <div class="autoproc"></div>
         <h1 title="Click to show downstream processing results such as Dimple and Fast_EP" class="dp">Downstream Processing<span><i class="fa fa-spinner fa-spin"></i></span></h1>
