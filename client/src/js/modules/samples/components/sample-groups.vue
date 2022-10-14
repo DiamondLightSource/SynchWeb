@@ -9,8 +9,9 @@
     </div>
     <custom-table-component :data-list="groups" table-class="tw-w-full">
       <template v-slot:tableHeaders>
-        <td class="tw-w-6/12 tw-py-2 tw-pl-2">Group Name</td>
-        <td class="tw-w-4/12 tw-py-2 tw-pl-2">Number of Samples</td>
+        <td class="tw-w-3/12 tw-py-2 tw-pl-2">Group Name</td>
+        <td class="tw-w-4/12 tw-py-2 tw-pl-2">Container Barcodes</td>
+        <td class="tw-w-3/12 tw-py-2 tw-pl-2">Number of Samples</td>
         <td class="tw-w-2/12 tw-py-2 tw-text-right tw-pr-2">Actions</td>
       </template>
       <template v-slot:slotData="{ dataList }">
@@ -21,8 +22,9 @@
           :result="result"
           :row-index="rowIndex">
           <template>
-            <td class="tw-w-6/12 tw-pl-2 tw-p1-2">{{ result['NAME']}}</td>
-            <td class="tw-w-4/12 tw-py-1 tw-pl-2">{{ result['SAMPLEGROUPSAMPLES'] }}</td>
+            <td class="tw-w-3/12 tw-pl-2 tw-p1-2">{{ result['NAME']}}</td>
+            <td class="tw-w-4/12 tw-pl-2 tw-p1-2">{{ result['CONTAINERS']}}</td>
+            <td class="tw-w-3/12 tw-py-1 tw-pl-2">{{ result['SAMPLEGROUPSAMPLES'] }}</td>
             <td class="tw-w-2/12 tw-py-1 tw-pr-2">
               <span class="tw-flex tw-w-full tw-justify-end">
                 <button title="View Sample Group" @click="selectSampleGroup(result)" class="button"><i class="fa fa-folder-open"></i> </button>
@@ -63,7 +65,7 @@
       <div class="processing-job-list tw-mt-5">
         <div class="content">
           <h1> Summary of last multiplex jobs from group {{ sampleGroupName }}</h1>
-          <div class="tw-flex tw-justify-end">
+          <div class="tw-flex tw-justify-end" v-if="loadedMultiplex && Object.keys(latestMultiplexJobs).length > 0">
             <button class="button tw-text-link-color" @click="goToSampleGroupsDataCollections">Sample Group Data Collections</button>
           </div>
         </div>
@@ -160,14 +162,30 @@ export default {
   
         const collection = await this.$store.dispatch('getCollection', this.sampleGroups)
   
-        this.groups = collection.toJSON()
+        const result = collection.toJSON()
+        const uniqueContainer = {}
+
+        this.groups = result.map(group => {
+          const containerList = group['CONTAINERIDS'].split(',')
+          containerList.forEach(container => {
+            uniqueContainer[container] = container
+          })
+
+          return {
+            ...group,
+            CONTAINERIDS: containerList,
+            CONTAINERS: group['CONTAINERS'].replace(/,/g, ', ')
+          }
+        })
+
         this.sampleGroupsListState = collection.state
+        await this.fetchContainersInformation(uniqueContainer)
       } finally {
         this.$store.commit('loading', false)
       }
     },
     async handlePageChange(data) {
-      this.sampleGroups.queryParams = { page: data['current-page'], per_page: Number(data['page-size'])}
+      this.sampleGroups.queryParams = { page: data['current-page'], per_page: Number(data['page-size']), groupSamplesType: 'BLSAMPLEGROUPID' }
       await this.getSampleGroups()
     },
     getValidSamplesInContainer(samples) {

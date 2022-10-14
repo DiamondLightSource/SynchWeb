@@ -38,6 +38,8 @@
         default-text="Select a Shipment"
         :input-index="0"
         v-model="shipmentId"/>
+
+      <p class="tw-my-3">Select a container to see the samples viewer.</p>
       <div class="tw-flex md:tw-flex-row tw-flex-col tw-w-full">
         <containers-list
           class="md:tw-w-1/2 tw-w-full tw-mx-2"
@@ -106,6 +108,7 @@
           Save Sample Group
         </base-button>
       </div>
+      <router-link class="tw-no-underline tw-text-xxs" to="/samples/groups">View Sample Groups</router-link>
     </validation-observer>
   </div>
 </template>
@@ -157,8 +160,9 @@ export default {
     return {
       groupName: '',
       containerHeaders: [
-        { title: 'Name', key: 'NAME', columnClass: 'tw-w-4/12 tw-py-2 tw-pl-2' },
-        { title: 'Container Type', key: 'CONTAINERTYPE', columnClass: 'tw-w-3/12 tw-py-2 tw-pl-2' },
+        { title: 'Name', key: 'NAME', columnClass: 'tw-w-3/12 tw-py-2 tw-pl-2' },
+        { title: 'Container Status', key: 'CONTAINERSTATUS', columnClass: 'tw-w-3/12 tw-py-2 tw-pl-2' },
+        { title: 'Visit Number', key: 'VISIT', columnClass: 'tw-w-2/12 tw-py-2 tw-pl-2' },
         { title: 'BarCode', key: 'BARCODE', columnClass: 'tw-w-3/12 tw-py-2 tw-pl-2' }
       ],
       sampleGroupName: null,
@@ -231,8 +235,7 @@ export default {
         await this.saveSampleGroupName()
         let result
 
-        const totalSamples = this.flattenedSamplesInGroup
-        const samples = totalSamples.reduce((acc, sample) => {
+        const samples = this.flattenedSamplesInGroup.reduce((acc, sample) => {
           if (typeof sample.BLSAMPLEID === 'undefined') return acc
 
           if (!this.sampleGroupId) {
@@ -246,7 +249,8 @@ export default {
           return acc
         }, [])
 
-        const deletedSamples = differenceBy(this.initialSamplesInGroup, totalSamples, 'BLSAMPLEID')
+        const deletedSamples = differenceBy(this.initialSamplesInGroup, this.flattenedSamplesInGroup, 'BLSAMPLEID')
+
         if (deletedSamples.length > 0) await this.deleteUnselectedSamplesFromGroup(deletedSamples)
         
         if (samples.length > 0) {
@@ -391,6 +395,12 @@ export default {
       })
       this.initialSamplesInGroup = initialSamples
       await this.fetchContainersInformation(samplesByContainer)
+
+      // We want to always display the view of the first container when editing a sample group
+      const containerList = Object.keys(samplesByContainer)
+      if (containerList.length > 0) {
+        await this.onContainerSelected(this.cachedContainerList[containerList[0]])
+      }
       this.$store.commit('sampleGroups/setSelectedSampleGroups', samplesByContainer)
     },
     extractSampleNamesFromList(list, property) {
@@ -403,11 +413,16 @@ export default {
 
       this.initialSampleInGroupModels.each((model) => {
         if (model && deletedSampleIds.includes(model.get('BLSAMPLEID'))) {
-          deletedModels.push(this.$store.dispatch('deleteModel', model))
+          deletedModels.push(model)
         }
       })
 
-      await Promise.allSettled(deletedModels)
+      const deleteList = []
+      for (const model of deletedModels) {
+        deleteList.push(this.$store.dispatch('deleteModel', model))
+      }
+
+      await Promise.all(deleteList)
     },
     formatSamplesInGroups() {
       return keys(this.selectedSamplesInGroups).map(item => ({

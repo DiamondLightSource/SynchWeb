@@ -2304,9 +2304,13 @@ class Sample extends Page
             // Check if we are grouping the result by BlSAMPLEID or BLSAMPLEGROUPID.
             // This is currently being used by xpdf when fetching the list of sample group samples.
             if ($this->has_arg('groupSamplesType') &&  $this->arg('groupSamplesType') === 'BLSAMPLEGROUPID') {
-                $select_fields = 'bsg.blsamplegroupid, bsg.name, count(bshg.blsampleid) as samplegroupsamples';
+                $select_fields = 'bsg.blsamplegroupid, bsg.name, count(bshg.blsampleid) as samplegroupsamples, GROUP_CONCAT(distinct(c.containerid)) AS containerids, GROUP_CONCAT(DISTINCT( IF(c.code IS NOT NULL, c.code, c.barcode))) AS containers';
                 $from_table = 'FROM blsamplegroup bsg';
-                $joins = 'LEFT JOIN blsamplegroup_has_blsample bshg ON bshg.blsamplegroupid = bsg.blsamplegroupid';
+                $joins = '
+                    LEFT JOIN blsamplegroup_has_blsample bshg ON bshg.blsamplegroupid = bsg.blsamplegroupid
+                    INNER JOIN blsample bs on bshg.blsampleid = bs.blsampleid
+                    INNER JOIN container c on bs.containerid = c.containerid
+                ';
                 $group_by .= 'GROUP BY bsg.blsamplegroupid';
 
                 $total_sub_query = $this->_build_sample_groups_query($where, $total_select_field, $from_table, $joins, $group_by);
