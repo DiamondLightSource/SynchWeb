@@ -572,6 +572,11 @@ class Page
         return $this->has_arg($key) ? $this->arg($key) : $val;
     }
 
+    function argOrEmptyString($key)
+    {
+        return $this->has_arg($key) ? $this->arg($key) : '';
+    }
+
     # ------------------------------------------------------------------------
     # Misc Helpers
 

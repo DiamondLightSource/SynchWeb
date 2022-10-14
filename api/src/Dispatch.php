@@ -33,7 +33,7 @@ class Dispatch
                 $full_class_name = 'SynchWeb\\Page\\' . $class_name;
 
                 // Instantiate each class if class has been defined
-                // This merges the routes from all classes
+                // - these all inherit from Page, which has calls in its constructor to set up the routes for each class.
                 if (class_exists($full_class_name)) {
                     new $full_class_name($app, $db, $user);
                 }
