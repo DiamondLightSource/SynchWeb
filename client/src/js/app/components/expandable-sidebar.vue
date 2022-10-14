@@ -7,7 +7,6 @@
                 :aria-expanded="isOpen"
                 :aria-controls="`collapse${_uid}`"
             >
-
             <svg
             class="tw-w-3 tw-transition-all tw-duration-200 tw-transform"
             :class="{
@@ -36,8 +35,11 @@
             :class="isOpen ? 'tw-translate-x-0' : 'tw-translate-x-full'">
             
             <div class="tw-bg-table-header-background tw-h-12 tw-w-64">
-                <div class="tw-absolute tw-mt-3 tw-ml-3 tw-text-xl tw-font-semibold tw-text-white">
+                <div class="tw-absolute tw-mt-3 tw-ml-3 tw-text-xl tw-text-white">
                     <slot name="sidebar-title" />
+                </div>
+                <div class="tw-absolute tw-right-0 tw-mb-1 tw-mt-2 tw-mr-3">
+                    <slot name="sidebar-submit-clear" />
                 </div>
             </div>
 

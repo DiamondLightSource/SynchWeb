@@ -101,6 +101,30 @@ class Summary extends Page
         // AND is the delimieter between seperate queries, converted to string
         $where = implode(" AND ", $where_arr);
 
+        // get tot query
+        $tot_args = $args;
+
+        $tot = $this->db->pq(
+            "SELECT count(ap.refinedcell_a) as tot 
+            FROM Proposal p
+            LEFT JOIN BLSession b ON b.proposalId = p.proposalId 
+            LEFT JOIN DataCollectionGroup dcg ON dcg.sessionId = b.sessionId 
+            LEFT JOIN DataCollection dc ON dc.dataCollectionGroupId = dcg.dataCollectionGroupId
+            LEFT JOIN AutoProcIntegration api ON api.dataCollectionId = dc.dataCollectionId
+            LEFT JOIN AutoProcProgram app ON app.autoProcProgramId = api.autoProcProgramId
+            LEFT JOIN ProcessingJob pj ON pj.processingJobId = app.processingJobId 
+            LEFT JOIN AutoProc ap ON ap.autoProcProgramId = app.autoProcProgramId 
+            LEFT JOIN AutoProcScaling aps ON aps.autoProcId = ap.autoProcId 
+            LEFT JOIN AutoProcScalingStatistics apss ON apss.autoProcScalingId = aps.autoProcScalingId 
+            LEFT JOIN MXMRRun m ON m.autoProcScalingId = apss.autoProcScalingId
+            WHERE $where AND b.beamLineName IN ('i02', 'i02-1', 'i02-2', 'i03', 'i04-1', 'i23', 'i24', 'i19-1' 'i19-2')
+            ORDER BY $order"
+            , $tot_args);
+    
+        if (sizeof($tot)) $tot = $tot[0]['TOT'];
+        else $tot = 0;
+
+
 
         // paginate
         $pp = $this->has_arg('per_page') ? $this->arg('per_page') : 15;
@@ -112,6 +136,9 @@ class Summary extends Page
         $en = $st + 1;
         array_push($args, $start);
         array_push($args, $end);
+
+        $pgs = intval($tot/$pp);
+        if ($tot % $pp != 0) $pgs++;
 
         // sql query
         $rows = $this->db->paginate(
@@ -140,6 +167,8 @@ class Summary extends Page
         // sql query output
         $this->_output(array(
             'data' =>  $rows,
+            'tot' => $tot,
+            'pages' => $pgs,
             'where' => $where,
             'args' => $args
 
