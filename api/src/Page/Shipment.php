@@ -1811,7 +1811,7 @@ class Shipment extends Page
         $cid = $this->db->id();
 
         if ($this->has_arg('SCHEDULEID')) {
-            $sh = new ImagingShared($this->db);
+            $sh = $this->app->container['imagingShared'];
             $sh->_generate_schedule(array(
                 'CONTAINERID' => $cid,
                 'SCHEDULEID' => $this->arg('SCHEDULEID'),

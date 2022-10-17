@@ -7,8 +7,6 @@ use SynchWeb\ImagingShared;
 
 class Imaging extends Page
 {
-
-
     public static $arg_list = array('cid' => '\d+',
         'iid' => '\d+',
         'imid' => '\d+',
@@ -110,7 +108,7 @@ class Imaging extends Page
     {
         call_user_func_array(array('parent', '__construct'), func_get_args());
 
-        $this->shared = new ImagingShared($this->db);
+        $this->shared = $this->app->container['imagingShared'];
     }
 
 

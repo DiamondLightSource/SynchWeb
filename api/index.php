@@ -15,8 +15,9 @@
 use Slim\Slim;
 use SynchWeb\Authentication\AuthenticationService;
 use SynchWeb\Model\Services\AuthenticationData;
-use SynchWeb\Model\User;
-use SynchWeb\Database\Type\MySQL;
+use SynchWeb\ImagingShared;
+use SynchWeb\Database\DatabaseFactory;
+use SynchWeb\Database\DatabaseConnectionFactory;
 use SynchWeb\Dispatch;
 
 require 'vendor/autoload.php';
@@ -87,9 +88,9 @@ function setupApplication($app, $mode): Slim
 
 function setupDependencyInjectionContainer($app, $isb, $port)
 {
-    $app->container->singleton('db', function () use ($isb, $port, $app) {
-        $port = array_key_exists('port', $isb) ? $isb['port'] : null;
-        return new MySQL($app, $isb['user'], $isb['pass'], $isb['db'], $port);
+    $app->container->singleton('db', function () {
+        $dbFactory = new DatabaseFactory(new DatabaseConnectionFactory());
+        return $dbFactory->get();
     });
 
     $app->container->singleton('authData', function () use ($app) {
@@ -102,6 +103,10 @@ function setupDependencyInjectionContainer($app, $isb, $port)
 
     $app->container->singleton('user', function () use ($app) {
         return $app->container['auth']->getUser();
+    });
+
+    $app->container->singleton('imagingShared', function () use ($app) {
+        return new ImagingShared($app->container['db']);
     });
 
     $app->container->singleton('dispatch', function () use ($app) {
