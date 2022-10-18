@@ -9,7 +9,6 @@ use SynchWeb\Model\Services\UserData;
 
 class UserController extends Page
 {
-    private $app;
     private $userData;
 
     public static $arg_list = array('gid' => '\d+',
@@ -68,8 +67,10 @@ class UserController extends Page
             array('/permissions/:pid', 'put', '_update_permission'),
     );
 
-    public function __construct(Slim $app, UserData $userData)
+    function __construct(Slim $app, $db, $user, UserData $userData)
     {
+        // Call parent constructor to register our routes
+        parent::__construct($app, $db, $user);
         $this->app = $app;
         $this->userData = $userData;
     }
@@ -109,15 +110,18 @@ class UserController extends Page
     {
         $this->haltIfLackingPermission('manage_groups');
 
-        $groups = $this->userData->getGroups($this->arg('gid'));
+        $gid = $this->def_arg('gid', null);
+        $groups = $this->userData->getGroups($gid);
 
-        if ($this->has_arg('gid')) {
+        if ($gid)
+        {
             if (sizeof($groups))
                 $this->_output($groups[0]);
             else
                 $this->_error('No such group');
         }
-        else {
+        else
+        {
             $this->_output($groups);
         }
     }
@@ -173,7 +177,8 @@ class UserController extends Page
             $this->argOrEmptyString('order')
         );
 
-        if ($this->user->personId) {
+        if ($this->user->personId)
+        {
             if (sizeof($rows))
                 $this->_output($rows[0]);
             else
@@ -284,13 +289,15 @@ class UserController extends Page
             false
         );
 
-        if ($this->has_arg('pid')) {
+        if ($this->has_arg('pid'))
+        {
             if (sizeof($rows))
                 $this->_output($rows[0]);
             else
                 $this->_error('No such permission');
         }
-        else {
+        else
+        {
             $tot = $this->userData->getPermissions(
                 $this->argOrEmptyString('s'),
                 $this->argOrEmptyString('gid'),

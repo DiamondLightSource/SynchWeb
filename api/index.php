@@ -14,10 +14,12 @@
 
 use Slim\Slim;
 use SynchWeb\Authentication\AuthenticationService;
+use SynchWeb\Controllers\UserController;
 use SynchWeb\Model\Services\AuthenticationData;
-use SynchWeb\ImagingShared;
+use SynchWeb\Model\Services\UserData;
 use SynchWeb\Database\DatabaseFactory;
 use SynchWeb\Database\DatabaseConnectionFactory;
+use SynchWeb\ImagingShared;
 use SynchWeb\Dispatch;
 
 require 'vendor/autoload.php';
@@ -46,21 +48,24 @@ function setupApplication($app, $mode): Slim
         'mode' => $mode == 'production' ? 'production' : 'development'
     ));
 
-    $app->configureMode('production', function () use ($app) {
+    $app->configureMode('production', function () use ($app)
+    {
         $app->config(array(
             'log.enable' => true,
             'debug' => false
         ));
     });
 
-    $app->configureMode('development', function () use ($app) {
+    $app->configureMode('development', function () use ($app)
+    {
         $app->config(array(
             'log.enable' => false,
             'debug' => true
         ));
     });
 
-    $app->get('/options', function () use ($app) {
+    $app->get('/options', function () use ($app)
+    {
         global $motd, $authentication_type, $cas_url, $cas_sso, $package_description,
         $facility_courier_countries, $facility_courier_countries_nde,
         $dhl_enable, $dhl_link, $scale_grid, $preset_proposal, $timezone,
@@ -88,28 +93,44 @@ function setupApplication($app, $mode): Slim
 
 function setupDependencyInjectionContainer($app, $isb, $port)
 {
-    $app->container->singleton('db', function () {
+    $app->container->singleton('db', function ()
+    {
         $dbFactory = new DatabaseFactory(new DatabaseConnectionFactory());
         return $dbFactory->get();
     });
 
-    $app->container->singleton('authData', function () use ($app) {
+    $app->container->singleton('authData', function () use ($app)
+    {
         return new AuthenticationData($app->container['db']);
     });
 
-    $app->container->singleton('auth', function () use ($app) {
+    $app->container->singleton('auth', function () use ($app)
+    {
         return new AuthenticationService($app, $app->container['authData']);
     });
 
-    $app->container->singleton('user', function () use ($app) {
+    $app->container->singleton('user', function () use ($app)
+    {
         return $app->container['auth']->getUser();
     });
 
-    $app->container->singleton('imagingShared', function () use ($app) {
+    $app->container->singleton('userData', function () use ($app)
+    {
+        return new UserData($app->container['db']);
+    });
+
+    $app->container->singleton('userController', function () use ($app)
+    {
+        return new UserController($app, $app->container['db'], $app->container['user'], $app->container['userData']);
+    });
+
+    $app->container->singleton('imagingShared', function () use ($app)
+    {
         return new ImagingShared($app->container['db']);
     });
 
-    $app->container->singleton('dispatch', function () use ($app) {
+    $app->container->singleton('dispatch', function () use ($app)
+    {
         return new Dispatch($app, $app->container['db'], $app->container['user']);
     });
 }

@@ -2,7 +2,6 @@
 
 namespace SynchWeb\Database\Type;
 
-// use MySQLi;
 use SynchWeb\Database\DatabaseParent;
 use SynchWeb\Database\DatabaseInterface;
 use SqlFormatter;
@@ -219,7 +218,8 @@ class MySQL extends DatabaseParent implements DatabaseInterface
 
         mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT); // throw exceptions.
 
-        if (mysqli_connect_errno()) {
+        if (mysqli_connect_errno())
+        {
             $this->error('There was an error connecting to MySQL: ', htmlentities(mysqli_connect_errno()));
         }
     }
@@ -228,7 +228,8 @@ class MySQL extends DatabaseParent implements DatabaseInterface
     function wait_rep_sync($state = false)
     {
         $ver = $this->conn->server_info;
-        if (stripos($ver, 'maria')) {
+        if (stripos($ver, 'maria'))
+        {
             $this->pq("SET SESSION wsrep_sync_wait=:1", array($state ? 1 : 0));
         }
     }
@@ -269,7 +270,8 @@ class MySQL extends DatabaseParent implements DatabaseInterface
         // Allow for Oracle style :1, :2 out of order
         preg_match_all('/\:(\d+)/', $query, $mat);
         $rearranged_args = array();
-        if ($this->debug) {
+        if ($this->debug)
+        {
             print_r('Old ordering:');
             var_dump($args);
         }
@@ -280,18 +282,21 @@ class MySQL extends DatabaseParent implements DatabaseInterface
         //     $this->error("Error preparing SQL query", "Incomplete parameter set supplied with SQL query: expected " . sizeof($mat) . " parameters, received " . sizeof($args));
         // }
 
-        foreach ($mat[1] as $id) {
+        foreach ($mat[1] as $id)
+        {
             $aid = $id - 1;
             $val = $args[$aid];
             array_push($rearranged_args, $val);
             unset($args[$aid]);
         }
 
-        foreach ($args as $remain) {
+        foreach ($args as $remain)
+        {
             array_push($rearranged_args, $remain);
         }
 
-        if ($this->debug) {
+        if ($this->debug)
+        {
             print_r('Rearranged ordering:');
             var_dump($rearranged_args);
         }
@@ -344,7 +349,8 @@ class MySQL extends DatabaseParent implements DatabaseInterface
 
     function tablelookup($query)
     {
-        foreach (self::TABLES as $table) {
+        foreach (self::TABLES as $table)
+        {
             $lowerCaseTable = strtolower($table);
             $query = str_replace(" " . $lowerCaseTable . " ", " $table ", $query);
             $query = str_replace(" " . $lowerCaseTable . "\n", " $table\n", $query);
@@ -359,9 +365,11 @@ class MySQL extends DatabaseParent implements DatabaseInterface
     {
         echo '<br/>';
         $sql = $this->lastQuery;
-        for ($i = 1; $i < count($this->lastArgs); $i++) {
+        for ($i = 1; $i < count($this->lastArgs); $i++)
+        {
             $val = $this->lastArgs[$i];
-            if (is_string($val)) {
+            if (is_string($val))
+            {
                 $val = "'" . $val . "'";
             }
             $sql = preg_replace('/\?/', $val, $sql, 1);
@@ -374,7 +382,8 @@ class MySQL extends DatabaseParent implements DatabaseInterface
         list($query, $args) = $this->oracle2mysql($query, $args);
         $query = $this->tablelookup($query);
 
-        if ($this->debug) {
+        if ($this->debug)
+        {
             print '<h1 class="debug">MySQL Debug</h1>';
             print SqlFormatter::format($query);
             echo '<br/>';
@@ -382,21 +391,25 @@ class MySQL extends DatabaseParent implements DatabaseInterface
 
         $stmt = $this->conn->prepare($query);
 
-        if (!$stmt) {
+        if (!$stmt)
+        {
             if ($this->transaction)
                 $this->errors++;
-            else {
+            else
+            {
                 $err = mysqli_error($this->conn);
                 $this->error('There was an error with MySQL', $err);
                 return;
             }
         }
 
-        if (sizeof($args)) {
+        if (sizeof($args))
+        {
             $vtypes = array('NULL' => 'i', 'integer' => 'i', 'double' => 'd', 'string' => 's');
 
             $strfs = '';
-            foreach ($args as $a) {
+            foreach ($args as $a)
+            {
                 $t = gettype($a);
                 $strfs .= $vtypes[$t];
             }
@@ -407,14 +420,17 @@ class MySQL extends DatabaseParent implements DatabaseInterface
 
         $this->lastQuery = $query;
         $this->lastArgs = $args;
-        if ($this->debug) {
+        if ($this->debug)
+        {
             print_r("Full SQL query: " . $this->getLastQuery());
         }
 
-        if (!$stmt->execute()) {
+        if (!$stmt->execute())
+        {
             if ($this->transaction)
                 $this->errors++;
-            else {
+            else
+            {
                 $err = mysqli_error($this->conn);
                 $this->error('There was an error with MySQL', $err);
                 return;
@@ -422,20 +438,27 @@ class MySQL extends DatabaseParent implements DatabaseInterface
         }
 
         $data = array();
-        if (strpos($query, 'SELECT') !== false) {
+        if (strpos($query, 'SELECT') !== false)
+        {
             $result = $stmt->get_result();
-            if ($result) {
-                if ($result->num_rows > 0) {
-                    while ($row = $result->fetch_assoc()) {
+            if ($result)
+            {
+                if ($result->num_rows > 0)
+                {
+                    while ($row = $result->fetch_assoc())
+                    {
                         $c = array();
                         // oracle inheritance ;(
-                        foreach ($row as $key => $val) {
-                            if ($val !== null) {
+                        foreach ($row as $key => $val)
+                        {
+                            if ($val !== null)
+                            {
                                 if (gettype($val) == gettype(0.1))
                                     $val = round($val, 5);
                                 $val = strval($val);
                             }
-                            if ($upperCaseKeys) {
+                            if ($upperCaseKeys)
+                            {
                                 $key = strtoupper($key);
                             }
                             $c[$key] = $val;
@@ -446,7 +469,8 @@ class MySQL extends DatabaseParent implements DatabaseInterface
             }
         }
 
-        if ($this->debug) {
+        if ($this->debug)
+        {
             echo '<br/>';
             print_r('row count: ' . sizeof($data));
             echo '<br/>';
@@ -478,18 +502,21 @@ class MySQL extends DatabaseParent implements DatabaseInterface
         $nargs = sizeof($args);
         $all_args = array();
         $union_kw = $all ? 'UNION ALL' : 'UNION';
-        foreach ($queries as $i => &$query) {
+        foreach ($queries as $i => &$query)
+        {
             $offset = $i * $nargs;
             $query = preg_replace_callback('/\:(\d+)/',
-                function ($mat) use ($offset) {
-                return ':' . (intval($mat[1]) + $offset);
-            },
+                function ($mat) use ($offset)
+                {
+                    return ':' . (intval($mat[1]) + $offset);
+                },
                 $query);
             $all_args = array_merge($all_args, $args);
         }
 
         $union = implode("\n$union_kw\n", $queries);
-        if ($wrapper) {
+        if ($wrapper)
+        {
             $union = preg_replace('/:QUERY/', $union, $wrapper);
         }
 
@@ -505,10 +532,12 @@ class MySQL extends DatabaseParent implements DatabaseInterface
     {
         $RESULT = array();
         $Statement->store_result();
-        for ($i = 0; $i < $Statement->num_rows; $i++) {
+        for ($i = 0; $i < $Statement->num_rows; $i++)
+        {
             $Metadata = $Statement->result_metadata();
             $PARAMS = array();
-            while ($Field = $Metadata->fetch_field()) {
+            while ($Field = $Metadata->fetch_field())
+            {
                 $PARAMS[] = & $RESULT[$i][$Field->name];
             }
             call_user_func_array(array($Statement, 'bind_result'), $PARAMS);
@@ -520,7 +549,8 @@ class MySQL extends DatabaseParent implements DatabaseInterface
     function refs($arr)
     {
         $refs = array();
-        foreach ($arr as $key => $value) {
+        foreach ($arr as $key => $value)
+        {
             $refs[$key] = & $arr[$key];
         }
         return $refs;

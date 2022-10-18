@@ -16,7 +16,8 @@ class UserData
         $where = '';
         $args = array();
 
-        if ($gid) {
+        if ($gid)
+        {
             $where = 'WHERE g.usergroupid=:1';
             array_push($args, $gid);
         }
@@ -32,7 +33,7 @@ class UserData
 
     function addGroup($groupName)
     {
-        $this->db->pq('INSERT INTO usergroup (usergroupid,name) VALUES (s_usergroup.nextval,:1) RETURNING usergroupid INTO :id', array($groupName));
+        $this->db->pq('INSERT INTO usergroup (name) VALUES (:1) RETURNING usergroupid INTO :id', array($groupName));
         return $this->db->id();
     }
 
@@ -53,7 +54,7 @@ class UserData
         $this->db->pq("DELETE FROM usergroup_has_permission WHERE usergroupid=:1 and permissionid=:2", array($userGroupId, $permisionId));
     }
 
-    private function addPersonOrProposalSearch($pid, $personId, $where, $args): string
+    private function addPersonOrProposalSearch($pid, $personId, $where, &$args): string
     {
         $where .= ' AND (prhp.proposalid=:' . (sizeof($args) + 1) . ' OR lc.proposalid=:' . (sizeof($args) + 2) . ' OR p.personid=:' . (sizeof($args) + 3) . ')';
         array_push($args, $pid);
@@ -71,24 +72,29 @@ class UserData
         $group = 'GROUP BY p.personid';
 
 
-        if ($all) {
+        if ($all)
+        {
             $where = '1=1';
         }
-        else if ($personId || $pid || (!$staff && !$visit)) {
+        else if ($personId || $pid || (!$staff && !$visit))
+        {
             $where = $this->addPersonOrProposalSearch($pid, $personId, $where, $args);
         }
 
-        if ($gid) {
+        if ($gid)
+        {
             $join = 'INNER JOIN usergroup_has_person uhp ON uhp.personid = p.personid';
             $where .= ' AND uhp.usergroupid=:' . (sizeof($args) + 1);
             array_push($args, $gid);
         }
 
-        if ($hasLogin) {
+        if ($hasLogin)
+        {
             $where .= ' AND p.login IS NOT NULL';
         }
 
-        if ($s) {
+        if ($s)
+        {
             $st = sizeof($args) + 1;
             $where .= " AND (lower(p.familyname) LIKE lower(CONCAT(CONCAT('%',:" . $st .
                 "),'%')) OR lower(p.givenname) LIKE lower(CONCAT(CONCAT('%',:" .
@@ -97,13 +103,15 @@ class UserData
                 array_push($args, $s);
         }
 
-        if ($sid) {
+        if ($sid)
+        {
             $join = 'INNER JOIN blsession_has_person shp ON shp.personid = p.personid';
             $where .= ' AND shp.sessionid=:' + (sizeof($args) + 1);
             array_push($args, $sid);
         }
 
-        if ($visit) {
+        if ($visit)
+        {
             $extc = "count(ses.sessionid) as visits, TO_CHAR(max(ses.startdate), 'DD-MM-YYYY') as last, shp.remote, shp.role,";
             $join = 'INNER JOIN session_has_person shp ON shp.personid = p.personid
                      INNER JOIN blsession s ON shp.sessionid = s.sessionid
@@ -116,14 +124,16 @@ class UserData
             array_push($args, $visit);
         }
 
-        if ($pjid) {
+        if ($pjid)
+        {
             $join = ' INNER JOIN project_has_person php ON p.personid = php.personid';
             $where .= ' AND php.projectid=:' . (sizeof($args) + 1);
             $extc = "CONCAT(CONCAT(p.personid, '-'), php.projectid) as ppid,";
             array_push($args, $pjid);
         }
 
-        if ($getCount) {
+        if ($getCount)
+        {
             $tot = $this->db->pq("SELECT count(distinct p.personid) as tot
                 FROM person p
                 LEFT OUTER JOIN proposalhasperson prhp ON prhp.personid = p.personid
@@ -137,7 +147,8 @@ class UserData
         $pp = $perPage;
         $end = $pp;
 
-        if ($page) {
+        if ($page)
+        {
             $pg = $page - 1;
             $start = $pg * $pp;
             $end = $pg * $pp + $pp;
@@ -148,9 +159,11 @@ class UserData
         array_push($args, $end);
 
         $order = 'p.familyname,p.givenname';
-        if ($sortBy) {
+        if ($sortBy)
+        {
             $cols = array('LOGIN' => 'p.login', 'GIVENNAME' => 'p.givenname', 'FAMILYNAME' => 'p.familyname');
-            if (array_key_exists($sortBy, $cols)) {
+            if (array_key_exists($sortBy, $cols))
+            {
                 $order = $cols[$sortBy] . ' ' . $dir;
             }
         }
@@ -164,8 +177,10 @@ class UserData
                                WHERE $where
                                $group
                                ORDER BY $order", $args);
+        return array($this->db->getLastQuery());
 
-        foreach ($rows as &$r) {
+        foreach ($rows as &$r)
+        {
             if ($r['PERSONID'] == $personId)
                 $r['FULLNAME'] .= ' [You]';
         }
@@ -182,7 +197,7 @@ class UserData
     function addUser($loginId, $givenName, $familyName, $emailAddress = null)
     {
         $this->db->pq("INSERT INTO person (login, givenname, familyname, emailaddress) VALUES (:1, :2, :3, :4)",
-            array($loginId, $givenName, $familyName, $emailAddress));
+                array($loginId, $givenName, $familyName, $emailAddress));
         return $this->db->id();
     }
 
@@ -213,20 +228,22 @@ class UserData
 
     function updateLaboratory($person, $personId, $labName, $labAddress, $city, $postcode, $country)
     {
-        if (!$person['LABORATORYID']) {
+        if (!$person['LABORATORYID'])
+        {
             # TODO: the logic here appears dubious - will result in duplicate entries for labs, rather than reusing these?  Perhaps this is ok, though...
             $this->db->pq("INSERT INTO laboratory ('NAME', 'ADDRESS', 'CITY', 'POSTCODE', 'COUNTRY') VALUES (:1, :2, :3, :4, :5)", array($labName, $labAddress, $city, $postcode, $country));
             $person['LABORATORYID'] = $this->db->id();
             $this->db->pq("UPDATE person SET laboratoryid=:1 WHERE personid=:2", array($person['LABORATORYID'], $personId));
         }
-        else {
+        else
+        {
             $labName = $labName ? $labName : $person['LABNAME'];
             $labAddress = $labAddress ? $labAddress : $person['ADDRESS'];
             $city = $city ? $city : $person['CITY'];
             $postcode = $postcode ? $postcode : $person['POSTCODE'];
             $country = $country ? $country : $country['country'];
             $this->db->pq("UPDATE laboratory SET ('NAME', 'ADDRESS', 'CITY', 'POSTCODE', 'COUNTRY') VALUES (:1, :2, :3, :4, :5) WHERE laboratoryid=:6",
-                array($labName, $labAddress, $city, $postcode, $country, $person['LABORATORYID']));
+                    array($labName, $labAddress, $city, $postcode, $country, $person['LABORATORYID']));
         }
     }
 
@@ -248,24 +265,28 @@ class UserData
         $where = '';
         $join = '';
 
-        if ($gid) {
+        if ($gid)
+        {
             $join = 'INNER JOIN usergroup_has_permission uhp ON uhp.permissionid = p.permissionid';
             $where = 'AND uhp.usergroupid=:' . (sizeof($args) + 1);
             array_push($args, $gid);
         }
 
-        if ($pid) {
+        if ($pid)
+        {
             $where = 'AND p.permissionid=:' . (sizeof($args) + 1);
             array_push($args, $pid);
         }
 
-        if ($s) {
+        if ($s)
+        {
             $st = sizeof($args) + 1;
             $where .= " AND (lower(p.type) LIKE lower(CONCAT(CONCAT('%',:" . $st . "),'%')))";
             array_push($args, $s);
         }
 
-        if ($getCount) {
+        if ($getCount)
+        {
             $tot = $this->db->pq("SELECT count(p.permissionid) as tot
                 FROM permission p
                 $join
@@ -277,7 +298,8 @@ class UserData
         $pp = $perPage;
         $end = $pp;
 
-        if ($page) {
+        if ($page)
+        {
             $pg = $page - 1;
             $start = $pg * $pp;
             $end = $pg * $pp + $pp;
