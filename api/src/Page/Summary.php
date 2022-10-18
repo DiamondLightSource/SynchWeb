@@ -22,6 +22,7 @@ class Summary extends Page
         // Filter Parameters - Search
         'sample' => '\w+', //sample name
         'sprefix' => '\w+', //sample prefix
+        'dcid' => '\w+', //data
         'pp' => '\w+', // processing programs
         'sg' => '\w+', // space group
         'res' => '\d+', // resid
@@ -35,8 +36,8 @@ class Summary extends Page
         'lca' => '\d+(.\d+)?', // (l) - a
         'gcb' => '\d+(.\d+)?', // (g) - b
         'lcb' => '\d+(.\d+)?', // (l) - b
-        'gcc' => '\d+(.\d+)?', // (g) - c
-        'lcc' => '\d+(.\d+)?', // (l) - c
+        'gc' => '\d+(.\d+)?', // (g) - c
+        'lc' => '\d+(.\d+)?', // (l) - c
         'gcal' => '\d+(.\d+)?', // (g) - aplha
         'lcal' => '\d+(.\d+)?', // (l) - aplha
         'gcbe' => '\d+(.\d+)?', // (g)- beta
@@ -71,31 +72,123 @@ class Summary extends Page
     function _get_example() {
         $where = '';
         $where_arr = array();
-        $args = array();
         $order = 'p.proposalid ASC';
+  
 
+        if (!$this->has_arg('prop')) $this->_error('No proposal specified');
 
-        //proposal id
-        if ($this->has_arg('PROPOSALID')) {
-            // $where .= ' p.proposalId = :'.(sizeof($args)+1);
-            array_push($where_arr, 'p.proposalId = :'.(sizeof($args)+1));
-            array_push($args, $this->arg('PROPOSALID'));
+        $args = array($this->proposalid);
+        array_push($where_arr, 'p.proposalid = :1');
+
+        // dc id
+        if ($this->has_arg('dcid')) {
+            array_push($where_arr, 'dc.dataCollectionId = :'.(sizeof($args)+1));
+            array_push($args, $this->arg('dcid'));
         }
 
-        // processing programs
-        if ($this->has_arg('pp')) {
-            array_push($where_arr, 'app.processingPrograms LIKE :'.(sizeof($args)+1));
-            array_push($args, '%'.$this->arg('pp').'%');
-        }
         // space group
         if ($this->has_arg('sg')) {
             array_push($where_arr, 'ap.spaceGroup LIKE :'.(sizeof($args)+1));
             array_push($args, '%'.$this->arg('sg').'%');
         }
-
+          // refined cell a
         if ($this->has_arg('gca')) {
             array_push($where_arr, 'ap.refinedCell_a >= :'.(sizeof($args)+1));
             array_push($args, $this->arg('gca'));
+        }
+        if ($this->has_arg('lca')) {
+            array_push($where_arr, 'ap.refinedCell_a <= :'.(sizeof($args)+1));
+            array_push($args, $this->arg('lca'));
+        }
+        // refined cell b
+        if ($this->has_arg('gcb')) {
+            array_push($where_arr, 'ap.refinedCell_b >= :'.(sizeof($args)+1));
+            array_push($args, $this->arg('gcb'));
+        }
+        if ($this->has_arg('lcb')) {
+            array_push($where_arr, 'ap.refinedCell_b <= :'.(sizeof($args)+1));
+            array_push($args, $this->arg('lcb'));
+        }
+        // refined cell c
+        if ($this->has_arg('gc')) {
+            array_push($where_arr, 'ap.refinedCell_c >= :'.(sizeof($args)+1));
+            array_push($args, $this->arg('gc'));
+        }
+        if ($this->has_arg('lc')) {
+            array_push($where_arr, 'ap.refinedCell_c <= :'.(sizeof($args)+1));
+            array_push($args, $this->arg('lc'));
+        }
+        // refined cell alpha
+        if ($this->has_arg('gcal')) {
+            array_push($where_arr, 'ap.refinedCell_alpha >= :'.(sizeof($args)+1));
+            array_push($args, $this->arg('gcal'));
+        }
+        if ($this->has_arg('lcal')) {
+            array_push($where_arr, 'ap.refinedCell_alpha <= :'.(sizeof($args)+1));
+            array_push($args, $this->arg('lcal'));
+        }
+        // refined cell beta
+        if ($this->has_arg('gcbe')) {
+            array_push($where_arr, 'ap.refinedCell_beta >= :'.(sizeof($args)+1));
+            array_push($args, $this->arg('gcbe'));
+        }
+        if ($this->has_arg('lcbe')) {
+            array_push($where_arr, 'ap.refinedCell_beta <= :'.(sizeof($args)+1));
+            array_push($args, $this->arg('lcbe'));
+        }
+        // refined cell gamma
+        if ($this->has_arg('gcga')) {
+            array_push($where_arr, 'ap.refinedCell_gamma >= :'.(sizeof($args)+1));
+            array_push($args, $this->arg('gcga'));
+        }
+        if ($this->has_arg('lcga')) {
+            array_push($where_arr, 'ap.refinedCell_gamma <= :'.(sizeof($args)+1));
+            array_push($args, $this->arg('lcga'));
+        }
+        // resolution limit high
+        if ($this->has_arg('grlh')) {
+            array_push($where_arr, 'apss.resolutionLimitHigh >= :'.(sizeof($args)+1));
+            array_push($args, $this->arg('grlh'));
+        }
+        if ($this->has_arg('lrlh')) {
+            array_push($where_arr, 'apss.resolutionLimitHigh <= :'.(sizeof($args)+1));
+            array_push($args, $this->arg('lrlh'));
+        }
+        // rmeas within i plus i minus
+        if ($this->has_arg('grm')) {
+            array_push($where_arr, 'apss.rMeasWithinIPlusIMinus >= :'.(sizeof($args)+1));
+            array_push($args, $this->arg('grm'));
+        }
+        if ($this->has_arg('lrm')) {
+            array_push($where_arr, 'apss.rMeasWithinIPlusIMinus <= :'.(sizeof($args)+1));
+            array_push($args, $this->arg('lrm'));
+        }
+        // cc anomalous 
+        if ($this->has_arg('gcc')) {
+            array_push($where_arr, 'apss.ccAnomalous >= :'.(sizeof($args)+1));
+            array_push($args, $this->arg('gcc'));
+        }
+        if ($this->has_arg('lcc')) {
+            array_push($where_arr, 'apss.ccAnomalous <= :'.(sizeof($args)+1));
+            array_push($args, $this->arg('lcc'));
+        }
+        // r free final
+        if ($this->has_arg('grff')) {
+            array_push($where_arr, 'm.rFreeValueEnd >= :'.(sizeof($args)+1));
+            array_push($args, $this->arg('grff'));
+        }
+        if ($this->has_arg('lrff')) {
+            array_push($where_arr, 'm.rFreeValueEnd <= :'.(sizeof($args)+1));
+            array_push($args, $this->arg('lrff'));
+        }
+        // r free initial 
+        if ($this->has_arg('grfi')) {
+            array_push($where_arr, 'm.rFreeValueStart >= :'.(sizeof($args)+1));
+            array_push($args, $this->arg('grfi'));
+        }
+        if ($this->has_arg('lrfi')) {
+            array_push($where_arr, 'm.rFreeValueStart <= :'.(sizeof($args)+1));
+            array_push($args, $this->arg('lrfi'));
         }
 
         // AND is the delimieter between seperate queries, converted to string
@@ -107,24 +200,24 @@ class Summary extends Page
         $tot = $this->db->pq(
             "SELECT count(ap.refinedcell_a) as tot 
             FROM Proposal p
-            LEFT JOIN BLSession b ON b.proposalId = p.proposalId 
-            LEFT JOIN DataCollectionGroup dcg ON dcg.sessionId = b.sessionId 
-            LEFT JOIN DataCollection dc ON dc.dataCollectionGroupId = dcg.dataCollectionGroupId
-            LEFT JOIN AutoProcIntegration api ON api.dataCollectionId = dc.dataCollectionId
-            LEFT JOIN AutoProcProgram app ON app.autoProcProgramId = api.autoProcProgramId
-            LEFT JOIN ProcessingJob pj ON pj.processingJobId = app.processingJobId 
-            LEFT JOIN AutoProc ap ON ap.autoProcProgramId = app.autoProcProgramId 
-            LEFT JOIN AutoProcScaling aps ON aps.autoProcId = ap.autoProcId 
-            LEFT JOIN AutoProcScalingStatistics apss ON apss.autoProcScalingId = aps.autoProcScalingId 
-            LEFT JOIN MXMRRun m ON m.autoProcScalingId = apss.autoProcScalingId
+                LEFT JOIN BLSession b ON b.proposalId = p.proposalId 
+                LEFT JOIN Container c ON c.sessionId = b.sessionId
+                LEFT JOIN BLSample b2 ON b2.containerId = c.containerId
+                LEFT JOIN DataCollectionGroup dcg ON dcg.sessionId = b.sessionId 
+                LEFT JOIN DataCollection dc ON dc.dataCollectionGroupId = dcg.dataCollectionGroupId
+                LEFT JOIN AutoProcIntegration api ON api.dataCollectionId = dc.dataCollectionId
+                LEFT JOIN AutoProcProgram app ON app.autoProcProgramId = api.autoProcProgramId
+                LEFT JOIN ProcessingJob pj ON pj.processingJobId = app.processingJobId 
+                LEFT JOIN AutoProc ap ON ap.autoProcProgramId = app.autoProcProgramId 
+                LEFT JOIN AutoProcScaling aps ON aps.autoProcId = ap.autoProcId 
+                LEFT JOIN AutoProcScalingStatistics apss ON apss.autoProcScalingId = aps.autoProcScalingId 
+                LEFT JOIN MXMRRun m ON m.autoProcScalingId = apss.autoProcScalingId
             WHERE $where AND b.beamLineName IN ('i02', 'i02-1', 'i02-2', 'i03', 'i04-1', 'i23', 'i24', 'i19-1' 'i19-2')
+                         AND ap.spaceGroup is NOT NULL
             ORDER BY $order"
             , $tot_args);
     
-        if (sizeof($tot)) $tot = $tot[0]['TOT'];
-        else $tot = 0;
-
-
+        $tot = sizeof($tot) ? intval($tot[0]['TOT']) : 0;
 
         // paginate
         $pp = $this->has_arg('per_page') ? $this->arg('per_page') : 15;
@@ -142,21 +235,25 @@ class Summary extends Page
 
         // sql query
         $rows = $this->db->paginate(
-        "SELECT p.proposalId, b.beamLineName, b.startDate, b.endDate,
+        "SELECT p.proposalId, dc.dataCollectionId, dc.fileTemplate, b2.name, b.beamLineName, b.startDate, b.endDate,
         app.processingPrograms, ap.spaceGroup, apss.scalingStatisticsType,
-        ap.refinedCell_a, ap.refinedCell_b, ap.refinedCell_c, ap.refinedCell_alpha, ap.refinedCell_beta, ap.refinedCell_gamma
+        ap.refinedCell_a, ap.refinedCell_b, ap.refinedCell_c, ap.refinedCell_alpha, ap.refinedCell_beta, ap.refinedCell_gamma,
+        apss.resolutionLimitHigh, apss.rMeasWithinIPlusIMinus, apss.ccAnomalous, m.rFreeValueStart, m.rFreeValueEnd
         FROM Proposal p
-        LEFT JOIN BLSession b ON b.proposalId = p.proposalId 
-        LEFT JOIN DataCollectionGroup dcg ON dcg.sessionId = b.sessionId 
-        LEFT JOIN DataCollection dc ON dc.dataCollectionGroupId = dcg.dataCollectionGroupId
-        LEFT JOIN AutoProcIntegration api ON api.dataCollectionId = dc.dataCollectionId
-        LEFT JOIN AutoProcProgram app ON app.autoProcProgramId = api.autoProcProgramId
-        LEFT JOIN ProcessingJob pj ON pj.processingJobId = app.processingJobId 
-        LEFT JOIN AutoProc ap ON ap.autoProcProgramId = app.autoProcProgramId 
-        LEFT JOIN AutoProcScaling aps ON aps.autoProcId = ap.autoProcId 
-        LEFT JOIN AutoProcScalingStatistics apss ON apss.autoProcScalingId = aps.autoProcScalingId 
-        LEFT JOIN MXMRRun m ON m.autoProcScalingId = apss.autoProcScalingId
+                LEFT JOIN BLSession b ON b.proposalId = p.proposalId 
+                LEFT JOIN Container c ON c.sessionId = b.sessionId
+                LEFT JOIN BLSample b2 ON b2.containerId = c.containerId
+                LEFT JOIN DataCollectionGroup dcg ON dcg.sessionId = b.sessionId 
+                LEFT JOIN DataCollection dc ON dc.dataCollectionGroupId = dcg.dataCollectionGroupId
+                LEFT JOIN AutoProcIntegration api ON api.dataCollectionId = dc.dataCollectionId
+                LEFT JOIN AutoProcProgram app ON app.autoProcProgramId = api.autoProcProgramId
+                LEFT JOIN ProcessingJob pj ON pj.processingJobId = app.processingJobId 
+                LEFT JOIN AutoProc ap ON ap.autoProcProgramId = app.autoProcProgramId 
+                LEFT JOIN AutoProcScaling aps ON aps.autoProcId = ap.autoProcId 
+                LEFT JOIN AutoProcScalingStatistics apss ON apss.autoProcScalingId = aps.autoProcScalingId 
+                LEFT JOIN MXMRRun m ON m.autoProcScalingId = apss.autoProcScalingId
         WHERE $where AND b.beamLineName IN ('i02', 'i02-1', 'i02-2', 'i03', 'i04-1', 'i23', 'i24', 'i19-1' 'i19-2')
+                     AND ap.spaceGroup is NOT NULL
         ORDER BY $order"
         , $args);
 
@@ -165,14 +262,7 @@ class Summary extends Page
         }
         
         // sql query output
-        $this->_output(array(
-            'data' =>  $rows,
-            'tot' => $tot,
-            'pages' => $pgs,
-            'where' => $where,
-            'args' => $args
-
-        ));
+        $this->_output(array('data' => $rows, 'total' => $tot ));
 
 
     }

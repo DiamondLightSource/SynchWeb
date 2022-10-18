@@ -32,29 +32,13 @@
                         class="tw-w-10/12 tw-max-w-sm proposal-select"
                         :data="proposals"
                         textField="PROP"
-                        valueField="PROPOSALID"
+                        valueField="PROP"
                         size="small"
                         :canCreateNewItem=false
                         v-model="selectedProposal"
                         defaultText=""
                         ></combo-box>
                         <p class="tw-italic">Search for your <br>Proposal Number</p>
-                        </div>
-                    </template>
-                </custom-accordian>
-
-                <custom-accordian class="tw-pt-6 tw-pb-6">
-                    <template v-slot:title>
-                    <span class="tw-text-base">Processing Programs</span>
-                    </template>
-                    <template v-slot:content>
-                        <div class="tw-grid tw-grid-cols-2 tw-divide-x tw-divide-gray-400 tw-pt-3 tw-pb-2">
-                            <input class="tw-w-10/12 tw-h-8 tw-block tw-appearance-none tw-text-gray-700 tw-bg-white tw-border 
-                            hover:tw-border-gray-500 tw-px-4 tw-rounded tw-shadow tw-leading-tight focus:tw-outline-none 
-                            focus:tw-shadow-outline"
-                            placeholder="Type here"
-                            v-model="searchedProcPrograms">
-                            <p class="tw-italic">Search for <br>Processing Programs</p>
                         </div>
                     </template>
                 </custom-accordian>
@@ -86,12 +70,12 @@
                                 hover:tw-border-gray-500 tw-px-4 tw-rounded tw-shadow tw-leading-tight focus:tw-outline-none 
                                 focus:tw-shadow-outline"
                                 placeholder="Greater than"
-                                v-model="searchedGtUnitCellA">
+                                v-model="searchedGtUnitCellB">
                                 <input class="tw-w-10/12 tw-block tw-appearance-none tw-text-gray-700 tw-bg-white tw-border 
                                 hover:tw-border-gray-500 tw-px-4 tw-rounded tw-shadow tw-leading-tight focus:tw-outline-none 
                                 focus:tw-shadow-outline"
                                 placeholder="Less than"
-                                v-model="searchedLtUnitCellA">
+                                v-model="searchedLtUnitCellB">
                             </div>
                             <p class="tw-italic">Filter for <br>Unit Cell B</p>
                         </div>
@@ -102,16 +86,15 @@
                                 hover:tw-border-gray-500 tw-px-4 tw-rounded tw-shadow tw-leading-tight focus:tw-outline-none 
                                 focus:tw-shadow-outline"
                                 placeholder="Greater than"
-                                v-model="searchedGtUnitCellA">
+                                v-model="searchedGtUnitCellC">
                                 <input class="tw-w-10/12 tw-block tw-appearance-none tw-text-gray-700 tw-bg-white tw-border 
                                 hover:tw-border-gray-500 tw-px-4 tw-rounded tw-shadow tw-leading-tight focus:tw-outline-none 
                                 focus:tw-shadow-outline"
                                 placeholder="Less than"
-                                v-model="searchedLtUnitCellA">
+                                v-model="searchedLtUnitCellC">
                             </div>
                             <p class="tw-italic">Filter for <br>Unit Cell C</p>
                         </div>
-
                         
                     </template>
                 </custom-accordian>
@@ -159,23 +142,35 @@
 
             </template>
         </expandable-sidebar>
-
+        
         <div class="tw-grid tw-grid-cols-2 gap-8">
-            <div>
+            <div class="tw-flex">
                 <form class="tw-mt-10 tw-items-center">   
                     <label for="simple-search" class="sr-only">Search</label>
                     <div class="tw-relative tw-w-full">
-                        <input type="text" id="simple-search" class="tw-block tw-pl-10 tw-p-2.5 tw-appearance-none 
+                        <input 
+                        v-on:keyup.enter="onDCSearch" 
+                        v-model = "tempDC"
+                        type="text" id="simple-search" 
+                        class="tw-block tw-pl-10 tw-p-2.5 tw-appearance-none 
                         tw-text-gray-700 tw-bg-white tw-border 
                         hover:tw-border-gray-500 tw-px-4 tw-rounded-lg tw-shadow tw-leading-tight focus:tw-outline-none 
                         focus:tw-shadow-outline"
-                        placeholder="Search" required>
+                        placeholder="Press Enter to Search" required>
+
                         <div class="tw-flex tw-absolute tw-inset-y-0 tw-left-0 tw-items-center tw-pl-3 tw-pointer-events-none">
                             <svg aria-hidden="true" class="tw-w-5 tw-h-5 tw-text-gray-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"></path></svg>
                         </div>
                     </div>
                 </form>
+                <button
+                    v-on:click="downloadFile"
+                    class="tw-mt-10 tw-items-center tw-block tw-pl-10 tw-pr-10 tw-ml-2 tw-appearance-none 
+                    tw-text-white tw-bg-content-sub-header-background tw-border-content-sub-header-background 
+                    tw-rounded-lg tw-shadow tw-leading-tight" type="button">
+                    Export CSV</button>
             </div>
+
 
             <div>
                 <p class="tw-text-content-sub-header-background tw-ml-2">Select Columns</p>
@@ -225,45 +220,50 @@
         </div>
 
         <custom-table-component
-                class="tw-w-full summary-result-table"
+                class="summary-result-table"
+                tableClass="tw-w-full"
                 :data-list="summaryData"
                 :headers="selectedColumns"
                 no-data-text="No components for this group"
                 > 
-            <template v-slot:tableHeaders>
-                <td v-for="value in summaryColumns" :key="value.id" class="tw-w-1/12 tw-py-2 tw-text-center">
-                    <p v-if="value.checked == true">{{ value.title }}</p>
+            <template v-slot:tableHeaders >
+                <td v-for="value in summaryColumns" :key="value.id">
+                    <p v-if="value.checked == true" :class="'tw-w-1/' + selectedColumns.length + ' tw-text-center tw-p-12 tw-py-2'">{{ value.title }}</p>
                 </td>
-            <td class="tw-w-1/12 tw-py-2"></td>
             </template>
 
         <template v-slot:slotData="{ dataList }">
             <custom-table-row
-            class="tw-w-full"
             v-for="(result, rowIndex) in dataList"
             :key="rowIndex"
             :result="result"
             :row-index="rowIndex">
             <template v-slot:default="{ result }">
                 <td v-for="value in summaryColumns" :key="value.id" :class="value.class">
-                    <p v-if="value.checked == true">{{ result[value.key] }}</p>
+                    <p v-if="value.checked == true" class="tw-p-2 tw-text-center">{{ result[value.key] }}</p>
                 </td>
             </template>
             </custom-table-row>
 
         </template>
-
+        
         <template v-slot:noData>
             <custom-table-row class="tw-w-full tw-bg-table-body-background-odd">
-            <td colspan="5" class="tw-text-center tw-py-2">No results found</td>
+            <td :colspan='summaryColumns.length' class="tw-text-center tw-py-2 tw-ml-4 tw-mr-4">No results found</td>
             </custom-table-row>
+
         </template>
+
 
         </custom-table-component>
 
+        <template>
+            <p>Resize me! Current width is: {{ windowWidth }}</p>
+        </template>
+
         <pagination-panel
-        :initial-page="resultsListState.firstPage"
-        :totalRecords="resultsListState.totalRecords"
+        :initial-page="1"
+        :totalRecords=totalRecords
         :pageLinks="10"
         @page-changed="handlePageChange"
         />
@@ -307,8 +307,11 @@ export default {
     data() {
         
         return {
+            windowWidth: window.innerWidth,
             isHidden: true,
-            resultsListState: {},
+            totalRecords:  10,
+            pageSize: 15,
+            currentPage: 1,
             summaryCollection : null,
             summaryData : [],
             proposalCollection : null,
@@ -319,73 +322,133 @@ export default {
             selectedColumns: [],
             summaryColumns: [
                 {
-                    key: 'PROCESSINGPROGRAMS',
-                    title: 'Processing Programs',
-                    class: 'tw-w-4/12 tw-text-center',
+                    key: 'DATACOLLECTIONID',
+                    title: 'Data Collection Id',
+                    checked: true
+                },
+                {
+                    key: 'FILETEMPLATE',
+                    title: 'Prefix',
+                    checked: true
+                },
+                {
+                    key: 'NAME',
+                    title: 'Sample Name',
+                    checked: true
+                },
+                {
+                    key: 'STARTDATE',
+                    title: 'Start Date',
+                    checked: true
+                },
+                {
+                    key: 'ENDDATE',
+                    title: 'End Date',
                     checked: true
                 },
                 {
                     key: 'SPACEGROUP',
                     title: 'Space Group',
-                    class: 'tw-w-2/12 tw-text-center',
                     checked: true
                 },
                 {
                     key: 'REFINEDCELL_A',
                     title: 'Unit Cell A',
-                    class: 'tw-w-2/12 tw-text-center',
                     checked: true
                 },
-            ],
-            filterOptions: [
                 {
-                    key: 'SPACEGROUP',
+                    key: 'REFINEDCELL_B',
+                    title: 'Unit Cell B',
+                    checked: true
+                },
+                {
+                    key: 'REFINEDCELL_C',
+                    title: 'Unit Cell C',
+                    checked: true
+                },
+                {
+                    key: 'RMEASWITHINIPLUSIMINUS',
+                    title: 'RMeas',
+                    checked: true
+                },
+                {
+                    key: 'RESOLUTIONLIMITHIGH',
+                    title: 'Resolution Limit (High)',
+                    checked: true
+                },
+                {
+                    key: 'CCANOMALOUS',
+                    title: 'cc Anomalous',
+                    checked: true
+                },
+                {
+                    key: 'RFREEVALUESTART',
+                    title: 'R Free Initial',
+                    checked: true
+                },
+                {
+                    key: 'RFREEVALUEEND',
+                    title: 'R Free Final',
+                    checked: true
+                },
+
+            ],
+            filterOptions: {
+                SPACEGROUP : {
                     title: 'Space Group',
                     inputtype: 'search-for-value',
                     searchedValue: ''
                 },
-                {
-                    key: 'RESLIMITHIGH',
+                RESLIMITHIGH : {
                     title: 'Resolution Limit (High)',
                     inputtype: 'greater-than-less-than',
                     filteredLt: '',
                     filteredGt: ''
                 },
-                {
-                    key: 'RMEASWIPLUSIMINUS',
+                RMEASWIPLUSIMINUS : {
                     title: 'Rmeas',
                     inputtype: 'greater-than-less-than',
                     filteredLt: '',
                     filteredGt: ''
                 },
-                {
-                    key: 'CCANOM',
+                CCANOM : {
                     title: 'CC Anomalous',
                     inputtype: 'greater-than-less-than',
                     filteredLt: '',
                     filteredGt: ''
                 },
-                {
-                    key: 'RFREEINITIAL',
+                RFREEINITIAL : {
                     title: 'RFree Initial',
                     inputtype: 'greater-than-less-than',
                     filteredLt: '',
                     filteredGt: ''
                 },
-                {
-                    key: 'RFREEFINAL',
+                RFREEFINAL : {
                     title: 'RFree Final',
                     inputtype: 'greater-than-less-than',
                     filteredLt: '',
                     filteredGt: ''
                 },
-            ]
+                },
+            searchedGtUnitCellA : '',
+            searchedLtUnitCellA : '',
+            searchedGtUnitCellB : '',
+            searchedLtUnitCellB : '',
+            searchedGtUnitCellC : '',
+            searchedLtUnitCellC : '',
+            tempDC : '',
+            searchedDCId : '',
         }
     },
     created() {
         this.searchProposal()
         this.populateSelectedColumns()
 
+    },
+    mounted() {
+            window.onresize = () => {
+                this.windowWidth = window.innerWidth
+            }
     },
     computed: {
         proposalSelectList() {
@@ -400,36 +463,80 @@ export default {
             this.proposals = results.toJSON()
             
         },
-        // async fetchSummaryInformation() {
-        //     this.summaryCollection = new SummaryCollection()
-        //     this.summaryCollection.queryParams.PROPOSALID = this.selectedProposal
-        //     const results = await this.$store.dispatch('getCollection', this.summaryCollection)
-        //     this.summaryData = results.toJSON()
-        //     console.log('SUMMARY DATA')
-        //     console.log(this.summaryData)
-        // },
-        async searchFilterParams() {
+        getQueryParams() {
             this.summaryCollection = new SummaryCollection()
-            this.summaryCollection.queryParams.PROPOSALID = this.selectedProposal
-            this.summaryCollection.queryParams.sg = this.searchedSpaceGroup
-            const results = await this.$store.dispatch('getCollection', this.summaryCollection)
-            this.summaryData = results.toJSON()
-            console.log('SUMMARY DATA')
-            console.log(this.selectedProposal, this.searchedSpaceGroup)
-            console.log(this.summaryData)
+
+            this.summaryCollection.queryParams = { page: this.currentPage, per_page: this.pageSize }
+            this.summaryCollection.queryParams.dcid = this.searchedDCId
+            this.summaryCollection.queryParams.prop = this.selectedProposal
+            this.summaryCollection.queryParams.sg = this.filterOptions.SPACEGROUP.searchedValue
+            this.summaryCollection.queryParams.gca = this.searchedGtUnitCellA
+            this.summaryCollection.queryParams.lca = this.searchedLtUnitCellA
+            this.summaryCollection.queryParams.gcb = this.searchedGtUnitCellB
+            this.summaryCollection.queryParams.lcb = this.searchedLtUnitCellB
+            this.summaryCollection.queryParams.gc = this.searchedGtUnitCellC
+            this.summaryCollection.queryParams.lc = this.searchedLtUnitCellC
+            this.summaryCollection.queryParams.grlh = this.filterOptions.RESLIMITHIGH.filteredGt
+            this.summaryCollection.queryParams.lrlh = this.filterOptions.RESLIMITHIGH.filteredLt
+            this.summaryCollection.queryParams.grm = this.filterOptions.RMEASWIPLUSIMINUS.filteredGt
+            this.summaryCollection.queryParams.lrm = this.filterOptions.RMEASWIPLUSIMINUS.filteredLt
+            this.summaryCollection.queryParams.gcc = this.filterOptions.CCANOM.filteredGt
+            this.summaryCollection.queryParams.lcc = this.filterOptions.CCANOM.filteredLt
+            this.summaryCollection.queryParams.grff = this.filterOptions.RFREEFINAL.filteredGt
+            this.summaryCollection.queryParams.lrff = this.filterOptions.RFREEFINAL.filteredLt
+            this.summaryCollection.queryParams.grfi = this.filterOptions.RFREEINITIAL.filteredGt
+            this.summaryCollection.queryParams.lrfi = this.filterOptions.RFREEINITIAL.filteredLt
         },
-        async handlePageChange(data) {
-            this.summaryCollection = new SummaryCollection()
-            this.summaryCollection.queryParams = { page: data['current-page'], per_page: Number(data['page-size'])}
-            this.summaryCollection.queryParams.PROPOSALID = this.selectedProposal
-            this.summaryCollection.queryParams.sg = this.searchedSpaceGroup
+        async searchFilterParams() {
+
+            this.getQueryParams()
+            
+            console.log('getting collection....')
+            console.log(this.summaryCollection.queryParams)
             const results = await this.$store.dispatch('getCollection', this.summaryCollection)
+
+            this.totalRecords = results.state.totalRecords
             this.summaryData = results.toJSON()
-            console.log('PAGINATED DATA')
-            console.log(this.selectedProposal, this.searchedSpaceGroup)
+            console.log('selected proposal')
             console.log(this.summaryData)
+            console.log(this.convertToCSV(this.summaryData))
 
         },
+        async handlePageChange(data) {
+
+            this.currentPage = data.currentPage;
+            this.pageSize = data.pageSize;
+            if (this.selectedProposal){
+
+                this.getQueryParams()
+
+                const results = await this.$store.dispatch('getCollection', this.summaryCollection)
+                this.summaryData = results.toJSON()
+            }
+
+        },
+        downloadFile() {
+            console.log('download')
+            const data = {
+                        '0': {
+                            timestamp: 1525879470,
+                            name: "testing",
+                            lastname: "testingdone"
+                        },
+                        '1': {
+                            timestamp: 1525879470,
+                            name: "testing2",
+                            lastname: "testingdone2"
+                        }
+                        };
+            
+            console.log(this.convertToCSV(data))
+        },
+        onDCSearch() {
+            this.searchedDCId = this.tempDC
+            this.searchFilterParams()
+
+        },  
         populateSelectedColumns() {
             for (const value of Object.entries(this.summaryColumns)) {
                 this.selectedColumns.push(value[1].title)
@@ -450,6 +557,30 @@ export default {
             console.log('selected columns', this.selectedColumns);
             console.log('deselected columns', this.deselectedColumns);
         },
+        convertToCSV(data) {
+
+            const result = [
+                // headers
+                Object.keys(data['0']),
+                // values
+                ...Object.values(data).map(item => Object.values(item))
+            ]
+                .reduce((string, item) => {
+                    string += item.join(',') + '\n';
+                    return string;
+            }, '');
+
+            return result;
+        },
+
+        // async fetchSummaryInformation() {
+        //     this.summaryCollection = new SummaryCollection()
+        //     this.summaryCollection.queryParams.PROPOSALID = this.selectedProposal
+        //     const results = await this.$store.dispatch('getCollection', this.summaryCollection)
+        //     this.summaryData = results.toJSON()
+        //     console.log('SUMMARY DATA')
+        //     console.log(this.summaryData)
+        // },
     },
     watch: {
         // selectedProposal(newValue) {
