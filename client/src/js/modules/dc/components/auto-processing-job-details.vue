@@ -28,7 +28,7 @@
 
     <div class="tw-w-full tw-flex tw-justify-end tw-mt-4">
 <!--      <p v-if="selectedProcessingProgram['IMAGESWEEPCOUNT'] > 1" class="tw-text-link-color">{{ selectedProcessingProgram['IMAGESWEEPCOUNT'] }} image sweeps</p>-->
-<!--      <router-link v-if="selectedProcessingProgram['DCCOUNT'] > 1" :to="`/dc/pjid/${selectedProcessingProgram['PROCESSINGJOBID']}`" class="button tw-mx-1 tw-text-link-color"><span><i class="fa fa-list"></i></span> {{ selectedProcessingProgram['DCCOUNT'] }} Data Sets</router-link>-->
+      <router-link v-if="selectedProcessingProgram['DCCOUNT'] > 1" :to="`/dc/pjid/${selectedProcessingProgram['PROCESSINGJOBID']}`" class="button tw-mx-1 tw-text-link-color"><span><i class="fa fa-list"></i></span> {{ selectedProcessingProgram['DCCOUNT'] }} Data Sets</router-link>
 <!--      <button class="button tw-mx-1 tw-text-link-color"><span><i class="fa fa-line-chart"></i></span> Plots</button>-->
 <!--      <router-link :to="`${apiUrl}/download/ap/archive/${selectedProcessingProgram['AID']}`" class="button tw-mx-1"><span><i class="fa fa-archive"></i></span> Archive</router-link>-->
 <!--      <button class="button tw-mx-1 tw-text-link-color"><span><i class="fa fa-files-o"></i></span> Logs &amp; Files</button>-->
