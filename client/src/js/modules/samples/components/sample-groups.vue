@@ -204,8 +204,8 @@ export default {
       }, [])
       this.loadedMultiplex = true
     },
-    goToSampleGroupsDataCollections() {
-
+    async goToSampleGroupsDataCollections() {
+      await this.$router.push(`/dc/sgid/${this.sampleGroupId}`)
     }
   },
   watch: {

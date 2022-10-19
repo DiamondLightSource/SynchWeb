@@ -82,6 +82,7 @@ export default {
         'dcg': String,
         'pjid': Number,
         'ty': String,
+        'sgid': Number
     },
     data: function() {
         return {
@@ -123,9 +124,9 @@ export default {
         // Setup backbone collection and params that will be passed into marionette view
         this.collection = new DCCol(null, {
                         state: { currentPage: this.page ? parseInt(this.page) : 1, pageSize: app.mobile() ? 5 : 15},
-                        queryParams: { visit: this.visit, s: this.search, t: this.ty, id: this.id, dcg: this.dcg, PROCESSINGJOBID: this.pjid }
+                        queryParams: { visit: this.visit, s: this.search, t: this.ty, id: this.id, dcg: this.dcg, PROCESSINGJOBID: this.pjid, sgid: this.sgid }
                     })
-        this.params = { visit: this.visit, search: this.search, type: this.ty, id: this.id, dcg: this.dcg, pjid: this.pjid }
+        this.params = { visit: this.visit, search: this.search, type: this.ty, id: this.id, dcg: this.dcg, pjid: this.pjid, sgid: this.sgid }
     },
     mounted: function() {
         this.initialiseView()
