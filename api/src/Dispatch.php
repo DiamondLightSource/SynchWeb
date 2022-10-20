@@ -24,11 +24,6 @@ class Dispatch
 
             // Determine class name from file path
             $class_name = basename($file_path, '.php');
-            if ($class_name == 'Users') // TODO: Remove this when the original class gets removed...
-
-            {
-                continue;
-            }
 
             // Determine routes for each class, where base URL is /
             $app->group('/' . strtolower($class_name), function () use ($app, $db, $user, $class_name, $namespaceName)
@@ -51,6 +46,7 @@ class Dispatch
         $user = $this->user;
         $this->setupControllerClasses('/Page/*.php', $app, $db, $user, 'SynchWeb\\Page\\');
 
+        // add specific routes which break the old convention
         $app->group('/users', function () use ($app)
         {
             $app->container['userController'];

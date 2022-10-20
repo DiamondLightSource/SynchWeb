@@ -372,9 +372,14 @@ class MySQL extends DatabaseParent implements DatabaseInterface
             {
                 $val = "'" . $val . "'";
             }
+            else if (is_null($val))
+            {
+                $val = 'null';
+            }
             $sql = preg_replace('/\?/', $val, $sql, 1);
         }
-        return $sql;
+        $sql = preg_replace('/\\n/', '', $sql); // replace newlines
+        return preg_replace('/\s\s+/', ' ', $sql); // remove excess spaces
     }
 
     function pq($query, $args = array(), $upperCaseKeys = true)

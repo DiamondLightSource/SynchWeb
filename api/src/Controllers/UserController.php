@@ -79,11 +79,15 @@ class UserController extends Page
     # Helpers for backbone application
     function getCurrentUser()
     {
-        $this->_output(array('personid' => $this->user->personId, 'user' => $this->user->loginId, 'givenname' => $this->user->givenName,
+        $this->_output(array(
+            'personid' => $this->user->personId,
+            'user' => $this->user->loginId,
+            'givenname' => $this->user->givenName,
             'permissions' => $this->user->perms,
             'is_staff' => $this->staff,
             'visits' => $this->visits,
-            'ty' => $this->ty));
+            'ty' => $this->ty)
+        );
     }
 
     function _login()
@@ -160,24 +164,24 @@ class UserController extends Page
     function _get_users()
     {
         $rows = $this->userData->getUsers(
-            $this->argOrEmptyString('all'),
-            $this->argOrEmptyString('pid'),
-            $this->argOrEmptyString('gid'),
-            $this->argOrEmptyString('login'),
-            $this->user->personId,
+            false,
             $this->staff,
             $this->argOrEmptyString('s'),
-            $this->argOrEmptyString('si'),
-            $this->argOrEmptyString('visit'),
             $this->argOrEmptyString('page'),
             $this->argOrEmptyString('sort_by'),
-            false,
+            $this->argOrEmptyString('pid'),
+            $this->argOrEmptyString('PERSONID'),
+                $this->user->hasPermission('manage_users'),
+            $this->user->personId,
+            $this->argOrEmptyString('gid'),
+            $this->argOrEmptyString('sid'),
             $this->argOrEmptyString('pjid'),
-            $this->argOrEmptyString('per_page'),
+            $this->argOrEmptyString('visit'),
+            $this->def_arg('per_page', 15),
             $this->argOrEmptyString('order')
         );
 
-        if ($this->user->personId)
+        if ($this->has_arg('PERSONID'))
         {
             if (sizeof($rows))
                 $this->_output($rows[0]);
@@ -185,26 +189,28 @@ class UserController extends Page
                 $this->_error('No such user');
         }
         else
+        {
             $tot = $this->userData->getUsers(
-                $this->argOrEmptyString('all'),
-                $this->argOrEmptyString('pid'),
-                $this->argOrEmptyString('gid'),
-                $this->argOrEmptyString('login'),
-                $this->user->personId,
+                true,
                 $this->staff,
                 $this->argOrEmptyString('s'),
-                $this->argOrEmptyString('si'),
-                $this->argOrEmptyString('visit'),
                 $this->argOrEmptyString('page'),
                 $this->argOrEmptyString('sort_by'),
-                true,
+                $this->argOrEmptyString('pid'),
+                $this->argOrEmptyString('PERSONID'),
+                    $this->user->hasPermission('manage_users'),
+                $this->user->personId,
+                $this->argOrEmptyString('gid'),
+                $this->argOrEmptyString('sid'),
                 $this->argOrEmptyString('pjid'),
-                $this->argOrEmptyString('per_page'),
+                $this->argOrEmptyString('visit'),
+                $this->def_arg('per_page', 15),
                 $this->argOrEmptyString('order')
             );
-        $this->_output(array('total' => $tot,
-            'data' => $rows,
-        ));
+            $this->_output(array('total' => $tot,
+                'data' => $rows,
+            ));
+        }
     }
 
     function _check_login()
@@ -221,9 +227,13 @@ class UserController extends Page
     function _add_user()
     {
         $this->haltIfLackingPermission('manage_users');
-
-        $email = $this->def_arg('EMAILADDRESS', null);
-        $this->_output(array('PERSONID' => $this->userData->addUser($this->arg('LOGIN'), $this->has_arg('GIVENNAME'), $this->has_arg('FAMILYNAME'), $email)));
+        $personId = $this->userData->addUser(
+            $this->arg('LOGIN'),
+            $this->arg('GIVENNAME'),
+            $this->arg('FAMILYNAME'),
+            $this->def_arg('EMAILADDRESS', null)
+        );
+        $this->_output(array('PERSONID' => $personId));
     }
 
     function _update_user()
@@ -248,19 +258,24 @@ class UserController extends Page
         );
 
         $person = $this->userData->getUser($this->user->personid, $this->proposalid, $this->arg('PERSONID'));
-        $this->_output((array)$person[0]);
+        $this->_output((array) $person[0]);
+        $laboratory = null;
+        if ($person['LABORATORYID'])
+        {
+            $laboratory = $this->userData->getLaboratory($person['LABORATORYID']);
+        }
 
         $this->userData->updateLaboratory(
-            $person,
-            $this->argOrEmptyString('PERSONID'),
-            $this->argOrEmptyString('LABNAME'),
-            $this->argOrEmptyString('ADDRESS'),
-            $this->argOrEmptyString('CITY'),
-            $this->argOrEmptyString('POSTCODE'),
-            $this->argOrEmptyString('COUNTRY')
+            $this->def_arg('PERSONID', $person['PERSONID']),
+            $this->def_arg('LABNAME', $laboratory ? $laboratory['NAME'] : null),
+            $this->def_arg('ADDRESS', $laboratory ? $laboratory['ADDRESS'] : null),
+            $this->def_arg('CITY', $laboratory ? $laboratory['CITY'] : null),
+            $this->def_arg('POSTCODE', $laboratory ? $laboratory['POSTCODE'] : null),
+            $this->def_arg('COUNTRY', $laboratory ? $laboratory['COUNTRY'] : null),
+            $person['LABORATORYID']
         );
         $laboratory = $this->userData->getLaboratory($person['LABORATORYID']);
-        $this->_output((array)$laboratory[0]);
+        $this->_output((array) $laboratory[0]);
     }
 
     function _add_group_user()
@@ -280,13 +295,15 @@ class UserController extends Page
     function _get_permissions()
     {
         $this->haltIfLackingPermission('manage_perms');
+        $args = array();
+
         $rows = $this->userData->getPermissions(
+            false,
             $this->argOrEmptyString('s'),
             $this->argOrEmptyString('gid'),
             $this->argOrEmptyString('pid'),
-            $this->argOrEmptyString('per_page'),
-            $this->argOrEmptyString('page'),
-            false
+            $this->def_arg('per_page', 15),
+            $this->def_arg('page', 0)
         );
 
         if ($this->has_arg('pid'))
@@ -299,12 +316,12 @@ class UserController extends Page
         else
         {
             $tot = $this->userData->getPermissions(
+                true,
                 $this->argOrEmptyString('s'),
                 $this->argOrEmptyString('gid'),
                 $this->argOrEmptyString('pid'),
-                $this->argOrEmptyString('per_page'),
-                $this->argOrEmptyString('page'),
-                true
+                $this->def_arg('per_page', 15),
+                $this->def_arg('page', 0)
             );
             $this->_output(array('total' => $tot,
                 'data' => $rows,

@@ -47,7 +47,8 @@ class AuthenticationData
         $user = null;
         $result = $this->db->pq("SELECT cache, personid, givenname, familyname FROM person p WHERE login=:1", array($loginId));
 
-        if (sizeof($result)) {
+        if (sizeof($result))
+        {
             $personId = intval($result[0]['PERSONID']);
 
             $perms = array();
@@ -59,15 +60,21 @@ class AuthenticationData
 				INNER JOIN usergroup_has_person uhpe ON uhpe.usergroupid = g.usergroupid
 				WHERE uhpe.personid=:1", array($personId));
 
-            foreach ($permsAndGroups as $p) {
-                array_push($perms, $p['TYPE']);
-                if (!in_array($p['USERGROUP'], $groups)) {
+            foreach ($permsAndGroups as $p)
+            {
+                if (!in_array($p['TYPE'], $perms))
+                {
+                    array_push($perms, $p['TYPE']);
+                }
+                if (!in_array($p['USERGROUP'], $groups))
+                {
                     array_push($groups, $p['USERGROUP']);
                 }
             }
 
             $cache = array();
-            if ($result[0]['CACHE']) {
+            if ($result[0]['CACHE'])
+            {
                 array_push($cache, json_decode($this->db->read($result[0]['CACHE']), True));
             }
 
@@ -79,7 +86,8 @@ class AuthenticationData
     function updateActivityTimestamp($loginId)
     {
         $chk = $this->db->pq("SELECT TIMESTAMPDIFF('SECOND', datetime, CURRENT_TIMESTAMP) AS lastupdate, comments FROM adminactivity WHERE username LIKE :1", array($loginId));
-        if (sizeof($chk)) {
+        if (sizeof($chk))
+        {
             if ($chk[0]['LASTUPDATE'] > 20)
                 $this->db->pq("UPDATE adminactivity SET datetime=CURRENT_TIMESTAMP WHERE username=:1", array($loginId));
         }

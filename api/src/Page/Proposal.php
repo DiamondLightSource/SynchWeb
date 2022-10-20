@@ -146,16 +146,21 @@ class Proposal extends Page
         $args = array();
         $where = "WHERE 1=1";
 
-        if ($id) {
+        if ($id)
+        {
             $where .= " AND CONCAT(p.proposalcode,p.proposalnumber) LIKE :" . (sizeof($args) + 1);
             array_push($args, $id);
         }
 
-        if ($this->staff) {
-            if (!$this->user->has('super_admin')) {
+        if ($this->staff)
+        {
+            if (!$this->user->has('super_admin'))
+            {
                 $bls = array();
-                foreach ($this->user->perms as $p) {
-                    if (strpos($p, '_admin')) {
+                foreach ($this->user->perms as $p)
+                {
+                    if (strpos($p, '_admin'))
+                    {
                         $parts = explode('_', $p);
                         $ty = $parts[0];
                         // _get_beamlines_from_type returns an empty array if type not found, so we can just merge....
@@ -166,13 +171,15 @@ class Proposal extends Page
                 $where .= " AND s.beamlinename in ('" . implode("','", $bls) . "')";
             }
         }
-        else {
+        else
+        {
             $where = " INNER JOIN session_has_person shp ON shp.sessionid = s.sessionid  " . $where;
             $where .= " AND shp.personid=:" . (sizeof($args) + 1);
             array_push($args, $this->user->personid);
         }
 
-        if ($this->has_arg('s')) {
+        if ($this->has_arg('s'))
+        {
             $st = sizeof($args) + 1;
             $where .= " AND (lower(s.beamlinename) LIKE lower(:" . $st . ") OR lower(p.title) LIKE lower(CONCAT(CONCAT('%',:" . ($st + 1) . "),'%')) OR lower(CONCAT(p.proposalcode, p.proposalnumber)) LIKE lower(CONCAT(CONCAT('%',:" . ($st + 2) . "), '%')))";
             for ($i = 0; $i < 3; $i++)
@@ -187,7 +194,8 @@ class Proposal extends Page
         $pp = $this->has_arg('per_page') ? $this->arg('per_page') : 15;
         $end = $pp;
 
-        if ($this->has_arg('page')) {
+        if ($this->has_arg('page'))
+        {
             $pg = $this->arg('page') - 1;
             $start = $pg * $pp;
             $end = $pg * $pp + $pp;
@@ -199,7 +207,8 @@ class Proposal extends Page
 
         $order = 'p.proposalid DESC';
 
-        if ($this->has_arg('sort_by')) {
+        if ($this->has_arg('sort_by'))
+        {
             $cols = array('ST' => 'p.bltimestamp', 'PROPOSALCODE' => 'p.proposalcode', 'PROPOSALNUMBER' => 'p.proposalnumber', 'VCOUNT' => 'vcount', 'TITLE' => 'lower(p.title)');
             $dir = $this->has_arg('order') ? ($this->arg('order') == 'asc' ? 'ASC' : 'DESC') : 'ASC';
             if (array_key_exists($this->arg('sort_by'), $cols))
@@ -214,23 +223,29 @@ class Proposal extends Page
                     GROUP BY TO_CHAR(p.bltimestamp, 'DD-MM-YYYY'), p.bltimestamp, p.proposalcode, p.proposalnumber, p.title, p.proposalid ORDER BY $order", $args);
 
 
-        foreach ($rows as &$r) {
+        foreach ($rows as &$r)
+        {
             // See if proposal code matches list in config
             $found = False;
             $ty = null;
-            foreach ($prop_types as $pty) {
-                if ($r['PROPOSALCODE'] == $pty) {
+            foreach ($prop_types as $pty)
+            {
+                if ($r['PROPOSALCODE'] == $pty)
+                {
                     $ty = $pty;
                     $found = True;
                 }
             }
 
             // Proposal code didnt match, work out what beamline the visits are on
-            if (!$found) {
+            if (!$found)
+            {
                 $bls = $this->db->pq("SELECT s.beamlinename FROM blsession s WHERE s.proposalid=:1", array($r['PROPOSALID']));
 
-                if (sizeof($bls)) {
-                    foreach ($bls as $bl) {
+                if (sizeof($bls))
+                {
+                    foreach ($bls as $bl)
+                    {
                         $b = $bl['BEAMLINENAME'];
                         $ty = $this->_get_type_from_beamline($b);
                         if ($ty)
@@ -245,7 +260,8 @@ class Proposal extends Page
 
         }
 
-        if ($id) {
+        if ($id)
+        {
             if (sizeof($rows))
                 $this->_output($rows[0]);
             else
@@ -276,7 +292,7 @@ class Proposal extends Page
 
         $this->db->pq("INSERT INTO proposal (personid, proposalcode, proposalnumber, title, state) 
                 VALUES (:1, :2, :3, :4, 'Open')",
-            array($this->arg('PERSONID'), $this->arg('PROPOSALCODE'), $this->arg('PROPOSALNUMBER'), $this->arg('TITLE')));
+                array($this->arg('PERSONID'), $this->arg('PROPOSALCODE'), $this->arg('PROPOSALNUMBER'), $this->arg('TITLE')));
 
         $this->_output(array(
             'PROPOSALID' => $this->db->id(),
@@ -300,8 +316,10 @@ class Proposal extends Page
         if (!sizeof($prop))
             $this->_error('No such proposal');
 
-        foreach (array('PROPOSALCODE', 'PROPOSALNUMBER', 'TITLE', 'PERSONID', 'STATE', 'EXTERNALID') as $f) {
-            if ($this->has_arg($f)) {
+        foreach (array('PROPOSALCODE', 'PROPOSALNUMBER', 'TITLE', 'PERSONID', 'STATE', 'EXTERNALID') as $f)
+        {
+            if ($this->has_arg($f))
+            {
                 $this->db->pq("UPDATE proposal SET $f=:1 WHERE proposalid=:2", array($this->arg($f), $prop[0]['PROPOSALID']));
                 $this->_output(array($f => $this->arg($f)));
             }
@@ -315,19 +333,22 @@ class Proposal extends Page
     {
         global $commissioning_code;
 
-        if ($this->has_arg('current')) {
+        if ($this->has_arg('current'))
+        {
             $this->_current_visits();
             return;
         }
 
-        if ($this->has_arg('all')) {
+        if ($this->has_arg('all'))
+        {
             $args = array();
             $where = 'WHERE 1=1';
             // 'All' is used for the main summary view (Next, Last, Commissioning)
             // Ignore session zero for this summary view - they should be included if a proposal is selected
             $where .= " AND s.visit_number > 0";
         }
-        else {
+        else
+        {
             $props = $this->db->pq('SELECT proposalid as id FROM proposal WHERE CONCAT(proposalcode, proposalnumber) LIKE :1', array($this->arg('prop')));
             if (!sizeof($props))
                 $this->_error('No such proposal');
@@ -338,64 +359,77 @@ class Proposal extends Page
             $where = 'WHERE s.proposalid = :1';
         }
 
-        if ($this->has_arg('year')) {
+        if ($this->has_arg('year'))
+        {
             $where .= " AND TO_CHAR(s.startdate, 'YYYY') = :" . (sizeof($args) + 1);
             array_push($args, $this->arg('year'));
         }
 
-        if ($this->has_arg('month')) {
+        if ($this->has_arg('month'))
+        {
             $where .= " AND TO_CHAR(s.startdate, 'MM') = :" . (sizeof($args) + 1);
             array_push($args, $this->arg('month'));
         }
 
-        if ($this->has_arg('prev')) {
+        if ($this->has_arg('prev'))
+        {
             $where .= " AND s.enddate < SYSDATE";
         }
 
-        if ($this->has_arg('started')) {
+        if ($this->has_arg('started'))
+        {
             $where .= " AND s.startdate < SYSDATE";
         }
 
-        if ($this->has_arg('next')) {
+        if ($this->has_arg('next'))
+        {
             $where .= " AND s.enddate > SYSDATE AND TO_CHAR(s.startdate,'YYYY') > 2009";
             $this->args['order'] = 'asc';
             $this->args['sort_by'] = 'ST';
         }
 
-        if ($this->has_arg('bl')) {
+        if ($this->has_arg('bl'))
+        {
             $where .= " AND s.beamlinename = :" . (sizeof($args) + 1);
             array_push($args, $this->arg('bl'));
         }
 
-        if ($this->has_arg('cm')) {
+        if ($this->has_arg('cm'))
+        {
             $where .= " AND p.proposalcode LIKE :" . (sizeof($args) + 1) . " AND s.startdate <= SYSDATE";
             array_push($args, $commissioning_code);
         }
 
-        if ($this->has_arg('ty')) {
+        if ($this->has_arg('ty'))
+        {
             $beamlines = $this->_get_beamlines_from_type($this->arg('ty'));
 
-            if (!empty($beamlines)) {
+            if (!empty($beamlines))
+            {
                 $bls = implode("', '", $beamlines);
                 $where .= " AND s.beamlinename IN ('$bls')";
             }
         }
 
-        if ($this->has_arg('s')) {
+        if ($this->has_arg('s'))
+        {
             $where .= " AND s.visit_number LIKE :" . (sizeof($args) + 1);
             array_push($args, $this->arg('s'));
         }
 
-        if ($this->has_arg('scheduled')) {
+        if ($this->has_arg('scheduled'))
+        {
             $where .= " AND s.scheduled=1";
         }
 
-        if ($visit) {
+        if ($visit)
+        {
             $where .= " AND CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) LIKE :" . (sizeof($args) + 1);
             array_push($args, $visit);
         }
 
-        if (!$this->staff) {
+        if (!$this->staff)
+        {
             $where .= " AND shp.personid=:" . (sizeof($args) + 1);
             array_push($args, $this->user->personid);
         }
@@ -411,7 +445,8 @@ class Proposal extends Page
         $pp = $this->has_arg('per_page') ? $this->arg('per_page') : 15;
         $end = $pp;
 
-        if ($this->has_arg('page')) {
+        if ($this->has_arg('page'))
+        {
             $pg = $this->arg('page') - 1;
             $start = $pg * $pp;
             $end = $pg * $pp + $pp;
@@ -423,7 +458,8 @@ class Proposal extends Page
 
         $order = 's.startdate DESC';
 
-        if ($this->has_arg('sort_by')) {
+        if ($this->has_arg('sort_by'))
+        {
             $cols = array('ST' => 's.startdate', 'EN' => 's.enddate', 'VIS' => 's.visit_number', 'BL' => 's.beamlinename', 'LC' => 's.beamlineoperator', 'COMMENT' => 's.comments');
             $dir = $this->has_arg('order') ? ($this->arg('order') == 'asc' ? 'ASC' : 'DESC') : 'ASC';
             if (array_key_exists($this->arg('sort_by'), $cols))
@@ -470,13 +506,15 @@ class Proposal extends Page
 
         $ids = array();
         $wcs = array();
-        foreach ($rows as $r) {
+        foreach ($rows as $r)
+        {
             array_push($ids, $r['SESSIONID']);
             array_push($wcs, 'dcg.sessionid=:' . sizeof($ids));
         }
 
         $dcs = array();
-        if (sizeof($ids)) {
+        if (sizeof($ids))
+        {
             $where = implode(' OR ', $wcs);
             $tdcs = $this->db->pq("SELECT count(dc.datacollectionid) as c, dcg.sessionid 
                     FROM datacollection dc
@@ -486,7 +524,8 @@ class Proposal extends Page
                 $dcs[$t['SESSIONID']] = $t['C'];
         }
 
-        foreach ($rows as &$r) {
+        foreach ($rows as &$r)
+        {
             $dc = array_key_exists($r['SESSIONID'], $dcs) ? $dcs[$r['SESSIONID']] : 0;
             $r['COMMENT'] = $r['COMMENTS'];
             $r['DCCOUNT'] = $dc;
@@ -496,8 +535,10 @@ class Proposal extends Page
             $r['TYPE'] = $bl_type ? $bl_type : 'gen';
         }
 
-        if ($output) {
-            if ($visit) {
+        if ($output)
+        {
+            if ($visit)
+            {
                 if (sizeof($rows))
                     $this->_output($rows[0]);
                 else
@@ -529,7 +570,8 @@ class Proposal extends Page
         $this->args['all'] = 1;
 
         $rows = array();
-        foreach (array('next', 'prev', 'cm') as $t) {
+        foreach (array('next', 'prev', 'cm') as $t)
+        {
             unset($this->args['order']);
             unset($this->args['sort_by']);
             foreach (array('next', 'prev', 'cm') as $r)
@@ -540,11 +582,13 @@ class Proposal extends Page
             else
                 $this->args['scheduled'] = 1;
 
-            foreach ($beamlines as $bl) {
+            foreach ($beamlines as $bl)
+            {
                 $this->args['bl'] = $bl;
                 $vis = $this->_get_visits(null, False);
 
-                if (sizeof($vis)) {
+                if (sizeof($vis))
+                {
                     $vis[0]['VISIT-TYPE'] = $vis[0]['VISIT'] . '-' . $t;
                     $vis[0]['type'] = $t;
                     array_push($rows, $vis[0]);
@@ -579,24 +623,30 @@ class Proposal extends Page
 
         $fields = array_merge($fields, array('STARTDATE', 'ENDDATE', 'BEAMLINENAME', 'BEAMLINEOPERATOR', 'SCHEDULED', 'ARCHIVED', 'BEAMLINESETUPID', 'BEAMCALENDARID'));
 
-        foreach ($fields as $f) {
+        foreach ($fields as $f)
+        {
             $fl = in_array($f, array('STARTDATE', 'ENDDATE')) ? "TO_DATE(:1, 'DD-MM-YYYY HH24:MI')" : ':1';
-            if ($this->has_arg($f)) {
+            if ($this->has_arg($f))
+            {
                 $this->db->pq("UPDATE blsession set $f=$fl where sessionid=:2", array($this->arg($f), $vis['SESSIONID']));
                 $this->_output(array($f => $this->arg($f)));
             }
         }
 
         $this->haltIfLackingPermission('manage_visits');
-        if ($this->has_arg('SESSIONTYPE')) {
+        if ($this->has_arg('SESSIONTYPE'))
+        {
             // Does this session already have a session type recorded?
-            if ($vis['SESSIONTYPEID']) {
+            if ($vis['SESSIONTYPEID'])
+            {
                 // If so update the session type only if it's different (case sensitive check currently)
-                if (strcmp($vis['TYPENAME'], $this->arg('SESSIONTYPE')) !== 0) {
+                if (strcmp($vis['TYPENAME'], $this->arg('SESSIONTYPE')) !== 0)
+                {
                     $this->db->pq("UPDATE sessiontype SET typename=:1 WHERE sessiontypeid=:2", array($this->arg('SESSIONTYPE'), $vis['SESSIONTYPEID']));
                 }
             }
-            else {
+            else
+            {
                 $this->db->pq("INSERT INTO sessiontype (sessionid, typename) VALUES (:1, :2)", array($vis['SESSIONID'], $this->arg('SESSIONTYPE')));
             }
 
@@ -628,7 +678,8 @@ class Proposal extends Page
         $blsid = $this->has_arg('BEAMLINESETUPID') ? $this->arg('BEAMLINESETUPID') : null;
         $calid = $this->has_arg('BEAMCALENDARID') ? $this->arg('BEAMCALENDARID') : null;
 
-        if ($this->has_arg('VISITNUMBER')) {
+        if ($this->has_arg('VISITNUMBER'))
+        {
             // Does this visit already exist? If so, throw an error.
             $chk = $this->db->pq("SELECT sessionid FROM blsession WHERE proposalid = :1 AND visit_number=:2", array($this->arg('PROPOSALID'), $this->arg('VISITNUMBER')));
             if (sizeof($chk))
@@ -640,7 +691,7 @@ class Proposal extends Page
 
         $this->db->pq("INSERT INTO blsession (proposalid, startdate, enddate, beamlinename, beamlineoperator, scheduled, visit_number, externalid, archived, beamlinesetupid, beamcalendarid) 
                 VALUES (:1, TO_DATE(:2, 'DD-MM-YYYY HH24:MI'), TO_DATE(:3, 'DD-MM-YYYY HH24:MI'), :4, :5, :6, :7, :8, :9, :10, :11)",
-            array($this->arg('PROPOSALID'), $this->arg('STARTDATE'), $this->arg('ENDDATE'), $this->arg('BEAMLINENAME'), $this->arg('BEAMLINEOPERATOR'), $sch, $vis, $extid, $arc, $blsid, $calid));
+                array($this->arg('PROPOSALID'), $this->arg('STARTDATE'), $this->arg('ENDDATE'), $this->arg('BEAMLINENAME'), $this->arg('BEAMLINEOPERATOR'), $sch, $vis, $extid, $arc, $blsid, $calid));
 
         $id = $this->db->id();
 
@@ -679,7 +730,8 @@ class Proposal extends Page
                 FROM session_has_person shp 
                 WHERE sessionid=:1 and personid=:2", array($this->arg('SESSIONID'), $this->arg('PERSONID')));
 
-        if (sizeof($chk)) {
+        if (sizeof($chk))
+        {
             $this->_error('That user is already registered on the specified visit');
         }
 
@@ -705,14 +757,16 @@ class Proposal extends Page
         $where = '1=1';
         $args = array();
 
-        if ($this->has_arg('SHPKEY')) {
+        if ($this->has_arg('SHPKEY'))
+        {
             list($sessionid, $personid) = explode('-', $this->arg('SHPKEY'));
             $where .= " shp.sessionid=:1 AND shp.personid=:2";
             array_push($args, $sessionid);
             array_push($args, $personid);
         }
 
-        if ($this->has_arg('visit')) {
+        if ($this->has_arg('visit'))
+        {
             $where .= " AND CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) LIKE :1";
             array_push($args, $this->arg('visit'));
         }
@@ -727,7 +781,7 @@ class Proposal extends Page
         $this->_get_start_end($args);
 
         $order = $this->_get_order(
-            array('PERSONID' => 'shp.personid', 'SESSIONID' => 'shp.sessionid'),
+                array('PERSONID' => 'shp.personid', 'SESSIONID' => 'shp.sessionid'),
             'shp.personid DESC'
         );
 
@@ -739,7 +793,8 @@ class Proposal extends Page
               WHERE $where
             ", $args);
 
-        if ($this->has_arg('SHPKEY')) {
+        if ($this->has_arg('SHPKEY'))
+        {
             if (sizeof($rows))
                 $this->_output($rows[0]);
             else
@@ -765,8 +820,10 @@ class Proposal extends Page
             $this->_error('The specified user is not registered on that visit');
 
         $fields = array('ROLE', 'REMOTE');
-        foreach ($fields as $f) {
-            if ($this->has_arg($f)) {
+        foreach ($fields as $f)
+        {
+            if ($this->has_arg($f))
+            {
                 $this->db->pq("UPDATE session_has_person set $f=:1 where sessionid=:2 and personid=:3", array($this->arg($f), $sessionid, $personid));
                 $this->_output(array($f => $this->arg($f)));
             }
@@ -799,17 +856,20 @@ class Proposal extends Page
         $where = '1=1';
         $args = array();
 
-        if ($this->has_arg('BEAMCALENDARID')) {
+        if ($this->has_arg('BEAMCALENDARID'))
+        {
             $where .= ' AND bc.beamcalendarid = :' . (sizeof($args) + 1);
             array_push($args, $this->arg('BEAMCALENDARID'));
         }
 
-        if ($this->has_arg('STARTDATE')) {
+        if ($this->has_arg('STARTDATE'))
+        {
             $where .= ' AND bc.startdate >= TO_DATE(:' . (sizeof($args) + 1) + ')';
             array_push($args, $this->arg('STARTDATE'));
         }
 
-        if ($this->has_arg('ENDDATE')) {
+        if ($this->has_arg('ENDDATE'))
+        {
             $where .= ' AND bc.enddate <= TO_DATE(:' . (sizeof($args) + 1) + ')';
             array_push($args, $this->arg('ENDDATE'));
         }
@@ -822,7 +882,7 @@ class Proposal extends Page
         $this->_get_start_end($args);
 
         $order = $this->_get_order(
-            array('BEAMCALENDARID' => 'bc.beamcalendarid'),
+                array('BEAMCALENDARID' => 'bc.beamcalendarid'),
             'bls.beamlinesetupid DESC'
         );
 
@@ -834,7 +894,8 @@ class Proposal extends Page
               GROUP BY bc.beamcalendarid
             ", $args);
 
-        if ($this->has_arg('BEAMCALENDARID')) {
+        if ($this->has_arg('BEAMCALENDARID'))
+        {
             if (sizeof($rows))
                 $this->_output($rows[0]);
             else
@@ -865,8 +926,10 @@ class Proposal extends Page
         );
 
         $field = null;
-        foreach ($fields as $f => $v) {
-            if ($this->has_arg($f)) {
+        foreach ($fields as $f => $v)
+        {
+            if ($this->has_arg($f))
+            {
                 $field = $f;
                 break;
             }
@@ -879,11 +942,15 @@ class Proposal extends Page
         $args = array();
 
 
-        if ($this->staff) {
-            if (!$this->user->has('super_admin')) {
+        if ($this->staff)
+        {
+            if (!$this->user->has('super_admin'))
+            {
                 $bls = array();
-                foreach ($this->user->perms as $p) {
-                    if (strpos($p, '_admin')) {
+                foreach ($this->user->perms as $p)
+                {
+                    if (strpos($p, '_admin'))
+                    {
                         $parts = explode('_', $p);
                         $ty = $parts[0];
                         // _get_beamlines_from_type returns an empty array if type not found, so we can just merge....
@@ -894,7 +961,8 @@ class Proposal extends Page
                 $where .= " AND ses.beamlinename in ('" . implode("','", $bls) . "')";
             }
         }
-        else {
+        else
+        {
             $where = " INNER JOIN session_has_person shp ON shp.sessionid = ses.sessionid  " . $where;
             $where .= " AND shp.personid=:" . (sizeof($args) + 1);
             array_push($args, $this->user->personid);
@@ -923,10 +991,12 @@ class Proposal extends Page
             ", $args);
 
 
-        if (sizeof($rows)) {
+        if (sizeof($rows))
+        {
             $this->_output($rows[0]);
         }
-        else {
+        else
+        {
             $this->_error('No such proposal');
         }
 
@@ -986,26 +1056,32 @@ class Proposal extends Page
 
         // Check if the container owner is a valid person (in User Office)
         // If not try and use the Proposal/Principal Investigator
-        if ($cont['OWNERID'] && $cont['OWNEREXTERNALID']) {
+        if ($cont['OWNERID'] && $cont['OWNEREXTERNALID'])
+        {
             $cont['PEXTERNALID'] = $cont['OWNEREXTERNALID'];
             $cont['PERSONID'] = $cont['OWNERID'];
         }
-        else {
-            if ($cont['PIID'] && $cont['PIEXTERNALID']) {
+        else
+        {
+            if ($cont['PIID'] && $cont['PIEXTERNALID'])
+            {
                 $cont['PEXTERNALID'] = $cont['PIEXTERNALID'];
                 $cont['PERSONID'] = $cont['PIID'];
             }
         }
 
-        if (!$cont['PEXTERNALID']) {
+        if (!$cont['PEXTERNALID'])
+        {
             $this->_error('That container does not have a valid owner', 412);
         }
-        if ($cont['SESSIONID']) {
+        if ($cont['SESSIONID'])
+        {
             error_log('That container already has a session ' . $cont['SESSIONID']);
 
             $this->_output(array('VISIT' => $cont['PROPOSAL'] . '-' . $cont['VISIT_NUMBER']));
         }
-        else {
+        else
+        {
             // Is there an existing auto collect session for this beamline with containers on the same shipment?
             // If so we add this container to the existing Auto Collect session.
             // Proposal reference is used to capture the visit string to return later
@@ -1021,20 +1097,24 @@ class Proposal extends Page
                     AND sh.shippingid = :2
                     AND (CURRENT_TIMESTAMP BETWEEN ses.startDate AND ses.endDate)", array($this->arg('bl'), $cont['SHIPPINGID']));
 
-            if (!sizeof($auto_sessions)) {
+            if (!sizeof($auto_sessions))
+            {
                 // Create new session - passing containerID, proposalID and UAS proposal ID
                 $sessionNumber = $this->_create_new_autocollect_session($cont['CONTAINERID'], $cont['PROPOSALID'], $cont['EXTERNALID'], $cont['PERSONID'], $cont['PEXTERNALID']);
 
-                if ($sessionNumber > 0) {
+                if ($sessionNumber > 0)
+                {
                     $result = array('VISIT' => $cont['PROPOSAL'] . '-' . $sessionNumber, 'CONTAINERS' => array($cont['CONTAINERID']));
 
                     $this->_output($result);
                 }
-                else {
+                else
+                {
                     $this->_error('Something went wrong creating a session for that container ' . $cont['CONTAINERID']);
                 }
             }
-            else {
+            else
+            {
                 // Update existing session - passing Session ID, UAS Session ID, Container ID and the current Team Leader (so its preserved in UAS)
                 $auto_session = $auto_sessions[0];
 
@@ -1045,21 +1125,24 @@ class Proposal extends Page
                         WHERE shp.sessionId = :1
                         AND shp.role='Team Leader'", array($auto_session['SESSIONID']));
 
-                if (!sizeof($team_leader)) {
+                if (!sizeof($team_leader))
+                {
                     error_log('Proposal::auto_session - no team leader for an existing Auto Collect Session');
                     $this->_error('Precondition failed, no team leader role found while adding container ' . $cont['CONTAINERID'] . ' to session ' . $auto_session['SESSIONID'], 412);
                 }
 
                 $result = $this->_update_autocollect_session($auto_session['SESSIONID'], $auto_session['SEXTERNALID'], $cont['CONTAINERID'], $team_leader[0]['TEAMLEADEREXTID']);
 
-                if ($result) {
+                if ($result)
+                {
                     // Add visit to return value...
                     // Just returning number of samples and investigators along with container list
                     $resp['VISIT'] = $auto_session['VISIT'];
                     $resp['CONTAINERS'] = $result['CONTAINERS'];
                     $this->_output($resp);
                 }
-                else {
+                else
+                {
                     $this->_error('Something went wrong adding container ' . $cont['CONTAINERID'] . ' to session ' . $auto_session['SESSIONID']);
                 }
             }
@@ -1083,7 +1166,8 @@ class Proposal extends Page
         // Get Samples info from current (new) container
         $sampleInfo = $this->_get_valid_samples_from_containers(array($containerId));
 
-        if ($sampleInfo['INVESTIGATORS'] && $sampleInfo['SAMPLES']) {
+        if ($sampleInfo['INVESTIGATORS'] && $sampleInfo['SAMPLES'])
+        {
             // Set the first investigator as the team lead
             $sampleInfo['INVESTIGATORS'][0]['role'] = 'TEAM_LEADER';
 
@@ -1095,22 +1179,23 @@ class Proposal extends Page
                 'facility' => strtoupper($this->arg('bl')),
                 'investigators' => array_values($sampleInfo['INVESTIGATORS']),
                 'experimentalMethods' => array(array(
-                        'state' => 'Submitted',
-                        'experimentHazard' => array('description' => $auto_exp_hazard),
-                        'preparationHazard' => array('description' => $auto_sample_hazard)
-                    )),
+                    'state' => 'Submitted',
+                    'experimentHazard' => array('description' => $auto_exp_hazard),
+                    'preparationHazard' => array('description' => $auto_sample_hazard)
+                )),
                 'eraState' => 'Submitted'
             );
             // Create the session in UAS with our special autocollect user
             $uas = new UAS($auto_user, $auto_pass);
             $sess = $uas->create_session($data);
 
-            if ($sess['code'] == 200 && $sess['resp']) {
+            if ($sess['code'] == 200 && $sess['resp'])
+            {
                 // Set the initial end Date as two days from now - this will be updated by propagation from UAS later.
                 // Also the session endDate will be set once the samples are unloaded by calling the close_session endpoint.
                 $this->db->pq("INSERT INTO blsession (proposalid, visit_number, externalid, beamlinename, beamlinesetupid, startDate, endDate) 
                         VALUES (:1,:2,UNHEX(:3),:4,1, CURRENT_TIMESTAMP, TIMESTAMPADD(DAY,2,CURRENT_TIMESTAMP))",
-                    array($proposalId, $sess['resp']->sessionNumber, $sess['resp']->id, $this->arg('bl')));
+                        array($proposalId, $sess['resp']->sessionNumber, $sess['resp']->id, $this->arg('bl')));
 
                 $sessionId = $this->db->id();
 
@@ -1121,12 +1206,14 @@ class Proposal extends Page
                 $sessionNumber = $sess['resp']->sessionNumber;
 
             }
-            else {
+            else
+            {
                 error_log(print_r(array('error' => 'Session could not be created via UAS', 'data' => $data, 'resp' => $sess), True));
                 $this->_error('Something went wrong creating a session for that container, response code was: ' . $sess['code'] . ' response: ' . json_encode($sess['resp']));
             }
         }
-        else {
+        else
+        {
             $this->_error("No Samples or investigators! FAILED to create autocollect session!");
         }
         return $sessionNumber;
@@ -1154,21 +1241,25 @@ class Proposal extends Page
                 WHERE c.sessionId = :1
                 ORDER BY c.containerId", array($sessionId));
 
-        if (sizeof($containers)) {
+        if (sizeof($containers))
+        {
             // ...now add the requested container id (the new one) to the list
             // Apparently this is better/faster than array_push!
             $containers[] = array('CONTAINERID' => $containerId);
 
             // Extract only the parts we want
-            $containerList = array_map(function ($item) {
+            $containerList = array_map(function ($item)
+            {
                 return strtoupper($item['CONTAINERID']);
             }, $containers);
 
             $sampleInfo = $this->_get_valid_samples_from_containers($containerList);
 
             // Note specific syntax here that lets us update the sampleInfo['INVESTIGATORS'] array
-            foreach ($sampleInfo['INVESTIGATORS'] as &$investigators) {
-                if ($investigators['personId'] == $teamLeader) {
+            foreach ($sampleInfo['INVESTIGATORS'] as &$investigators)
+            {
+                if ($investigators['personId'] == $teamLeader)
+                {
                     $investigators['role'] = 'TEAM_LEADER';
                 }
             }
@@ -1181,7 +1272,8 @@ class Proposal extends Page
             $uas = new UAS($auto_user, $auto_pass);
             $code = $uas->update_session($uasSessionId, $data);
 
-            if ($code == 200) {
+            if ($code == 200)
+            {
                 // Update ISPyB records
                 $this->db->pq("UPDATE container SET sessionid=:1 WHERE containerid=:2", array($sessionId, $containerId));
                 // For debugging - actually just want to return Success!
@@ -1190,17 +1282,21 @@ class Proposal extends Page
                     'CONTAINERS' => $containerList,
                 );
             }
-            else if ($code == 403) {
+            else if ($code == 403)
+            {
                 $this->_error('UAS Error - samples and/or investigators not valid. ISPyB/UAS Session ID: ' . $sessionId . ' / ' . $uasSessionId);
             }
-            else if ($code == 404) {
+            else if ($code == 404)
+            {
                 $this->_error('UAS Error - session not found in UAS, Session ID: ' . $sessionId . ' UAS Session ID: ' . $uasSessionId);
             }
-            else {
+            else
+            {
                 $this->_error('UAS Error - something wrong creating a session for that container ' . $containerId . ', response code was: ' . $code);
             }
         }
-        else {
+        else
+        {
             error_log("Something wrong - an Auto Collect session exists but with no containers " . $sessionId);
 
             $this->_error('No valid containers on the existing Auto Collect Session id:', $sessionId);
@@ -1237,11 +1333,13 @@ class Proposal extends Page
                 WHERE c.containerId IN ('$containerIds') ORDER BY containerid");
 
 
-        $samples = array_map(function ($result) {
+        $samples = array_map(function ($result)
+        {
             return strtoupper($result['EXTERNALID']);
         }, $containerResults);
 
-        $investigators = array_map(function ($result) {
+        $investigators = array_map(function ($result)
+        {
             return strtoupper($result['INVESTIGATOR']);
         }, $containerResults);
 
@@ -1249,7 +1347,8 @@ class Proposal extends Page
         $samples = array_filter(array_unique($samples));
         $investigators = array_filter(array_unique($investigators));
 
-        $uas_investigators = array_map(function ($item) {
+        $uas_investigators = array_map(function ($item)
+        {
             return array('role' => 'DATA_ACCESS', 'personId' => $item);
         }, $investigators);
 
@@ -1269,7 +1368,8 @@ class Proposal extends Page
     function _update_auto_visit()
     {
         $session_update_data = array();
-        if ($this->has_arg('Total Time')) {
+        if ($this->has_arg('Total Time'))
+        {
             $session_update_data['usedTimeReport'] = array(
                 'log' => array(
                     'Total Time' => $this->arg('Total Time')
@@ -1300,25 +1400,30 @@ class Proposal extends Page
             $this->_error('No such container');
         $cont = $cont[0];
 
-        if ($cont['SESSIONID']) {
+        if ($cont['SESSIONID'])
+        {
             $uas = new UAS($auto_user, $auto_pass);
             $code = $uas->close_session($cont['EXTERNALID'], $close_session_data);
 
-            if ($code == 200) {
+            if ($code == 200)
+            {
                 // Don't wait for UAS sync - set end Date in ISPyB now as well
                 $this->db->pq("UPDATE blsession SET endDate=CURRENT_TIMESTAMP WHERE sessionid=:1", array($cont['SESSIONID']));
                 $this->_output(array('MESSAGE' => 'Session closed', 'VISIT' => $cont['VISIT']));
             }
-            else if ($code == 403) {
+            else if ($code == 403)
+            {
                 $this->_output(array('MESSAGE' => 'Session already closed', 'VISIT' => $cont['VISIT']));
 
             }
-            else {
+            else
+            {
                 $this->_error('Something went wrong closing that session, response code was: ' . $code);
             }
 
         }
-        else {
+        else
+        {
             $this->_error('That container does not have a session');
         }
     }
