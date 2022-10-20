@@ -66,15 +66,19 @@ class Fault extends Page
     function _migrate()
     {
         $faults = $this->db->pq("SELECT faultid, owner, assignee FROM bf_fault WHERE personid IS NULL");
-        foreach ($faults as $f) {
+        foreach ($faults as $f)
+        {
             $owner = $this->db->pq("SELECT personid FROM person WHERE login=:1", array($f['OWNER']));
-            if (sizeof($owner)) {
+            if (sizeof($owner))
+            {
                 $this->db->pq("UPDATE bf_fault SET personid=:1 WHERE faultid=:2", array($owner[0]['PERSONID'], $f['FAULTID']));
             }
 
-            if ($f['ASSIGNEE']) {
+            if ($f['ASSIGNEE'])
+            {
                 $assignee = $this->db->pq("SELECT personid FROM person WHERE login=:1", array($f['ASSIGNEE']));
-                if (sizeof($assignee)) {
+                if (sizeof($assignee))
+                {
                     $this->db->pq("UPDATE bf_fault SET assigneeid=:1 WHERE faultid=:2", array($assignee[0]['PERSONID'], $f['FAULTID']));
                 }
             }
@@ -90,13 +94,15 @@ class Fault extends Page
         $where = array();
         $join = '';
 
-        if (!$this->user->has('fault_view')) {
+        if (!$this->user->hasPermission('fault_view'))
+        {
             array_push($where, 'shp.personid=:' . (sizeof($args) + 1));
             array_push($args, $this->user->personid);
             $join = 'INNER JOIN session_has_person shp ON shp.sessionid = bl.sessionid';
         }
 
-        if ($this->has_arg('s')) {
+        if ($this->has_arg('s'))
+        {
             $st = sizeof($args) + 1;
             array_push($where, "(lower(f.title) LIKE lower(CONCAT(CONCAT('%',:" . $st . "),'%')) OR lower(f.description) LIKE lower(CONCAT(CONCAT('%',:" . ($st + 1) . "),'%')) OR lower(s.name) LIKE lower(CONCAT(CONCAT('%',:" . ($st + 2) . "),'%')) OR lower(c.name) LIKE lower(CONCAT(CONCAT('%',:" . ($st + 3) . "),'%')) OR lower(sc.name) LIKE lower(CONCAT(CONCAT('%',:" . ($st + 4) . "),'%')))");
             for ($i = 0; $i < 5; $i++)
@@ -104,49 +110,59 @@ class Fault extends Page
         }
 
         $ext_columns = '';
-        if ($this->has_arg('fid')) {
+        if ($this->has_arg('fid'))
+        {
             array_push($where, 'f.faultid=:' . (sizeof($args) + 1));
             array_push($args, $this->arg('fid'));
             $ext_columns = 'f.description, f.resolution,';
         }
 
-        if ($this->has_arg('visit')) {
+        if ($this->has_arg('visit'))
+        {
             array_push($where, "CONCAT(CONCAT(CONCAT(p.proposalcode,p.proposalnumber),'-'),bl.visit_number) LIKE :" . (sizeof($args) + 1));
             array_push($args, $this->arg('visit'));
         }
 
 
-        if ($this->has_arg('sid')) {
+        if ($this->has_arg('sid'))
+        {
             array_push($where, 's.systemid=:' . (sizeof($args) + 1));
             array_push($args, $this->arg('sid'));
         }
 
-        if ($this->has_arg('cid')) {
+        if ($this->has_arg('cid'))
+        {
             array_push($where, 'c.componentid=:' . (sizeof($args) + 1));
             array_push($args, $this->arg('cid'));
         }
 
-        if ($this->has_arg('scid')) {
+        if ($this->has_arg('scid'))
+        {
             array_push($where, 'sc.subcomponentid=:' . (sizeof($args) + 1));
             array_push($args, $this->arg('scid'));
         }
 
-        if ($this->has_arg('bl')) {
-            if ($this->arg('bl') == 'P01') {
+        if ($this->has_arg('bl'))
+        {
+            if ($this->arg('bl') == 'P01')
+            {
                 $bls = array();
-                foreach (array('i02', 'i03', 'i04') as $b) {
+                foreach (array('i02', 'i03', 'i04') as $b)
+                {
                     array_push($bls, 'bl.beamlinename LIKE :' . (sizeof($args) + 1));
                     array_push($args, $b);
                 }
                 array_push($where, '(' . implode($bls, ' OR ') . ')');
             }
-            else {
+            else
+            {
                 array_push($where, 'bl.beamlinename LIKE :' . (sizeof($args) + 1));
                 array_push($args, $this->arg('bl'));
             }
         }
 
-        if ($this->has_arg('runid')) {
+        if ($this->has_arg('runid'))
+        {
             array_push($where, 'vr.runid = :' . (sizeof($args) + 1));
             array_push($args, $this->arg('runid'));
         }
@@ -159,7 +175,8 @@ class Fault extends Page
         $pp = $this->has_arg('pp') ? $this->arg('pp') : 20;
         $end = $pp;
 
-        if ($this->has_arg('page')) {
+        if ($this->has_arg('page'))
+        {
             $pg = $this->arg('page') - 1;
             $start = $pg * $pp;
             $end = $pg * $pp + $pp;
@@ -200,15 +217,19 @@ class Fault extends Page
                 GROUP BY f.faultid
                 ORDER BY f.starttime DESC", $args);
 
-        foreach ($rows as &$r) {
-            foreach (array('DESCRIPTION', 'RESOLUTION') as $k) {
-                if (array_key_exists($k, $r)) {
+        foreach ($rows as &$r)
+        {
+            foreach (array('DESCRIPTION', 'RESOLUTION') as $k)
+            {
+                if (array_key_exists($k, $r))
+                {
                     $r[$k] = $this->db->read($r[$k]);
                 }
             }
 
             $r['ATTACH_IMAGE'] = false;
-            if ($r['ATTACHMENT']) {
+            if ($r['ATTACHMENT'])
+            {
                 $r['ATTACHMENT'] = basename($r['ATTACHMENT']);
                 $ext = pathinfo($r['ATTACHMENT'], PATHINFO_EXTENSION);
 
@@ -217,7 +238,8 @@ class Fault extends Page
             }
         }
 
-        if ($this->has_arg('fid')) {
+        if ($this->has_arg('fid'))
+        {
             if (sizeof($rows))
                 $this->_output($rows[0]);
             else
@@ -238,30 +260,38 @@ class Fault extends Page
             $this->_error('A fault with that id doesnt exists');
         $check = $check[0];
 
-        if ($this->user->personid != $check['PERSONID'] && $this->user->personid != $check['ASSIGNEEID']) {
+        if ($this->user->personid != $check['PERSONID'] && $this->user->personid != $check['ASSIGNEEID'])
+        {
             $this->haltIfLackingPermission('fault_global');
         }
 
         $fields = array('TITLE', 'STARTTIME', 'ENDTIME', 'BEAMTIMELOST_STARTTIME', 'BEAMTIMELOST_ENDTIME', 'SESSIONID', 'SUBCOMPONENTID', 'BEAMTIMELOST', 'RESOLVED', 'RESOLUTION', 'DESCRIPTION');
-        foreach ($fields as $f) {
-            if ($this->has_arg($f)) {
+        foreach ($fields as $f)
+        {
+            if ($this->has_arg($f))
+            {
                 $fl = ':1';
-                if (in_array($f, array('STARTTIME', 'ENDTIME', 'BEAMTIMELOST_STARTTIME', 'BEAMTIMELOST_ENDTIME'))) {
+                if (in_array($f, array('STARTTIME', 'ENDTIME', 'BEAMTIMELOST_STARTTIME', 'BEAMTIMELOST_ENDTIME')))
+                {
                     $fl = "TO_DATE(:1, 'DD-MM-YYYY HH24:MI')";
                 }
 
                 $this->db->pq("UPDATE bf_fault SET $f=$fl WHERE faultid=:2", array($this->arg($f), $this->arg('fid')));
 
-                if ($f == 'SESSIONID') {
+                if ($f == 'SESSIONID')
+                {
                     $v = $this->db->pq("SELECT CONCAT(CONCAT(CONCAT(p.proposalcode,p.proposalnumber),'-'),bl.visit_number) as visit FROM blsession bl INNER JOIN proposal p ON bl.proposalid = p.proposalid WHERE bl.sessionid=:1", array($this->arg($f)));
-                    if (sizeof($v)) {
+                    if (sizeof($v))
+                    {
                         $this->_output(array('VISIT' => $v[0]['VISIT']));
                     }
 
                 }
-                else if ($f == 'SUBCOMPONENTID') {
+                else if ($f == 'SUBCOMPONENTID')
+                {
                     $sc = $this->db->pq('SELECT name FROM bf_subcomponent WHERE subcomponentid=:1', array($this->arg($f)));
-                    if (sizeof($sc)) {
+                    if (sizeof($sc))
+                    {
                         $this->_output(array('SUBCOMPONENT' => $sc[0]['NAME']));
                     }
 
@@ -280,7 +310,8 @@ class Fault extends Page
     {
         $row_tmp = $this->db->pq("SELECT distinct beamlinename as name FROM blsession WHERE beamlinename NOT LIKE 'i04 1' ORDER BY beamlinename");
         $rows = array();
-        foreach ($row_tmp as $r) {
+        foreach ($row_tmp as $r)
+        {
             array_push($rows, array('NAME' => $r['NAME']));
         }
 
@@ -298,11 +329,13 @@ class Fault extends Page
     {
         $args = array();
 
-        if ($this->has_arg('bl')) {
+        if ($this->has_arg('bl'))
+        {
             $bls = $this->arg('bl') == 'P01' ? array('i02', 'i03', 'i04') : array($this->arg('bl'));
 
             $blw = array();
-            foreach ($bls as $b) {
+            foreach ($bls as $b)
+            {
                 array_push($blw, 'hs.beamlinename LIKE :' . (sizeof($args) + 1));
                 array_push($args, $b);
             }
@@ -330,11 +363,13 @@ class Fault extends Page
             $this->_error('No systemid specified');
         $args = array($this->arg('sid'));
 
-        if ($this->has_arg('bl')) {
+        if ($this->has_arg('bl'))
+        {
             $bls = $this->arg('bl') == 'P01' ? array('i02', 'i03', 'i04') : array($this->arg('bl'));
 
             $blw = array();
-            foreach ($bls as $b) {
+            foreach ($bls as $b)
+            {
                 array_push($blw, 'hc.beamlinename LIKE :' . (sizeof($args) + 1));
                 array_push($args, $b);
             }
@@ -361,11 +396,13 @@ class Fault extends Page
             $this->_error('No componentid specified');
         $args = array($this->arg('cid'));
 
-        if ($this->has_arg('bl')) {
+        if ($this->has_arg('bl'))
+        {
             $bls = $this->arg('bl') == 'P01' ? array('i02', 'i03', 'i04') : array($this->arg('bl'));
 
             $blw = array();
-            foreach ($bls as $b) {
+            foreach ($bls as $b)
+            {
                 array_push($blw, 'hs.beamlinename LIKE :' . (sizeof($args) + 1));
                 array_push($args, $b);
             }
@@ -389,7 +426,7 @@ class Fault extends Page
     # Add a new system
     function _add_system()
     {
-        if (!$this->user->has('fault_admin'))
+        if (!$this->user->hasPermission('fault_admin'))
             $this->_error('No Access');
 
         if (!$this->has_arg('NAME'))
@@ -397,12 +434,14 @@ class Fault extends Page
 
         $this->db->pq('INSERT INTO bf_system (systemid,name,description) 
                 VALUES (s_bf_system.nextval, :1, :2) RETURNING systemid INTO :id',
-            array($this->arg('NAME'), $this->has_arg('DESCRIPTION') ? $this->arg('DESCRIPTION') : ''));
+                array($this->arg('NAME'), $this->has_arg('DESCRIPTION') ? $this->arg('DESCRIPTION') : ''));
 
         $sysid = $this->db->id();
 
-        if ($this->has_arg('BLS')) {
-            foreach ($this->arg('BLS') as $b) {
+        if ($this->has_arg('BLS'))
+        {
+            foreach ($this->arg('BLS') as $b)
+            {
                 $this->db->pq('INSERT INTO bf_system_beamline (system_beamlineid, systemid, beamlinename) 
                         VALUES (s_bf_system_beamline.nextval,:1, :2)', array($sysid, $b));
             }
@@ -415,7 +454,7 @@ class Fault extends Page
     # Add a new component
     function _add_component()
     {
-        if (!$this->user->has('fault_admin'))
+        if (!$this->user->hasPermission('fault_admin'))
             $this->_error('No Access');
 
         if (!$this->has_arg('NAME'))
@@ -425,15 +464,17 @@ class Fault extends Page
 
         $this->db->pq('INSERT INTO bf_component (componentid, systemid,name,description) 
                 VALUES (s_bf_component.nextval, :1, :2, :3) RETURNING componentid INTO :id',
-            array($this->arg('SYSTEMID'), $this->arg('NAME'), $this->has_arg('DESCRIPTION') ? $this->arg('DESCRIPTION') : ''));
+                array($this->arg('SYSTEMID'), $this->arg('NAME'), $this->has_arg('DESCRIPTION') ? $this->arg('DESCRIPTION') : ''));
 
         $comid = $this->db->id();
 
-        if ($this->has_arg('BLS')) {
-            foreach ($this->arg('BLS') as $b) {
+        if ($this->has_arg('BLS'))
+        {
+            foreach ($this->arg('BLS') as $b)
+            {
                 $this->db->pq('INSERT INTO bf_component_beamline (component_beamlineid, componentid, beamlinename) 
                         VALUES (s_bf_component_beamline.nextval,:1, :2)',
-                    array($comid, $b));
+                        array($comid, $b));
             }
         }
 
@@ -444,7 +485,7 @@ class Fault extends Page
     # Add a new subcomponent
     function _add_subcomponent()
     {
-        if (!$this->user->has('fault_admin'))
+        if (!$this->user->hasPermission('fault_admin'))
             $this->_error('No Access');
 
         if (!$this->has_arg('NAME'))
@@ -454,15 +495,17 @@ class Fault extends Page
 
         $this->db->pq('INSERT INTO bf_subcomponent (subcomponentid, componentid,name,description) 
                 VALUES (s_bf_subcomponent.nextval, :1, :2, :3) RETURNING subcomponentid INTO :id',
-            array($this->arg('COMPONENTID'), $this->arg('NAME'), $this->has_arg('DESCRIPTION') ? $this->arg('DESCRIPTION') : ''));
+                array($this->arg('COMPONENTID'), $this->arg('NAME'), $this->has_arg('DESCRIPTION') ? $this->arg('DESCRIPTION') : ''));
 
         $scomid = $this->db->id();
 
-        if ($this->has_arg('BLS')) {
-            foreach ($this->arg('BLS') as $b) {
+        if ($this->has_arg('BLS'))
+        {
+            foreach ($this->arg('BLS') as $b)
+            {
                 $this->db->pq('INSERT INTO bf_subcomponent_beamline (subcomponent_beamlineid, subcomponentid, beamlinename) 
                         VALUES (s_bf_subcomponent_beamline.nextval,:1, :2)',
-                    array($scomid, $b));
+                        array($scomid, $b));
             }
         }
 
@@ -483,7 +526,7 @@ class Fault extends Page
     # Edit a row
     function _update_system()
     {
-        if (!$this->user->has('fault_admin'))
+        if (!$this->user->hasPermission('fault_admin'))
             $this->_error('No Access');
 
         if (!$this->has_arg('SYSTEMID'))
@@ -493,7 +536,7 @@ class Fault extends Page
 
     function _update_component()
     {
-        if (!$this->user->has('fault_admin'))
+        if (!$this->user->hasPermission('fault_admin'))
             $this->_error('No Access');
 
         if (!$this->has_arg('COMPONENTID'))
@@ -503,7 +546,7 @@ class Fault extends Page
 
     function _update_subcomponent()
     {
-        if (!$this->user->has('fault_admin'))
+        if (!$this->user->hasPermission('fault_admin'))
             $this->_error('No Access');
 
         if (!$this->has_arg('SUBCOMPONENTID'))
@@ -539,11 +582,13 @@ class Fault extends Page
         $add = array_values(array_diff($bls, array_keys($bl_old)));
 
 
-        foreach ($rem as $r) {
+        foreach ($rem as $r)
+        {
             $this->db->pq('DELETE FROM bf_' . $ty[0] . '_beamline WHERE ' . $ty[0] . '_beamlineid=:1', array($bl_old[$r]));
         }
 
-        foreach ($add as $a) {
+        foreach ($add as $a)
+        {
             $this->db->pq('INSERT INTO bf_' . $ty[0] . '_beamline (' . $ty[0] . '_beamlineid, ' . $ty[0] . 'id, beamlinename) 
                     VALUES (s_bf_' . $ty[0] . '_beamline.nextval, :1, :2)', array($id, $a));
         }
@@ -558,11 +603,12 @@ class Fault extends Page
     # Add fault via ajax
     function _add_fault()
     {
-        if (!$this->user->has('fault_add'))
+        if (!$this->user->hasPermission('fault_add'))
             $this->_error('No Access');
 
         $valid = True;
-        foreach (array('TITLE', 'DESCRIPTION', 'SESSIONID', 'STARTTIME', 'SUBCOMPONENTID', 'BEAMTIMELOST', 'RESOLVED') as $f) {
+        foreach (array('TITLE', 'DESCRIPTION', 'SESSIONID', 'STARTTIME', 'SUBCOMPONENTID', 'BEAMTIMELOST', 'RESOLVED') as $f)
+        {
             if (!$this->has_arg($f))
                 $valid = False;
         }
@@ -578,7 +624,7 @@ class Fault extends Page
 
         $this->db->pq("INSERT INTO bf_fault (faultid, sessionid, personid, subcomponentid, starttime, endtime, beamtimelost, beamtimelost_starttime, beamtimelost_endtime, title, description, resolved, resolution, assigneeid) 
                 VALUES (s_bf_fault.nextval, :1, :2, :3, TO_DATE(:4, 'DD-MM-YYYY HH24:MI'), TO_DATE(:5, 'DD-MM-YYYY HH24:MI'), :6, TO_DATE(:7, 'DD-MM-YYYY HH24:MI'), TO_DATE(:8, 'DD-MM-YYYY HH24:MI'), :9, :10, :11, :12, :13) RETURNING faultid INTO :id",
-            array($this->arg('SESSIONID'), $this->user->personid, $this->arg('SUBCOMPONENTID'), $this->arg('STARTTIME'), $end, $this->arg('BEAMTIMELOST'), $btlstart, $btlend, $this->arg('TITLE'), $this->arg('DESCRIPTION'), $this->arg('RESOLVED'), $res, $as));
+                array($this->arg('SESSIONID'), $this->user->personid, $this->arg('SUBCOMPONENTID'), $this->arg('STARTTIME'), $end, $this->arg('BEAMTIMELOST'), $btlstart, $btlend, $this->arg('TITLE'), $this->arg('DESCRIPTION'), $this->arg('RESOLVED'), $res, $as));
 
         $newid = $this->db->id();
 
@@ -595,11 +641,12 @@ class Fault extends Page
 
         $info = $info[0];
 
-        foreach (array('DESCRIPTION', 'RESOLUTION') as $k) {
+        foreach (array('DESCRIPTION', 'RESOLUTION') as $k)
+        {
             #if ($info[$k]) {
             #$info[$k] = Markdown::defaultTransform($info[$k]->read($info[$k]->size()));
             $info[$k] = $this->db->read($info[$k]);
-        #}
+            #}
         }
 
         $report = '<b>' . $info['TITLE'] . '</b><br/><br/>Reported By: ' . $info['NAME'] . '<br/><br/>System: ' . $info['SYSTEM'] . '<br/>Component: ' . $info['COMPONENT'] . ' &raquo; ' . $info['SUBCOMPONENT'] . '<br/><br/>Start: ' . $info['STARTTIME'] . ' End: ' . ($info['RESOLVED'] == 1 ? $info['ENDTIME'] : 'N/A') . '<br/>Resolved: ' . ($info['RESOLVED'] == 2 ? 'Partial' : ($info['RESOLVED'] ? 'Yes' : 'No')) . '<br/>Beamtime Lost: ' . ($info['BEAMTIMELOST'] ? ('Yes (' . $info['LOST'] . 'h between ' . $info['BEAMTIMELOST_STARTTIME'] . ' and ' . $info['BEAMTIMELOST_ENDTIME'] . ')') : 'No') . '<br/><br/><b>Description</b><br/>' . $info['DESCRIPTION'] . '<br/><br/>' . ($info['RESOLVED'] ? ('<b>Resolution</b><br/>' . $info['RESOLUTION']) : '') . '<br/><br/><a href="https://ispyb.diamond.ac.uk/faults/fid/' . $this->db->id() . '">Fault Report Link</a>';
@@ -614,8 +661,10 @@ class Fault extends Page
         );
 
 
-        if (array_key_exists('userfile1', $_FILES)) {
-            if ($_FILES['userfile1']['name']) {
+        if (array_key_exists('userfile1', $_FILES))
+        {
+            if ($_FILES['userfile1']['name'])
+            {
                 move_uploaded_file($_FILES['userfile1']['tmp_name'], '/tmp/fault_' . strtolower($_FILES['userfile1']['name']));
                 $data['userfile1'] = '@/tmp/fault_' . strtolower($_FILES['userfile1']['name']);
             }
@@ -630,11 +679,13 @@ class Fault extends Page
         curl_close($ch);
 
 
-        if (preg_match('/New Log Entry ID:(\d+)/', $response, $eid)) {
+        if (preg_match('/New Log Entry ID:(\d+)/', $response, $eid))
+        {
             $this->db->pq('UPDATE bf_fault SET elogid=:1 WHERE faultid=:2', array($eid[1], $newid));
         }
 
-        if (preg_match('/Attachment Id:(\d+)/', $response, $aid)) {
+        if (preg_match('/Attachment Id:(\d+)/', $response, $aid))
+        {
             $this->db->pq('UPDATE bf_fault SET attachment=:1 WHERE faultid=:2', array($aid[1] . '-fault_' . strtolower($_FILES['userfile1']['name']), $newid));
         }
 

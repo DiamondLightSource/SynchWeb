@@ -154,7 +154,7 @@ class Proposal extends Page
 
         if ($this->staff)
         {
-            if (!$this->user->has('super_admin'))
+            if (!$this->user->hasPermission('super_admin'))
             {
                 $bls = array();
                 foreach ($this->user->perms as $p)
@@ -944,7 +944,7 @@ class Proposal extends Page
 
         if ($this->staff)
         {
-            if (!$this->user->has('super_admin'))
+            if (!$this->user->hasPermission('super_admin'))
             {
                 $bls = array();
                 foreach ($this->user->perms as $p)

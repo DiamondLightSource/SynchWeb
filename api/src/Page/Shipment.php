@@ -218,29 +218,34 @@ class Shipment extends Page
     # List of shipments for a proposal
     function _get_shipments()
     {
-        if ($this->has_arg('all') && $this->user->has('view_manifest')) {
+        if ($this->has_arg('all') && $this->user->hasPermission(ermission('view_manifest'))
+        {
             $args = array();
             $where = '1=1';
 
         }
-        else {
+        else
+        {
             if (!$this->has_arg('prop'))
                 $this->_error('No proposal specified', 'Please select a proposal first');
             $args = array($this->proposalid);
             $where = 'p.proposalid=:1';
         }
 
-        if ($this->has_arg('sid')) {
+        if ($this->has_arg('sid'))
+        {
             $where .= ' AND s.shippingid=:' . (sizeof($args) + 1);
             array_push($args, $this->arg('sid'));
         }
 
-        if ($this->has_arg('manifest')) {
+        if ($this->has_arg('manifest'))
+        {
             $where .= ' AND s.deliveryagent_flightcodetimestamp is NOT NULL
                     AND d.deliveryagent_barcode IS NOT NULL';
         }
 
-        if ($this->has_arg('s')) {
+        if ($this->has_arg('s'))
+        {
             $st = sizeof($args) + 1;
             $where .= " AND (lower(s.shippingname) LIKE lower(CONCAT(CONCAT('%',:" . $st . "), '%')) OR lower(CONCAT(p.proposalcode,p.proposalnumber)) LIKE lower(CONCAT(CONCAT('%',:" . ($st + 1) . "), '%')))";
             array_push($args, $this->arg('s'));
@@ -267,7 +272,8 @@ class Shipment extends Page
         array_push($args, $end);
 
         $order = 's.creationdate DESC';
-        if ($this->has_arg('sort_by')) {
+        if ($this->has_arg('sort_by'))
+        {
             $cols = array('SHIPPINGNAME' => 's.shippingname');
             $dir = $this->has_arg('order') ? ($this->arg('order') == 'asc' ? 'ASC' : 'DESC') : 'ASC';
             if (array_key_exists($this->arg('sort_by'), $cols))
@@ -288,11 +294,13 @@ class Shipment extends Page
               GROUP BY s.sendinglabcontactid, s.returnlabcontactid, s.deliveryagent_agentname, s.deliveryagent_agentcode, s.deliveryagent_shippingdate, s.deliveryagent_deliverydate, s.safetylevel, c.cardname, c2.cardname, s.shippingid, s.shippingname, s.shippingstatus,TO_CHAR(s.creationdate, 'DD-MM-YYYY'), s.isstorageshipping, s.shippingtype, s.comments, s.creationdate 
               ORDER BY $order", $args);
 
-        foreach ($rows as &$s) {
+        foreach ($rows as &$s)
+        {
             $s['DELIVERYAGENT_BARCODE'] = str_replace(',', ', ', $s['DELIVERYAGENT_BARCODE']);
         }
 
-        if ($this->has_arg('sid')) {
+        if ($this->has_arg('sid'))
+        {
             if (sizeof($rows))
                 $this->_output($rows[0]);
             else
@@ -315,16 +323,19 @@ class Shipment extends Page
 
         $args = array($this->proposalid);
         $where = 'p.proposalid=:1';
-        if ($this->has_arg('all') && ($this->bcr() || $this->staff)) {
+        if ($this->has_arg('all') && ($this->bcr() || $this->staff))
+        {
             $args = array();
             $where = '1=1';
         }
 
-        if ($this->has_arg('did')) {
+        if ($this->has_arg('did'))
+        {
             $where .= ' AND d.dewarid=:' . (sizeof($args) + 1);
             array_push($args, $this->arg('did'));
         }
-        else {
+        else
+        {
             $where .= ' AND d.facilitycode=:' . (sizeof($args) + 1);
             array_push($args, $this->arg('FACILITYCODE'));
         }
@@ -395,7 +406,8 @@ class Shipment extends Page
         // If it's come from a beamline, register flag so we can e-mail further down...
         $last_history_results = $this->db->pq("SELECT storageLocation FROM dewartransporthistory WHERE dewarId = :1 ORDER BY DewarTransportHistoryId DESC LIMIT 1", array($dew['DEWARID']));
 
-        if (sizeof($last_history_results)) {
+        if (sizeof($last_history_results))
+        {
             $last_history = $last_history_results[0];
             // We only add data to dewar history in lower case from this method.
             // If that ever changes, update this to become case insensitive search
@@ -408,11 +420,13 @@ class Shipment extends Page
             // Stop/break if we find a match
             $bls = $this->_get_beamlines_from_type('all');
 
-            if (in_array($last_location, $bls)) {
+            if (in_array($last_location, $bls))
+            {
                 $from_beamline = True;
             }
         }
-        else {
+        else
+        {
             // No history - could be a new dewar, so not necessarily an error...
             if ($this->debug)
                 error_log("No previous dewar transport history for DewarId " . $dew['DEWARID']);
@@ -431,7 +445,8 @@ class Shipment extends Page
         $containers = $this->db->pq("SELECT containerid 
                 FROM container 
                 WHERE dewarid=:1", array($dew['DEWARID']));
-        foreach ($containers as $c) {
+        foreach ($containers as $c)
+        {
             $this->db->pq("INSERT INTO containerhistory (containerid,status) VALUES (:1,:2)", array($c['CONTAINERID'], 'at facility'));
         }
 
@@ -441,13 +456,15 @@ class Shipment extends Page
         $dew['INCONTACTS'] = $in_contacts;
         $dew['TRACKINGNUMBERFROMSYNCHROTRON'] = $track;
 
-        if (strtolower($this->arg('LOCATION')) == 'stores-in' && $dew['LCOUTEMAIL']) {
+        if (strtolower($this->arg('LOCATION')) == 'stores-in' && $dew['LCOUTEMAIL'])
+        {
             $lcs = $this->db->pq("SELECT p.login
                   FROM person p 
                   INNER JOIN session_has_person shp ON shp.personid = p.personid
                   WHERE shp.sessionid=:1 AND (shp.role = 'Local Contact' OR shp.role = 'Local Contact 2')", array($dew['FIRSTEXPERIMENTID']));
             $emails = array($dew['LCOUTEMAIL'], $transfer_email);
-            foreach ($lcs as $lc) {
+            foreach ($lcs as $lc)
+            {
                 array_push($emails, $this->_get_email($lc['LOGIN']));
             }
 
@@ -456,13 +473,15 @@ class Shipment extends Page
             $email->send(implode(', ', $emails));
         }
 
-        if (strtolower($this->arg('LOCATION')) == 'stores-out' && $dew['LCRETEMAIL']) {
+        if (strtolower($this->arg('LOCATION')) == 'stores-out' && $dew['LCRETEMAIL'])
+        {
             $email = new Email('dewar-stores-out', '*** Dewar ready to leave Synchrotron ***');
             $email->data = $dew;
             $email->send($dew['LCRETEMAIL']);
         }
 
-        if (strpos(strtolower($this->arg('LOCATION')), '-rack') !== false && $dew['LCRETEMAIL']) {
+        if (strpos(strtolower($this->arg('LOCATION')), '-rack') !== false && $dew['LCRETEMAIL'])
+        {
             $dew['LOCATION'] = $this->arg('LOCATION');
 
             $email = new Email('dewar-rack', '*** Dewar now outside Beamline ***');
@@ -473,7 +492,8 @@ class Shipment extends Page
         // Change this so it checks if the boolean flag "from_beamline" is set
         // The old version assumed rack-<word>-from-bl
         //if (preg_match('/rack-\w+-from-bl/', strtolower($this->arg('LOCATION'))) && $dew['LCRETEMAIL']) {
-        if ($from_beamline && $dew['LCRETEMAIL']) {
+        if ($from_beamline && $dew['LCRETEMAIL'])
+        {
             // Any data collections for this dewar's containers?
             // Note this counts data collection ids for containers and uses the DataCollection.SESSIONID to determine the session/visit
             // Should work for UDC (where container.sessionid is set) as well as any normal scheduled session (where container.sessionid is not set)
@@ -513,23 +533,27 @@ class Shipment extends Page
         $fields = "r.dewarregistryid, max(CONCAT(p.proposalcode, p.proposalnumber)) as prop, r.facilitycode, TO_CHAR(r.purchasedate, 'DD-MM-YYYY') as purchasedate, ROUND(TIMESTAMPDIFF('DAY',r.purchasedate, CURRENT_TIMESTAMP)/30.42,1) as age, r.labcontactid, count(d.dewarid) as dewars, GROUP_CONCAT(distinct CONCAT(p.proposalcode,p.proposalnumber) SEPARATOR ', ') as proposals, r.bltimestamp, TO_CHAR(max(d.bltimestamp),'DD-MM-YYYY') as lastuse, count(dr.dewarreportid) as reports";
         $group = "r.facilitycode";
 
-        if ($this->has_arg('all') && $this->staff) {
+        if ($this->has_arg('all') && $this->staff)
+        {
             $args = array();
             $where = '1=1';
         }
 
-        if ($this->has_arg('FACILITYCODE')) {
+        if ($this->has_arg('FACILITYCODE'))
+        {
             $where .= ' AND r.facilitycode=:' . (sizeof($args) + 1);
             array_push($args, $this->arg('FACILITYCODE'));
         }
 
-        if ($this->has_arg('s')) {
+        if ($this->has_arg('s'))
+        {
             $st = sizeof($args) + 1;
             $where .= " AND (lower(r.facilitycode) LIKE lower(CONCAT(CONCAT('%', :" . ($st) . "), '%')) OR lower(CONCAT(p.proposalcode,p.proposalnumber)) LIKE lower(CONCAT(CONCAT('%',:" . ($st + 1) . "), '%')))";
             array_push($args, $this->arg('s'), $this->arg('s'));
         }
 
-        if ($this->has_arg('t')) {
+        if ($this->has_arg('t'))
+        {
             if ($this->arg('t') == 'orphan')
                 $where .= " AND rhp.dewarregistryid IS NULL";
         }
@@ -553,7 +577,8 @@ class Shipment extends Page
         array_push($args, $end);
 
         $order = 'r.facilitycode';
-        if ($this->has_arg('sort_by')) {
+        if ($this->has_arg('sort_by'))
+        {
             $cols = array(
                 'FACILITYCODE' => 'r.facilitycode', 'DEWARS' => 'count(distinct d.dewarid)',
                 'LASTUSE' => 'max(d.bltimestamp)', 'BLTIMESTAMP' => 'r.bltimestamp',
@@ -576,7 +601,8 @@ class Shipment extends Page
               GROUP BY $group
               ORDER BY $order", $args);
 
-        if ($this->has_arg('FACILITYCODE')) {
+        if ($this->has_arg('FACILITYCODE'))
+        {
             if (sizeof($rows))
                 $this->_output($rows[0]);
             else
@@ -599,7 +625,8 @@ class Shipment extends Page
         $fc = strtoupper($this->arg('FACILITYCODE'));
         $check = $this->db->pq("SELECT dewarregistryid FROM dewarregistry WHERE facilitycode=:1", array($fc));
 
-        if (sizeof($check)) {
+        if (sizeof($check))
+        {
             $this->_error('That facility code is already in use');
         }
 
@@ -625,19 +652,24 @@ class Shipment extends Page
         $fields = array('PURCHASEDATE');
         if ($this->staff)
             array_push($fields, 'NEWFACILITYCODE');
-        foreach ($fields as $f) {
-            if ($this->has_arg($f)) {
+        foreach ($fields as $f)
+        {
+            if ($this->has_arg($f))
+            {
                 $fl = ':1';
-                if (in_array($f, array('PURCHASEDATE'))) {
+                if (in_array($f, array('PURCHASEDATE')))
+                {
                     $fl = "TO_DATE(:1, 'DD-MM-YYYY')";
                 }
 
-                if ($f == 'NEWFACILITYCODE') {
+                if ($f == 'NEWFACILITYCODE')
+                {
                     $this->db->pq("UPDATE dewarregistry SET FACILITYCODE=$fl WHERE facilitycode=:2", array($this->arg($f), $this->arg('FACILITYCODE')));
                     $this->_output(array('FACILITYCODE' => $this->arg($f)));
 
                 }
-                else {
+                else
+                {
                     $this->db->pq("UPDATE dewarregistry SET $f=$fl WHERE facilitycode=:2", array($this->arg($f), $this->arg('FACILITYCODE')));
                     $this->_output(array($f => $this->arg($f)));
                 }
@@ -724,7 +756,8 @@ class Shipment extends Page
                 FROM dewarreport r
               WHERE $where ORDER BY r.bltimestamp DESC", $args);
 
-        foreach ($rows as $i => &$row) {
+        foreach ($rows as $i => &$row)
+        {
             $row['REPORT'] = $this->db->read($row['REPORT']);
         }
 
@@ -751,23 +784,27 @@ class Shipment extends Page
         else
             $lv = $last_visits[0];
 
-        if (array_key_exists('ATTACHMENT', $_FILES)) {
-            if ($_FILES['ATTACHMENT']['name']) {
+        if (array_key_exists('ATTACHMENT', $_FILES))
+        {
+            if ($_FILES['ATTACHMENT']['name'])
+            {
                 $info = pathinfo($_FILES['ATTACHMENT']['name']);
 
-                if ($info['extension'] == 'jpg') {
+                if ($info['extension'] == 'jpg')
+                {
                     # dls_mxweb cant write to visits...
                     #$root = '/dls/'.$lv['BEAMLINENAME'].'/data/'.$lv['YEAR'].'/'.$lv['VISIT'].'/.ispyb/';
 
                     $root = '/dls_sw/dasc/ispyb2/uploads/' . $lv['YEAR'] . '/' . $lv['VISIT'] . '/';
-                    if (!is_dir($root)) {
+                    if (!is_dir($root))
+                    {
                         mkdir($root, 0755, true);
                     }
 
                     $file = strftime('%Y-%m-%d_%H%M') . 'dewarreport.jpg';
 
                     $this->db->pq("INSERT INTO dewarreport (dewarreportid,facilitycode,report,attachment,bltimestamp) VALUES (s_dewarreport.nextval,:1,:2,:3,SYSDATE) RETURNING dewarreportid INTO :id",
-                        array($this->arg('FACILITYCODE'), $this->arg('REPORT'), $root . $file));
+                            array($this->arg('FACILITYCODE'), $this->arg('REPORT'), $root . $file));
                     move_uploaded_file($_FILES['ATTACHMENT']['tmp_name'], $root . $file);
 
                     $lc = $this->db->pq("SELECT p.emailaddress
@@ -776,7 +813,8 @@ class Shipment extends Page
                           INNER JOIN person p ON p.personid = l.personid
                           WHERE r.facilitycode=:1", array($this->arg('FACILITYCODE')));
 
-                    if (sizeof($lc)) {
+                    if (sizeof($lc))
+                    {
                         $recpts = array($lc[0]['EMAILADDRESS']);
                         $local = $this->_get_email_fn($lv['LOCALCONTACT']);
                         if ($local)
@@ -818,17 +856,18 @@ class Shipment extends Page
 
         $this->db->pq("INSERT INTO dewartransporthistory (dewartransporthistoryid,dewarid,dewarstatus,storagelocation,arrivaldate) 
               VALUES (s_dewartransporthistory.nextval,:1,'transfer-requested',:2,CURRENT_TIMESTAMP) RETURNING dewartransporthistoryid INTO :id",
-            array($dew['DEWARID'], $this->arg('LOCATION')));
+                array($dew['DEWARID'], $this->arg('LOCATION')));
 
         // Update dewar status to transfer-requested to keep consistent with history
         $this->db->pq("UPDATE dewar set dewarstatus='transfer-requested' WHERE dewarid=:1", array($dew['DEWARID']));
 
-        if ($this->has_arg('NEXTVISIT')) {
+        if ($this->has_arg('NEXTVISIT'))
+        {
             $sessions = $this->db->pq("SELECT s.sessionid
                   FROM blsession s
                   INNER JOIN proposal p ON p.proposalid = s.proposalid
                   WHERE p.proposalid=:1 AND CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) LIKE :2",
-                array($this->proposalid, $this->arg('NEXTVISIT')));
+                    array($this->proposalid, $this->arg('NEXTVISIT')));
 
             $sessionId = !empty($sessions) ? $sessions[0]['SESSIONID'] : NULL;
 
@@ -891,31 +930,35 @@ class Shipment extends Page
         // We still update history based on provided location to record action from user
         $dewar_location = $this->arg('LOCATION');
 
-        if (empty($dewar_location)) {
+        if (empty($dewar_location))
+        {
             // What was the last history entry for this dewar?
             // User may have accidentally removed location from form
             $last_history_results = $this->db->pq("SELECT storageLocation FROM dewartransporthistory WHERE dewarId = :1 ORDER BY DewarTransportHistoryId DESC LIMIT 1", array($dew['DEWARID']));
 
-            if (sizeof($last_history_results)) {
+            if (sizeof($last_history_results))
+            {
                 $last_history = $last_history_results[0];
 
                 $dewar_location = $last_history['STORAGELOCATION'];
             }
-            else {
+            else
+            {
                 // Use the current location of the dewar instead if no history
                 $dewar_location = $dew['STORAGELOCATION'];
             }
         }
         // Check if the last history storage location is an EBIC prefix or not
         // Case insensitive search
-        if (stripos($dewar_location, 'ebic') !== false) {
+        if (stripos($dewar_location, 'ebic') !== false)
+        {
             $dispatch_from_location = 'eBIC';
         }
 
         // Update dewar transport history with provided location.
         $this->db->pq("INSERT INTO dewartransporthistory (dewartransporthistoryid,dewarid,dewarstatus,storagelocation,arrivaldate) 
               VALUES (s_dewartransporthistory.nextval,:1,'dispatch-requested',:2,CURRENT_TIMESTAMP) RETURNING dewartransporthistoryid INTO :id",
-            array($dew['DEWARID'], $this->arg('LOCATION')));
+                array($dew['DEWARID'], $this->arg('LOCATION')));
 
         // Also update the dewar status and storage location to keep it in sync with history...
         $this->db->pq("UPDATE dewar set dewarstatus='dispatch-requested', storagelocation=lower(:2) WHERE dewarid=:1", array($dew['DEWARID'], $this->arg('LOCATION')));
@@ -928,7 +971,8 @@ class Shipment extends Page
 
         // LDAP email search does not always provide a match
         // So look at the ISPyB person record for a matching staff user
-        if (!$this->args['LCEMAIL'] && $this->args['LOCALCONTACT']) {
+        if (!$this->args['LCEMAIL'] && $this->args['LOCALCONTACT'])
+        {
             $this->args['LCEMAIL'] = $this->_get_ispyb_email_fn($this->args['LOCALCONTACT']);
         }
 
@@ -954,7 +998,8 @@ class Shipment extends Page
 
     function _get_dewar_tracking()
     {
-        if (!$this->has_arg('prop')) {
+        if (!$this->has_arg('prop'))
+        {
             $this->haltIfLackingPermission('all_dewars');
         }
 
@@ -964,7 +1009,8 @@ class Shipment extends Page
         $where = 'AND p.proposalid=:1';
         $args = array($this->arg('DEWARID'), $this->proposalid);
 
-        if ($this->user->hasPermission('all_dewars')) {
+        if ($this->user->hasPermission('all_dewars'))
+        {
             $where = '';
             $args = array($this->arg('DEWARID'));
         }
@@ -981,19 +1027,21 @@ class Shipment extends Page
             $dew = $dew[0];
 
         if ($dew['DELIVERYAGENT_AGENTNAME'] == 'dhl'
-        && (($dew['TRACKINGNUMBERTOSYNCHROTRON'] && strlen($dew['TRACKINGNUMBERTOSYNCHROTRON']) <= 10) ||
+            && (($dew['TRACKINGNUMBERTOSYNCHROTRON'] && strlen($dew['TRACKINGNUMBERTOSYNCHROTRON']) <= 10) ||
         ($dew['TRACKINGNUMBERFROMSYNCHROTRON'] && strlen($dew['TRACKINGNUMBERFROMSYNCHROTRON']) <= 10))
-        ) {
+        )
+        {
             $tr = $this->_dewar_tracking($dew);
 
             $this->_output(array(
-                'ORIGIN' => (string)$tr['status']->AWBInfo->ShipmentInfo->OriginServiceArea->Description,
-                'DESTINATION' => (string)$tr['status']->AWBInfo->ShipmentInfo->DestinationServiceArea->Description,
+                'ORIGIN' => (string) $tr['status']->AWBInfo->ShipmentInfo->OriginServiceArea->Description,
+                'DESTINATION' => (string) $tr['status']->AWBInfo->ShipmentInfo->DestinationServiceArea->Description,
                 'EVENTS' => $tr['events']
             ));
 
         }
-        else {
+        else
+        {
             $this->_output();
         }
     }
@@ -1003,27 +1051,30 @@ class Shipment extends Page
         if ($dewar['TRACKINGNUMBERFROMSYNCHROTRON'])
             $status = $this->dhl->get_tracking_info(array('AWB' => $dewar['TRACKINGNUMBERFROMSYNCHROTRON']));
         else
-            $status = $this->dhl->get_tracking_info(array('AWB' => (string)($dewar['TRACKINGNUMBERTOSYNCHROTRON'])));
+            $status = $this->dhl->get_tracking_info(array('AWB' => (string) ($dewar['TRACKINGNUMBERTOSYNCHROTRON'])));
 
         if ($status->Response->Status)
             $this->_error($status->Response->Status);
-        else {
+        else
+        {
             if ($status->AWBInfo->Status->ActionStatus != 'success')
-                $this->_error((string)$status->AWBInfo->Status->ActionStatus);
-            else {
+                $this->_error((string) $status->AWBInfo->Status->ActionStatus);
+            else
+            {
                 $events = array();
                 // print_r($status->AWBInfo->ShipmentInfo);
                 $i = 1;
-                foreach ($status->AWBInfo->ShipmentInfo->ShipmentEvent as $e) {
-                    $st = (string)$e->ServiceEvent->EventCode;
+                foreach ($status->AWBInfo->ShipmentInfo->ShipmentEvent as $e)
+                {
+                    $st = (string) $e->ServiceEvent->EventCode;
                     $event = array(
                         'EVENTID' => $i++,
-                        'STISO' => (string)$e->Date . 'T' . (string)$e->Time,
-                        'DATE' => (string)$e->Date . ' ' . (string)$e->Time,
-                        'EVENT' => (string)$e->ServiceEvent->EventCode,
+                        'STISO' => (string) $e->Date . 'T' . (string) $e->Time,
+                        'DATE' => (string) $e->Date . ' ' . (string) $e->Time,
+                        'EVENT' => (string) $e->ServiceEvent->EventCode,
                         'STATE' => $this->dhl->tracking_status($st),
-                        'LOCATION' => (string)$e->ServiceArea->Description,
-                        'SIGNATORY' => (string)$e->Signatory
+                        'LOCATION' => (string) $e->ServiceArea->Description,
+                        'SIGNATORY' => (string) $e->Signatory
                     );
 
                     array_push($events, $event);
@@ -1039,65 +1090,77 @@ class Shipment extends Page
     # List of dewars for a shipment
     function _get_dewars()
     {
-        if (!$this->has_arg('prop') && !$this->user->has('all_dewars'))
+        if (!$this->has_arg('prop') && !$this->user->hasPermission('all_dewars'))
             $this->_error('No proposal id specified');
 
         $where = 's.proposalid=:1';
         $args = array($this->proposalid);
 
-        if ($this->user->has('all_dewars') && $this->has_arg('all')) {
+        if ($this->user->hasPermission('all_dewars') && $this->has_arg('all'))
+        {
             $where = '1=1';
             $args = array();
         }
 
-        if ($this->has_arg('visit')) {
+        if ($this->has_arg('visit'))
+        {
             $where .= " AND CONCAT(p.proposalcode, p.proposalnumber, '-', se.visit_number)=:" . (sizeof($args) + 1);
             array_push($args, $this->arg('visit'));
         }
 
-        if ($this->has_arg('bl')) {
+        if ($this->has_arg('bl'))
+        {
             $where .= ' AND se.beamlinename=:' . (sizeof($args) + 1);
             array_push($args, $this->arg('bl'));
         }
 
-        if ($this->has_arg('did')) {
+        if ($this->has_arg('did'))
+        {
             $where .= ' AND d.dewarid=:' . (sizeof($args) + 1);
             array_push($args, $this->arg('did'));
         }
 
-        if ($this->has_arg('FACILITYCODE')) {
+        if ($this->has_arg('FACILITYCODE'))
+        {
             $where .= ' AND d.facilitycode=:' . (sizeof($args) + 1);
             array_push($args, $this->arg('FACILITYCODE'));
         }
 
-        if ($this->has_arg('sid')) {
+        if ($this->has_arg('sid'))
+        {
             $where .= ' AND d.shippingid=:' . (sizeof($args) + 1);
             array_push($args, $this->arg('sid'));
         }
 
-        if ($this->has_arg('current')) {
+        if ($this->has_arg('current'))
+        {
             $where .= ' AND (se.startdate > CURRENT_TIMESTAMP)';
         }
 
-        if ($this->has_arg('ty')) {
+        if ($this->has_arg('ty'))
+        {
             $bls_tmp = $this->_get_beamlines_from_type($this->arg('ty'));
-            if (!empty($bls_tmp)) {
+            if (!empty($bls_tmp))
+            {
                 $bls = implode("', '", $bls_tmp);
                 $where .= " AND se.beamlinename IN ('$bls')";
             }
         }
 
-        if ($this->has_arg('requestedimager')) {
+        if ($this->has_arg('requestedimager'))
+        {
             $where .= ' AND c.requestedimagerid IS NOT NULL';
         }
 
-        if ($this->has_arg('firstexperimentdate')) {
+        if ($this->has_arg('firstexperimentdate'))
+        {
             $where .= " AND DATE(se.startdate) = TO_DATE(:" . (sizeof($args) + 1) . ", 'DD-MM-YYYY')";
             array_push($args, $this->arg('firstexperimentdate'));
         }
 
 
-        if ($this->has_arg('s')) {
+        if ($this->has_arg('s'))
+        {
             $st = sizeof($args) + 1;
             $where .= " AND (lower(d.code) LIKE lower(CONCAT(CONCAT('%',:" . $st . "), '%')) OR lower(d.facilitycode) LIKE lower(CONCAT(CONCAT('%',:" . ($st + 1) . "), '%')) OR lower(CONCAT(p.proposalcode, p.proposalnumber)) LIKE lower(CONCAT(CONCAT('%',:" . ($st + 2) . "), '%')))";
             for ($i = 0; $i < 3; $i++)
@@ -1124,7 +1187,8 @@ class Shipment extends Page
         array_push($args, $end);
 
         $order = 'd.dewarid DESC';
-        if ($this->has_arg('sort_by')) {
+        if ($this->has_arg('sort_by'))
+        {
             $cols = array('FIRSTEXPERIMENTST' => 'se.startdate');
             $dir = $this->has_arg('order') ? ($this->arg('order') == 'asc' ? 'ASC' : 'DESC') : 'ASC';
             if (array_key_exists($this->arg('sort_by'), $cols))
@@ -1142,7 +1206,8 @@ class Shipment extends Page
               GROUP BY CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), se.visit_number), r.labcontactid, se.beamlineoperator, TO_CHAR(se.startdate, 'HH24:MI DD-MM-YYYY'), (case when se.visit_number > 0 then (CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), se.visit_number)) else '' end),s.shippingid, s.shippingname, d.code, d.barcode, d.storagelocation, d.dewarstatus, d.dewarid,  d.trackingnumbertosynchrotron, d.trackingnumberfromsynchrotron, d.facilitycode, d.firstexperimentid
               ORDER BY $order", $args);
 
-        if ($this->has_arg('did')) {
+        if ($this->has_arg('did'))
+        {
             if (sizeof($dewars))
                 $this->_output($dewars[0]);
             else
@@ -1178,20 +1243,22 @@ class Shipment extends Page
         $wg = $this->has_arg('WEIGHT') ? $this->arg('WEIGHT') : $dewar_weight;
         $exp = null;
 
-        if ($this->has_arg('FIRSTEXPERIMENTID')) {
+        if ($this->has_arg('FIRSTEXPERIMENTID'))
+        {
             $experimentId = $this->arg('FIRSTEXPERIMENTID');
             $exp = !empty($experimentId) ? $this->arg('FIRSTEXPERIMENTID') : NULL;
         }
 
         $this->db->pq("INSERT INTO dewar (dewarid,code,trackingnumbertosynchrotron,trackingnumberfromsynchrotron,shippingid,bltimestamp,dewarstatus,firstexperimentid,facilitycode,weight) 
               VALUES (s_dewar.nextval,:1,:2,:3,:4,CURRENT_TIMESTAMP,'opened',:5,:6,:7) RETURNING dewarid INTO :id",
-            array($this->arg('CODE'), $to, $from, $this->arg('SHIPPINGID'), $exp, $fc, $wg));
+                array($this->arg('CODE'), $to, $from, $this->arg('SHIPPINGID'), $exp, $fc, $wg));
 
         $id = $this->db->id();
 
         # Need to generate barcode
         $vis = '';
-        if ($exp) {
+        if ($exp)
+        {
             $vr = $this->db->pq("SELECT s.beamlinename as bl,s.visit_number as vis FROM blsession s WHERE s.sessionid=:1", array($exp));
             if (sizeof($vr))
                 $vis = '-' . $vr[0]['VIS'] . '-' . $vr[0]['BL'];
@@ -1219,19 +1286,24 @@ class Shipment extends Page
             $this->_error('No such shipment');
 
         $fields = array('SHIPPINGNAME', 'SAFETYLEVEL', 'COMMENTS', 'DELIVERYAGENT_AGENTNAME', 'DELIVERYAGENT_AGENTCODE', 'DELIVERYAGENT_SHIPPINGDATE', 'DELIVERYAGENT_DELIVERYDATE', 'SENDINGLABCONTACTID', 'RETURNLABCONTACTID', 'READYBYTIME', 'CLOSETIME', 'PHYSICALLOCATION');
-        foreach ($fields as $f) {
-            if ($this->has_arg($f)) {
+        foreach ($fields as $f)
+        {
+            if ($this->has_arg($f))
+            {
                 $fl = ':1';
-                if (in_array($f, array('DELIVERYAGENT_DELIVERYDATE', 'DELIVERYAGENT_SHIPPINGDATE'))) {
+                if (in_array($f, array('DELIVERYAGENT_DELIVERYDATE', 'DELIVERYAGENT_SHIPPINGDATE')))
+                {
                     $fl = "TO_DATE(:1, 'DD-MM-YYYY')";
                 }
 
                 $this->db->pq("UPDATE shipping SET $f=$fl WHERE shippingid=:2", array($this->arg($f), $this->arg('sid')));
 
                 $lcf = array('SENDINGLABCONTACTID' => 'LCOUT', 'RETURNLABCONTACTID' => 'LCRET');
-                if (array_key_exists($f, $lcf)) {
+                if (array_key_exists($f, $lcf))
+                {
                     $lc = $this->db->pq('SELECT cardname FROM labcontact WHERE labcontactid=:1', array($this->arg($f)));
-                    if (sizeof($lc)) {
+                    if (sizeof($lc))
+                    {
                         $this->_output(array($lcf[$f] => $lc[0]['CARDNAME']));
                     }
 
@@ -1260,20 +1332,25 @@ class Shipment extends Page
         if (!sizeof($dewar))
             $this->_error('No such dewar');
 
-        if ($this->has_arg('FIRSTEXPERIMENTID')) {
+        if ($this->has_arg('FIRSTEXPERIMENTID'))
+        {
             $experimentId = $this->arg('FIRSTEXPERIMENTID');
             $sessionId = !empty($experimentId) ? $this->arg('FIRSTEXPERIMENTID') : NULL;
             $chk = $this->db->pq("SELECT 1 FROM shippinghassession WHERE shippingid=:1 AND sessionid=:2", array($dewar[0]['SHIPPINGID'], $this->arg('FIRSTEXPERIMENTID')));
 
-            if (!sizeof($chk) && !is_null($sessionId)) {
+            if (!sizeof($chk) && !is_null($sessionId))
+            {
                 $this->db->pq("INSERT INTO shippinghassession (shippingid, sessionid)  VALUES (:1,:2)", array($dewar[0]['SHIPPINGID'], $this->arg('FIRSTEXPERIMENTID')));
             }
         }
 
         $fields = array('CODE', 'TRACKINGNUMBERTOSYNCHROTRON', 'TRACKINGNUMBERFROMSYNCHROTRON', 'FIRSTEXPERIMENTID', 'FACILITYCODE', 'WEIGHT');
-        foreach ($fields as $f) {
-            if ($this->has_arg($f)) {
-                if ($f === 'FIRSTEXPERIMENTID') {
+        foreach ($fields as $f)
+        {
+            if ($this->has_arg($f))
+            {
+                if ($f === 'FIRSTEXPERIMENTID')
+                {
                     $experimentId = $this->arg('FIRSTEXPERIMENTID');
                     $sessionId = !empty($experimentId) ? $this->arg('FIRSTEXPERIMENTID') : NULL;
                     $this->db->pq("UPDATE dewar SET $f=:1 WHERE dewarid=:2", array($sessionId, $this->arg('did')));
@@ -1283,14 +1360,17 @@ class Shipment extends Page
                           INNER JOIN proposal p ON p.proposalid = s.proposalid
                           WHERE s.sessionid=:1", array($sessionId));
 
-                    if (sizeof($visit)) {
+                    if (sizeof($visit))
+                    {
                         $this->_output(array($f => $sessionId, 'EXP' => $visit[0]['VISIT']));
                     }
-                    else {
+                    else
+                    {
                         $this->_output(1);
                     }
                 }
-                else {
+                else
+                {
                     $this->db->pq("UPDATE dewar SET $f=:1 WHERE dewarid=:2", array($this->arg($f), $this->arg('did')));
                     $this->_output(array($f => $this->arg($f)));
                 }
@@ -1347,16 +1427,19 @@ class Shipment extends Page
               FROM dewar d 
               LEFT OUTER JOIN blsession s ON s.sessionid = d.firstexperimentid 
               WHERE d.shippingid=:1", array($ship['SHIPPINGID']));
-        foreach ($dewars as $d) {
+        foreach ($dewars as $d)
+        {
             $this->db->pq("INSERT INTO dewartransporthistory (dewartransporthistoryid,dewarid,dewarstatus,arrivaldate) 
                   VALUES (s_dewartransporthistory.nextval,:1,'sent to facility',CURRENT_TIMESTAMP) RETURNING dewartransporthistoryid INTO :id",
-                array($d['DEWARID']));
+                    array($d['DEWARID']));
         }
 
         # Send email if CL3
-        if ($ship['SAFETYLEVEL'] == 'Red') {
+        if ($ship['SAFETYLEVEL'] == 'Red')
+        {
             $exps = array();
-            foreach ($dewars as $d) {
+            foreach ($dewars as $d)
+            {
                 array_push($exps, $ship['PROP'] . '-' . $d['VN'] . ' on ' . $d['BL'] . ' starting ' . $d['STARTDATE']);
             }
             $ship['EXPS'] = $exps;
@@ -1387,11 +1470,13 @@ class Shipment extends Page
                 WHERE cta.proposalid=:1 AND cta.shippingid=:2", array($this->proposalid, $this->arg('sid')));
 
         $terms_list = file_exists($dhl_terms) ? file_get_contents($dhl_terms) : '';
-        if (sizeof($terms)) {
+        if (sizeof($terms))
+        {
             $terms[0]['TERMS'] = $terms_list;
             $this->_output($terms[0]);
         }
-        else {
+        else
+        {
             $this->_output(array('TERMS' => $terms_list));
         }
     }
@@ -1435,86 +1520,105 @@ class Shipment extends Page
 
         $having = '';
 
-        if ($this->has_arg('visit')) {
+        if ($this->has_arg('visit'))
+        {
             $join = " INNER JOIN blsession ses2 ON ses2.proposalid = p.proposalid";
             $args = array($this->arg('visit'));
             $where = "CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), ses2.visit_number) LIKE :1";
 
         }
-        else if ($this->has_arg('all') && $this->staff) {
+        else if ($this->has_arg('all') && $this->staff)
+        {
             $join = '';
             $args = array();
             $where = '1=1';
 
         }
-        else {
+        else
+        {
             $join = '';
             $args = array($this->proposalid);
             $where = 'sh.proposalid=:1';
         }
 
 
-        if ($this->has_arg('ty')) {
-            if ($this->arg('ty') == 'plate') {
+        if ($this->has_arg('ty'))
+        {
+            if ($this->arg('ty') == 'plate')
+            {
                 $where .= " AND c.containertype NOT LIKE '%puck'";
             }
-            else if ($this->arg('ty') == 'puck') {
+            else if ($this->arg('ty') == 'puck')
+            {
                 $where .= " AND c.containertype LIKE '%puck'";
             }
-            else if ($this->arg('ty') == 'imager') {
+            else if ($this->arg('ty') == 'imager')
+            {
                 $where .= " AND c.imagerid IS NOT NULL";
             }
-            else if ($this->arg('ty') == 'todispose') {
+            else if ($this->arg('ty') == 'todispose')
+            {
                 $where .= " AND c.imagerid IS NOT NULL";
                 $having .= " HAVING (TIMESTAMPDIFF('HOUR', min(ci.bltimestamp), CURRENT_TIMESTAMP)/24) > 42";
             }
-            else if ($this->arg('ty') == 'queued') {
+            else if ($this->arg('ty') == 'queued')
+            {
                 $where .= " AND cq.containerqueueid IS NOT NULL";
             }
-            else if ($this->arg('ty') == 'completed') {
+            else if ($this->arg('ty') == 'completed')
+            {
                 $where .= " AND cq2.completedtimestamp IS NOT NULL";
                 $this->args['sort_by'] = 'COMPLETEDTIMESTAMP';
                 $this->args['order'] = 'desc';
             }
-            else if ($this->arg('ty') == 'processing') {
+            else if ($this->arg('ty') == 'processing')
+            {
                 $where .= " AND c.containerstatus = 'processing'";
             }
-            else if ($this->arg('ty') == 'subsamples') {
+            else if ($this->arg('ty') == 'subsamples')
+            {
                 $having .= " HAVING COUNT(distinct ss.blsubsampleid) > 0";
             }
         }
 
 
-        if ($this->has_arg('PUCK')) {
+        if ($this->has_arg('PUCK'))
+        {
             $where .= " AND c.containertype LIKE '%puck'";
         }
 
 
-        if ($this->has_arg('did')) {
+        if ($this->has_arg('did'))
+        {
             $where .= ' AND d.dewarid=:' . (sizeof($args) + 1);
             array_push($args, $this->arg('did'));
         }
-        if ($this->has_arg('cid')) {
+        if ($this->has_arg('cid'))
+        {
             $where .= ' AND c.containerid=:' . (sizeof($args) + 1);
             array_push($args, $this->arg('cid'));
         }
 
-        if ($this->has_arg('pid')) {
+        if ($this->has_arg('pid'))
+        {
             // $this->db->set_debug(True);
             $where .= ' AND pr.proteinid=:' . (sizeof($args) + 1);
             array_push($args, $this->arg('pid'));
         }
 
-        if ($this->has_arg('assigned')) {
+        if ($this->has_arg('assigned'))
+        {
             $where .= " AND d.dewarstatus LIKE 'processing' AND c.samplechangerlocation > 0";
         }
 
-        if ($this->has_arg('bl')) {
+        if ($this->has_arg('bl'))
+        {
             $where .= " AND c.beamlinelocation LIKE :" . (sizeof($args) + 1);
             array_push($args, $this->arg('bl'));
         }
 
-        if ($this->has_arg('unassigned')) {
+        if ($this->has_arg('unassigned'))
+        {
             $where .= " AND c.containerid NOT IN (SELECT c.containerid FROM container c INNER JOIN dewar d ON d.dewarid = c.dewarid WHERE d.dewarstatus LIKE 'processing' AND c.samplechangerlocation > 0 AND c.beamlinelocation=:" . (sizeof($args) + 1) . ")";
 
             array_push($args, $this->arg('unassigned'));
@@ -1522,7 +1626,8 @@ class Shipment extends Page
             $this->args['order'] = 'desc';
         }
 
-        if ($this->has_arg('imager')) {
+        if ($this->has_arg('imager'))
+        {
             if ($this->arg('imager') == '1')
                 $where .= ' AND c.imagerid IS NOT NULL';
             else
@@ -1530,17 +1635,20 @@ class Shipment extends Page
         }
 
 
-        if ($this->has_arg('iid')) {
+        if ($this->has_arg('iid'))
+        {
             $where .= ' AND c.imagerid=:' . (sizeof($args) + 1);
             array_push($args, $this->arg('iid'));
         }
 
-        if ($this->has_arg('CONTAINERREGISTRYID')) {
+        if ($this->has_arg('CONTAINERREGISTRYID'))
+        {
             $where .= ' AND c.containerregistryid = :' . (sizeof($args) + 1);
             array_push($args, $this->arg('CONTAINERREGISTRYID'));
         }
 
-        if ($this->has_arg('currentuser')) {
+        if ($this->has_arg('currentuser'))
+        {
             $where .= ' AND c.ownerid = :' . (sizeof($args) + 1);
             array_push($args, $this->user->personid);
         }
@@ -1562,7 +1670,8 @@ class Shipment extends Page
                 $having", $args);
         $tot = sizeof($tot) ? intval($tot[0]['TOT']) : 0;
 
-        if ($this->has_arg('s')) {
+        if ($this->has_arg('s'))
+        {
             $st = sizeof($args) + 1;
             $where .= " AND (lower(c.code) LIKE lower(CONCAT(CONCAT('%',:" . $st . "), '%')) OR lower(c.barcode) LIKE lower(CONCAT(CONCAT('%',:" . ($st + 1) . "), '%')))";
             array_push($args, $this->arg('s'));
@@ -1582,17 +1691,21 @@ class Shipment extends Page
 
         $order = 'c.bltimestamp DESC';
 
-        if ($this->has_arg('ty')) {
-            if ($this->arg('ty') == 'todispose') {
+        if ($this->has_arg('ty'))
+        {
+            if ($this->arg('ty') == 'todispose')
+            {
                 $order = 'c.requestedreturn DESC, age DESC';
             }
 
-            if ($this->arg('ty') == 'queued') {
+            if ($this->arg('ty') == 'queued')
+            {
                 $order = 'cq.containerqueueid ASC';
             }
         }
 
-        if ($this->has_arg('sort_by')) {
+        if ($this->has_arg('sort_by'))
+        {
             $cols = array('NAME' => 'c.code', 'DEWAR' => 'd.code', 'SHIPMENT' => 'sh.shippingname', 'SAMPLES' => 'count(s.blsampleid)', 'SHIPPINGID' => 'sh.shippingid', 'LASTINSPECTION' => 'max(ci.bltimestamp)', 'INSPECTIONS' => 'count(ci.containerinspectionid)',
                 'DCCOUNT' => 'COUNT(distinct dc.datacollectionid)', 'SUBSAMPLES' => 'count(distinct ss.blsubsampleid)',
                 'LASTQUEUECOMPLETED' => 'max(cq2.completedtimestamp)', 'QUEUEDTIMESTAMP' => 'max(cq.createdtimestamp)'
@@ -1637,7 +1750,8 @@ class Shipment extends Page
                                   $having
                                   ORDER BY $order", $args);
 
-        if ($this->has_arg('cid')) {
+        if ($this->has_arg('cid'))
+        {
             if (sizeof($rows))
                 $this->_output($rows[0]);
             else
@@ -1667,23 +1781,28 @@ class Shipment extends Page
             $this->_error('No such container');
 
 
-        if ($this->has_arg('UNQUEUE')) {
+        if ($this->has_arg('UNQUEUE'))
+        {
             $chkq = $this->db->pq("SELECT containerqueueid FROM containerqueue WHERE containerid=:1 AND completedtimestamp IS NULL", array($this->arg('CONTAINERID')));
             if (!sizeof($chkq))
                 $this->_error('That container is not queued');
 
             $validRequest = false;
 
-            if (stripos($chkc[0]['CONTAINERTYPE'], 'puck') !== false) {
+            if (stripos($chkc[0]['CONTAINERTYPE'], 'puck') !== false)
+            {
                 // Then we are a puck type and we allow pucks to be unqueued at any time
                 $validRequest = true;
             }
-            else {
-                if (in_array($chkc[0]['CONTAINERSTATUS'], array('in_storage', 'disposed', null))) {
+            else
+            {
+                if (in_array($chkc[0]['CONTAINERSTATUS'], array('in_storage', 'disposed', null)))
+                {
                     $validRequest = true;
                 }
             }
-            if (!$validRequest) {
+            if (!$validRequest)
+            {
                 $this->_error('Container is awaiting data collection and cannot be unqueued');
             }
 
@@ -1694,13 +1813,16 @@ class Shipment extends Page
             $this->_output();
 
         }
-        else {
+        else
+        {
             $chkq = $this->db->pq("SELECT containerid, containerqueueid FROM containerqueue WHERE containerid=:1 AND completedtimestamp IS NULL", array($this->arg('CONTAINERID')));
-            if (!sizeof($chkq)) {
+            if (!sizeof($chkq))
+            {
                 $this->db->pq("INSERT INTO containerqueue (containerid, personid) VALUES (:1, :2)", array($this->arg('CONTAINERID'), $this->user->personid));
                 $qid = $this->db->id();
             }
-            else {
+            else
+            {
                 $qid = $chkq[0]['CONTAINERQUEUEID'];
             }
 
@@ -1714,7 +1836,8 @@ class Shipment extends Page
                   INNER JOIN containerqueuesample cqs ON cqs.blsubsampleid = ss.blsubsampleid
                   WHERE p.proposalid=:1 AND c.containerid=:2 AND cqs.containerqueueid IS NULL", array($this->proposalid, $this->arg('CONTAINERID')));
 
-            foreach ($samples as $s) {
+            foreach ($samples as $s)
+            {
                 $this->db->pq("UPDATE containerqueuesample SET containerqueueid=:1 WHERE containerqueuesampleid=:2", array($qid, $s['CONTAINERQUEUESAMPLEID']));
             }
 
@@ -1734,7 +1857,8 @@ class Shipment extends Page
         $chkd = $this->db->pq("SELECT d.dewarid FROM dewar d INNER JOIN shipping s ON s.shippingid = d.shippingid INNER JOIN proposal p ON p.proposalid = s.proposalid WHERE d.dewarid=:1 AND p.proposalid=:2", array($this->arg('did'), $this->proposalid));
         $chkc = $this->db->pq("SELECT c.containerid FROM container c INNER JOIN dewar d ON c.dewarid = d.dewarid INNER JOIN shipping s ON s.shippingid = d.shippingid INNER JOIN proposal p ON p.proposalid = s.proposalid WHERE c.containerid=:1 AND p.proposalid=:2", array($this->arg('cid'), $this->proposalid));
 
-        if (sizeof($chkd) && sizeof($chkc)) {
+        if (sizeof($chkd) && sizeof($chkc))
+        {
             $this->db->pq("UPDATE container SET dewarid=:1 WHERE containerid=:2", array($this->arg('did'), $this->arg('cid')));
             $this->_output(1);
         }
@@ -1751,7 +1875,8 @@ class Shipment extends Page
         $where = 'c.containerid=:1';
         $args = array($this->arg('cid'));
 
-        if (!$this->user->has('disp_cont')) {
+        if (!$this->user->hasPermission('disp_cont'))
+        {
             $where .= ' AND p.proposalid=:' . (sizeof($args) + 1);
             array_push($args, $this->proposalid);
         }
@@ -1762,14 +1887,17 @@ class Shipment extends Page
             $this->_error('No such container');
 
         $fields = array('NAME' => 'CODE', 'REQUESTEDRETURN' => 'REQUESTEDRETURN', 'REQUESTEDIMAGERID' => 'REQUESTEDIMAGERID', 'COMMENTS' => 'COMMENTS', 'BARCODE' => 'BARCODE', 'CONTAINERTYPE' => 'CONTAINERTYPE', 'EXPERIMENTTYPE' => 'EXPERIMENTTYPE', 'STORAGETEMPERATURE' => 'STORAGETEMPERATURE', 'CONTAINERREGISTRYID' => 'CONTAINERREGISTRYID', 'PROCESSINGPIPELINEID' => 'PRIORITYPIPELINEID', 'OWNERID' => 'OWNERID');
-        foreach ($fields as $k => $f) {
-            if ($this->has_arg($k)) {
+        foreach ($fields as $k => $f)
+        {
+            if ($this->has_arg($k))
+            {
                 $this->db->pq("UPDATE container SET $f=:1 WHERE containerid=:2", array($this->arg($k), $this->arg('cid')));
                 $this->_output(array($k => $this->arg($k)));
             }
         }
 
-        if ($this->user->has('disp_cont') && $this->has_arg('DISPOSE')) {
+        if ($this->user->hasPermission('disp_cont') && $this->has_arg('DISPOSE'))
+        {
             $this->db->pq("UPDATE container SET imagerid=NULL,containerstatus='disposed' WHERE containerid=:1", array($this->arg('cid')));
             $this->db->pq("INSERT INTO containerhistory (containerid,status) VALUES (:1,'disposed')", array($this->arg('cid')));
             $this->_output(array('IMAGERID' => null));
@@ -1806,11 +1934,12 @@ class Shipment extends Page
 
         $this->db->pq("INSERT INTO container (containerid,dewarid,code,bltimestamp,capacity,containertype,scheduleid,screenid,ownerid,requestedimagerid,comments,barcode,experimenttype,storagetemperature,containerregistryid,prioritypipelineid)
               VALUES (s_container.nextval,:1,:2,CURRENT_TIMESTAMP,:3,:4,:5,:6,:7,:8,:9,:10,:11,:12,:13,:14) RETURNING containerid INTO :id",
-            array($this->arg('DEWARID'), $this->arg('NAME'), $cap, $this->arg('CONTAINERTYPE'), $sch, $scr, $own, $rid, $com, $bar, $ext, $tem, $crid, $pipeline));
+                array($this->arg('DEWARID'), $this->arg('NAME'), $cap, $this->arg('CONTAINERTYPE'), $sch, $scr, $own, $rid, $com, $bar, $ext, $tem, $crid, $pipeline));
 
         $cid = $this->db->id();
 
-        if ($this->has_arg('SCHEDULEID')) {
+        if ($this->has_arg('SCHEDULEID'))
+        {
             $sh = $this->app->container['imagingShared'];
             $sh->_generate_schedule(array(
                 'CONTAINERID' => $cid,
@@ -1818,7 +1947,8 @@ class Shipment extends Page
             ));
         }
 
-        if ($this->has_arg('AUTOMATED')) {
+        if ($this->has_arg('AUTOMATED'))
+        {
             $this->db->pq("INSERT INTO containerqueue (containerid, personid) VALUES (:1, :2)", array($cid, $this->user->personid));
         }
 
@@ -1836,16 +1966,19 @@ class Shipment extends Page
         $args = array($this->proposalid);
         $where = 'p.proposalid=:1';
 
-        if ($this->has_arg('all') && ($this->bcr() || $this->staff)) {
+        if ($this->has_arg('all') && ($this->bcr() || $this->staff))
+        {
             $args = array();
             $where = '1=1';
         }
 
-        if ($this->has_arg('cid')) {
+        if ($this->has_arg('cid'))
+        {
             $where .= ' AND c.containerid=:' . (sizeof($args) + 1);
             array_push($args, $this->arg('cid'));
         }
-        else {
+        else
+        {
             $where .= ' AND c.containerregistryid=:' . (sizeof($args) + 1);
             array_push($args, $this->arg('CONTAINERREGISTRYID'));
         }
@@ -1904,11 +2037,13 @@ class Shipment extends Page
         $where = '1=1';
         $args = array();
 
-        if ($this->has_arg('CONTAINERID')) {
+        if ($this->has_arg('CONTAINERID'))
+        {
             $where .= ' AND c.containerid=:' . (sizeof($args) + 1);
             array_push($args, $this->arg('CONTAINERID'));
         }
-        else if ($this->has_arg('CODE')) {
+        else if ($this->has_arg('CODE'))
+        {
             $where .= ' AND c.code=:' . (sizeof($args) + 1);
             array_push($args, $this->arg('CODE'));
         }
@@ -1935,7 +2070,8 @@ class Shipment extends Page
 
         if ($this->has_arg('STATUS'))
             $container_status = $this->arg('STATUS');
-        else {
+        else
+        {
             // Get last status for this container - we are only going to change its location
             $container_history = $this->db->pq("SELECT status FROM containerhistory WHERE containerid = :1 ORDER BY containerhistoryid DESC LIMIT 1", array($cont['CONTAINERID']));
 
@@ -1958,10 +2094,12 @@ class Shipment extends Page
         $where = '';
         // By default only return active container types.
         // If all param set return everything
-        if ($this->has_arg('all')) {
+        if ($this->has_arg('all'))
+        {
             $where .= '1=1';
         }
-        else {
+        else
+        {
             $where .= 'ct.active = 1';
         }
         $rows = $this->db->pq("SELECT ct.containerTypeId, name, ct.proposalType, ct.capacity, ct.wellPerRow, ct.dropPerWellX, ct.dropPerWellY, ct.dropHeight, ct.dropWidth, ct.wellDrop FROM ContainerType ct WHERE $where");
@@ -1973,17 +2111,20 @@ class Shipment extends Page
         $args = array($this->proposalid);
         $where = 'p.proposalid=:1';
 
-        if ($this->has_arg('all') && $this->staff) {
+        if ($this->has_arg('all') && $this->staff)
+        {
             $args = array();
             $where = '1=1';
         }
 
-        if ($this->has_arg('CONTAINERREGISTRYID')) {
+        if ($this->has_arg('CONTAINERREGISTRYID'))
+        {
             $where .= ' AND r.containerregistryid=:' . (sizeof($args) + 1);
             array_push($args, $this->arg('CONTAINERREGISTRYID'));
         }
 
-        if ($this->has_arg('s')) {
+        if ($this->has_arg('s'))
+        {
             $st = sizeof($args) + 1;
             $where .= " AND (lower(r.barcode) LIKE lower(CONCAT(CONCAT('%',:" . $st . "), '%')) OR lower(r.comments) LIKE lower(CONCAT(CONCAT('%',:" . ($st + 1) . "), '%')) OR lower(CONCAT(p.proposalcode,p.proposalnumber)) LIKE lower(CONCAT(CONCAT('%',:" . ($st + 2) . "), '%')))";
             array_push($args, $this->arg('s'));
@@ -1991,7 +2132,8 @@ class Shipment extends Page
             array_push($args, $this->arg('s'));
         }
 
-        if ($this->has_arg('t')) {
+        if ($this->has_arg('t'))
+        {
             if ($this->arg('t') == 'orphan')
                 $where .= " AND rhp.containerregistryid IS NULL";
         }
@@ -2015,7 +2157,8 @@ class Shipment extends Page
         array_push($args, $end);
 
         $order = 'r.barcode';
-        if ($this->has_arg('sort_by')) {
+        if ($this->has_arg('sort_by'))
+        {
             $cols = array(
                 'BARCODE' => 'r.barcode', 'INSTANCES' => 'count(distinct c.containerid)',
                 'LASTUSE' => 'max(c.bltimestamp)', 'RECORDTIMESTAMP' => 'r.recordtimestamp',
@@ -2039,7 +2182,8 @@ class Shipment extends Page
 
               ORDER BY $order", $args);
 
-        if ($this->has_arg('CONTAINERREGISTRYID')) {
+        if ($this->has_arg('CONTAINERREGISTRYID'))
+        {
             if (sizeof($rows))
                 $this->_output($rows[0]);
             else
@@ -2082,8 +2226,10 @@ class Shipment extends Page
             $this->_error('No container id specified');
 
         $fields = array('COMMENTS');
-        foreach ($fields as $f) {
-            if ($this->has_arg($f)) {
+        foreach ($fields as $f)
+        {
+            if ($this->has_arg($f))
+            {
                 $this->db->pq("UPDATE containerregistry SET $f=:1 WHERE containerregistryid=:2", array($this->arg($f), $this->arg('CONTAINERREGISTRYID')));
                 $this->_output(array($f => $this->arg($f)));
             }
@@ -2165,7 +2311,8 @@ class Shipment extends Page
                 INNER JOIN person p ON p.personid = r.personid
               WHERE $where ORDER BY r.recordtimestamp DESC", $args);
 
-        foreach ($rows as $i => &$row) {
+        foreach ($rows as $i => &$row)
+        {
             $row['REPORT'] = $this->db->read($row['REPORT']);
         }
 
@@ -2197,16 +2344,20 @@ class Shipment extends Page
             $lv = $last_visits[0];
 
         $path = null;
-        if (array_key_exists('ATTACHMENT', $_FILES)) {
-            if ($_FILES['ATTACHMENT']['name']) {
+        if (array_key_exists('ATTACHMENT', $_FILES))
+        {
+            if ($_FILES['ATTACHMENT']['name'])
+            {
                 $info = pathinfo($_FILES['ATTACHMENT']['name']);
 
-                if ($info['extension'] == 'jpg' || $info['extension'] == 'jpeg') {
+                if ($info['extension'] == 'jpg' || $info['extension'] == 'jpeg')
+                {
                     # dls_mxweb cant write to visits...
                     #$root = '/dls/'.$lv['BEAMLINENAME'].'/data/'.$lv['YEAR'].'/'.$lv['VISIT'].'/.ispyb/';
 
                     $root = '/dls_sw/dasc/ispyb2/uploads/' . $lv['YEAR'] . '/' . $lv['VISIT'] . '/';
-                    if (!is_dir($root)) {
+                    if (!is_dir($root))
+                    {
                         mkdir($root, 0755, true);
                     }
 
@@ -2219,8 +2370,9 @@ class Shipment extends Page
         }
 
         $this->db->pq("INSERT INTO containerreport (containerregistryid,report,attachmentfilepath,personid,recordtimestamp) VALUES (:1,:2,:3,:4,CURRENT_TIMESTAMP)",
-            array($this->arg('CONTAINERREGISTRYID'), $this->arg('REPORT'), $path, $this->user->personid));
-        if ($lv['EMAILADDRESS']) {
+                array($this->arg('CONTAINERREGISTRYID'), $this->arg('REPORT'), $path, $this->user->personid));
+        if ($lv['EMAILADDRESS'])
+        {
             $recpts = array($lv['EMAILADDRESS']);
             $local = $this->_get_email_fn($lv['LOCALCONTACT']);
             if ($local)
@@ -2286,37 +2438,43 @@ class Shipment extends Page
 
         $this->db->pq("INSERT INTO shipping (shippingid, proposalid, shippingname, deliveryagent_agentname, deliveryagent_agentcode, deliveryagent_shippingdate, deliveryagent_deliverydate, bltimestamp, creationdate, comments, sendinglabcontactid, returnlabcontactid, shippingstatus, safetylevel, readybytime, closetime, physicallocation) 
               VALUES (s_shipping.nextval,:1,:2,:3,:4,TO_DATE(:5,'DD-MM-YYYY'), TO_DATE(:6,'DD-MM-YYYY'),CURRENT_TIMESTAMP,CURRENT_TIMESTAMP,:7,:8,:9,'opened',:10, :11, :12, :13) RETURNING shippingid INTO :id",
-            array($this->proposalid, $this->arg('SHIPPINGNAME'), $an, $ac, $sd, $dd, $com, $this->arg('SENDINGLABCONTACTID'), $this->arg('RETURNLABCONTACTID'), $this->arg('SAFETYLEVEL'), $rt, $ct, $loc));
+                array($this->proposalid, $this->arg('SHIPPINGNAME'), $an, $ac, $sd, $dd, $com, $this->arg('SENDINGLABCONTACTID'), $this->arg('RETURNLABCONTACTID'), $this->arg('SAFETYLEVEL'), $rt, $ct, $loc));
 
         $sid = $this->db->id();
 
-        if ($this->has_arg('DEWARS')) {
-            if ($this->arg('DEWARS') > 0) {
+        if ($this->has_arg('DEWARS'))
+        {
+            if ($this->arg('DEWARS') > 0)
+            {
                 $first_experiment = '';
-                if ($this->has_arg('FIRSTEXPERIMENTID')) {
+                if ($this->has_arg('FIRSTEXPERIMENTID'))
+                {
                     $first_experiment = $this->arg('FIRSTEXPERIMENTID');
                 }
 
                 $exp = !empty($first_experiment) ? $this->arg('FIRSTEXPERIMENTID') : null;
 
-                if ($exp) {
+                if ($exp)
+                {
                     $this->db->pq("INSERT INTO shippinghassession (shippingid, sessionid) 
                             VALUES (:1,:2)", array($sid, $exp));
                 }
 
                 $fcs = $this->arg('FCODES');
-                for ($i = 0; $i < $this->arg('DEWARS'); $i++) {
+                for ($i = 0; $i < $this->arg('DEWARS'); $i++)
+                {
                     $fc = $i < sizeof($this->arg('FCODES')) ? $fcs[$i] : '';
                     $n = $fc ? $fc : ('Dewar' . ($i + 1));
 
                     $this->db->pq("INSERT INTO dewar (dewarid,code,shippingid,bltimestamp,dewarstatus,firstexperimentid,facilitycode,weight) 
                           VALUES (s_dewar.nextval,:1,:2,CURRENT_TIMESTAMP,'opened',:3,:4,$dewar_weight) RETURNING dewarid INTO :id",
-                        array($n, $sid, $exp, $fc));
+                            array($n, $sid, $exp, $fc));
 
                     $id = $this->db->id();
 
                     $vis = '';
-                    if ($exp) {
+                    if ($exp)
+                    {
                         $vr = $this->db->pq("SELECT s.beamlinename as bl,s.visit_number as vis FROM blsession s WHERE s.sessionid=:1", array($exp));
                         if (sizeof($vr))
                             $vis = '-' . $vr[0]['VIS'] . '-' . $vr[0]['BL'];
@@ -2345,10 +2503,12 @@ class Shipment extends Page
 
         $shids = $this->db->pq("SELECT shippingid FROM shipping WHERE proposalid LIKE :1 AND shippingname LIKE :2", array($this->proposalid, $this->arg('visit') . '_Shipment1'));
 
-        if (sizeof($shids) > 0) {
+        if (sizeof($shids) > 0)
+        {
             $shid = $shids[0]['SHIPPINGID'];
         }
-        else {
+        else
+        {
             $this->db->pq("INSERT INTO shipping (shippingid,proposalid,shippingname,bltimestamp,creationdate,shippingstatus) VALUES (s_shipping.nextval,:1,:2,CURRENT_TIMESTAMP,CURRENT_TIMESTAMP,'processing') RETURNING shippingid INTO :id", array($this->proposalid, $this->arg('visit') . '_Shipment1'));
 
             $shid = $this->db->id();
@@ -2358,14 +2518,17 @@ class Shipment extends Page
         }
 
         $did = -1;
-        if ($sid) {
+        if ($sid)
+        {
             $dids = $this->db->pq("SELECT dewarid from dewar WHERE shippingid LIKE :1 AND code LIKE :2", array($shid, $this->arg('visit') . '_Dewar1'));
 
-            if (sizeof($dids) > 0) {
+            if (sizeof($dids) > 0)
+            {
                 $did = $dids[0]['DEWARID'];
 
             }
-            else {
+            else
+            {
                 $this->db->pq("INSERT INTO dewar (dewarid,code,shippingid,bltimestamp,dewarstatus,firstexperimentid) VALUES (s_dewar.nextval,:1,:2,CURRENT_TIMESTAMP,'processing',:3) RETURNING dewarid INTO :id", array($this->arg('visit') . '_Dewar1', $shid, $sid));
 
                 $did = $this->db->id();
@@ -2430,17 +2593,20 @@ class Shipment extends Page
             $this->_error('No such lab contact');
         $cont = $cont[0];
 
-        if (in_array($cont['COUNTRY'], $facility_courier_countries) && $terms) {
+        if (in_array($cont['COUNTRY'], $facility_courier_countries) && $terms)
+        {
             $accno = $dhl_acc;
             $payee = 'R';
             $product = $dhl_service;
         }
-        else if (in_array($cont['COUNTRY'], $facility_courier_countries_nde) && $terms) {
+        else if (in_array($cont['COUNTRY'], $facility_courier_countries_nde) && $terms)
+        {
             $accno = $dhl_acc_import;
             $payee = 'R';
             $product = $dhl_service_eu;
         }
-        else {
+        else
+        {
             $accno = $ship['DELIVERYAGENT_AGENTCODE'];
             $payee = 'S';
 
@@ -2450,10 +2616,12 @@ class Shipment extends Page
         }
         // Catch programmatic use of awb - suspend international shipments
         // facility_courier_countries is an array containing United Kingdom
-        if (!in_array($cont['COUNTRY'], $facility_courier_countries)) {
+        if (!in_array($cont['COUNTRY'], $facility_courier_countries))
+        {
             $this->_error('International shipment bookings currently suspended. Please see MX manual for instructions');
         }
-        if ($this->has_arg('RETURN')) {
+        if ($this->has_arg('RETURN'))
+        {
             $accno = $ship['DELIVERYAGENT_AGENTCODE'];
             $payee = 'R';
         }
@@ -2484,7 +2652,8 @@ class Shipment extends Page
         $pieces = array();
         $totalweight = 0;
         $names = array();
-        foreach ($dewars as $d) {
+        foreach ($dewars as $d)
+        {
             array_push($pieces, array(
                 'weight' => $d['WEIGHT'],
                 'width' => 40,
@@ -2500,8 +2669,10 @@ class Shipment extends Page
         array_push($emails, str_replace(',', ';', $shipbooked_email));
 
         $awb = null;
-        if (!$ship['DELIVERYAGENT_FLIGHTCODE']) {
-            try {
+        if (!$ship['DELIVERYAGENT_FLIGHTCODE'])
+        {
+            try
+            {
                 $awb = $this->dhl->create_awb(array(
                     'payee' => $payee,
                     'accountnumber' => $accno,
@@ -2523,7 +2694,8 @@ class Shipment extends Page
                     WHERE shippingid=:5", array($awb['awb'], $awb['label'], $product, $this->user->personid, $ship['SHIPPINGID']));
 
                 $tno = $this->has_arg('RETURN') ? 'trackingnumberfromsynchrotron' : 'trackingnumbertosynchrotron';
-                foreach ($dewars as $i => $d) {
+                foreach ($dewars as $i => $d)
+                {
                     if ($i >= sizeof($awb['pieces']))
                         continue;
 
@@ -2532,19 +2704,21 @@ class Shipment extends Page
 
                     $this->db->pq("INSERT INTO dewartransporthistory (dewartransporthistoryid,dewarid,dewarstatus,arrivaldate) 
                         VALUES (s_dewartransporthistory.nextval,:1,'awb created',CURRENT_TIMESTAMP) RETURNING dewartransporthistoryid INTO :id",
-                        array($d['DEWARID']));
+                            array($d['DEWARID']));
                 }
 
                 $ship['DELIVERYAGENT_FLIGHTCODE'] = $awb['awb'];
 
             }
-            catch (\Exception $e) {
+            catch (\Exception $e)
+            {
                 $this->_error($e->getMessage());
             }
         }
 
         $pickup = null;
-        if (!$ship['DELIVERYAGENT_PICKUPCONFIRMATION']) {
+        if (!$ship['DELIVERYAGENT_PICKUPCONFIRMATION'])
+        {
             $pickup = $this->_do_request_pickup(array(
                 'shippingid' => $ship['SHIPPINGID'],
                 'accountnumber' => $accno,
@@ -2600,13 +2774,16 @@ class Shipment extends Page
                 WHERE cta.proposalid=:1 AND cta.shippingid=:2", array($this->proposalid, $ship['SHIPPINGID']));
         $terms = sizeof($terms) ? true : false;
 
-        if (in_array($cont['COUNTRY'], $facility_courier_countries) && $terms) {
+        if (in_array($cont['COUNTRY'], $facility_courier_countries) && $terms)
+        {
             $accno = $dhl_acc;
         }
-        else if (in_array($cont['COUNTRY'], $facility_courier_countries_nde) && $terms) {
+        else if (in_array($cont['COUNTRY'], $facility_courier_countries_nde) && $terms)
+        {
             $accno = $dhl_acc_import;
         }
-        else {
+        else
+        {
             $accno = $ship['DELIVERYAGENT_AGENTCODE'];
         }
 
@@ -2641,7 +2818,8 @@ class Shipment extends Page
             $this->_error('No dewars selected to ship');
 
         $totalweight = 0;
-        foreach ($dewars as $d) {
+        foreach ($dewars as $d)
+        {
             $totalweight += $d['WEIGHT'];
         }
 
@@ -2669,7 +2847,8 @@ class Shipment extends Page
     function _do_request_pickup($options)
     {
         $pickup = null;
-        try {
+        try
+        {
             $pickup = $this->dhl->request_pickup(array(
                 'accountnumber' => $options['accountnumber'],
                 'requestor' => $options['requestor'],
@@ -2689,15 +2868,17 @@ class Shipment extends Page
                 SET deliveryagent_pickupconfirmation=:1, deliveryagent_pickupconfirmationtimestamp=CURRENT_TIMESTAMP, deliveryAgent_readybytime=TO_DATE(:2, 'HH24:MI'), deliveryAgent_callintime=TO_DATE(:3, 'HH24:MI'), shippingstatus='pickup booked'
                 WHERE shippingid=:4", array($pickup['confirmationnumber'], $pickup['readybytime'], $pickup['callintime'], $options['shippingid']));
 
-            foreach ($options['dewars'] as $i => $d) {
+            foreach ($options['dewars'] as $i => $d)
+            {
                 $this->db->pq("UPDATE dewar SET dewarstatus='pickup booked' WHERE dewarid=:1", array($d['DEWARID']));
                 $this->db->pq("INSERT INTO dewartransporthistory (dewartransporthistoryid,dewarid,dewarstatus,arrivaldate) 
                     VALUES (s_dewartransporthistory.nextval,:1,'pickup booked',CURRENT_TIMESTAMP) RETURNING dewartransporthistoryid INTO :id",
-                    array($d['DEWARID']));
+                        array($d['DEWARID']));
             }
 
         }
-        catch (\Exception $e) {
+        catch (\Exception $e)
+        {
             $this->_error($e->getMessage());
         }
 
@@ -2752,7 +2933,8 @@ class Shipment extends Page
 
         // Catch programmatic use of awb - suspend international shipments
         // facility_courier_countries is an array containing United Kingdom
-        if (!in_array($cont['COUNTRY'], $facility_courier_countries)) {
+        if (!in_array($cont['COUNTRY'], $facility_courier_countries))
+        {
             $this->_error('International shipment bookings currently suspended. Please see MX manual for instructions');
         }
 
@@ -2763,7 +2945,8 @@ class Shipment extends Page
         );
 
         $pieces = array();
-        foreach ($dewars as $d) {
+        foreach ($dewars as $d)
+        {
             array_push($pieces, array(
                 'weight' => $d['WEIGHT'],
                 'width' => 40,
@@ -2773,7 +2956,8 @@ class Shipment extends Page
         }
 
 
-        try {
+        try
+        {
             $products = $this->dhl->get_quote(array(
                 'date' => $ship['DELIVERYAGENT_SHIPPINGDATE'],
                 'declaredvalue' => $this->arg('DECLAREDVALUE'),
@@ -2788,7 +2972,8 @@ class Shipment extends Page
             $this->_output($products);
 
         }
-        catch (\Exception $e) {
+        catch (\Exception $e)
+        {
             $this->_error($e->getMessage());
         }
     }
@@ -2824,7 +3009,8 @@ class Shipment extends Page
         $person = $this->user->givenname . ' ' . $this->user->familyname;
 
         $cancel = null;
-        try {
+        try
+        {
             $cancel = $this->dhl->cancel_pickup(array(
                 'name' => $person,
                 'country' => $cont['COUNTRY'],
@@ -2836,15 +3022,17 @@ class Shipment extends Page
                     SET deliveryagent_pickupconfirmation=NULL, deliveryagent_pickupconfirmationtimestamp=NULL, deliveryAgent_readybytime=NULL, deliveryAgent_callintime=NULL, shippingstatus='pickup cancelled'
                     WHERE shippingid=:1", array($ship['SHIPPINGID']));
 
-            foreach ($dewars as $i => $d) {
+            foreach ($dewars as $i => $d)
+            {
                 $this->db->pq("UPDATE dewar SET dewarstatus='pickup cancelled' WHERE dewarid=:1", array($d['DEWARID']));
                 $this->db->pq("INSERT INTO dewartransporthistory (dewarid,dewarstatus,arrivaldate) 
                     VALUES (:1,'pickup cancelled',CURRENT_TIMESTAMP)",
-                    array($d['DEWARID']));
+                        array($d['DEWARID']));
             }
 
         }
-        catch (\Exception $e) {
+        catch (\Exception $e)
+        {
             $this->_error($e->getMessage());
         }
 
@@ -2856,7 +3044,8 @@ class Shipment extends Page
     function _get_countries()
     {
         $data = array();
-        foreach ($this->dhl->get_countries() as $c) {
+        foreach ($this->dhl->get_countries() as $c)
+        {
             array_push($data, array('TITLE' => $c));
         }
 
@@ -2910,10 +3099,12 @@ class Shipment extends Page
             $this->_error('Precondition failed, no history for this container', 412);
 
         // Case insensitive check. If we have already sent an email, return.
-        if (strcasecmp($hist[0]['STATUS'], 'notify_email') == 0) {
+        if (strcasecmp($hist[0]['STATUS'], 'notify_email') == 0)
+        {
             $this->_output(array('EMAIL_SENT' => 0));
         }
-        else {
+        else
+        {
             $email = new Email('data-new', '*** New data available for your container ***');
             $email->data = $cont;
             $email->send($cont['EMAILADDRESS']);
