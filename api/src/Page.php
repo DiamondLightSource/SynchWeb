@@ -15,7 +15,7 @@ use SynchWeb\Queue;
 
 class Page
 {
-    protected $app, $db, $user;
+    protected $app, $db, $user, $ty;
 
     var $require_staff = False;
     var $staff = False;
@@ -26,6 +26,7 @@ class Page
     var $profile = False;
     var $profiles = array();
     var $base;
+    var $args = array();
 
     public static $dispatch = array();
     public static $arg_list = array();
@@ -55,7 +56,8 @@ class Page
         $this->_arg_list = array();
         $this->_dispatch = array();
         $class = $this;
-        while ($class) {
+        while ($class)
+        {
             $this->_arg_list = array_merge($class::$arg_list, $this->_arg_list);
             $this->_dispatch = array_merge($class::$dispatch, $this->_dispatch);
             $class = get_parent_class($class);
@@ -80,16 +82,21 @@ class Page
         global $prop_types;
         $this->ty = 'gen';
 
-        if ($this->user) {
+        if ($this->user)
+        {
             $ty = 'gen';
-            if ($this->has_arg('prop')) {
-                if (preg_match('/([A-z]+)\d+/', $this->arg('prop'), $m)) {
+            if ($this->has_arg('prop'))
+            {
+                if (preg_match('/([A-z]+)\d+/', $this->arg('prop'), $m))
+                {
                     $prop_code = $m[1];
 
                     // See if proposal code matches list in config
                     $found = False;
-                    foreach ($prop_types as $pty) {
-                        if ($prop_code == $pty) {
+                    foreach ($prop_types as $pty)
+                    {
+                        if ($prop_code == $pty)
+                        {
                             $ty = $pty;
                             $found = True;
                         }
@@ -97,11 +104,14 @@ class Page
 
                     // Proposal code didn't match, work out what beamline the visits are on
                     // Modified to order the results by visit number (that way any special case/session-0 visit come last)
-                    if (!$found) {
+                    if (!$found)
+                    {
                         $bls = $this->db->pq("SELECT s.beamlinename FROM blsession s INNER JOIN proposal p ON p.proposalid = s.proposalid WHERE CONCAT(p.proposalcode,p.proposalnumber) LIKE :1 ORDER BY s.visit_number DESC", array($m[0]));
 
-                        if (sizeof($bls)) {
-                            foreach ($bls as $bl) {
+                        if (sizeof($bls))
+                        {
+                            foreach ($bls as $bl)
+                            {
                                 $b = $bl['BEAMLINENAME'];
 
                                 $ty = $this->_get_type_from_beamline($b);
@@ -113,7 +123,8 @@ class Page
                     }
                 }
             }
-            else if ($this->user) {
+            else if ($this->user)
+            {
                 $ty = $this->user->getAdminType();
             }
             // Possible we set ty to null while trying to get type from beamline
@@ -133,8 +144,10 @@ class Page
 
         $beamline_type = null;
 
-        foreach ($bl_types as $type) {
-            if ($type['name'] == $bl) {
+        foreach ($bl_types as $type)
+        {
+            if ($type['name'] == $bl)
+            {
                 $beamline_type = $type['group'];
 
                 break;
@@ -162,13 +175,17 @@ class Page
         if (!$ty)
             return $beamlines;
 
-        if ($ty == 'all') {
-            $beamlines = array_filter(array_map(function ($k) use ($archived) {
-                if ($archived) {
+        if ($ty == 'all')
+        {
+            $beamlines = array_filter(array_map(function ($k) use ($archived)
+            {
+                if ($archived)
+                {
                     // Then return all beamlines ignoring the archived property for each beamline
                     return $k['name'];
                 }
-                else {
+                else
+                {
                     // We need to filter beamlines where its archived property is set to true.
                     // If there is no archived property set for the beamline, it's not archived
                     $beamlineIsArchived = array_key_exists('archived', $k) ? $k['archived'] : False;
@@ -176,13 +193,17 @@ class Page
                 }
             }, $bl_types));
         }
-        else {
-            $beamlines = array_filter(array_map(function ($k) use ($ty, $archived) {
+        else
+        {
+            $beamlines = array_filter(array_map(function ($k) use ($ty, $archived)
+            {
                 $beamlineIsArchived = array_key_exists('archived', $k) ? $k['archived'] : False;
-                if ($archived && $k['group'] == $ty) {
+                if ($archived && $k['group'] == $ty)
+                {
                     return $k['name'];
                 }
-                else if ($k['group'] == $ty && !$beamlineIsArchived) {
+                else if ($k['group'] == $ty && !$beamlineIsArchived)
+                {
                     return $k['name'];
                 }
             }, $bl_types));
@@ -194,15 +215,18 @@ class Page
 
     function auth($require_staff)
     {
-        if ($require_staff) {
+        if ($require_staff)
+        {
             $auth = $this->staff;
 
-        // Beamline Sample Registration
+            // Beamline Sample Registration
         }
-        else if ($this->blsr() && !$this->user->loginId) {
+        else if ($this->blsr() && !$this->user->loginId)
+        {
             $auth = false;
 
-            if ($this->has_arg('visit')) {
+            if ($this->has_arg('visit'))
+            {
                 $blsr_visits = array();
                 foreach ($this->blsr_visits() as $v)
                     array_push($blsr_visits, $v['VISIT']);
@@ -211,41 +235,48 @@ class Page
                     $auth = True;
 
             }
-            else {
+            else
+            {
                 $auth = true;
             }
 
-        // Barcode Scanners
+            // Barcode Scanners
         }
-        else if ($this->bcr() && !$this->user->loginId) {
+        else if ($this->bcr() && !$this->user->loginId)
+        {
             $auth = true;
 
-        // Normal validation
+            // Normal validation
         }
-        else {
+        else
+        {
             $auth = False;
 
             // Registered visit or staff
-            if ($this->staff) {
+            if ($this->staff)
+            {
                 $auth = True;
 
-                if ($this->has_arg('prop')) {
+                if ($this->has_arg('prop'))
+                {
                     $prop = $this->db->pq('SELECT p.proposalid FROM proposal p WHERE CONCAT(p.proposalcode, p.proposalnumber) LIKE :1', array($this->arg('prop')));
 
                     if (sizeof($prop))
                         $this->proposalid = $prop[0]['PROPOSALID'];
                 }
 
-            // Normal users
+                // Normal users
             }
-            else {
+            else
+            {
                 $rows = $this->db->pq("SELECT CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as vis
                         FROM proposal p
                         INNER JOIN blsession s ON p.proposalid = s.proposalid
                         INNER JOIN session_has_person shp ON shp.sessionid = s.sessionid
                         WHERE shp.personid=:1", array($this->user->personId));
 
-                foreach ($rows as $row) {
+                foreach ($rows as $row)
+                {
                     array_push($this->visits, strtolower($row['VIS']));
                 }
 
@@ -257,10 +288,12 @@ class Page
                  }*/
                 #print_r($this->sessionids);
 
-                if ($this->has_arg('id') || $this->has_arg('visit') || $this->has_arg('prop')) {
+                if ($this->has_arg('id') || $this->has_arg('visit') || $this->has_arg('prop'))
+                {
 
                     // Check user is in this visit
-                    if ($this->has_arg('id')) {
+                    if ($this->has_arg('id'))
+                    {
                         $types = array('data' => array('datacollectiongroup', 'datacollectionid'),
                             'edge' => array('energyscan', 'energyscanid'),
                             'mca' => array('xfefluorescencespectrum', 'xfefluorescencespectrumid'),
@@ -268,21 +301,25 @@ class Page
 
                         $table = 'datacollectiongroup';
                         $col = 'datacollectionid';
-                        if ($this->has_arg('t')) {
-                            if (array_key_exists($this->arg('t'), $types)) {
+                        if ($this->has_arg('t'))
+                        {
+                            if (array_key_exists($this->arg('t'), $types))
+                            {
                                 $table = $types[$this->arg('t')][0];
                                 $col = $types[$this->arg('t')][1];
                             }
                         }
 
-                        if ($table == 'datacollectiongroup') {
+                        if ($table == 'datacollectiongroup')
+                        {
                             $vis = $this->db->pq("SELECT p.proposalid, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as vis 
                                     FROM blsession s 
                                     INNER JOIN proposal p ON (p.proposalid = s.proposalid) 
                                     INNER JOIN datacollectiongroup dcg ON s.sessionid = dcg.sessionid
                                     INNER JOIN datacollection dc ON dcg.datacollectiongroupid = dc.datacollectiongroupid WHERE dc.datacollectionid = :1", array($this->arg('id')));
                         }
-                        else {
+                        else
+                        {
                             $vis = $this->db->pq("SELECT p.proposalid, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as vis 
                                     FROM blsession s 
                                     INNER JOIN proposal p ON (p.proposalid = s.proposalid) 
@@ -295,7 +332,8 @@ class Page
 
 
                     }
-                    else if ($this->has_arg('visit')) {
+                    else if ($this->has_arg('visit'))
+                    {
                         $vis = $this->arg('visit');
 
                         $visp = $this->db->pq("SELECT p.proposalid FROM blsession s INNER JOIN proposal p ON (p.proposalid = s.proposalid) WHERE CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) LIKE :1", array($this->arg('visit')));
@@ -303,9 +341,10 @@ class Page
                         if (sizeof($visp))
                             $this->proposalid = $visp[0]['PROPOSALID'];
 
-                    // Check user is in this proposal
+                        // Check user is in this proposal
                     }
-                    else if ($this->has_arg('prop')) {
+                    else if ($this->has_arg('prop'))
+                    {
                         $viss = $this->db->pq("SELECT p.proposalid, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as vis FROM blsession s INNER JOIN proposal p ON (p.proposalid = s.proposalid) WHERE CONCAT(p.proposalcode, p.proposalnumber) LIKE :1", array($this->arg('prop')));
 
                         $vis = array();
@@ -315,18 +354,21 @@ class Page
                             $this->proposalid = $viss[0]['PROPOSALID'];
                     }
 
-                    if ($this->has_arg('id') || $this->has_arg('visit')) {
+                    if ($this->has_arg('id') || $this->has_arg('visit'))
+                    {
                         if (in_array($vis, $this->visits))
                             $auth = True;
                     }
-                    else {
+                    else
+                    {
                         if (sizeof(array_intersect($vis, $this->visits)))
                             $auth = True;
                     }
 
-                // No id or visit, anyone ok to view
+                    // No id or visit, anyone ok to view
                 }
-                else {
+                else
+                {
                     $auth = True;
                 }
             }
@@ -334,7 +376,8 @@ class Page
 
 
         // End execution, show not authed page template
-        if (!$auth) {
+        if (!$auth)
+        {
             $this->_error('Access Denied', 'You dont have access to that page');
         }
 
@@ -344,7 +387,8 @@ class Page
 
     function _setup_routes()
     {
-        foreach ($this->_dispatch as $args) {
+        foreach ($this->_dispatch as $args)
+        {
             if (sizeof($args) > 4)
                 $this->app->{ $args[1]}($args[0], array(&$this, 'execute'), array(&$this, $args[2]))->conditions($args[3])->name($args[4]);
             if (sizeof($args) > 3)
@@ -360,12 +404,14 @@ class Page
         $this->_get_type();
         $this->staff = $this->user->hasPermission($this->ty . '_admin');
 
-        if (in_array($route->getName(), array('edge', 'mca'))) {
+        if (in_array($route->getName(), array('edge', 'mca')))
+        {
             $this->args['t'] = $route->getName();
         }
 
         $extra = array();
-        foreach ($route->getParams() as $k => $v) {
+        foreach ($route->getParams() as $k => $v)
+        {
             if ($v)
                 $extra[$k] = $v;
         }
@@ -388,14 +434,17 @@ class Page
 
         $action = $act ? 'LOGON' : 'LOGOFF';
 
-        if ($this->user) {
+        if ($this->user)
+        {
             $com = 'ISPyB2: ' . ($com ? $com : $_SERVER['REQUEST_URI']);
             $chk = $this->db->pq("SELECT comments FROM adminactivity WHERE username LIKE :1", array($this->user->loginId));
 
-            if (sizeof($chk)) {
+            if (sizeof($chk))
+            {
                 $this->db->pq("UPDATE adminactivity SET action=:1, comments=:2, datetime=SYSDATE WHERE username=:3", array($action, $com, $this->user->loginId));
             }
-            else {
+            else
+            {
                 $this->db->pq("INSERT INTO adminactivity (adminactivityid, username, action, comments, datetime) VALUES (s_adminactivity.nextval, :1, :2, :3, SYSDATE)", array($this->user->loginId, $action, $com));
             }
         }
@@ -416,7 +465,6 @@ class Page
             print "\n" . $this->db->plan;
         if ($this->db->stats)
             print "\n" . $this->db->stat;
-
     }
 
     # Error messages as json object, default status code of 400
@@ -435,37 +483,47 @@ class Page
         // Set the cache dir to a temp folder
         $serializer_temp = sys_get_temp_dir() . "/htmlpurifier/";
         $config = HTMLPurifier_Config::createDefault();
-        if (!is_dir($serializer_temp)) {
+        if (!is_dir($serializer_temp))
+        {
             mkdir($serializer_temp);
         }
         $config->set('Cache.SerializerPath', $serializer_temp);
         $purifier = new HTMLPurifier($config);
 
-        $bbreq = (array)json_decode($this->app->request()->getBody());
+        $bbreq = (array) json_decode($this->app->request()->getBody());
         $request = array_merge($_REQUEST, $bbreq);
         $this->request = $request;
 
         $parsed = array();
 
         // Array of arguments
-        if (sizeof($request) && !$this->is_assoc($request)) {
+        if (sizeof($request) && !$this->is_assoc($request))
+        {
             $pa = array();
-            foreach ($request as $r) {
+            foreach ($request as $r)
+            {
                 $par = array();
-                foreach (array_merge($this->generic_args, $this->_arg_list) as $k => $v) {
-                    if (property_exists($r, $k) && isset($r->$k)) {
-                        if (is_array($r->$k)) {
+                foreach (array_merge($this->generic_args, $this->_arg_list) as $k => $v)
+                {
+                    if (property_exists($r, $k) && isset($r->$k))
+                    {
+                        if (is_array($r->$k))
+                        {
                             $tmp = array();
-                            foreach ($r->$k as $val) {
-                                if (preg_match('/^' . $v . '$/m', $val)) {
+                            foreach ($r->$k as $val)
+                            {
+                                if (preg_match('/^' . $v . '$/m', $val))
+                                {
                                     array_push($tmp, $v == '.*' ? $purifier->purify($val) : $val);
                                 }
                             }
                             $par[$k] = $tmp;
 
                         }
-                        else {
-                            if (preg_match('/^' . $v . '$/m', $r->$k)) {
+                        else
+                        {
+                            if (preg_match('/^' . $v . '$/m', $r->$k))
+                            {
                                 $par[$k] = $v == '.*' ? $purifier->purify($r->$k) : $r->$k;
                                 if ($k == 'prop')
                                     $parsed[$k] = $par[$k];
@@ -478,34 +536,48 @@ class Page
 
             $parsed['collection'] = $pa;
         }
-        else {
-            foreach (array_merge($this->generic_args, $this->_arg_list) as $k => $v) {
-                if (!array_key_exists($k, $parsed)) {
-                    if (array_key_exists($k, $request)) {
-                        if (is_array($request[$k])) {
+        else
+        {
+            foreach (array_merge($this->generic_args, $this->_arg_list) as $k => $v)
+            {
+                if (!array_key_exists($k, $parsed))
+                {
+                    if (array_key_exists($k, $request))
+                    {
+                        if (is_array($request[$k]))
+                        {
                             $tmp = array();
-                            foreach ($request[$k] as $val) {
-                                if (preg_match('/^' . $v . '$/m', $val)) {
+                            foreach ($request[$k] as $val)
+                            {
+                                if (preg_match('/^' . $v . '$/m', $val))
+                                {
                                     array_push($tmp, $v == '.*' ? $purifier->purify($val) : $val);
                                 }
                             }
                             $parsed[$k] = $tmp;
 
                         }
-                        elseif ($request[$k] instanceof \stdClass) {
+                        elseif ($request[$k] instanceof \stdClass)
+                        {
                             // Handles nested backbone models
-                            foreach ($request[$k] as $key => $value) {
-                                if (is_array($value)) {
+                            foreach ($request[$k] as $key => $value)
+                            {
+                                if (is_array($value))
+                                {
                                     $tmp = array();
-                                    foreach ($value as $value2) {
-                                        if (preg_match('/^' . $v . '$/m', $value2)) {
+                                    foreach ($value as $value2)
+                                    {
+                                        if (preg_match('/^' . $v . '$/m', $value2))
+                                        {
                                             array_push($tmp, $v == '.*' ? $purifier->purify($value2) : $value2);
                                         }
                                     }
                                     $parsed[$k] = $tmp;
                                 }
-                                else {
-                                    if (preg_match('/^' . $v . '$/m', $value)) {
+                                else
+                                {
+                                    if (preg_match('/^' . $v . '$/m', $value))
+                                    {
                                         $request[$k]->$key = $v == '.*' ? $purifier->purify($value) : $value;
                                     }
                                 }
@@ -513,25 +585,34 @@ class Page
                             $parsed[$k] = $request[$k];
 
                         }
-                        elseif ($k == 'json') {
+                        elseif ($k == 'json')
+                        {
                             // Handles nested backbone models when submitted with files
                             // Necessary due to multi content-type form data requiring models to be submitted together as a single JSON string
                             $json = json_decode($request[$k]);
 
-                            foreach ($json as $label => $object) {
-                                if ($object instanceof \stdClass) {
-                                    foreach ($object as $name => $item) {
-                                        if (is_array($item)) {
+                            foreach ($json as $label => $object)
+                            {
+                                if ($object instanceof \stdClass)
+                                {
+                                    foreach ($object as $name => $item)
+                                    {
+                                        if (is_array($item))
+                                        {
                                             $tmp = array();
-                                            foreach ($item as $element) {
-                                                if (preg_match('/^' . $v . '$/m', $element)) {
+                                            foreach ($item as $element)
+                                            {
+                                                if (preg_match('/^' . $v . '$/m', $element))
+                                                {
                                                     array_push($tmp, $v == '.*' ? $purifier->purify($element) : $element);
                                                 }
                                             }
                                             $object->$name = $tmp;
                                         }
-                                        else {
-                                            if (preg_match('/^' . $v . '$/m', $item)) {
+                                        else
+                                        {
+                                            if (preg_match('/^' . $v . '$/m', $item))
+                                            {
                                                 $object->$name = $v == '.*' ? $purifier->purify($item) : $item;
                                             }
                                         }
@@ -540,8 +621,10 @@ class Page
                                 $parsed[$label] = $object;
                             }
                         }
-                        else {
-                            if (preg_match('/^' . $v . '$/m', $request[$k])) {
+                        else
+                        {
+                            if (preg_match('/^' . $v . '$/m', $request[$k]))
+                            {
                                 $parsed[$k] = $v == '.*' ? $purifier->purify($request[$k]) : $request[$k];
                             }
                         }
@@ -583,7 +666,8 @@ class Page
     # Pretty-ish printer
     function p($array)
     {
-        if ($this->debug) {
+        if ($this->debug)
+        {
             print '<h1 class="debug">Debug</h1><pre>';
             print_r($array);
             print '</pre>';
@@ -604,7 +688,8 @@ class Page
         putenv($bl_pv_env);
         exec($bl_pv_prog . ($string ? ' -S' : '') . ' ' . implode(' ', $pvs) . ' 2>/dev/null', $ret);
         $output = array();
-        foreach ($ret as $i => $v) {
+        foreach ($ret as $i => $v)
+        {
             $lis = preg_split('/\s+/', $v, 2);
             $output[$lis[0]] = sizeof($lis) > 1 ? ($full ? array_slice($lis, 1) : $lis[1]) : '';
         }
@@ -625,8 +710,10 @@ class Page
     {
         $d = array();
 
-        if (file_exists($root)) {
-            foreach (scandir($root) as $f) {
+        if (file_exists($root))
+        {
+            foreach (scandir($root) as $f)
+            {
                 if ($f === '.' or $f === '..')
                     continue;
                 if (is_dir($root . '/' . $f))
@@ -660,7 +747,8 @@ class Page
         global $ip2bl;
         $parts = explode('.', $_SERVER['REMOTE_ADDR']);
 
-        if (array_key_exists($parts[2], $ip2bl)) {
+        if (array_key_exists($parts[2], $ip2bl))
+        {
             return $ip2bl[$parts[2]];
         }
     }
@@ -731,11 +819,13 @@ class Page
     function _get_email_fn($name)
     {
         $parts = explode(' ', $name);
-        if (sizeof($parts) == 2) {
+        if (sizeof($parts) == 2)
+        {
             $fn = $parts[0];
             $ln = $parts[1];
         }
-        else if (sizeof($parts) == 3) {
+        else if (sizeof($parts) == 3)
+        {
             $fn = $parts[1];
             $ln = $parts[2];
         }
@@ -745,7 +835,8 @@ class Page
         $src = $this->_ldap_search("(&(sn=$ln)(givenname=$fn))", true);
 
         $ret = array();
-        foreach ($src as $fedid => $email) {
+        foreach ($src as $fedid => $email)
+        {
             array_push($ret, $email);
         }
 
@@ -767,15 +858,18 @@ class Page
         $ln = '';
 
         $parts = explode(' ', $name);
-        if (sizeof($parts) == 2) {
+        if (sizeof($parts) == 2)
+        {
             $fn = $parts[0];
             $ln = $parts[1];
         }
-        else if (sizeof($parts) == 3) {
+        else if (sizeof($parts) == 3)
+        {
             $fn = $parts[1];
             $ln = $parts[2];
         }
-        if ($fn && $ln) {
+        if ($fn && $ln)
+        {
             // Try finding an email address from within ISPyB
             // We are only interested in staff users so join with usergroup table
             $lc_emails = $this->db->pq("SELECT pe.emailaddress
@@ -804,18 +898,21 @@ class Page
 
         $ret = array();
         $ds = ldap_connect($ldap_server);
-        if ($ds) {
+        if ($ds)
+        {
             // Explictly set the protocol version to prevent bind errors
             ldap_set_option($ds, LDAP_OPT_PROTOCOL_VERSION, 3);
             $r = ldap_bind($ds);
             $sr = ldap_search($ds, $ldap_search, $search);
             $info = ldap_get_entries($ds, $sr);
 
-            for ($i = 0; $i < $info["count"]; $i++) {
+            for ($i = 0; $i < $info["count"]; $i++)
+            {
                 // Strictly speaking we could set anything as the key here, since only the first record is used in e.g. _get_email_fn
                 // But as the logic maps fedid=>email, use similar keys here
                 $fedid = $info[$i]['uid'][0];
-                if ($email) {
+                if ($email)
+                {
                     $ret[$fedid] = array_key_exists('mail', $info[$i]) ? $info[$i]['mail'][0] : '';
                 }
                 else
@@ -849,12 +946,14 @@ class Page
         $r = $c->send($m);
         $val = $r->value();
 
-        if ($val) {
+        if ($val)
+        {
             $str = $val->arrayMem(0);
             $vals = $str->structMem('values');
 
             $ret = array();
-            for ($i = 0; $i < $vals->arraySize(); $i++) {
+            for ($i = 0; $i < $vals->arraySize(); $i++)
+            {
                 $vs = $vals->arrayMem($i);
                 $v = $vs->structMem('value')->arrayMem(0)->scalarVal();
                 $t = $vs->structMem('secs')->scalarVal() - 3600;
@@ -888,12 +987,14 @@ class Page
         $ch = curl_init();
 
         $headers = getallheaders();
-        if (array_key_exists('Authorization', $headers) && array_key_exists('jwt', $options)) {
+        if (array_key_exists('Authorization', $headers) && array_key_exists('jwt', $options))
+        {
             curl_setopt($ch, CURLOPT_HTTPHEADER, array('Authorization: ' . $headers['Authorization']));
         }
 
         $data = '';
-        if ($options['data']) {
+        if ($options['data'])
+        {
             $data = '?' . http_build_query($options['data']);
         }
 
@@ -917,7 +1018,8 @@ class Page
         $start = 0;
         $end = $pp;
 
-        if ($this->has_arg('page')) {
+        if ($this->has_arg('page'))
+        {
             $pg = $this->arg('page') - 1;
             $start = $pg * $pp;
             $end = $pg * $pp + $pp;
@@ -929,7 +1031,8 @@ class Page
 
     function _get_order($cols, $default)
     {
-        if ($this->has_arg('sort_by')) {
+        if ($this->has_arg('sort_by'))
+        {
             $dir = $this->has_arg('order') ? ($this->arg('order') == 'asc' ? 'ASC' : 'DESC') : 'ASC';
             if (array_key_exists($this->arg('sort_by'), $cols))
                 return $cols[$this->arg('sort_by')] . ' ' . $dir;
@@ -950,7 +1053,8 @@ class Page
     function get_visit_processed_dir($dc, $location)
     {
         $root = preg_replace('/' . $dc['VIS'] . '/', $dc['VIS'] . $location, $dc['DIR'], 1) . $dc['IMP'] . '_' . $dc['RUN'] . '/';
-        if (!is_dir($root)) {
+        if (!is_dir($root))
+        {
             $root = preg_replace('/' . $dc['VIS'] . '/', $dc['VIS'] . $location, $dc['DIR'], 1) . $dc['IMP'] . '_' . $dc['RUN'] . '_' . '/';
         }
         return $root;
@@ -961,7 +1065,8 @@ class Page
     {
         global $zocalo_mx_reprocess_queue;
 
-        if (isset($zocalo_mx_reprocess_queue)) {
+        if (isset($zocalo_mx_reprocess_queue))
+        {
             // Send job to processing queue
             $zocalo_message = array(
                 'recipes' => array(
@@ -981,23 +1086,28 @@ class Page
         $zocalo_username,
         $zocalo_password;
 
-        if (empty($zocalo_server) || empty($zocalo_queue)) {
+        if (empty($zocalo_server) || empty($zocalo_queue))
+        {
             $message = 'Zocalo server or queue not specified.';
             error_log($message);
-            if (isset($error_code)) {
+            if (isset($error_code))
+            {
                 $this->_error($message, $error_code);
             }
         }
 
-        try {
+        try
+        {
             error_log("Sending message" . var_export($zocalo_message, true));
             $queue = new Queue($zocalo_server, $zocalo_username, $zocalo_password);
             $queue->send($zocalo_queue, $zocalo_message, true, $this->user->loginId);
         }
-        catch (Exception $e) {
+        catch (Exception $e)
+        {
             $message = $e->getMessage();
             error_log($message);
-            if (isset($error_code)) {
+            if (isset($error_code))
+            {
                 $this->_error($message, $error_code);
             }
         }

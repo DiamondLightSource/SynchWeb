@@ -13,7 +13,7 @@
  */
 
 use Slim\Slim;
-use SynchWeb\Authentication\AuthenticationService;
+use SynchWeb\Controllers\AuthenticationController;
 use SynchWeb\Controllers\UserController;
 use SynchWeb\Model\Services\AuthenticationData;
 use SynchWeb\Model\Services\UserData;
@@ -106,7 +106,7 @@ function setupDependencyInjectionContainer($app, $isb, $port)
 
     $app->container->singleton('auth', function () use ($app)
     {
-        return new AuthenticationService($app, $app->container['authData']);
+        return new AuthenticationController($app, $app->container['authData']);
     });
 
     $app->container->singleton('user', function () use ($app)

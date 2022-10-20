@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace SynchWeb\Authentication;
+namespace SynchWeb\Controllers;
 
 // This class overrides the use of header() allowing code which uses this to be tested (it will fail if called again)
 // - and for the contents of the headers to be tested.
@@ -13,6 +13,13 @@ abstract class Output
     {
         self::$headers = array();
         self::$body = null;
+    }
+}
+
+class AppStub
+{
+    public function conditions()
+    {
     }
 }
 

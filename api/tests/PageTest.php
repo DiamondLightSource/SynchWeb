@@ -29,7 +29,6 @@ final class PageTest extends TestCase
 
         $this->expectException(\Exception::class);
         $page = new Page($slimStub, $dbStub, null);
-        $page->args = array();
         
         $page->arg('invald_key');
     }
