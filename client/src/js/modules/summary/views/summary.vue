@@ -219,43 +219,104 @@
             </div>
         </div>
 
-        <custom-table-component
-                class="summary-result-table"
-                tableClass="tw-w-full"
-                :data-list="summaryData"
-                :headers="selectedColumns"
-                no-data-text="No components for this group"
-                > 
-            <template v-slot:tableHeaders >
-                <td v-for="value in summaryColumns" :key="value.id">
-                    <p v-if="value.checked == true" :class="'tw-w-1/' + selectedColumns.length + ' tw-text-center tw-p-12 tw-py-2'">{{ value.title }}</p>
-                </td>
+        <div class="tw-overflow-x-scroll tw-scrolling-touch">
+            <custom-table-component
+                    class="summary-result-table"
+                    tableClass="tw-w-full"
+                    :data-list="summaryData"
+                    :headers="selectedColumns"
+                    no-data-text="No components for this group"
+                    > 
+                <template v-slot:tableHeaders >
+                    <td></td>
+                    <td v-for="(value, index) in summaryColumns" :key="value.id">
+                        <div class="tw-flex">
+                            <p v-if="value.checked == true" :class="'tw-w-1/' + selectedColumns.length + ' tw-text-center tw-pt-5 tw-pb-5 tw-pl-12 tw-pr-2'">{{ value.title }}</p>
+                            <button
+                            v-on:click="toggleOrderBy(index)"
+                            class="tw-bg-transparent tw-z-40 tw-mb-2 tw-mr-2"
+                            :aria-expanded="value.isDesc"
+                            :aria-controls="`collapse${_uid}`"
+                            >
+                                <svg
+                                v-if="value.orderByCount <= 1 && value.checked == true"
+                                class="tw-w-3 tw-h-5 tw-transition-all tw-duration-200 tw-transform"
+                                :class="{
+                                'tw-rotate-180': !value.isDesc,
+                                'tw-rotate-0': value.isDesc,
+                                }"
+                                fill="none"
+                                stroke="currentColor"
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 16 10"
+                                aria-hidden="true"
+                                >
+                                <path fill-rule="evenodd" d="M8 1a.5.5 0 0 1 .5.5v11.793l3.146-3.147a.5.5 0 0 1 
+                                .708.708l-4 4a.5.5 0 0 1-.708 0l-4-4a.5.5 0 0 1 .708-.708L7.5 13.293V1.5A.5.5 0 0 1 8 1z"/>
+                                </svg>
+                            </button>
+
+                            <button
+                            v-on:click="toggleOrderBy(index)"
+                            class="tw-bg-transparent tw-z-40  tw-mb-2 tw-mr-4"
+                            :aria-expanded="value.isDesc"
+                            :aria-controls="`collapse${_uid}`"
+                            >
+                                <svg
+                                v-if="value.orderByCount == 2 && value.checked == true"
+                                class="tw-w-3 tw-h-5 tw-mb-2 tw-transition-all tw-duration-200 tw-transform"
+                                fill="none"
+                                stroke="currentColor"
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 16 10"
+                                aria-hidden="true"
+                                >
+                                <path fill-rule="evenodd" d="M11.5 15a.5.5 0 0 0 .5-.5V2.707l3.146 3.147a.5.5 0 0 0 .708-.708l-4-4a.5.5 0 0 0-.708 
+                                0l-4 4a.5.5 0 1 0 .708.708L11 2.707V14.5a.5.5 0 0 0 .5.5zm-7-14a.5.5 0 0 1 .5.5v11.793l3.146-3.147a.5.5 0 0 1 .708.708l-4 
+                                4a.5.5 0 0 1-.708 0l-4-4a.5.5 0 0 1 .708-.708L4 13.293V1.5a.5.5 0 0 1 .5-.5z"/>
+                                </svg>
+                            </button>
+
+                        </div>
+                    </td>
+                </template>
+            
+            <template v-slot:slotData="{ dataList }">
+                <custom-table-row
+                v-for="(result, rowIndex) in dataList"
+                :key="rowIndex"
+                :result="result"
+                :row-index="rowIndex">
+                <template v-slot:default="{ result }">
+                    <td class="tw-flex">
+                        <p class="tw-ra tw-ml-2 tw-mt-4">
+                            <a :href="'/dc/visit/' + result.PROP + '-' + result.VISIT_NUMBER
+                            + '/id/' + result.DATACOLLECTIONID" class="tw-button tw-button-notext tw-dll" title="Go to Data Collection">
+                            <i class="fa fa-search"></i></a>
+                        </p>
+                        <p class="tw-ra tw-ml-2 tw-mt-4">
+                            <a href="'+app.apiurl+'/download/id/<%-DCID%>/aid/<%-AID%>" class="tw-button tw-button-notext tw-dll" 
+                                title="Download MTZ file"><i class="fa fa-download"></i></a>
+                        </p>
+                    </td>
+                    <td v-for="value in summaryColumns" :key="value.id">
+                        <p v-if="value.checked == true" class="tw-p-2 tw-text-center">{{ result[value.key] }}</p>
+                    </td>
+                </template>
+                </custom-table-row>
+
+            </template>
+            
+            <template v-slot:noData>
+                <custom-table-row class="tw-w-full tw-bg-table-body-background-odd">
+                <td :colspan='summaryColumns.length' class="tw-text-center tw-py-2 tw-ml-4 tw-mr-4">No results found</td>
+                </custom-table-row>
+
             </template>
 
-        <template v-slot:slotData="{ dataList }">
-            <custom-table-row
-            v-for="(result, rowIndex) in dataList"
-            :key="rowIndex"
-            :result="result"
-            :row-index="rowIndex">
-            <template v-slot:default="{ result }">
-                <td v-for="value in summaryColumns" :key="value.id" :class="value.class">
-                    <p v-if="value.checked == true" class="tw-p-2 tw-text-center">{{ result[value.key] }}</p>
-                </td>
-            </template>
-            </custom-table-row>
 
-        </template>
-        
-        <template v-slot:noData>
-            <custom-table-row class="tw-w-full tw-bg-table-body-background-odd">
-            <td :colspan='summaryColumns.length' class="tw-text-center tw-py-2 tw-ml-4 tw-mr-4">No results found</td>
-            </custom-table-row>
-
-        </template>
-
-
-        </custom-table-component>
+            </custom-table-component>
+        </div>
 
         <template>
             <p>Resize me! Current width is: {{ windowWidth }}</p>
@@ -277,12 +338,14 @@
 
 import SummaryCollection from 'modules/summary/collections/summaryresults.js'
 import ProposalCollection from 'collections/proposals'
+import SpaceGroups from 'collections/spacegroups'
 
 import Pagination from 'app/components/pagination.vue'
 
 import CustomTableComponent from 'app/components/custom-table-component.vue'
 import CustomTableRow from 'app/components/custom-table-row.vue'
 import ComboBox from 'app/components/combo-box.vue'
+import BaseInputSelect from 'app/components/base-input-select.vue'
 import BaseInputText from '../../../app/components/base-input-text.vue'
 
 import ExpandableSidebar from '../../../app/components/expandable-sidebar.vue'
@@ -299,6 +362,7 @@ export default {
     'combo-box': ComboBox,
     'expandable-sidebar': ExpandableSidebar,
     'custom-accordian': CustomAccordian,
+    'base-input-select': BaseInputSelect,
     'base-input-text' : BaseInputText
     },
     props: {
@@ -314,6 +378,7 @@ export default {
             currentPage: 1,
             summaryCollection : null,
             summaryData : [],
+            summaryExport : [],
             proposalCollection : null,
             proposals : [],
             selectedProposal : '',
@@ -324,72 +389,128 @@ export default {
                 {
                     key: 'DATACOLLECTIONID',
                     title: 'Data Collection Id',
-                    checked: true
+                    checked: true,
+                    isDesc : false,
+                    orderByCount: 2,
+                    descParam : 'descdcid',
+                    ascParam : 'ascdcid'
                 },
                 {
                     key: 'FILETEMPLATE',
                     title: 'Prefix',
-                    checked: true
+                    checked: true,
+                    isDesc : false,
+                    orderByCount: 2,
+                    descParam : 'descpref',
+                    ascParam : 'ascpref'
                 },
                 {
                     key: 'NAME',
                     title: 'Sample Name',
-                    checked: true
+                    checked: true,
+                    isDesc : false,
+                    orderByCount: 2,
+                    descParam : 'descsmpl',
+                    ascParam : 'ascsmpl'
                 },
                 {
                     key: 'STARTDATE',
                     title: 'Start Date',
-                    checked: true
+                    checked: true,
+                    isDesc : false,
+                    orderByCount: 2,
+                    descParam : 'descstdt',
+                    ascParam : 'ascstdt'
                 },
                 {
                     key: 'ENDDATE',
                     title: 'End Date',
-                    checked: true
+                    checked: true,
+                    isDesc : false,
+                    orderByCount: 2,
+                    descParam : 'descendt',
+                    ascParam : 'ascendt'
                 },
                 {
                     key: 'SPACEGROUP',
                     title: 'Space Group',
-                    checked: true
+                    checked: true,
+                    isDesc : false,
+                    orderByCount: 2,
+                    descParam : 'descsg',
+                    ascParam : 'ascsg'
                 },
                 {
                     key: 'REFINEDCELL_A',
                     title: 'Unit Cell A',
-                    checked: true
+                    checked: true,
+                    isDesc : false,
+                    orderByCount: 2,
+                    descParam : 'descrca',
+                    ascParam : 'ascrca'
                 },
                 {
                     key: 'REFINEDCELL_B',
                     title: 'Unit Cell B',
-                    checked: true
+                    checked: true,
+                    isDesc : false,
+                    orderByCount: 2,
+                    descParam : 'descrcb',
+                    ascParam : 'ascrcb'
                 },
                 {
                     key: 'REFINEDCELL_C',
                     title: 'Unit Cell C',
-                    checked: true
+                    checked: true,
+                    isDesc : false,
+                    orderByCount: 2,
+                    descParam : 'descrcc',
+                    ascParam : 'ascrcc'
                 },
                 {
                     key: 'RMEASWITHINIPLUSIMINUS',
                     title: 'RMeas',
-                    checked: true
+                    checked: true,
+                    isDesc : false,
+                    orderByCount: 2,
+                    descParam : 'descrmeas',
+                    ascParam : 'ascrmeas'
                 },
                 {
                     key: 'RESOLUTIONLIMITHIGH',
                     title: 'Resolution Limit (High)',
-                    checked: true
+                    checked: true,
+                    isDesc : false,
+                    orderByCount: 2,
+                    descParam : 'descrlh',
+                    ascParam : 'ascrlh'
                 },
                 {
                     key: 'CCANOMALOUS',
                     title: 'cc Anomalous',
-                    checked: true
+                    checked: true,
+                    isDesc : false,
+                    orderByCount: 2,
+                    descParam : 'desccca',
+                    ascParam : 'asccca'
                 },
                 {
                     key: 'RFREEVALUESTART',
                     title: 'R Free Initial',
-                    checked: true
+                    checked: true,
+                    isDesc : false,
+                    orderByCount: 2,
+                    descParam : 'descrfs',
+                    ascParam : 'ascrfs'
                 },
                 {
                     key: 'RFREEVALUEEND',
                     title: 'R Free Final',
-                    checked: true
+                    checked: true,
+                    isDesc : false,
+                    orderByCount: 2,
+                    descParam : 'descrfe',
+                    ascParam : 'ascrfe'
                 },
 
             ],
@@ -450,56 +571,56 @@ export default {
                 this.windowWidth = window.innerWidth
             }
     },
-    computed: {
-        proposalSelectList() {
-        }
-    },
     methods: {
-        async searchProposal() {
-            this.proposalCollection = new ProposalCollection()
-            this.proposalCollection.queryParams.s = this.proposalText
-            this.proposalCollection.state.pageSize = 999
-            const results = await this.$store.dispatch('getCollection', this.proposalCollection)
-            this.proposals = results.toJSON()
-            
-        },
-        getQueryParams() {
-            this.summaryCollection = new SummaryCollection()
+        async toggleOrderBy(column) {
 
-            this.summaryCollection.queryParams = { page: this.currentPage, per_page: this.pageSize }
-            this.summaryCollection.queryParams.dcid = this.searchedDCId
-            this.summaryCollection.queryParams.prop = this.selectedProposal
-            this.summaryCollection.queryParams.sg = this.filterOptions.SPACEGROUP.searchedValue
-            this.summaryCollection.queryParams.gca = this.searchedGtUnitCellA
-            this.summaryCollection.queryParams.lca = this.searchedLtUnitCellA
-            this.summaryCollection.queryParams.gcb = this.searchedGtUnitCellB
-            this.summaryCollection.queryParams.lcb = this.searchedLtUnitCellB
-            this.summaryCollection.queryParams.gc = this.searchedGtUnitCellC
-            this.summaryCollection.queryParams.lc = this.searchedLtUnitCellC
-            this.summaryCollection.queryParams.grlh = this.filterOptions.RESLIMITHIGH.filteredGt
-            this.summaryCollection.queryParams.lrlh = this.filterOptions.RESLIMITHIGH.filteredLt
-            this.summaryCollection.queryParams.grm = this.filterOptions.RMEASWIPLUSIMINUS.filteredGt
-            this.summaryCollection.queryParams.lrm = this.filterOptions.RMEASWIPLUSIMINUS.filteredLt
-            this.summaryCollection.queryParams.gcc = this.filterOptions.CCANOM.filteredGt
-            this.summaryCollection.queryParams.lcc = this.filterOptions.CCANOM.filteredLt
-            this.summaryCollection.queryParams.grff = this.filterOptions.RFREEFINAL.filteredGt
-            this.summaryCollection.queryParams.lrff = this.filterOptions.RFREEFINAL.filteredLt
-            this.summaryCollection.queryParams.grfi = this.filterOptions.RFREEINITIAL.filteredGt
-            this.summaryCollection.queryParams.lrfi = this.filterOptions.RFREEINITIAL.filteredLt
+            this.summaryColumns[column].isDesc = !this.summaryColumns[column].isDesc;
+            this.summaryColumns[column].orderByCount += 1;
+
+            console.log(this.summaryColumns)
+
+            if (this.summaryColumns[column].orderByCount > 2) {
+                this.summaryColumns[column].orderByCount = 0;
+                this.summaryColumns[column].isDesc = false;
+                };
+            
+            this.getQueryParams(false);
+
+            const results = await this.$store.dispatch('getCollection', this.summaryCollection);
+            this.summaryData = results.toJSON();
+
+        },
+        async searchProposal() {
+            this.proposalCollection = new ProposalCollection();
+            this.proposalCollection.queryParams.s = this.proposalText;
+            this.proposalCollection.state.pageSize = 999;
+
+            const results = await this.$store.dispatch('getCollection', this.proposalCollection);
+            this.proposals = results.toJSON();
+        },
+        async getSpaceGroupsCollection() {
+            this.spaceGroupsCollection = new SpaceGroups(null, { state: { pageSize: 9999 } })
+            if (!this.SPACEGROUP) {
+                this.spaceGroupsCollection.queryParams.ty = this.containerGroup
+            }
+
+            const result = await this.$store.dispatch('getCollection', this.spaceGroupsCollection)
+            this.spaceGroups = result.toJSON()
         },
         async searchFilterParams() {
 
-            this.getQueryParams()
-            
-            console.log('getting collection....')
-            console.log(this.summaryCollection.queryParams)
-            const results = await this.$store.dispatch('getCollection', this.summaryCollection)
+            this.getQueryParams(false);
+            console.log('waiting for collection...')
 
-            this.totalRecords = results.state.totalRecords
-            this.summaryData = results.toJSON()
-            console.log('selected proposal')
-            console.log(this.summaryData)
-            console.log(this.convertToCSV(this.summaryData))
+            const results = await this.$store.dispatch('getCollection', this.summaryCollection);
+            console.log(this.summaryCollection.queryParams)
+
+            console.log('got collection!')
+
+            this.totalRecords = results.state.totalRecords;
+            this.summaryData = results.toJSON();
+
+            console.log('summarydata', this.summaryData)
 
         },
         async handlePageChange(data) {
@@ -508,51 +629,92 @@ export default {
             this.pageSize = data.pageSize;
             if (this.selectedProposal){
 
-                this.getQueryParams()
+                this.getQueryParams(false);
 
-                const results = await this.$store.dispatch('getCollection', this.summaryCollection)
-                this.summaryData = results.toJSON()
+                const results = await this.$store.dispatch('getCollection', this.summaryCollection);
+                this.summaryData = results.toJSON();
+            };
+
+        },
+        async downloadFile() {
+            console.log('download')
+
+            if (this.summaryData) {
+                this.getQueryParams(true);
+
+                const results = await this.$store.dispatch('getCollection', this.summaryCollection);
+                this.summaryExport = results.toJSON();
+
+                const csv = this.convertToCSV(this.summaryExport);
+                this.exportCSV(csv);
+
+                this.summaryExport = [];
+            }
+        },
+        getQueryParams(isexport) {
+            this.summaryCollection = new SummaryCollection()
+
+            if (isexport == true) {
+                console.log('query params true!!');
+                console.log(this.totalRecords);
+                this.summaryCollection.queryParams = { page: this.currentPage, per_page: this.totalRecords };
+            }
+            else {
+                this.summaryCollection.queryParams = { page: this.currentPage, per_page: this.pageSize };
             }
 
-        },
-        downloadFile() {
-            console.log('download')
-            const data = {
-                        '0': {
-                            timestamp: 1525879470,
-                            name: "testing",
-                            lastname: "testingdone"
-                        },
-                        '1': {
-                            timestamp: 1525879470,
-                            name: "testing2",
-                            lastname: "testingdone2"
-                        }
-                        };
-            
-            console.log(this.convertToCSV(data))
+            for (var index in this.summaryColumns) {
+                if ( this.summaryColumns[index].orderByCount < 2 && this.summaryColumns[index].isDesc == true) {
+                    var desc = this.summaryColumns[index].descParam;
+                    this.summaryCollection.queryParams[desc] = 'desc';
+                }
+                else if ( this.summaryColumns[index].orderByCount < 2 && this.summaryColumns[index].isDesc == false) {
+                    var asc = this.summaryColumns[index].ascParam;
+                    this.summaryCollection.queryParams[asc] = 'asc';
+                }
+
+            }
+  
+            this.summaryCollection.queryParams.dcid = this.searchedDCId;
+            this.summaryCollection.queryParams.prop = this.selectedProposal;
+            this.summaryCollection.queryParams.sg = this.filterOptions.SPACEGROUP.searchedValue;
+            this.summaryCollection.queryParams.gca = this.searchedGtUnitCellA;
+            this.summaryCollection.queryParams.lca = this.searchedLtUnitCellA;
+            this.summaryCollection.queryParams.gcb = this.searchedGtUnitCellB;
+            this.summaryCollection.queryParams.lcb = this.searchedLtUnitCellB;
+            this.summaryCollection.queryParams.gc = this.searchedGtUnitCellC;
+            this.summaryCollection.queryParams.lc = this.searchedLtUnitCellC;
+            this.summaryCollection.queryParams.grlh = this.filterOptions.RESLIMITHIGH.filteredGt;
+            this.summaryCollection.queryParams.lrlh = this.filterOptions.RESLIMITHIGH.filteredLt;
+            this.summaryCollection.queryParams.grm = this.filterOptions.RMEASWIPLUSIMINUS.filteredGt;
+            this.summaryCollection.queryParams.lrm = this.filterOptions.RMEASWIPLUSIMINUS.filteredLt;
+            this.summaryCollection.queryParams.gcc = this.filterOptions.CCANOM.filteredGt;
+            this.summaryCollection.queryParams.lcc = this.filterOptions.CCANOM.filteredLt;
+            this.summaryCollection.queryParams.grff = this.filterOptions.RFREEFINAL.filteredGt;
+            this.summaryCollection.queryParams.lrff = this.filterOptions.RFREEFINAL.filteredLt;
+            this.summaryCollection.queryParams.grfi = this.filterOptions.RFREEINITIAL.filteredGt;
+            this.summaryCollection.queryParams.lrfi = this.filterOptions.RFREEINITIAL.filteredLt;
         },
         onDCSearch() {
-            this.searchedDCId = this.tempDC
-            this.searchFilterParams()
-
+            this.searchedDCId = this.tempDC;
+            this.searchFilterParams();
         },  
         populateSelectedColumns() {
             for (const value of Object.entries(this.summaryColumns)) {
-                this.selectedColumns.push(value[1].title)
-            }
+                this.selectedColumns.push(value[1].title);
+            };
         },
         checkedColumns(index) {
-            this.summaryColumns[index].checked = !this.summaryColumns[index].checked
+            this.summaryColumns[index].checked = !this.summaryColumns[index].checked;
             if (this.summaryColumns[index].checked == false){
-                console.log('unchecked!!!')
+
                 this.deselectedColumns.push(this.summaryColumns[index].title);
-                this.selectedColumns = this.selectedColumns.filter(item => item !== this.summaryColumns[index].title)
+                this.selectedColumns = this.selectedColumns.filter(item => item !== this.summaryColumns[index].title);
             }
             else {
                 this.selectedColumns.push(this.summaryColumns[index].title);
-                this.deselectedColumns = this.deselectedColumns.filter(item => item !== this.summaryColumns[index].title)
-                console.log('checked!!!')
+                this.deselectedColumns = this.deselectedColumns.filter(item => item !== this.summaryColumns[index].title);
+
             }
             console.log('selected columns', this.selectedColumns);
             console.log('deselected columns', this.deselectedColumns);
@@ -572,6 +734,13 @@ export default {
 
             return result;
         },
+        exportCSV(csv) {
+            const anchor = document.createElement('a');
+            anchor.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+            anchor.target = '_blank';
+            anchor.download = 'summary_export.csv';
+            anchor.click();
+        }
 
         // async fetchSummaryInformation() {
         //     this.summaryCollection = new SummaryCollection()

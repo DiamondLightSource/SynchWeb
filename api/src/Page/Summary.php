@@ -61,6 +61,36 @@ class Summary extends Page
         'grfi' =>  '\d+(.\d+)?', // (g) - r free initial 
         'lrfi' =>  '\d+(.\d+)?', // (l) - r free initial
 
+        //Asc and Desc Params
+        'descdcid' => '\w+', // desc dc id
+        'ascdcid' => '\w+', // asc dc id
+        'descpref' => '\w+', // desc  file template
+        'ascpref' => '\w+', // asc file template
+        'descsmpl' => '\w+', // desc sample name
+        'ascsmpl' => '\w+', // asc sample name
+        'descstdt' => '\w+', // desc start date
+        'ascstdt' => '\w+', // asc start date
+        'descendt' => '\w+', // desc end date
+        'ascendt' => '\w+', // asc end date
+        'descsg' => '\w+', // desc space group
+        'ascsg' => '\w+', // asc space group
+        'descrca' => '\w+', // desc refined cell a
+        'ascrca' => '\w+', // asc refined cell a
+        'descrcb' => '\w+', // desc refined cell b
+        'ascrcb' => '\w+', // asc refined cell b
+        'descrcc' => '\w+', // desc  refined cell c
+        'ascrcc' => '\w+', // asc refined cell c
+        'descrmeas' => '\w+', // desc rmeas
+        'ascrmeas' => '\w+', // asc rmeas
+        'descrlh' => '\w+', // desc resolution limit high
+        'ascrlh' => '\w+', // asc resolution limit high
+        'desccca' => '\w+', // desc cc anomalous
+        'asccca' => '\w+', // asc cc anomalous
+        'descrfs' => '\w+', // desc rfree value start
+        'ascrfs' => '\w+', // asc rfree value start
+        'descrfe' => '\w+', // desc rfree value end
+        'ascrfe' => '\w+', // asc rfree value end
+
 );
 
     public static $dispatch = array(
@@ -73,12 +103,115 @@ class Summary extends Page
         $where = '';
         $where_arr = array();
         $order = 'p.proposalid ASC';
+        $order_arr = array();
   
 
         if (!$this->has_arg('prop')) $this->_error('No proposal specified');
 
         $args = array($this->proposalid);
         array_push($where_arr, 'p.proposalid = :1');
+
+
+        // ASCENDING and DESCENDING
+        // dc id
+        if ($this->has_arg('descdcid')) {
+            array_push($order_arr, 'dc.dataCollectionId DESC');
+        }
+        if ($this->has_arg('ascdcid')) {
+            array_push($order_arr, 'dc.dataCollectionId ASC');
+        }
+        // file template
+        if ($this->has_arg('descpref')) {
+            array_push($order_arr, 'dc.fileTemplate DESC');
+        }
+        if ($this->has_arg('ascpref')) {
+            array_push($order_arr, 'dc.fileTemplate ASC');
+        }
+        // sample name
+        if ($this->has_arg('descsmpl')) {
+            array_push($order_arr, 'b2.name DESC');
+        }
+        if ($this->has_arg('ascsmpl')) {
+            array_push($order_arr, 'b2.name ASC');
+        }
+        // start date
+        if ($this->has_arg('descstdt')) {
+            array_push($order_arr, 'b.startDate DESC');
+        }
+        if ($this->has_arg('ascstdt')) {
+            array_push($order_arr, 'b.startDate ASC');
+        }
+        // end date
+        if ($this->has_arg('descendt')) {
+            array_push($order_arr, 'b.endDate DESC');
+        }
+        if ($this->has_arg('ascendt')) {
+            array_push($order_arr, 'b.endDate ASC');
+        }
+        // space group
+        if ($this->has_arg('descsg')) {
+            array_push($order_arr, 'ap.spaceGroup DESC');
+        }
+        if ($this->has_arg('ascsg')) {
+            array_push($order_arr, 'ap.spaceGroup ASC');
+        }
+        // refined cell a
+        if ($this->has_arg('descrca')) {
+            array_push($order_arr, 'ap.refinedCell_a DESC');
+        }
+        if ($this->has_arg('ascrca')) {
+            array_push($order_arr, 'ap.refinedCell_a ASC');
+        }
+        // refined cell b
+        if ($this->has_arg('descrcb')) {
+            array_push($order_arr, 'ap.refinedCell_b DESC');
+        }
+        if ($this->has_arg('ascrcb')) {
+            array_push($order_arr, 'ap.refinedCell_b ASC');
+        }
+        // refined cell c
+        if ($this->has_arg('descrcc')) {
+            array_push($order_arr, 'ap.refinedCell_c DESC');
+        }
+        if ($this->has_arg('ascrcc')) {
+            array_push($order_arr, 'ap.refinedCell_c ASC');
+        }
+        // rmeas
+        if ($this->has_arg('descrmeas')) {
+            array_push($order_arr, 'apss.rMeasWithinIPlusIMinus DESC');
+        }
+        if ($this->has_arg('ascrmeas')) {
+            array_push($order_arr, 'apss.rMeasWithinIPlusIMinus ASC');
+        }
+        // resolution limit high
+        if ($this->has_arg('descrlh')) {
+            array_push($order_arr, 'apss.resolutionLimitHigh DESC');
+        }
+        if ($this->has_arg('ascrlh')) {
+            array_push($order_arr, 'apss.resolutionLimitHigh ASC');
+        }
+        // cc anomalous
+        if ($this->has_arg('desccca')) {
+            array_push($order_arr, 'apss.ccAnomalous DESC');
+        }
+        if ($this->has_arg('asccca')) {
+            array_push($order_arr, 'apss.ccAnomalous ASC');
+        }
+        // rfree start
+        if ($this->has_arg('descrfs')) {
+            array_push($order_arr, 'm.rFreeValueStart DESC');
+        }
+        if ($this->has_arg('ascrfs')) {
+            array_push($order_arr, 'm.rFreeValueStart ASC');
+        }
+        // rfree end
+        if ($this->has_arg('descrfe')) {
+            array_push($order_arr, 'm.rFreeValueEnd DESC');
+        }
+        if ($this->has_arg('ascrfe')) {
+            array_push($order_arr, 'm.rFreeValueEnd ASC');
+        }
+
 
         // dc id
         if ($this->has_arg('dcid')) {
@@ -194,6 +327,11 @@ class Summary extends Page
         // AND is the delimieter between seperate queries, converted to string
         $where = implode(" AND ", $where_arr);
 
+        if (count($order_arr) > 0) {
+            $order = implode(", ", $order_arr);
+        }
+        
+
         // get tot query
         $tot_args = $args;
 
@@ -235,8 +373,9 @@ class Summary extends Page
 
         // sql query
         $rows = $this->db->paginate(
-        "SELECT p.proposalId, dc.dataCollectionId, dc.fileTemplate, b2.name, b.beamLineName, b.startDate, b.endDate,
-        app.processingPrograms, ap.spaceGroup, apss.scalingStatisticsType,
+        "SELECT p.proposalId, CONCAT(p.proposalCode, p.proposalNumber) as prop, 
+        dc.dataCollectionId, b.visit_number, dc.fileTemplate, b2.name, b.beamLineName, 
+        b.startDate, b.endDate, app.processingPrograms, ap.spaceGroup, apss.scalingStatisticsType,
         ap.refinedCell_a, ap.refinedCell_b, ap.refinedCell_c, ap.refinedCell_alpha, ap.refinedCell_beta, ap.refinedCell_gamma,
         apss.resolutionLimitHigh, apss.rMeasWithinIPlusIMinus, apss.ccAnomalous, m.rFreeValueStart, m.rFreeValueEnd
         FROM Proposal p
