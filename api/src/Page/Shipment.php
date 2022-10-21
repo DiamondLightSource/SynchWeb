@@ -218,11 +218,10 @@ class Shipment extends Page
     # List of shipments for a proposal
     function _get_shipments()
     {
-        if ($this->has_arg('all') && $this->user->hasPermission(ermission('view_manifest'))
+        if ($this->has_arg('all') && $this->user->hasPermission('view_manifest'))
         {
             $args = array();
             $where = '1=1';
-
         }
         else
         {
