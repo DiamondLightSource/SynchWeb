@@ -246,14 +246,11 @@ export default {
       if (this.selectedProcessingProgram && this.selectedProcessingProgram['SHELLS']) {
         const shellData = this.selectedProcessingProgram['SHELLS']
 
-        return Object.keys(shellData).reduce((acc, curr) => {
-          acc.push({
-            NAME: curr,
-            ...shellData[curr]
-          })
-
-          return acc
-        }, [])
+        // Arrange list to be 'OUTERSHELL', 'INNERSHELL' AND 'OVERALL' accordingly.
+        return Object.keys(shellData).map((shell) => ({
+          NAME: shell,
+          ...shellData[shell]
+        })).sort((a, b) => a['INDEX'] - b['INDEX'])
       }
 
       return []

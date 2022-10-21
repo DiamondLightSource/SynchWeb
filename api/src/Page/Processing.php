@@ -821,6 +821,25 @@ class Processing extends Page {
                         $shell[$key] = $value;
                     }
                 }
+
+                // Allow Shells to always be returned in order of 'OUTERSHELL', 'INNERSHELL', 'OVERALL'
+                switch($row['SHELL']) {
+                    case 'OUTERSHELL':
+                    case 'outerShell':
+                        $shell['INDEX'] = 0;
+                        break;
+                    case 'INNERSHELL':
+                    case 'innerShell':
+                        $shell['INDEX'] = 1;
+                            break;
+                    case 'OVERALL':
+                    case 'overall':
+                        $shell['INDEX'] = 2;
+                        break;
+                    default:
+                        $shell['INDEX'] = 3;
+                }
+
                 $formatted_result[$row['AUTOPROCPROGRAMID']]['SHELLS'][$row['SHELL']] = $shell;
             }
 

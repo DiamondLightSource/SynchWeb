@@ -70,9 +70,10 @@
           <valid-container-graphic
             v-else-if="selectedContainerType.NAME && selectedContainerType.NAME.toLowerCase() !== 'puck'"
             :container-type="selectedContainerType"
-            :valid-samples="selectedSamplesInGroups[selectedContainerId]"
+            :valid-samples="validSamples"
             :container-identifier="selectedContainerName"
             color-attribute="VALID"
+            added-color-attribute="ADDED"
             :samples="samples"
             :containerGraphicHeader="selectedContainerName"
             @cell-clicked="addSelectedCells"
@@ -81,10 +82,10 @@
       </div>
     </div>
 
-    <validation-observer class="tw-w-full" ref="sampleGroupName" v-slot="{ invalid, errors }" tag="div">
+    <validation-observer class="tw-w-full tw-flex" ref="sampleGroupName" v-slot="{ invalid, errors }" tag="div">
       <validation-provider
         tag="div"
-        class="tw-flex tw-flex-row tw-w-full tw-items-center"
+        class="tw-flex tw-flex-row tw-items-center"
         rules="required|alpha_dash|max:40"
         name="sample group name"
         vid="sample_group_name"
@@ -103,13 +104,14 @@
         />
       </validation-provider>
 
-      <div class="tw-relative tw-mt-6">
+      <div class="tw-py-6">
         <base-button class="button" @perform-button-action="onSaveSampleGroup" :is-disabled="invalid && isDisabled">
           Save Sample Group
         </base-button>
       </div>
-      <router-link class="tw-no-underline tw-text-xxs" to="/samples/groups">View Sample Groups</router-link>
     </validation-observer>
+
+    <router-link class="button tw-no-underline tw-text-xs" to="/samples/groups">View Sample Groups</router-link>
   </div>
 </template>
 
@@ -137,7 +139,7 @@ import SampleGroupMixin from 'modules/samples/components/sample-group-mixin'
 import PuckTableView from 'modules/samples/components/puck-table-view.vue'
 
 export default {
-  name: 'sample-group-edit',
+  name: 'sample-group-create-and-edit',
   props: {
     gid: Number
   },
@@ -193,7 +195,9 @@ export default {
       shipments: [],
       shipmentId: '',
       selectedContainerId: '',
-      ready: false
+      ready: false,
+      sampleGroupsAndContainers: {},
+      selectedContainerAddedSamples: []
     };
   },
   computed: {
@@ -210,9 +214,19 @@ export default {
     },
     proposalObject() {
       return this.$store.getters['proposal/currentProposalModel'].toJSON()
+    },
+    validSamples() {
+      if (this.selectedContainerId) {
+        const selectedContainer = this.selectedSamplesInGroups[this.selectedContainerId] || []
+        const difference = differenceBy(selectedContainer, this.selectedContainerAddedSamples, 'BLSAMPLEID')
+        return [...this.selectedContainerAddedSamples, ...difference]
+      }
+
+      return []
     }
   },
   created: function () {
+    this.fetchSampleGroupsContainersAndSample()
     this.getContainerTypes()
     this.containerSamples = new SamplesCollection()
     this.containerModel = new ContainerModel()
@@ -293,10 +307,24 @@ export default {
         this.selectedContainerId = item.CONTAINERID
         this.containerSamples.queryParams.cid = item.CONTAINERID
         this.containerSamples.queryParams.per_page = 999
-  
+
         const samplesData = await this.$store.dispatch('getCollection', this.containerSamples)
-  
+
         this.samples = samplesData.toJSON()
+        this.selectedContainerAddedSamples = []
+
+        if (this.sampleGroupsAndContainers[item.CONTAINERID]) {
+          this.selectedContainerAddedSamples = this.sampleGroupsAndContainers[item.CONTAINERID]['BLSAMPLEIDS'].map(id => {
+            const sample = this.samples.find(sample => Number(sample.BLSAMPLEID) === Number(id))
+            if (typeof sample !== 'undefined') {
+              return {
+                ...pick(sample, this.sampleKeys),
+                SAMPLE: sample.NAME,
+                ADDED: 0.5
+              }
+            }
+          })
+        }
       } finally {
         this.$store.commit('loading', false)
 
@@ -456,6 +484,25 @@ export default {
       this.selectedContainerName = ''
       this.selectedContainerId = ''
       this.containerSelected = false
+    },
+    async fetchSampleGroupsContainersAndSample() {
+      const result = await this.$store.dispatch('fetchDataFromApi', {
+        url: `/sample/groups/containers/all`,
+        requestType: 'fetching all sample groups and associated containers'
+      })
+
+      this.sampleGroupsAndContainers = result.data.reduce((acc, curr) => {
+        acc[curr['CONTAINERID']] = {
+          ...curr,
+          TOTAL_SAMPLES: Number(curr['TOTAL_SAMPLES']),
+          CONTAINERID: Number(curr['CONTAINERID']),
+          BLSAMPLEIDS: curr['BLSAMPLEIDS'].split(',').map(id => Number(id)),
+          SAMPLE_GROUPS_IDS: curr['SAMPLE_GROUPS_IDS'].split(',').map(id => Number(id)),
+          SAMPLE_GROUP_NAMES: curr['SAMPLE_GROUP_NAMES'].split(',')
+        }
+
+        return acc
+      }, {})
     }
   },
   provide() {
@@ -464,7 +511,9 @@ export default {
       $restrictLoading: () => true,
       $labelAsButtons: true,
       $displayHelpMessage: true,
-      $displayContainersFilters: () => false
+      $displayContainersFilters: () => false,
+      $rowSelectedValue: () => this.selectedContainerId,
+      $rowSelectedKey: 'CONTAINERID'
     }
   },
   beforeRouteLeave(to, from , next) {

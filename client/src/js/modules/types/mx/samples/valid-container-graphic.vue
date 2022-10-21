@@ -14,6 +14,7 @@
           :selectedSamples="validSamples"
           color-scale="rgb"
           :colorAttribute="colorAttribute"
+          :addedColorAttribute="addedColorAttribute"
           :puck-id="containerIdentifier"
           :plate-id="containerIdentifier"
           :label-as-buttons="false"
@@ -56,6 +57,9 @@ export default {
     colorAttribute: {
       type: String,
       default: 'VALID'
+    },
+    addedColorAttribute: {
+      type: String
     }
   },
   computed: {

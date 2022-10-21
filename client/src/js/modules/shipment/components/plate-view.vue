@@ -72,6 +72,14 @@ export default {
     selectedSamples: {
       type: Array,
       default: () => ([])
+    },
+    addedColorAttribute: {
+      type: String,
+      default: ''
+    },
+    threshold: {
+      type: Number,
+      default: 0.5
     }
   },
   data() {
@@ -560,17 +568,21 @@ export default {
     scoreColors: function(d) {
       let scale
       let score
+      let colorScale = this.colorScale
       const selectedSample = this.selectedSamples.find(sample => Number(sample['LOCATION']) === Number(d.LOCATION))
 
-      if (selectedSample) {
+      if (selectedSample && selectedSample[this.colorAttribute]) {
         score = selectedSample[this.colorAttribute]
+      } else if (selectedSample && this.addedColorAttribute && selectedSample[this.addedColorAttribute]) {
+        colorScale = 'threshold'
+        score = selectedSample[this.addedColorAttribute]
       } else if (!selectedSample && d[this.colorAttribute]) {
         score = d[this.colorAttribute]
       } else {
         score = null
       }
 
-      switch(this.colorScale) {
+      switch(colorScale) {
         case 'rgb':
           scale = this.rgbScale()
           break
@@ -590,7 +602,7 @@ export default {
     quantScale: function(threshold) {
       return  d3ScaleThreshold()
           .domain([0,threshold, 1])
-          .range(["lightgray", "lightgray", "green"])
+          .range(["lightgray", "lightblue", "lightblue"])
     },
     rgbScale: function() {
       // Option 1: give 2 color names

@@ -30,7 +30,7 @@
 
       <template v-slot:slotData="{ dataList }">
         <custom-table-row
-          :class="['tw-w-full', 'tw-cursor-pointer', rowIndex % 2 === 0 ? 'tw-bg-table-body-background-odd': 'tw-bg-table-body-background']"
+          :class="['tw-w-full', 'tw-cursor-pointer', tableRowClass(result, rowIndex)]"
           v-for="(result, rowIndex) in dataList"
           :key="rowIndex"
           :result="result"
@@ -169,6 +169,12 @@ export default {
     },
     displayContainersFilters() {
       return this.$displayContainersFilters()
+    },
+    rowSelectedValue() {
+      return this.$rowSelectedValue()
+    },
+    rowSelectedKey() {
+      return this.$rowSelectedKey
     }
   },
   created() {
@@ -221,6 +227,17 @@ export default {
       if (!this.restrictLoading || (this.restrictLoading && this.shipmentId)) {
         this.showUserContainers = !this.showUserContainers
       }
+    },
+    tableRowClass(row, rowIndex) {
+      if (row[this.rowSelectedKey] === this.rowSelectedValue && rowIndex % 2 === 0) {
+        return 'tw-bg-sample-group-added-light'
+      } else if (row[this.rowSelectedKey] === this.rowSelectedValue && rowIndex % 2 !== 0) {
+        return 'tw-bg-sample-group-added-dark'
+      } else if (row[this.rowSelectedKey] !== this.rowSelectedValue && rowIndex % 2 !== 0) {
+        return 'tw-bg-table-body-background-odd'
+      } else if (row[this.rowSelectedKey] !== this.rowSelectedValue && rowIndex % 2 === 0) {
+        return 'tw-bg-table-body-background'
+      }
     }
   },
   watch: {
@@ -248,7 +265,9 @@ export default {
   inject: [
     '$shipmentId',
     '$restrictLoading',
-    '$displayContainersFilters'
+    '$displayContainersFilters',
+    '$rowSelectedValue',
+    '$rowSelectedKey'
   ]
 }
 </script>

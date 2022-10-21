@@ -205,6 +205,7 @@ class Sample extends Page
                               array('/groups/:BLSAMPLEGROUPID/samples', 'post', '_add_samples_to_group'),
                               array('/groups/:BLSAMPLEGROUPID/samples/:BLSAMPLEGROUPSAMPLEID', 'put', '_update_sample_in_group'),
                               array('/groups/:BLSAMPLEGROUPID/samples/:BLSAMPLEGROUPSAMPLEID', 'delete', '_remove_sample_from_group'),
+                              array('/groups/containers/all', 'get', '_get_sample_group_samples_by_container'),
 
                               array('/spacegroups(/:SPACEGROUPID)', 'get', '_get_spacegroups'),
 
@@ -2614,6 +2615,53 @@ class Sample extends Page
             $this->db->pq("DELETE FROM blsamplegroup_has_blsample WHERE blsampleid = :1 AND blsamplegroupid = :2", array($blSampleGroupSampleId, $blSampleGroupId));
         }
 
+    function _get_sample_group_samples_by_container() {
+        if (!$this->has_arg('prop')) $this->_error('No proposal specified');
+
+        $args = array($this->proposalid);
+        $total_select_field = 'count(*) as total';
+        $with_fields = "";
+        $result_select_fields = "";
+
+        $main_query = $this->_sample_groups_samples_by_container_main_query($with_fields, $result_select_fields);
+
+        $total_query = "SELECT $total_select_field FROM ($main_query) group_containers";
+        $total = $this->db->pq($total_query, $args);
+
+        $total_result = intval($total[0]['TOTAL']);
+
+        $start = 0;
+        $pp = $this->has_arg('per_page') ? $this->arg('per_page') : 15;
+        $end = $pp;
+
+        if ($this->has_arg('page')) {
+            $pg = $this->arg('page') - 1;
+            $start = $pg*$pp;
+            $end = $pg*$pp+$pp;
+        }
+
+        $st = sizeof($args)+1;
+        $en = $st + 1;
+        array_push($args, $start);
+        array_push($args, $end);
+
+        $with_fields .= "bsg.blsamplegroupid, bsg.name as sample_group_name, ";
+        $result_select_fields .= "
+            GROUP_CONCAT(DISTINCT(bsmp.blsampleid)) as blsampleids,
+            count(distinct (bsmp.blsampleid)) as total_samples,
+            GROUP_CONCAT(DISTINCT(smp.blsamplegroupid)) as sample_groups_ids,
+            GROUP_CONCAT(DISTINCT(smp.sample_group_name)) as sample_group_names,
+        ";
+
+        $result_query = $this->_sample_groups_samples_by_container_main_query($with_fields, $result_select_fields);
+        $rows = $this->db->paginate($result_query, $args);
+
+        $this->_output(array(
+            'total' => $total_result,
+            'data' => $rows,
+        ));
+    }
+
         // Get spacegroups from database
         // Could extend this to filter on spacegroupshortname (also unique)
         // Also extend to take mx used flag to return a filtered list
@@ -2645,5 +2693,19 @@ class Sample extends Page
             if ($this->has_arg('SPACEGROUPID')) $this->_output($rows[0]);
             else $this->_output(array('total' => count($rows), 'data' => $rows));
           }
+
+    function _sample_groups_samples_by_container_main_query($with_fields, $result_select_fields) {
+        return "
+            WITH samples AS (
+                SELECT $with_fields bshg.blsampleid 
+                FROM blsamplegroup_has_blsample bshg
+                LEFT OUTER JOIN blsamplegroup bsg ON bsg.blsamplegroupid = bshg.blsamplegroupid WHERE bsg.proposalid =:1
+            )
+            SELECT $result_select_fields c.containerid FROM blsample bsmp
+                JOIN samples smp ON smp.blsampleid = bsmp.blsampleid
+                JOIN container c on bsmp.containerid = c.containerid
+                GROUP BY c.containerid
+        ";
+    }
 }
 
