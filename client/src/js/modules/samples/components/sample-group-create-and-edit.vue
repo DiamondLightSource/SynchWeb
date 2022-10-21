@@ -288,6 +288,9 @@ export default {
           this.initialSamplesInGroup = []
           this.$store.commit('sampleGroups/resetSelectedSampleGroups', {})
         }
+
+        await this.fetchSampleGroupsContainersAndSample()
+        this.setContainerAddedSamples()
       } catch (error) {
         this.$store.commit('notifications/addNotification', { title: 'Error', message: error.message, level: 'error' })
       } finally {
@@ -311,20 +314,7 @@ export default {
         const samplesData = await this.$store.dispatch('getCollection', this.containerSamples)
 
         this.samples = samplesData.toJSON()
-        this.selectedContainerAddedSamples = []
-
-        if (this.sampleGroupsAndContainers[item.CONTAINERID]) {
-          this.selectedContainerAddedSamples = this.sampleGroupsAndContainers[item.CONTAINERID]['BLSAMPLEIDS'].map(id => {
-            const sample = this.samples.find(sample => Number(sample.BLSAMPLEID) === Number(id))
-            if (typeof sample !== 'undefined') {
-              return {
-                ...pick(sample, this.sampleKeys),
-                SAMPLE: sample.NAME,
-                ADDED: 0.5
-              }
-            }
-          })
-        }
+        this.setContainerAddedSamples()
       } finally {
         this.$store.commit('loading', false)
 
@@ -503,6 +493,22 @@ export default {
 
         return acc
       }, {})
+    },
+    setContainerAddedSamples() {
+      this.selectedContainerAddedSamples = []
+
+      if (this.selectedContainerId && this.sampleGroupsAndContainers[this.selectedContainerId]) {
+        this.selectedContainerAddedSamples = this.sampleGroupsAndContainers[this.selectedContainerId]['BLSAMPLEIDS'].map(id => {
+          const sample = this.samples.find(sample => Number(sample.BLSAMPLEID) === Number(id))
+          if (typeof sample !== 'undefined') {
+            return {
+              ...pick(sample, this.sampleKeys),
+              SAMPLE: sample.NAME,
+              ADDED: 0.5
+            }
+          }
+        })
+      }
     }
   },
   provide() {
