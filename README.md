@@ -7,22 +7,23 @@ Read More: https://diamondlightsource.github.io/SynchWeb/
 ## Installation
 Running SynchWeb requires setting up a Linux, Apache, MariaDB and PHP (LAMP) software stack. If running in production you should configure your Apache and PHP to serve secure pages only. The steps below describe how to build the software so it is ready to deploy onto your target server.
 
-For development, a simple environment can be setup by using scripts provided [here](https://github.com/DiamondLightSource/synchweb-devel-env). They are not intended for production use but include scripts to automatically build and deploy the software on a local VM.
+For development, a simple environment can be setup by using scripts provided [here](https://github.com/DiamondLightSource/synchweb-devel-env). Support is provided for both 
+containerisation and the use of VMs.
 
 ### Requirements
 To build SynchWeb on a machine you will need [npm](https://docs.npmjs.com/) and [composer](https://getcomposer.org/)
 
 You will also need an appropriate version of PHP on the build machine.
 
-If not using the development VMs you will also need an instance of the ISPyB database [here](https://github.com/DiamondLightSource/ispyb-database)
+If not using the development VMs you will also need an instance of the ISPyB database - see [here](https://github.com/DiamondLightSource/ispyb-database).
 
 ### Check out the code
 ```sh
 $ git clone https://github.com/DiamondLightSource/SynchWeb
 ```
 ### Customise front end - config.json
-An example configuration is provided in client/src/js/config_sample.json
-This file should be copied to create a client/src/js/config.json file and edited to customise the application for your site.
+An example configuration is provided in `client/src/js/config_sample.json`
+This file should be copied to create a `client/src/js/config.json` file and edited to customise the application for your site.
 
 | Parameter | Description |
 | ------ | ------ |
@@ -51,7 +52,9 @@ $ npm run build
 ```
 
 ### Customise back end - config.php
-An example configuration is provided in api/config_sample.php
+An example configuration is provided in `api/config_sample.php`.  This should be copied to
+`api/config.php` and updated to include appropriate configuration details.
+
 Main items to change include:
 - database connection parameters (user, password, host, port)
 - authentication type (cas, ldap, dummy/no authentication)
@@ -67,9 +70,17 @@ Tests are available for the PHP code under `api/tests`.  To run these, go to the
 
 ```sh
 $ cd SynchWeb/api
-$ ./vendor/bin/phpunit --verbose tests
+$ ./vendor/bin/phpunit --verbose -c /tests/phpunit.xml
 ```
-Note, a single test can be run by specifying that instead of the `tests` directory.
+Note, a single test can be run by specifying that instead of the `tests` directory.  Tests
+will also produce a coverage report - this can be disabled by specifying `--no-coverage` when
+running the tests.
+
+### Debugging back end tests
+It is possible to debug the php tests.  Install xdebug and using an IDE such as VS Code.  You
+can then start the debugger in the IDE and put break points in the code.  Running the tests
+from the command line will trigger the debugger and execution will be halted on break points
+or specified error types.
 
 ### Run front end tests for Vue.js
 Testing on the front end is restricted to the newer Vue.js code as it is 
