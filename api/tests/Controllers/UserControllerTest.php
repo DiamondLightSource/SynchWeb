@@ -55,11 +55,11 @@ final class UserControllerTest extends TestCase
         Output::reset();
     }
 
-    function setUpCommonResponse(): \Slim\Http\Response
+    function setUpCommonResponse($responseTimes = 1): \Slim\Http\Response
     {
         $response = new \Slim\Http\Response();
-        $this->slimStub->shouldReceive('response')->times(1)->andReturn($response);
-        $this->slimStub->shouldReceive('contentType')->times(1);
+        $this->slimStub->shouldReceive('response')->times($responseTimes)->andReturn($response);
+        $this->slimStub->shouldReceive('contentType')->times($responseTimes);
         return $response;
     }
 
@@ -356,14 +356,46 @@ final class UserControllerTest extends TestCase
 
     public function testUpdateUserWithInvalidPersonIdReturnsNoData(): void
     {
-        $response = $this->setUpCommonResponse();
         $this->userController->args['PERSONID'] = 88;
-        $this->dataLayerStub->expects($this->exactly(1))->method('getUsers')->with()->willReturn(array());
+        $this->dataLayerStub->expects($this->exactly(1))->method('getUser')->with(231312, null, 88)->willReturn(array());
         $this->expectException(\Exception::class);
         $this->slimStub->shouldReceive('halt')->times(1)->with(400, '{"status":400,"message":"No such person"}')->andThrow(new \Exception);
 
         $this->userController->_update_user();
-        $this->assertEquals(9, $response->getBody());
+    }
+
+    public function testUpdateUserWithValidPersonIdAndLabIdReturnsData(): void
+    {
+        $this->setUpCommonResponse(2);
+        $this->userController->args['PERSONID'] = 88;
+        $result = ['PERSONID' => 88, 'FAMILYNAME' => 'family', 'LABORATORYID' => 666];
+        $results = array($result);
+        $labResult = ['NAME' => 'dls', 'ADDRESS' => 'diamond', 'CITY' => 'didcot', 'POSTCODE' => 'OX15', 'COUNTRY' => 'uk'];
+        $labResults = array($labResult);
+        
+        $this->dataLayerStub->expects($this->exactly(2))->method('getUser')->with(231312, null, 88)->willReturn($results);
+        $this->dataLayerStub->expects($this->exactly(1))->method('updateUser');
+        $this->dataLayerStub->expects($this->exactly(2))->method('getLaboratory')->with(666)->willReturn($labResults);
+        $this->dataLayerStub->expects($this->exactly(1))->method('updateLaboratory');
+
+        $this->userController->_update_user();
+    }
+
+    public function testUpdateUserWithValidPersonIdAndNoLabIdReturnsData(): void
+    {
+        $this->setUpCommonResponse(2);
+        $this->userController->args['PERSONID'] = 88;
+        $result = ['PERSONID' => 88, 'FAMILYNAME' => 'family', 'LABORATORYID' => null];
+        $results = array($result);
+        $labResult = ['NAME' => 'dls', 'ADDRESS' => 'diamond', 'CITY' => 'didcot', 'POSTCODE' => 'OX15', 'COUNTRY' => 'uk'];
+        $labResults = array($labResult);
+        
+        $this->dataLayerStub->expects($this->exactly(2))->method('getUser')->with(231312, null, 88)->willReturn($results);
+        $this->dataLayerStub->expects($this->exactly(1))->method('updateUser');
+        $this->dataLayerStub->expects($this->exactly(1))->method('getLaboratory')->willReturn($labResults);
+        $this->dataLayerStub->expects($this->exactly(1))->method('updateLaboratory');
+
+        $this->userController->_update_user();
     }
 
     public function testUpdateUserWithoutPersonIdReturnsTotalsWithResults(): void
@@ -373,8 +405,164 @@ final class UserControllerTest extends TestCase
         $this->userController->_update_user();
     }
 
+    public function testAddGroupUserFailsIfLackingUsers(): void
+    {
+        // note, we artificially throw an exception here, to ensure the test finishes at the point of halt()
+        $this->expectException(\Exception::class);
+        $this->slimStub->shouldReceive('halt')->times(1)->with(403, '{"status":403,"message":"Access Denied","title":"You do not have the permission: manage_groups"}')->andThrow(new \Exception);
 
+        $this->userController->_add_group_user();
+    }
 
+    public function testAddGroupUserWithGidAndPeidSpecifiedReturnsCorrectly(): void
+    {
+        $response = $this->setUpCommonResponse();
+        array_push($this->user->perms, 'manage_groups');
+        $this->userController->args['gid'] = 3;
+        $this->userController->args['peid'] = 6;
+        $this->dataLayerStub->expects($this->exactly(1))->method('addGroupUser')->with(6, 3)->willReturn(61);
 
+        $this->userController->_add_group_user();
+        $this->assertEquals('{"USERGROUPID":3,"PERSONID":6}', $response->getBody());
+    }
 
+    public function testAddGroupUserWithNoPeidSpecifiedReturnsError(): void
+    {
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('Missing propery: peid');
+        array_push($this->user->perms, 'manage_groups');
+
+        $this->userController->_add_group_user();
+    }
+
+    public function testRemoveGroupUserFailsIfLackingUsers(): void
+    {
+        // note, we artificially throw an exception here, to ensure the test finishes at the point of halt()
+        $this->expectException(\Exception::class);
+        $this->slimStub->shouldReceive('halt')->times(1)->with(403, '{"status":403,"message":"Access Denied","title":"You do not have the permission: manage_groups"}')->andThrow(new \Exception);
+
+        $this->userController->_remove_group_user();
+    }
+
+    public function testRemoveGroupUserWithGidAndPeidSpecifiedReturnsCorrectly(): void
+    {
+        $response = $this->setUpCommonResponse();
+        array_push($this->user->perms, 'manage_groups');
+        $this->userController->args['gid'] = 3;
+        $this->userController->args['peid'] = 6;
+        $this->dataLayerStub->expects($this->exactly(1))->method('removeGroupUser')->with(6, 3)->willReturn(61);
+
+        $this->userController->_remove_group_user();
+        $this->assertEquals(1, $response->getBody());
+    }
+
+    public function testRemoveGroupUserWithNoPeidSpecifiedReturnsError(): void
+    {
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('Missing propery: peid');
+        array_push($this->user->perms, 'manage_groups');
+
+        $this->userController->_remove_group_user();
+    }
+
+    public function testAddPermissionFailsIfLackingPermissions(): void
+    {
+        // note, we artificially throw an exception here, to ensure the test finishes at the point of halt()
+        $this->expectException(\Exception::class);
+        $this->slimStub->shouldReceive('halt')->times(1)->with(403, '{"status":403,"message":"Access Denied","title":"You do not have the permission: manage_perms"}')->andThrow(new \Exception);
+
+        $this->userController->_add_permission();
+    }
+
+    public function testAddPermissionWithValidInputsSpecifiedReturnsCorrectly(): void
+    {
+        $response = $this->setUpCommonResponse();
+        array_push($this->user->perms, 'manage_perms');
+        $this->userController->args['TYPE'] = 'permission type';
+        $this->userController->args['DESCRIPTION'] = 'permission desc';
+        $this->dataLayerStub->expects($this->exactly(1))->method('addPermission')->with(
+            $this->userController->args['TYPE'],
+            $this->userController->args['DESCRIPTION'])->willReturn(array(25));
+
+        $this->userController->_add_Permission();
+        $this->assertEquals('{"PERMISSIONID":[25]}', $response->getBody());
+    }
+
+    public function testUpdatePermissionFailsIfLackingPermissions(): void
+    {
+        // note, we artificially throw an exception here, to ensure the test finishes at the point of halt()
+        $this->expectException(\Exception::class);
+        $this->slimStub->shouldReceive('halt')->times(1)->with(403, '{"status":403,"message":"Access Denied","title":"You do not have the permission: manage_perms"}')->andThrow(new \Exception);
+
+        $this->userController->_add_permission();
+    }
+
+    public function testUpdatePermissionWithValidInputsReturnsData(): void
+    {
+        $response = $this->setUpCommonResponse();
+        $this->userController->args['PERSONID'] = 88;
+        array_push($this->user->perms, 'manage_perms');
+        $this->userController->args['pid'] = 44;
+        $this->userController->args['TYPE'] = 'permission type';
+        $this->userController->args['DESCRIPTION'] = 'permission desc';
+        $this->dataLayerStub->expects($this->exactly(1))->method('updatePermission')->with(44, 'permission type', 'permission desc')->willReturn(array());
+
+        $this->userController->_update_permission();
+        $this->assertEquals('{"TYPE":"permission type","DESCRIPTION":"permission desc"}', $response->getBody());
+    }
+
+    public function testUpdatePermissionWithValidInputsButNoDescriptionReturnsData(): void
+    {
+        $response = $this->setUpCommonResponse();
+        $this->userController->args['PERSONID'] = 88;
+        array_push($this->user->perms, 'manage_perms');
+        $this->userController->args['pid'] = 44;
+        $this->userController->args['TYPE'] = 'permission type';
+        $this->dataLayerStub->expects($this->exactly(1))->method('updatePermission')->with(44, 'permission type', '')->willReturn(array());
+
+        $this->userController->_update_permission();
+        $this->assertEquals('{"TYPE":"permission type","DESCRIPTION":""}', $response->getBody());
+    }
+
+    public function testGetPermissionsFailsIfLackingPermissions(): void
+    {
+        $response = $this->setUpCommonResponse();
+        $this->slimStub->shouldReceive('halt')->times(1)->with(403, '{"status":403,"message":"Access Denied","title":"You do not have the permission: manage_perms"}');
+
+        $this->userController->_get_Permissions();
+    }
+
+    public function testGetPermissionsWithNoPidSpecifiedReturnsTotalData(): void
+    {
+        $response = $this->setUpCommonResponse();
+        array_push($this->user->perms, 'manage_perms');
+        $this->dataLayerStub->expects($this->exactly(2))->method('getPermissions');
+
+        $this->userController->_get_Permissions();
+        $this->assertEquals('{"total":null,"data":null}', $response->getBody());
+    }
+
+    public function testGetPermissionsWithPidSpecifiedReturnsNoData(): void
+    {
+        $response = new \Slim\Http\Response();
+        $this->slimStub->shouldReceive('contentType')->times(0);
+        array_push($this->user->perms, 'manage_perms');
+        $this->userController->args['pid'] = 3;
+        $this->dataLayerStub->expects($this->exactly(1))->method('getPermissions')->with(false, '', '', 3, 15, 0)->willReturn(array());
+
+        $this->slimStub->shouldReceive('halt')->times(1)->with(400, '{"status":400,"message":"No such permission"}');
+        $this->userController->_get_Permissions();
+        $this->assertEmpty($response->getBody());
+    }
+
+    public function testGetPermissionsWithPidSpecifiedReturnsData(): void
+    {
+        $response = $this->setUpCommonResponse();
+        array_push($this->user->perms, 'manage_perms');
+        $this->userController->args['pid'] = 3;
+        $this->dataLayerStub->expects($this->exactly(1))->method('getPermissions')->with(false, '', '', 3, 15, 0)->willReturn(array(61,2,3));
+
+        $this->userController->_get_permissions();
+        $this->assertEquals(61, $response->getBody());
+    }
 }

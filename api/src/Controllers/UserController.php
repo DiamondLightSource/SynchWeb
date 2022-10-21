@@ -263,11 +263,12 @@ class UserController extends Page
         );
 
         $person = $this->userData->getUser($this->user->personId, $this->proposalid, $this->arg('PERSONID'));
-        $this->_output((array) $person[0]);
+        $person = $person[0];
+        $this->_output((array) $person);
         $laboratory = null;
         if ($person['LABORATORYID'])
         {
-            $laboratory = $this->userData->getLaboratory($person['LABORATORYID']);
+            $laboratory = $this->userData->getLaboratory($person['LABORATORYID'])[0];
         }
 
         $this->userData->updateLaboratory(
@@ -300,7 +301,6 @@ class UserController extends Page
     function _get_permissions()
     {
         $this->haltIfLackingPermission('manage_perms');
-        $args = array();
 
         $rows = $this->userData->getPermissions(
             false,
@@ -350,6 +350,6 @@ class UserController extends Page
             $this->arg('TYPE'),
             $desc
         );
-        $this->_output(array('TYPE' => $this->arg('TYPE'), $desc));
+        $this->_output(array('TYPE' => $this->arg('TYPE'), 'DESCRIPTION' => $desc));
     }
 }
