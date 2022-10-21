@@ -1398,7 +1398,7 @@ class Sample extends Page
             }
 
             $this->db->end_transaction();
-            $this->user->set_cache('container', null);
+            $this->user->setInCache('container', null);
             $this->_output($col);
 
             // Register single sample

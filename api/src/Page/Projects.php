@@ -119,7 +119,7 @@ class Projects extends Page
 
         $this->_output(array('PROJECTID' => $this->db->id(),
             'IS_OWNER' => True,
-            'PERSON' => $this->user->givenname . ' ' . $this->user->familyname
+            'PERSON' => $this->user->givenName . ' ' . $this->user->familyName
         ));
     }
 

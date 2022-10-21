@@ -656,7 +656,7 @@ class Fault extends Page
             'txtLOGBOOKID' => 'BL' . strtoupper($info['BEAMLINE']),
             'txtGROUPID' => 'GEN',
             'txtENTRYTYPEID' => '41',
-            'txtUSERID' => $this->user->login,
+            'txtUSERID' => $this->user->loginId,
             'txtMANUALAUTO' => 'M',
         );
 

@@ -2388,11 +2388,6 @@ class Shipment extends Page
         $this->_output(array('CONTAINERREPORTID' => $this->db->id()));
     }
 
-
-
-
-
-
     # Cache form temporary data to session
     function _session_cache()
     {
@@ -2400,7 +2395,7 @@ class Shipment extends Page
         if (!$this->has_arg('name') || !$data)
             $this->_error('No key and data specified');
 
-        $this->user->set_cache($this->arg('name'), $data);
+        $this->user->setInCache($this->arg('name'), $data);
         $this->_output(array('data' => $data));
     }
 
@@ -2409,7 +2404,7 @@ class Shipment extends Page
     {
         if (!$this->has_arg('name'))
             $this->_error('No key specified');
-        $this->_output($this->user->cache($this->arg('name')));
+        $this->_output($this->user->setInCache($this->arg('name')));
     }
 
 
@@ -3005,7 +3000,7 @@ class Shipment extends Page
                 FROM dewar d
                 WHERE d.shippingid=:1 AND d.deliveryagent_barcode IS NOT NULL", array($this->arg('sid')));
 
-        $person = $this->user->givenname . ' ' . $this->user->familyname;
+        $person = $this->user->givenName . ' ' . $this->user->familyName;
 
         $cancel = null;
         try
