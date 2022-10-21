@@ -135,9 +135,13 @@ class UserController extends Page
         $this->haltIfLackingPermission('manage_groups');
 
         if (!$this->has_arg('NAME'))
+        {
             $this->_error('No group name');
-
-        $this->_output(array('USERGROUPID' => $this->userData->addGroup($this->arg('NAME'))));
+        }
+        else
+        {
+            $this->_output(array('USERGROUPID' => $this->userData->addGroup($this->arg('NAME'))));
+        }
     }
 
     function _update_group()
@@ -238,10 +242,11 @@ class UserController extends Page
 
     function _update_user()
     {
+        // TODO: should this require 'manage_users'?
         if (!$this->has_arg('PERSONID'))
             $this->_error('No person specified');
 
-        $person = $this->userData->getUser($this->user->personid, $this->proposalid, $this->arg('PERSONID'));
+        $person = $this->userData->getUser($this->user->personId, $this->proposalid, $this->arg('PERSONID'));
 
         if (!sizeof($person))
             $this->_error('No such person');
@@ -257,7 +262,7 @@ class UserController extends Page
             $this->argOrEmptyString('EMAILADDRESS')
         );
 
-        $person = $this->userData->getUser($this->user->personid, $this->proposalid, $this->arg('PERSONID'));
+        $person = $this->userData->getUser($this->user->personId, $this->proposalid, $this->arg('PERSONID'));
         $this->_output((array) $person[0]);
         $laboratory = null;
         if ($person['LABORATORYID'])
