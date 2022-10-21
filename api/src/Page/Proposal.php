@@ -175,7 +175,7 @@ class Proposal extends Page
         {
             $where = " INNER JOIN session_has_person shp ON shp.sessionid = s.sessionid  " . $where;
             $where .= " AND shp.personid=:" . (sizeof($args) + 1);
-            array_push($args, $this->user->personid);
+            array_push($args, $this->user->personId);
         }
 
         if ($this->has_arg('s'))
@@ -431,7 +431,7 @@ class Proposal extends Page
         if (!$this->staff)
         {
             $where .= " AND shp.personid=:" . (sizeof($args) + 1);
-            array_push($args, $this->user->personid);
+            array_push($args, $this->user->personId);
         }
 
         $tot = $this->db->pq("SELECT count(distinct s.sessionid) as tot 
@@ -965,7 +965,7 @@ class Proposal extends Page
         {
             $where = " INNER JOIN session_has_person shp ON shp.sessionid = ses.sessionid  " . $where;
             $where .= " AND shp.personid=:" . (sizeof($args) + 1);
-            array_push($args, $this->user->personid);
+            array_push($args, $this->user->personId);
         }
 
         $where .= ' AND ' . $fields[$field] . '=:' . (sizeof($args) + 1);

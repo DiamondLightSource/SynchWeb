@@ -711,7 +711,7 @@ class Shipment extends Page
             $this->_error('That dewar is already registered to that proposal');
 
         $this->db->pq("INSERT INTO dewarregistry_has_proposal (dewarregistryid,proposalid,personid,labcontactid) 
-              VALUES (:1,:2,:3,:4)", array($this->arg('DEWARREGISTRYID'), $this->arg('PROPOSALID'), $this->user->personid, $this->arg('LABCONTACTID')));
+              VALUES (:1,:2,:3,:4)", array($this->arg('DEWARREGISTRYID'), $this->arg('PROPOSALID'), $this->user->personId, $this->arg('LABCONTACTID')));
 
         $this->_output(array('DEWARREGISTRYHASPROPOSALID' => $this->db->id()));
     }
@@ -1488,7 +1488,7 @@ class Shipment extends Page
             $this->_error('No shipment specified');
 
         $this->db->pq("INSERT INTO couriertermsaccepted (couriertermsacceptedid,proposalid,personid,shippingid,timestamp) 
-              VALUES (s_dhltermsaccepted.nextval, :1, :2, :3, CURRENT_TIMESTAMP)", array($this->proposalid, $this->user->personid, $this->arg('sid')));
+              VALUES (s_dhltermsaccepted.nextval, :1, :2, :3, CURRENT_TIMESTAMP)", array($this->proposalid, $this->user->personId, $this->arg('sid')));
 
         $this->_output(array('ACCEPTED' => 1));
     }
@@ -1649,7 +1649,7 @@ class Shipment extends Page
         if ($this->has_arg('currentuser'))
         {
             $where .= ' AND c.ownerid = :' . (sizeof($args) + 1);
-            array_push($args, $this->user->personid);
+            array_push($args, $this->user->personId);
         }
 
         $tot = $this->db->pq("SELECT count(distinct c.containerid) as tot 
@@ -1817,7 +1817,7 @@ class Shipment extends Page
             $chkq = $this->db->pq("SELECT containerid, containerqueueid FROM containerqueue WHERE containerid=:1 AND completedtimestamp IS NULL", array($this->arg('CONTAINERID')));
             if (!sizeof($chkq))
             {
-                $this->db->pq("INSERT INTO containerqueue (containerid, personid) VALUES (:1, :2)", array($this->arg('CONTAINERID'), $this->user->personid));
+                $this->db->pq("INSERT INTO containerqueue (containerid, personid) VALUES (:1, :2)", array($this->arg('CONTAINERID'), $this->user->personId));
                 $qid = $this->db->id();
             }
             else
@@ -1948,7 +1948,7 @@ class Shipment extends Page
 
         if ($this->has_arg('AUTOMATED'))
         {
-            $this->db->pq("INSERT INTO containerqueue (containerid, personid) VALUES (:1, :2)", array($cid, $this->user->personid));
+            $this->db->pq("INSERT INTO containerqueue (containerid, personid) VALUES (:1, :2)", array($cid, $this->user->personId));
         }
 
         $this->_output(array('CONTAINERID' => $cid));
@@ -2265,7 +2265,7 @@ class Shipment extends Page
             $this->_error('That container is already registered to that proposal');
 
         $this->db->pq("INSERT INTO containerregistry_has_proposal (containerregistryid,proposalid,personid) 
-              VALUES (:1,:2,:3)", array($this->arg('CONTAINERREGISTRYID'), $this->arg('PROPOSALID'), $this->user->personid));
+              VALUES (:1,:2,:3)", array($this->arg('CONTAINERREGISTRYID'), $this->arg('PROPOSALID'), $this->user->personId));
 
         $this->_output(array('CONTAINERREGISTRYHASPROPOSALID' => $this->db->id()));
 
@@ -2369,7 +2369,7 @@ class Shipment extends Page
         }
 
         $this->db->pq("INSERT INTO containerreport (containerregistryid,report,attachmentfilepath,personid,recordtimestamp) VALUES (:1,:2,:3,:4,CURRENT_TIMESTAMP)",
-                array($this->arg('CONTAINERREGISTRYID'), $this->arg('REPORT'), $path, $this->user->personid));
+                array($this->arg('CONTAINERREGISTRYID'), $this->arg('REPORT'), $path, $this->user->personId));
         if ($lv['EMAILADDRESS'])
         {
             $recpts = array($lv['EMAILADDRESS']);
@@ -2690,7 +2690,7 @@ class Shipment extends Page
 
                 $this->db->pq("UPDATE shipping 
                     SET deliveryagent_flightcode=:1, deliveryagent_flightcodetimestamp=CURRENT_TIMESTAMP, deliveryagent_label=:2, deliveryagent_productcode=:3, deliveryagent_flightcodepersonid=:4, shippingstatus='awb created', deliveryagent_agentname='DHL'
-                    WHERE shippingid=:5", array($awb['awb'], $awb['label'], $product, $this->user->personid, $ship['SHIPPINGID']));
+                    WHERE shippingid=:5", array($awb['awb'], $awb['label'], $product, $this->user->personId, $ship['SHIPPINGID']));
 
                 $tno = $this->has_arg('RETURN') ? 'trackingnumberfromsynchrotron' : 'trackingnumbertosynchrotron';
                 foreach ($dewars as $i => $d)

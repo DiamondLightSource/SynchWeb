@@ -97,7 +97,7 @@ class Fault extends Page
         if (!$this->user->hasPermission('fault_view'))
         {
             array_push($where, 'shp.personid=:' . (sizeof($args) + 1));
-            array_push($args, $this->user->personid);
+            array_push($args, $this->user->personId);
             $join = 'INNER JOIN session_has_person shp ON shp.sessionid = bl.sessionid';
         }
 
@@ -260,7 +260,7 @@ class Fault extends Page
             $this->_error('A fault with that id doesnt exists');
         $check = $check[0];
 
-        if ($this->user->personid != $check['PERSONID'] && $this->user->personid != $check['ASSIGNEEID'])
+        if ($this->user->personId != $check['PERSONID'] && $this->user->personId != $check['ASSIGNEEID'])
         {
             $this->haltIfLackingPermission('fault_global');
         }
@@ -624,7 +624,7 @@ class Fault extends Page
 
         $this->db->pq("INSERT INTO bf_fault (faultid, sessionid, personid, subcomponentid, starttime, endtime, beamtimelost, beamtimelost_starttime, beamtimelost_endtime, title, description, resolved, resolution, assigneeid) 
                 VALUES (s_bf_fault.nextval, :1, :2, :3, TO_DATE(:4, 'DD-MM-YYYY HH24:MI'), TO_DATE(:5, 'DD-MM-YYYY HH24:MI'), :6, TO_DATE(:7, 'DD-MM-YYYY HH24:MI'), TO_DATE(:8, 'DD-MM-YYYY HH24:MI'), :9, :10, :11, :12, :13) RETURNING faultid INTO :id",
-                array($this->arg('SESSIONID'), $this->user->personid, $this->arg('SUBCOMPONENTID'), $this->arg('STARTTIME'), $end, $this->arg('BEAMTIMELOST'), $btlstart, $btlend, $this->arg('TITLE'), $this->arg('DESCRIPTION'), $this->arg('RESOLVED'), $res, $as));
+                array($this->arg('SESSIONID'), $this->user->personId, $this->arg('SUBCOMPONENTID'), $this->arg('STARTTIME'), $end, $this->arg('BEAMTIMELOST'), $btlstart, $btlend, $this->arg('TITLE'), $this->arg('DESCRIPTION'), $this->arg('RESOLVED'), $res, $as));
 
         $newid = $this->db->id();
 
