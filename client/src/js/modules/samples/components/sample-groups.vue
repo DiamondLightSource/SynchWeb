@@ -16,7 +16,8 @@
       </template>
       <template v-slot:slotData="{ dataList }">
         <custom-table-row
-          :class="['tw-w-full', rowIndex % 2 === 0 ? 'tw-bg-table-body-background-odd': 'tw-bg-table-body-background']"
+          @click.native="selectSampleGroup(result)"
+          :class="['tw-w-full', 'tw-cursor-pointer', rowIndex % 2 === 0 ? 'tw-bg-table-body-background-odd': 'tw-bg-table-body-background']"
           v-for="(result, rowIndex) in dataList"
           :key="rowIndex"
           :result="result"
