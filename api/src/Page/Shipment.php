@@ -86,7 +86,7 @@ class Shipment extends Page
                               'SESSIONLENGTH' => '\w+',
                               'ENERGY' => '\w+',
                               'MICROFOCUSBEAM' => '\w+',
-                              'SCHEDULINGRESTRICTIONS' => '\w+',
+                              'SCHEDULINGRESTRICTIONS' => '.*',
                               'LASTMINUTEBEAMTIME' => '\w+',
                               'DEWARGROUPING' => '.*',
                               'ENCLOSEDHARDDRIVE' => '\w+',
@@ -2141,7 +2141,7 @@ class Shipment extends Page
             $session_length = $this->has_arg('SESSIONLENGTH') ? $this->arg('SESSIONLENGTH'): '';
             $energy_requirements = $this->has_arg('ENERGY') ? $this->arg('ENERGY'): '';
             $microfocus_beam = $this->arg('MICROFOCUSBEAM') ? 'Yes': 'No';
-            $scheduling_restrictions = $this->arg('SCHEDULINGRESTRICTIONS') ? 'Yes' : 'No';
+            $scheduling_restrictions = $this->arg('SCHEDULINGRESTRICTIONS') ? $this->arg('SCHEDULINGRESTRICTIONS') : 'None';
             $last_minute_beamtime = $this->arg('LASTMINUTEBEAMTIME') ? 'Yes' : 'No';
             $dewar_grouping = $this->has_arg('DEWARGROUPING') ? $this->arg('DEWARGROUPING') : '';
 

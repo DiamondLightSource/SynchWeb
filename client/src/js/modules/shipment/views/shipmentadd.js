@@ -119,10 +119,16 @@ define(['marionette', 'views/form',
                 var text = this.getOption('comments').dynamic || ''
                 this.ui.comments.val(text)
                 this.$el.find(".remoteform").show()
+                if (app.prop.startsWith("in") || app.prop.startsWith("sw")) {
+                    this.$el.find(".remoteormailin").show()
+                }
             } else {
                 this.ui.first.html(this.visits.opts())
                 this.ui.comments.val('')
                 this.$el.find(".remoteform").hide()
+                if (app.prop.startsWith("in") || app.prop.startsWith("sw")) {
+                    this.$el.find(".remoteormailin").hide()
+                }
             }
         },
 
@@ -147,6 +153,7 @@ define(['marionette', 'views/form',
             this.$el.find('li.d .floated').append(new FCodes({ collection: this.fcodes, dewars: this.dewars }).render().el)
 
             this.$el.find(".remoteform").hide()
+            this.$el.find(".remoteormailin").hide()
             
             this.checkFCodes()
         },

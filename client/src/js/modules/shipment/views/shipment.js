@@ -198,12 +198,12 @@ define(['marionette',
 
             edit.create("ENCLOSEDHARDDRIVE", 'select', { data: {'Yes': 'Yes', 'No': 'No'}})
             edit.create("ENCLOSEDTOOLS", 'select', { data: {'Yes': 'Yes', 'No': 'No'}})
-            // app.prop
-            edit.create("REMOTEORMAILIN", 'select', { data: {'Remote': 'Remote', 'Mail-in': 'Mail-in'}})
+
+            edit.create("REMOTEORMAILIN", 'select', { data: {'Remote': 'Remote', 'Mail-in': 'Mail-in', 'Other': 'Other'}})
             edit.create("SESSIONLENGTH", 'text')
             edit.create("ENERGY", 'text')
             edit.create("MICROFOCUSBEAM", 'select', { data: {'Yes': 'Yes', 'No': 'No'}})
-            edit.create("SCHEDULINGRESTRICTIONS", 'select', { data: {'Yes': 'Yes', 'No': 'No'}})
+            edit.create("SCHEDULINGRESTRICTIONS", 'text')
             edit.create("LASTMINUTEBEAMTIME", 'select', { data: {'Yes': 'Yes', 'No': 'No'}})
             edit.create("DEWARGROUPING", 'select', { data: {'Yes': 'Yes', 'No': 'No', 'Don\'t mind': 'Don\'t mind'}})
             

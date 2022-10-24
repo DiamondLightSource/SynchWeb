@@ -59,14 +59,14 @@
                 </div>
             </li>
 
-            <li class="remoteform">
+            <li class="remoteormailin">
                 <label>Remote or mail-in (Industrial users only)
                     <span class="small">Is this for remote data collection or mail-in service work?</span>
                 </label>
-                <select name="REMOTEORMAILIN"> 
-                    <option value="N/A">N/A</option>
+                <select name="REMOTEORMAILIN">
                     <option value="Remote">Remote</option>
                     <option value="Mail-in">Mail-in</option>
+                    <option value="Other">Other</option>
                 </select>
             </li>
 
@@ -95,7 +95,7 @@
                 <label>Scheduling restrictions for data collection
                     <span class="small">Are there times in the two weeks after delivery when the people collecting data are unavailable, including weekends?:</span>
                 </label>
-                <input type="checkbox" name="SCHEDULINGRESTRICTIONS"> 
+                <input type="text" name="SCHEDULINGRESTRICTIONS" size="100"></textarea>
             </li>
 
             <li class="remoteform">
