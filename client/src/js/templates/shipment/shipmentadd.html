@@ -31,6 +31,17 @@
                     <!--<span class="fcodes"></span>-->
                 </div>
             </li>
+
+            <li>
+                <label>Safety Level
+                    <span class="small">The safety level of the shipment</span>
+                </label>
+                <select class="tw-h-6" name="SAFETYLEVEL" required>
+                    <option value="Green">Green</option>
+                    <option value="Yellow">Yellow</option>
+                    <option value="Red">Red</option>
+                </select>
+            </li>
             
             <li>
                 <!-- Small tweaks to the styling here using tailwind flexbox -->
@@ -43,20 +54,80 @@
                         <input type="checkbox" name="noexp"> Automated / Imager
                     </label>
                     <label class="secondary tw-mr-2">
-                        <input type="checkbox" name="dynamic"> Responsive Remote / Mail-in
+                        <input type="checkbox" name="DYNAMIC"> Responsive Remote / Mail-in
                     </label>
                 </div>
             </li>
 
-            <li>
-                <label>Safety Level
-                    <span class="small">The safety level of the shipment</span>
+            <li class="remoteform">
+                <label>Remote or mail-in (Industrial users only)
+                    <span class="small">Is this for remote data collection or mail-in service work?</span>
                 </label>
-                <select class="tw-h-6" name="SAFETYLEVEL" required>
-                    <option value="Green">Green</option>
-                    <option value="Yellow">Yellow</option>
-                    <option value="Red">Red</option>
+                <select name="REMOTEORMAILIN"> 
+                    <option value="N/A">N/A</option>
+                    <option value="Remote">Remote</option>
+                    <option value="Mail-in">Mail-in</option>
                 </select>
+            </li>
+
+            <li class="remoteform">
+                <label>Session length
+                    <span class="small">Requested beamline session length [hours]</span>
+                </label>
+                <input name="SESSIONLENGTH"/>
+            </li>
+
+            <li class="remoteform">
+                <label>Energy/Wavelength
+                    <span class="small">Specify any energy/Wavelength requirements [eV/&#8491]</span>
+                </label>
+                <input type="text" name="ENERGY"/>
+            </li>
+
+            <li class="remoteform">
+                <label>Microfocus beam
+                    <span class="small">Microfocus beam is required for this shipment (provide further information in additional comments)</span>
+                </label>
+                <input type="checkbox" name="MICROFOCUSBEAM"> 
+            </li>
+
+            <li class="remoteform">
+                <label>Scheduling restrictions for data collection
+                    <span class="small">Are there times in the two weeks after delivery when the people collecting data are unavailable, including weekends?:</span>
+                </label>
+                <input type="checkbox" name="SCHEDULINGRESTRICTIONS"> 
+            </li>
+
+            <li class="remoteform">
+                <label>Last-minute beam time
+                    <span class="small">This shipment should be considered for last-minute beam time</span>
+                </label>
+                <input type="checkbox" name="LASTMINUTEBEAMTIME"> 
+            </li>
+
+            <li class="remoteform">
+                <label>Dewar grouping
+                    <span class="small">Would you prefer your beam time for this dewar to be grouped with beam time for other dewars?:</span>
+                </label>
+                <select name="DEWARGROUPING"> 
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                    <option value="Don't mind">Don't mind</option>
+                </select>
+            </li>
+
+            <li>
+                <label>Hard drive enclosed
+                    <span class="small">A hard drive is included with this shipment</span>
+                </label>
+                <input type="checkbox" name="ENCLOSEDHARDDRIVE"> 
+            </li>
+
+            <li>
+                <label>Tools enclosed
+                    <span class="small">Tools are included within this shipment</span>
+                </label>
+                <input type="checkbox" name="ENCLOSEDTOOLS"> 
             </li>
             
             <li>

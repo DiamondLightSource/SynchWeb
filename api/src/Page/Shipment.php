@@ -80,6 +80,18 @@ class Shipment extends Page
                               'SAFETYLEVEL' => '\w+',
                               'DEWARS' => '\d+',
                               //'FIRSTEXPERIMENTID' => '\w+\d+-\d+',
+                              // Fields for responsive remote questions:
+                              'DYNAMIC' => '\w+',
+                              'REMOTEORMAILIN' => '.*',
+                              'SESSIONLENGTH' => '\w+',
+                              'ENERGY' => '\w+',
+                              'MICROFOCUSBEAM' => '\w+',
+                              'SCHEDULINGRESTRICTIONS' => '\w+',
+                              'LASTMINUTEBEAMTIME' => '\w+',
+                              'DEWARGROUPING' => '.*',
+                              'ENCLOSEDHARDDRIVE' => '\w+',
+                              'ENCLOSEDTOOLS' => '\w+',
+
                               'COMMENTS' => '.*',
                               
                               'assigned' => '\d',
@@ -130,6 +142,7 @@ class Shipment extends Page
         public static $dispatch = array(array('/shipments(/:sid)', 'get', '_get_shipments'),
                               array('/shipments', 'post', '_add_shipment'),
                               array('/shipments/:sid', 'patch', '_update_shipment'),
+                              array('/shipments/:sid', 'put', '_dummy_shipment_put'),
                               array('/send/:sid', 'get', '_send_shipment'),
                               array('/countries', 'get', '_get_countries'),
 
@@ -288,6 +301,25 @@ class Shipment extends Page
 
             foreach ($rows as &$s) {
                 $s['DELIVERYAGENT_BARCODE'] = str_replace(',', ', ', $s['DELIVERYAGENT_BARCODE']);
+                $comments_json = json_decode($s['COMMENTS'], true);
+                if (!is_null($comments_json)) {
+                    $s = array_merge($s, $comments_json);
+                }
+                else {
+                    $dummy_json = array(
+                        "ENCLOSEDHARDDRIVE" => "",
+                        "ENCLOSEDTOOLS" => "",
+                        "DYNAMIC" => "",
+                        "REMOTEORMAILIN" => "",
+                        "SESSIONLENGTH" => "",
+                        "ENERGY" => "",
+                        "MICROFOCUSBEAM" => "",
+                        "SCHEDULINGRESTRICTIONS" => "",
+                        "LASTMINUTEBEAMTIME" => "",
+                        "DEWARGROUPING" => ""
+                    );
+                    $s = array_merge($s, $dummy_json);
+                }
             }
             
             if ($this->has_arg('sid')) {
@@ -1117,7 +1149,7 @@ class Shipment extends Page
             
             if (!sizeof($ship)) $this->_error('No such shipment');
             
-            $fields = array('SHIPPINGNAME', 'SAFETYLEVEL', 'COMMENTS', 'DELIVERYAGENT_AGENTNAME', 'DELIVERYAGENT_AGENTCODE', 'DELIVERYAGENT_SHIPPINGDATE', 'DELIVERYAGENT_DELIVERYDATE', 'SENDINGLABCONTACTID', 'RETURNLABCONTACTID', 'READYBYTIME', 'CLOSETIME', 'PHYSICALLOCATION');
+            $fields = array('SHIPPINGNAME','SAFETYLEVEL', 'DELIVERYAGENT_AGENTNAME', 'DELIVERYAGENT_AGENTCODE', 'DELIVERYAGENT_SHIPPINGDATE', 'DELIVERYAGENT_DELIVERYDATE', 'SENDINGLABCONTACTID', 'RETURNLABCONTACTID', 'READYBYTIME', 'CLOSETIME', 'PHYSICALLOCATION');
             foreach ($fields as $f) {
                 if ($this->has_arg($f)) {
                     $fl = ':1';
@@ -1136,6 +1168,31 @@ class Shipment extends Page
 
                     } else $this->_output(array($f => $this->arg($f)));
 
+                }
+            }
+
+            $json_fields = array(
+                "ENCLOSEDHARDDRIVE",
+                "ENCLOSEDTOOLS",
+                "DYNAMIC",
+                "REMOTEORMAILIN",
+                "SESSIONLENGTH",
+                "ENERGY",
+                "MICROFOCUSBEAM",
+                "SCHEDULINGRESTRICTIONS",
+                "LASTMINUTEBEAMTIME",
+                "DEWARGROUPING",
+                "COMMENTS"
+            );
+            $comments = implode("-", $this->db->pq("SELECT s.comments FROM shipping s WHERE s.shippingid = :1", array($this->arg('sid')))[0]);
+            $comments_json = json_decode($comments, true);
+            if (!is_null($comments_json)) {
+                foreach ($json_fields as $jf) {
+                    if ($this->has_arg($jf)) {
+                        $comments_json[$jf] = $this->arg($jf);
+                        $this->db->pq("UPDATE shipping SET comments=:1 WHERE shippingid=:2", array(json_encode($comments_json), $this->arg('sid')));
+                        $this->_output(array($jf => $this->arg($jf)));
+                    }
                 }
             }
 
@@ -2048,6 +2105,14 @@ class Shipment extends Page
             if (!$this->has_arg('name')) $this->_error('No key specified');
             $this->_output($this->user->cache($this->arg('name')));
         }
+
+        function _dummy_shipment_put() {
+            // Does nothing when a PUT request is made on the shipment endpoint
+            // this can happen when a user edits a labcontact and selects the current labcontact
+            if (!$this->has_arg('sid')) $this->_error('No shipping id specified');
+            $sid = $this->arg('sid');
+            $this->_output(array('SHIPPINGID' => $sid));
+        }
         
         
         # Ajax shipment registration
@@ -2067,11 +2132,38 @@ class Shipment extends Page
             $rt = $this->has_arg('READYBYTIME') ? $this->arg('READYBYTIME') : null;
             $ct = $this->has_arg('CLOSETIME') ? $this->arg('CLOSETIME') : null;
             $loc = $this->has_arg('PHYSICALLOCATION') ? $this->arg('PHYSICALLOCATION') : null;
-
             
+            $hard_drive_enclosed = $this->arg('ENCLOSEDHARDDRIVE') ? 'Yes': 'No';
+            $tools_enclosed = $this->arg('ENCLOSEDTOOLS') ? 'Yes': 'No';
+
+            $dynamic = $this->arg('DYNAMIC') ? $this->arg('DYNAMIC') : '';
+            $remote_or_mailin = $this->arg('REMOTEORMAILIN') ? $this->arg('REMOTEORMAILIN') : '';
+            $session_length = $this->has_arg('SESSIONLENGTH') ? $this->arg('SESSIONLENGTH'): '';
+            $energy_requirements = $this->has_arg('ENERGY') ? $this->arg('ENERGY'): '';
+            $microfocus_beam = $this->arg('MICROFOCUSBEAM') ? 'Yes': 'No';
+            $scheduling_restrictions = $this->arg('SCHEDULINGRESTRICTIONS') ? 'Yes' : 'No';
+            $last_minute_beamtime = $this->arg('LASTMINUTEBEAMTIME') ? 'Yes' : 'No';
+            $dewar_grouping = $this->has_arg('DEWARGROUPING') ? $this->arg('DEWARGROUPING') : '';
+
+            $comments_json = json_encode(
+                array(
+                    "ENCLOSEDHARDDRIVE"=> $hard_drive_enclosed,
+                    "ENCLOSEDTOOLS" => $tools_enclosed,
+                    "DYNAMIC" => $dynamic,
+                    "REMOTEORMAILIN" => $remote_or_mailin,
+                    "SESSIONLENGTH" => $session_length,
+                    "ENERGY" => $energy_requirements,
+                    "MICROFOCUSBEAM" => $microfocus_beam,
+                    "SCHEDULINGRESTRICTIONS" => $scheduling_restrictions,
+                    "LASTMINUTEBEAMTIME" => $last_minute_beamtime,
+                    "DEWARGROUPING" => $dewar_grouping,
+                    "COMMENTS" => $com
+                )
+            );
+
             $this->db->pq("INSERT INTO shipping (shippingid, proposalid, shippingname, deliveryagent_agentname, deliveryagent_agentcode, deliveryagent_shippingdate, deliveryagent_deliverydate, bltimestamp, creationdate, comments, sendinglabcontactid, returnlabcontactid, shippingstatus, safetylevel, readybytime, closetime, physicallocation) 
               VALUES (s_shipping.nextval,:1,:2,:3,:4,TO_DATE(:5,'DD-MM-YYYY'), TO_DATE(:6,'DD-MM-YYYY'),CURRENT_TIMESTAMP,CURRENT_TIMESTAMP,:7,:8,:9,'opened',:10, :11, :12, :13) RETURNING shippingid INTO :id", 
-              array($this->proposalid, $this->arg('SHIPPINGNAME'), $an, $ac, $sd, $dd, $com, $this->arg('SENDINGLABCONTACTID'), $this->arg('RETURNLABCONTACTID'), $this->arg('SAFETYLEVEL'), $rt, $ct, $loc));
+              array($this->proposalid, $this->arg('SHIPPINGNAME'), $an, $ac, $sd, $dd, $comments_json, $this->arg('SENDINGLABCONTACTID'), $this->arg('RETURNLABCONTACTID'), $this->arg('SAFETYLEVEL'), $rt, $ct, $loc));
             
             $sid = $this->db->id();
             

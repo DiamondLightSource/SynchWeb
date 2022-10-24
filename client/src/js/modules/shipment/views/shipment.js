@@ -194,6 +194,18 @@ define(['marionette',
             edit.create('PHYSICALLOCATION', 'text')
             edit.create('READYBYTIME', 'time')
             edit.create('CLOSETIME', 'time')
+
+
+            edit.create("ENCLOSEDHARDDRIVE", 'select', { data: {'Yes': 'Yes', 'No': 'No'}})
+            edit.create("ENCLOSEDTOOLS", 'select', { data: {'Yes': 'Yes', 'No': 'No'}})
+            // app.prop
+            edit.create("REMOTEORMAILIN", 'select', { data: {'Remote': 'Remote', 'Mail-in': 'Mail-in'}})
+            edit.create("SESSIONLENGTH", 'text')
+            edit.create("ENERGY", 'text')
+            edit.create("MICROFOCUSBEAM", 'select', { data: {'Yes': 'Yes', 'No': 'No'}})
+            edit.create("SCHEDULINGRESTRICTIONS", 'select', { data: {'Yes': 'Yes', 'No': 'No'}})
+            edit.create("LASTMINUTEBEAMTIME", 'select', { data: {'Yes': 'Yes', 'No': 'No'}})
+            edit.create("DEWARGROUPING", 'select', { data: {'Yes': 'Yes', 'No': 'No', 'Don\'t mind': 'Don\'t mind'}})
             
             var self = this
             this.contacts = new LabContacts(null, { state: { pageSize: 9999 } })
