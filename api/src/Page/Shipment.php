@@ -80,17 +80,20 @@ class Shipment extends Page
                               'SAFETYLEVEL' => '\w+',
                               'DEWARS' => '\d+',
                               //'FIRSTEXPERIMENTID' => '\w+\d+-\d+',
+
                               // Fields for responsive remote questions:
-                              'DYNAMIC' => '\w+',
+                              'DYNAMIC' => '1?',
                               'REMOTEORMAILIN' => '.*',
                               'SESSIONLENGTH' => '\w+',
                               'ENERGY' => '\w+',
-                              'MICROFOCUSBEAM' => '\w+',
+                              'MICROFOCUSBEAM' => '1?|Yes|No',
                               'SCHEDULINGRESTRICTIONS' => '.*',
-                              'LASTMINUTEBEAMTIME' => '\w+',
+                              'LASTMINUTEBEAMTIME' => '1?|Yes|No',
                               'DEWARGROUPING' => '.*',
-                              'ENCLOSEDHARDDRIVE' => '\w+',
-                              'ENCLOSEDTOOLS' => '\w+',
+                              'ENCLOSEDHARDDRIVE' => '1?|Yes|No',
+                              'ENCLOSEDTOOLS' => '1?|Yes|No',
+
+                              'TESTBOOL' => '1?',
 
                               'COMMENTS' => '.*',
                               
@@ -137,6 +140,20 @@ class Shipment extends Page
                               'currentuser' => '\d',
 
                               );
+        
+
+        var $extra_arg_list = array(
+            'DYNAMIC',
+            'REMOTEORMAILIN',
+            'SESSIONLENGTH',
+            'ENERGY',
+            'MICROFOCUSBEAM',
+            'SCHEDULINGRESTRICTIONS',
+            'LASTMINUTEBEAMTIME',
+            'DEWARGROUPING',
+            'ENCLOSEDHARDDRIVE',
+            'ENCLOSEDTOOLS'
+        );
         
 
         public static $dispatch = array(array('/shipments(/:sid)', 'get', '_get_shipments'),
@@ -228,6 +245,16 @@ class Shipment extends Page
         }
 
 
+        // Get the args that will be passsed into the 'extra' JSON column of the Shipping table
+        function _get_extra_args() {
+            $extra_args = array();
+            foreach($this->extra_arg_list as $arg) {
+                // if ($this->has_arg($arg)) {
+                $extra_args[$arg] = $this->arg($arg);
+                // }
+            }
+            return $extra_args;
+        }
         
         # ------------------------------------------------------------------------
         # List of shipments for a proposal
@@ -285,7 +312,7 @@ class Shipment extends Page
                 if (array_key_exists($this->arg('sort_by'), $cols)) $order = $cols[$this->arg('sort_by')].' '.$dir;
             }
 
-            $rows = $this->db->paginate("SELECT s.deliveryagent_agentname, s.deliveryagent_agentcode, TO_CHAR(s.deliveryagent_shippingdate, 'DD-MM-YYYY') as deliveryagent_shippingdate, TO_CHAR(s.deliveryagent_deliverydate, 'DD-MM-YYYY') as deliveryagent_deliverydate, s.safetylevel, count(d.dewarid) as dcount,s.sendinglabcontactid, c.cardname as lcout, c2.cardname as lcret, s.returnlabcontactid, s.shippingid, s.shippingname, s.shippingstatus,TO_CHAR(s.creationdate, 'DD-MM-YYYY') as created, s.isstorageshipping, s.shippingtype, s.comments, s.deliveryagent_flightcode, IF(s.deliveryAgent_label IS NOT NULL, 1, 0) as deliveryagent_has_label, TO_CHAR(s.readybytime, 'HH24:MI') as readybytime, TO_CHAR(s.closetime, 'HH24:MI') as closetime, s.physicallocation, s.deliveryagent_pickupconfirmation, TO_CHAR(s.deliveryagent_readybytime, 'HH24:MI') as deliveryAgent_readybytime, TO_CHAR(s.deliveryAgent_callintime, 'HH24:MI') as deliveryAgent_callintime, CONCAT(p.proposalcode, p.proposalnumber) as prop, TO_CHAR(s.deliveryagent_flightcodetimestamp, 'HH24:MI DD-MM-YYYY') as deliveryagent_flightcodetimestamp, sum(d.weight) as weight, pe.givenname, pe.familyname, l.name as labname, l.address, l.city, l.postcode, l.country, CONCAT(p.proposalcode, p.proposalnumber) as prop, GROUP_CONCAT(IF(d.facilitycode, d.facilitycode, d.code)) as dewars, s.deliveryagent_productcode, IF(cta.couriertermsacceptedid,1,0) as termsaccepted, GROUP_CONCAT(d.deliveryagent_barcode) as deliveryagent_barcode, pe2.login as deliveryagent_flightcodeperson
+            $rows = $this->db->paginate("SELECT s.deliveryagent_agentname, s.deliveryagent_agentcode, TO_CHAR(s.deliveryagent_shippingdate, 'DD-MM-YYYY') as deliveryagent_shippingdate, TO_CHAR(s.deliveryagent_deliverydate, 'DD-MM-YYYY') as deliveryagent_deliverydate, s.safetylevel, count(d.dewarid) as dcount,s.sendinglabcontactid, c.cardname as lcout, c2.cardname as lcret, s.returnlabcontactid, s.shippingid, s.shippingname, s.shippingstatus,TO_CHAR(s.creationdate, 'DD-MM-YYYY') as created, s.isstorageshipping, s.shippingtype, s.comments, s.deliveryagent_flightcode, IF(s.deliveryAgent_label IS NOT NULL, 1, 0) as deliveryagent_has_label, TO_CHAR(s.readybytime, 'HH24:MI') as readybytime, TO_CHAR(s.closetime, 'HH24:MI') as closetime, s.physicallocation, s.deliveryagent_pickupconfirmation, TO_CHAR(s.deliveryagent_readybytime, 'HH24:MI') as deliveryAgent_readybytime, TO_CHAR(s.deliveryAgent_callintime, 'HH24:MI') as deliveryAgent_callintime, CONCAT(p.proposalcode, p.proposalnumber) as prop, TO_CHAR(s.deliveryagent_flightcodetimestamp, 'HH24:MI DD-MM-YYYY') as deliveryagent_flightcodetimestamp, sum(d.weight) as weight, pe.givenname, pe.familyname, l.name as labname, l.address, l.city, l.postcode, l.country, CONCAT(p.proposalcode, p.proposalnumber) as prop, GROUP_CONCAT(IF(d.facilitycode, d.facilitycode, d.code)) as dewars, s.deliveryagent_productcode, IF(cta.couriertermsacceptedid,1,0) as termsaccepted, GROUP_CONCAT(d.deliveryagent_barcode) as deliveryagent_barcode, pe2.login as deliveryagent_flightcodeperson, s.extra
               FROM proposal p 
               INNER JOIN shipping s ON p.proposalid = s.proposalid 
               LEFT OUTER JOIN labcontact c2 ON s.returnlabcontactid = c2.labcontactid 
@@ -301,25 +328,14 @@ class Shipment extends Page
 
             foreach ($rows as &$s) {
                 $s['DELIVERYAGENT_BARCODE'] = str_replace(',', ', ', $s['DELIVERYAGENT_BARCODE']);
-                $comments_json = json_decode($s['COMMENTS'], true);
-                if (!is_null($comments_json)) {
-                    $s = array_merge($s, $comments_json);
+                $extra_json = json_decode($s['EXTRA'], true);
+                if (is_null($extra_json)) {
+                    $extra_json = array();
+                    foreach($this->extra_arg_list as $arg) {
+                        $extra_json[$arg] = "";
+                    }
                 }
-                else {
-                    $dummy_json = array(
-                        "ENCLOSEDHARDDRIVE" => "",
-                        "ENCLOSEDTOOLS" => "",
-                        "DYNAMIC" => "",
-                        "REMOTEORMAILIN" => "",
-                        "SESSIONLENGTH" => "",
-                        "ENERGY" => "",
-                        "MICROFOCUSBEAM" => "",
-                        "SCHEDULINGRESTRICTIONS" => "",
-                        "LASTMINUTEBEAMTIME" => "",
-                        "DEWARGROUPING" => ""
-                    );
-                    $s = array_merge($s, $dummy_json);
-                }
+                $s = array_merge($s, $extra_json);
             }
             
             if ($this->has_arg('sid')) {
@@ -1171,31 +1187,17 @@ class Shipment extends Page
                 }
             }
 
-            $json_fields = array(
-                "ENCLOSEDHARDDRIVE",
-                "ENCLOSEDTOOLS",
-                "DYNAMIC",
-                "REMOTEORMAILIN",
-                "SESSIONLENGTH",
-                "ENERGY",
-                "MICROFOCUSBEAM",
-                "SCHEDULINGRESTRICTIONS",
-                "LASTMINUTEBEAMTIME",
-                "DEWARGROUPING",
-                "COMMENTS"
-            );
-            $comments = implode("-", $this->db->pq("SELECT s.comments FROM shipping s WHERE s.shippingid = :1", array($this->arg('sid')))[0]);
-            $comments_json = json_decode($comments, true);
-            if (!is_null($comments_json)) {
-                foreach ($json_fields as $jf) {
-                    if ($this->has_arg($jf)) {
-                        $comments_json[$jf] = $this->arg($jf);
-                        $this->db->pq("UPDATE shipping SET comments=:1 WHERE shippingid=:2", array(json_encode($comments_json), $this->arg('sid')));
-                        $this->_output(array($jf => $this->arg($jf)));
-                    }
+            foreach ($this->extra_arg_list as $extra_arg_name) {
+                if ($this->has_arg($extra_arg_name)) {
+                    $extra_arg_value = addslashes($this->arg($extra_arg_name));
+                    $shippingid = $this->arg('sid');
+                    $this->db->pq(
+                        "UPDATE shipping SET extra = JSON_SET(extra, '$.".$extra_arg_name."', '".$extra_arg_value."') WHERE shippingid=:1",
+                        array($shippingid)
+                    );
+                    $this->_output(array($extra_arg_name => $extra_arg_value));
                 }
             }
-
         }
         
         
@@ -2133,39 +2135,46 @@ class Shipment extends Page
             $ct = $this->has_arg('CLOSETIME') ? $this->arg('CLOSETIME') : null;
             $loc = $this->has_arg('PHYSICALLOCATION') ? $this->arg('PHYSICALLOCATION') : null;
             
-            $hard_drive_enclosed = $this->arg('ENCLOSEDHARDDRIVE') ? 'Yes': 'No';
-            $tools_enclosed = $this->arg('ENCLOSEDTOOLS') ? 'Yes': 'No';
+            $hard_drive_enclosed = $this->arg('ENCLOSEDHARDDRIVE') ? "Yes" : "No";
+            $tools_enclosed = $this->arg('ENCLOSEDTOOLS') ? "Yes" : "No";
 
-            $dynamic = $this->arg('DYNAMIC') ? $this->arg('DYNAMIC') : '';
-            $remote_or_mailin = $this->arg('REMOTEORMAILIN') ? $this->arg('REMOTEORMAILIN') : '';
-            $session_length = $this->has_arg('SESSIONLENGTH') ? $this->arg('SESSIONLENGTH'): '';
-            $energy_requirements = $this->has_arg('ENERGY') ? $this->arg('ENERGY'): '';
-            $microfocus_beam = $this->arg('MICROFOCUSBEAM') ? 'Yes': 'No';
-            $scheduling_restrictions = $this->arg('SCHEDULINGRESTRICTIONS') ? $this->arg('SCHEDULINGRESTRICTIONS') : 'None';
-            $last_minute_beamtime = $this->arg('LASTMINUTEBEAMTIME') ? 'Yes' : 'No';
-            $dewar_grouping = $this->has_arg('DEWARGROUPING') ? $this->arg('DEWARGROUPING') : '';
+            $dynamic = $this->arg("DYNAMIC");
 
-            $comments_json = json_encode(
-                array(
-                    "ENCLOSEDHARDDRIVE"=> $hard_drive_enclosed,
-                    "ENCLOSEDTOOLS" => $tools_enclosed,
-                    "DYNAMIC" => $dynamic,
+            $extra_array = array(
+                "ENCLOSEDHARDDRIVE"=> $hard_drive_enclosed,
+                "ENCLOSEDTOOLS" => $tools_enclosed,
+                "DYNAMIC" => $dynamic,
+            );
+
+            if ($dynamic) {
+                $remote_or_mailin = $this->has_arg('REMOTEORMAILIN') ? $this->arg('REMOTEORMAILIN') : '';
+                $session_length = $this->has_arg('SESSIONLENGTH') ? $this->arg('SESSIONLENGTH'): '';
+                $energy_requirements = $this->has_arg('ENERGY') ? $this->arg('ENERGY'): '';
+                $microfocus_beam = $this->arg('MICROFOCUSBEAM') ? "Yes" : "No";
+                $scheduling_restrictions = $this->arg('SCHEDULINGRESTRICTIONS') ? $this->arg('SCHEDULINGRESTRICTIONS') : "None";
+                $last_minute_beamtime = $this->arg('LASTMINUTEBEAMTIME') ? "Yes" : "No";
+                $dewar_grouping = $this->has_arg('DEWARGROUPING') ? $this->arg('DEWARGROUPING') : '';
+                $dynamic_options = array(
                     "REMOTEORMAILIN" => $remote_or_mailin,
                     "SESSIONLENGTH" => $session_length,
                     "ENERGY" => $energy_requirements,
                     "MICROFOCUSBEAM" => $microfocus_beam,
                     "SCHEDULINGRESTRICTIONS" => $scheduling_restrictions,
                     "LASTMINUTEBEAMTIME" => $last_minute_beamtime,
-                    "DEWARGROUPING" => $dewar_grouping,
-                    "COMMENTS" => $com
-                )
-            );
+                    "DEWARGROUPING" => $dewar_grouping
+                );
+                $extra_array = array_merge($extra_array, $dynamic_options);
+            }
+
+            $extra = json_encode($extra_array);
 
             $this->db->pq("INSERT INTO shipping (shippingid, proposalid, shippingname, deliveryagent_agentname, deliveryagent_agentcode, deliveryagent_shippingdate, deliveryagent_deliverydate, bltimestamp, creationdate, comments, sendinglabcontactid, returnlabcontactid, shippingstatus, safetylevel, readybytime, closetime, physicallocation) 
               VALUES (s_shipping.nextval,:1,:2,:3,:4,TO_DATE(:5,'DD-MM-YYYY'), TO_DATE(:6,'DD-MM-YYYY'),CURRENT_TIMESTAMP,CURRENT_TIMESTAMP,:7,:8,:9,'opened',:10, :11, :12, :13) RETURNING shippingid INTO :id", 
-              array($this->proposalid, $this->arg('SHIPPINGNAME'), $an, $ac, $sd, $dd, $comments_json, $this->arg('SENDINGLABCONTACTID'), $this->arg('RETURNLABCONTACTID'), $this->arg('SAFETYLEVEL'), $rt, $ct, $loc));
-            
+              array($this->proposalid, $this->arg('SHIPPINGNAME'), $an, $ac, $sd, $dd, $com, $this->arg('SENDINGLABCONTACTID'), $this->arg('RETURNLABCONTACTID'), $this->arg('SAFETYLEVEL'), $rt, $ct, $loc));
+                        
             $sid = $this->db->id();
+
+            $this->db->pq("UPDATE shipping SET extra=:1 WHERE shippingid=:2", array($extra, $sid));
             
             if ($this->has_arg('DEWARS')) {
                 if ($this->arg('DEWARS') > 0) {
