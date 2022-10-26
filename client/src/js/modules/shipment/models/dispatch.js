@@ -11,7 +11,7 @@ define(['backbone'], function(Backbone) {
         },
 
         LOCATION: {
-            required: true,
+            required: false,
             pattern: 'wwsdash'
         },
 
@@ -21,7 +21,7 @@ define(['backbone'], function(Backbone) {
         },
 
         LOCALCONTACT: {
-            required: true,
+            required: false,
             pattern: 'wwsdash'
         },
 
