@@ -219,16 +219,23 @@ class Shipment extends Page
 
         function _dummy_email_send() {
             global $dispatch_email;
-            $email = new Email('dewar-dispatch', "Dummy email subject");
-            $data = $this->args;
-            if (!array_key_exists('FACILITYCODE', $data)) $data['FACILITYCODE'] = '';
-            if (!array_key_exists('AWBNUMBER', $data)) $data['AWBNUMBER'] = '';
-            if (!array_key_exists('DELIVERYAGENT_AGENTCODE', $data)) $data['DELIVERYAGENT_AGENTCODE'] = '';
-            $email->data = $data;
+            global $email_from;
+            // $email = new Email('dewar-dispatch', "Dummy email subject");
+            // $data = $this->args;
+            // if (!array_key_exists('FACILITYCODE', $data)) $data['FACILITYCODE'] = '';
+            // if (!array_key_exists('AWBNUMBER', $data)) $data['AWBNUMBER'] = '';
+            // if (!array_key_exists('DELIVERYAGENT_AGENTCODE', $data)) $data['DELIVERYAGENT_AGENTCODE'] = '';
+            // $email->data = $data;
 
             $recpts = 'matthew.pritchard@diamond.ac.uk';
+            $subject = 'Test email';
+            $content = 'Test email content. Please ignore';
+            
+            $headers = "From: ".$email_from."\r\n";
+            $headers .= "Reply-To: ".$email_from."\r\n";
 
-            $result = $email->send($recpts);
+            // $result = $email->send($recpts);
+            $result = mail($recpts, $subject, $content, $headers);
 
             $this->_output($result);
         }
