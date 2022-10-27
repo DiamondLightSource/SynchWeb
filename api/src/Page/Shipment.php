@@ -158,6 +158,8 @@ class Shipment extends Page
                               array('/dewars/transfer', 'post', '_transfer_dewar'),
                               array('/dewars/dispatch', 'post', '_dispatch_dewar'),
 
+                              array('/dewars/email', 'post', '_dummy_email_send'),
+
                               array('/dewars/tracking(/:DEWARID)', 'get', '_get_dewar_tracking'),
 
 
@@ -214,6 +216,23 @@ class Shipment extends Page
             $this->dhl = new DHL($dhl_user, $dhl_pass, $dhl_env);
         }
 
+
+        function _dummy_email_send() {
+            global $dispatch_email;
+            $email = new Email('dewar-dispatch', "Dummy email subject");
+            $data = $this->args;
+            if (!array_key_exists('FACILITYCODE', $data)) $data['FACILITYCODE'] = '';
+            if (!array_key_exists('AWBNUMBER', $data)) $data['AWBNUMBER'] = '';
+            if (!array_key_exists('DELIVERYAGENT_AGENTCODE', $data)) $data['DELIVERYAGENT_AGENTCODE'] = '';
+            $email->data = $data;
+
+            $recpts = 'matthew.pritchard@diamond.ac.uk';
+            if ($this->args['LCEMAIL']) $recpts .= ', '.$this->args['LCEMAIL'];
+
+            $result = $email->send($recpts);
+
+            $this->_output($result);
+        }
 
         
         # ------------------------------------------------------------------------
