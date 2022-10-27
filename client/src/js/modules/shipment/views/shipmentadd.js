@@ -113,22 +113,23 @@ define(['marionette', 'views/form',
         updateDynamicSchedule: function() {
             // Added as a fix to allow dynamic sessions
             // An extra option for proposals with no sessions yet that are not automated
+            proposal_code = app.proposal.get('PROPOSALCODE')
+            industrial_codes = ['in', 'sw']
+            industrial_visit = industrial_codes.includes(proposal_code)
             if (this.ui.dynamic.is(':checked')) {
                 this.ui.first.html('<option value=""> - </option>')
                 this.ui.noexp.prop('checked', false)
                 var text = '' // this.getOption('comments').dynamic || ''
                 this.ui.comments.val(text)
                 this.$el.find(".remoteform").show()
-                proposal_code = app.proposal.get('PROPOSALCODE')
-                industrial_codes = ['in', 'sw']
-                if (proposal_code in industrial_codes) {
+                if (industrial_visit) {
                     this.$el.find(".remoteormailin").show()
                 }
             } else {
                 this.ui.first.html(this.visits.opts())
                 this.ui.comments.val('')
                 this.$el.find(".remoteform").hide()
-                if (app.prop.startsWith("in") || app.prop.startsWith("sw")) {
+                if (industrial_visit) {
                     this.$el.find(".remoteormailin").hide()
                 }
             }

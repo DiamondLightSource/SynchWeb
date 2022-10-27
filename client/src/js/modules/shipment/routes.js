@@ -181,20 +181,21 @@ const routes = [
             next('/403?url='+to.fullPath)
           } else {
             app.log('ship add view')
+            next()
 
             // Get any comments to prefill from the server
-            Backbone.ajax({
-                url: app.appurl+'/assets/js/shipment_comments.json',
-                dataType: 'json',
-                success: function(comments) {
-                  shipmentComments = comments
-                  next()
-                },
-                error: function() {
-                  console.log("Warning no comments found")
-                  next()
-                }
-            })
+            // Backbone.ajax({
+            //     url: app.appurl+'/assets/js/shipment_comments.json',
+            //     dataType: 'json',
+            //     success: function(comments) {
+            //       shipmentComments = comments
+            //       next()
+            //     },
+            //     error: function() {
+            //       console.log("Warning no comments found")
+            //       next()
+            //     }
+            // })
           }
         }
       },
