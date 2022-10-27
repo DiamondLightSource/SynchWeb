@@ -85,15 +85,13 @@ class Shipment extends Page
                               'DYNAMIC' => '1?',
                               'REMOTEORMAILIN' => '.*',
                               'SESSIONLENGTH' => '\w+',
-                              'ENERGY' => '\w+',
+                              'ENERGY' => '.*',
                               'MICROFOCUSBEAM' => '1?|Yes|No',
                               'SCHEDULINGRESTRICTIONS' => '.*',
                               'LASTMINUTEBEAMTIME' => '1?|Yes|No',
                               'DEWARGROUPING' => '.*',
                               'ENCLOSEDHARDDRIVE' => '1?|Yes|No',
                               'ENCLOSEDTOOLS' => '1?|Yes|No',
-
-                              'TESTBOOL' => '1?',
 
                               'COMMENTS' => '.*',
                               
@@ -1165,7 +1163,7 @@ class Shipment extends Page
             
             if (!sizeof($ship)) $this->_error('No such shipment');
             
-            $fields = array('SHIPPINGNAME','SAFETYLEVEL', 'DELIVERYAGENT_AGENTNAME', 'DELIVERYAGENT_AGENTCODE', 'DELIVERYAGENT_SHIPPINGDATE', 'DELIVERYAGENT_DELIVERYDATE', 'SENDINGLABCONTACTID', 'RETURNLABCONTACTID', 'READYBYTIME', 'CLOSETIME', 'PHYSICALLOCATION');
+            $fields = array('SHIPPINGNAME','SAFETYLEVEL', 'DELIVERYAGENT_AGENTNAME', 'DELIVERYAGENT_AGENTCODE', 'DELIVERYAGENT_SHIPPINGDATE', 'DELIVERYAGENT_DELIVERYDATE', 'SENDINGLABCONTACTID', 'RETURNLABCONTACTID', 'READYBYTIME', 'CLOSETIME', 'PHYSICALLOCATION', 'COMMENTS');
             foreach ($fields as $f) {
                 if ($this->has_arg($f)) {
                     $fl = ':1';
