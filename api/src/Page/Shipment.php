@@ -227,7 +227,6 @@ class Shipment extends Page
             $email->data = $data;
 
             $recpts = 'matthew.pritchard@diamond.ac.uk';
-            if ($this->args['LCEMAIL']) $recpts .= ', '.$this->args['LCEMAIL'];
 
             $result = $email->send($recpts);
 
