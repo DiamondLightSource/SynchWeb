@@ -102,7 +102,7 @@ define(['marionette', 'views/form',
                 this.ui.first.html('<option value=""> - </option>')
                 this.ui.dynamic.prop('checked', false)
 
-                var text = this.getOption('comments').automated || ''
+                var text = '' // this.getOption('comments').automated || ''
                 this.ui.comments.val(text)
             } else {
                 this.ui.first.html(this.visits.opts())    
@@ -116,10 +116,12 @@ define(['marionette', 'views/form',
             if (this.ui.dynamic.is(':checked')) {
                 this.ui.first.html('<option value=""> - </option>')
                 this.ui.noexp.prop('checked', false)
-                var text = this.getOption('comments').dynamic || ''
+                var text = '' // this.getOption('comments').dynamic || ''
                 this.ui.comments.val(text)
                 this.$el.find(".remoteform").show()
-                if (app.prop.startsWith("in") || app.prop.startsWith("sw")) {
+                proposal_code = app.proposal.get('PROPOSALCODE')
+                industrial_codes = ['in', 'sw']
+                if (proposal_code in industrial_codes) {
                     this.$el.find(".remoteormailin").show()
                 }
             } else {
