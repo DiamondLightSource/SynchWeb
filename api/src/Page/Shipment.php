@@ -46,7 +46,7 @@ class Shipment extends Page
                               'DEWARREGISTRYID' => '\d+',
 
                               'BARCODE' => '([\w-])+',
-                              'LOCATION' => '[\w|\s|-]+',
+                              'LOCATION' => '[\w|\s|-]*',
                               'NEXTLOCATION' => '\w+|^(?![\s\S])',
                               'STATUS' => '[\w|\s|-]+',
 
@@ -60,7 +60,7 @@ class Shipment extends Page
                               'FAMILYNAME' => '.*',
                               'GIVENNAME' => '.*',
                               'LABNAME' => '.*',
-                              'LOCALCONTACT' => '[\w|\s+|-]+',
+                              'LOCALCONTACT' => '[\w|\s+|-]*',
                               'NEXTLOCALCONTACT' => '\w+|^(?![\s\S])',
                               'PHONENUMBER' => '.*',
                               'VISIT' => '\w+\d+-\d+',
@@ -858,12 +858,13 @@ class Shipment extends Page
             $subject_line = '*** Dispatch requested for Dewar '.$dew['BARCODE'].' from '.$dispatch_from_location.' - Pickup Date: '.$this->args['DELIVERYAGENT_SHIPPINGDATE'].' ***';
             $email = new Email('dewar-dispatch', $subject_line);
 
-            $this->args['LCEMAIL'] = $this->_get_email_fn($this->arg('LOCALCONTACT'));
-
-            // LDAP email search does not always provide a match
-            // So look at the ISPyB person record for a matching staff user
-            if (!$this->args['LCEMAIL'] && $this->args['LOCALCONTACT']) {
-              $this->args['LCEMAIL'] = $this->_get_ispyb_email_fn($this->args['LOCALCONTACT']);
+            // If a local contact is given, try to find their email address
+            // First try LDAP, if unsuccessful look at the ISPyB person record for a matching staff user
+            if ($this->args['LOCALCONTACT']) {
+                $this->args['LCEMAIL'] = $this->_get_email_fn($this->arg('LOCALCONTACT'));
+                if (!$this->args['LCEMAIL']) {
+                    $this->args['LCEMAIL'] = $this->_get_ispyb_email_fn($this->args['LOCALCONTACT']);
+                }
             }
 
             $data = $this->args;
