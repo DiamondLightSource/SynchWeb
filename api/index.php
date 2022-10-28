@@ -15,8 +15,10 @@
 use Slim\Slim;
 use SynchWeb\Controllers\AuthenticationController;
 use SynchWeb\Controllers\UserController;
+use SynchWeb\Controllers\AssignController;
 use SynchWeb\Model\Services\AuthenticationData;
 use SynchWeb\Model\Services\UserData;
+use SynchWeb\Model\Services\AssignData;
 use SynchWeb\Database\DatabaseFactory;
 use SynchWeb\Database\DatabaseConnectionFactory;
 use SynchWeb\ImagingShared;
@@ -122,6 +124,16 @@ function setupDependencyInjectionContainer($app, $isb, $port)
     $app->container->singleton('userController', function () use ($app)
     {
         return new UserController($app, $app->container['db'], $app->container['user'], $app->container['userData']);
+    });
+
+    $app->container->singleton('assignData', function () use ($app)
+    {
+        return new AssignData($app->container['db']);
+    });
+
+    $app->container->singleton('assignController', function () use ($app)
+    {
+        return new AssignController($app, $app->container['db'], $app->container['user'], $app->container['userData']);
     });
 
     $app->container->singleton('imagingShared', function () use ($app)
