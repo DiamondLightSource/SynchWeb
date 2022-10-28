@@ -24,7 +24,7 @@ class Summary extends Page
         'sprefix' => '\w+', //sample prefix
         'dcid' => '\w+', //data
         'pp' => '\w+', // processing programs
-        'sg' => '\w+', // space group
+        'sg' => '(\w|\s|\-|\/)+|^$', // space group
         'res' => '\d+', // resid
         'frg' => '\d+', // frag
         'mfrg' => '\d+', // max frag
@@ -221,8 +221,8 @@ class Summary extends Page
 
         // space group
         if ($this->has_arg('sg')) {
-            array_push($where_arr, 'ap.spaceGroup LIKE :'.(sizeof($args)+1));
-            array_push($args, '%'.$this->arg('sg').'%');
+            array_push($where_arr, 'ap.spaceGroup = :'.(sizeof($args)+1));
+            array_push($args, $this->arg('sg'));
         }
           // refined cell a
         if ($this->has_arg('gca')) {
@@ -336,7 +336,7 @@ class Summary extends Page
         $tot_args = $args;
 
         $tot = $this->db->pq(
-            "SELECT count(ap.refinedcell_a) as tot 
+            "SELECT count(app.processingPrograms) as tot 
             FROM Proposal p
                 LEFT JOIN BLSession b ON b.proposalId = p.proposalId 
                 LEFT JOIN Container c ON c.sessionId = b.sessionId
@@ -347,11 +347,13 @@ class Summary extends Page
                 LEFT JOIN AutoProcProgram app ON app.autoProcProgramId = api.autoProcProgramId
                 LEFT JOIN ProcessingJob pj ON pj.processingJobId = app.processingJobId 
                 LEFT JOIN AutoProc ap ON ap.autoProcProgramId = app.autoProcProgramId 
+                LEFT JOIN SpaceGroup sg ON sg.spaceGroupName = ap.spaceGroup  
                 LEFT JOIN AutoProcScaling aps ON aps.autoProcId = ap.autoProcId 
                 LEFT JOIN AutoProcScalingStatistics apss ON apss.autoProcScalingId = aps.autoProcScalingId 
                 LEFT JOIN MXMRRun m ON m.autoProcScalingId = apss.autoProcScalingId
             WHERE $where AND b.beamLineName IN ('i02', 'i02-1', 'i02-2', 'i03', 'i04-1', 'i23', 'i24', 'i19-1' 'i19-2')
-                         AND ap.spaceGroup is NOT NULL
+                         AND ap.spaceGroup is NOT NULL            
+            GROUP BY app.processingPrograms
             ORDER BY $order"
             , $tot_args);
     
@@ -375,9 +377,20 @@ class Summary extends Page
         $rows = $this->db->paginate(
         "SELECT p.proposalId, CONCAT(p.proposalCode, p.proposalNumber) as prop, 
         dc.dataCollectionId, b.visit_number, dc.fileTemplate, b2.name, b.beamLineName, 
-        b.startDate, b.endDate, app.processingPrograms, ap.spaceGroup, apss.scalingStatisticsType,
-        ap.refinedCell_a, ap.refinedCell_b, ap.refinedCell_c, ap.refinedCell_alpha, ap.refinedCell_beta, ap.refinedCell_gamma,
-        apss.resolutionLimitHigh, apss.rMeasWithinIPlusIMinus, apss.ccAnomalous, m.rFreeValueStart, m.rFreeValueEnd
+        b.startDate, b.endDate, app.processingPrograms, 
+        GROUP_CONCAT( apss.scalingStatisticsType ) as SCALINGSTATISTICSTYPE,
+        GROUP_CONCAT( ap.spaceGroup ) as SPACEGROUP,
+        GROUP_CONCAT( ap.refinedCell_a ) as REFINEDCELL_A,
+        GROUP_CONCAT( ap.refinedCell_b ) as REFINEDCELL_B,
+        GROUP_CONCAT( ap.refinedCell_c ) as REFINEDCELL_C,
+        GROUP_CONCAT( ap.refinedCell_alpha ) as REFINEDCELL_ALPHA,
+        GROUP_CONCAT( ap.refinedCell_beta ) as REFINEDCELL_BETA,
+        GROUP_CONCAT( ap.refinedCell_gamma ) as REFINEDCELL_GAMMA,
+        GROUP_CONCAT( apss.resolutionLimitHigh ) as RESOLUTIONLIMITHIGH,
+        GROUP_CONCAT( apss.rMeasWithinIPlusIMinus ) as RMEASWITHINIPLUSIMINUS,
+        GROUP_CONCAT( apss.ccAnomalous ) as CCANOMALOUS,
+        GROUP_CONCAT( m.rFreeValueStart ) as RFREEVALUESTART,
+        GROUP_CONCAT( m.rFreeValueEnd ) as RFREEVALUEEND
         FROM Proposal p
                 LEFT JOIN BLSession b ON b.proposalId = p.proposalId 
                 LEFT JOIN Container c ON c.sessionId = b.sessionId
@@ -388,17 +401,19 @@ class Summary extends Page
                 LEFT JOIN AutoProcProgram app ON app.autoProcProgramId = api.autoProcProgramId
                 LEFT JOIN ProcessingJob pj ON pj.processingJobId = app.processingJobId 
                 LEFT JOIN AutoProc ap ON ap.autoProcProgramId = app.autoProcProgramId 
+                LEFT JOIN SpaceGroup sg ON sg.spaceGroupName = ap.spaceGroup  
                 LEFT JOIN AutoProcScaling aps ON aps.autoProcId = ap.autoProcId 
                 LEFT JOIN AutoProcScalingStatistics apss ON apss.autoProcScalingId = aps.autoProcScalingId 
                 LEFT JOIN MXMRRun m ON m.autoProcScalingId = apss.autoProcScalingId
         WHERE $where AND b.beamLineName IN ('i02', 'i02-1', 'i02-2', 'i03', 'i04-1', 'i23', 'i24', 'i19-1' 'i19-2')
                      AND ap.spaceGroup is NOT NULL
+        GROUP BY dc.dataCollectionId, app.processingPrograms
         ORDER BY $order"
         , $args);
 
-        if (!$rows) {
-        $this->_error($this->arg('TITLE') . ' could not be found anywhere!', 404);
-        }
+        // if (!$rows) {
+        // $this->_error($this->arg('TITLE') . ' could not be found anywhere!', 404);
+        // }
         
         // sql query output
         $this->_output(array('data' => $rows, 'total' => $tot ));
@@ -464,180 +479,59 @@ class Summary extends Page
     function _get_results() {
         $where = '';
         $where_arr = array();
-        $args = array();
-        $param_args = array();
-        $order = 'sr.startDate ASC';
+        $order = 'p.proposalid ASC';
+        $order_arr = array();
+  
 
+        if (!$this->has_arg('prop')) $this->_error('No proposal specified');
 
-        //proposal id
-        if ($this->has_arg('PROPOSALID')) {
-            array_push($where_arr, 'sr.proposalId = :'.(sizeof($args)+1));
-            array_push($args, $this->arg('PROPOSALID'));
-        }
-        
-        // // Search
-        // // sample name
-        // if ($this->has_arg('sample')) {
-        //     array_push($where_arr, 'sample LIKE :'.(sizeof($args)+1));
-        //     array_push($args, '%'.$this->arg('sample').'%');
-        // }
-        // // sample prefix name
-        // if ($this->has_arg('sprefix')) {
-        //     array_push($where_arr, 'sprefix LIKE :'.(sizeof($args)+1));
-        //     array_push($args, '%'.$this->arg('sprefix').'%');
-        // }
-        // processing programs
-        if ($this->has_arg('pp')) {
-            array_push($where_arr, 'sr.processingPrograms LIKE :'.(sizeof($args)+1));
-            array_push($args, '%'.$this->arg('pp').'%');
-        }
-        // space group
-        if ($this->has_arg('sg')) {
-            array_push($where_arr, 'sr.spaceGroup LIKE :'.(sizeof($args)+1));
-            array_push($args, '%'.$this->arg('sg').'%');
-        }
-        // // resid
-        // if ($this->has_arg('res')) {
-        //     array_push($where_arr, 'res = :'.(sizeof($args)+1));
-        //     array_push($args, $this->arg('res'));
-        // }
-        // // frag
-        // if ($this->has_arg('frg')) {
-        //     array_push($where_arr, 'frg = :'.(sizeof($args)+1));
-        //     array_push($args, $this->arg('frg'));
-        // }
-        // // max frag
-        // if ($this->has_arg('mfrg')) {
-        //     array_push($where_arr, 'mfrg = :'.(sizeof($args)+1));
-        //     array_push($args, $this->arg('mfrg'));
-        // }
-        // // num dimple blobs
-        // if ($this->has_arg('db')) {
-        //     array_push($where_arr, 'db = :'.(sizeof($args)+1));
-        //     array_push($args, $this->arg('db'));
-        // }
+        $args = array($this->proposalid);
+        array_push($where_arr, 'p.proposalid = :1');
 
-        //Greater than less than
+        if ($this->has_arg('descrca')) {
+            array_push($order_arr, 'ap.refinedCell_a DESC');
+        }
+
         // refined cell a
         if ($this->has_arg('gca')) {
-            array_push($where_arr, 'sr.refinedCell_a >= :'.(sizeof($args)+1));
-            array_push($args, $this->arg('gca'));
-        }
-        if ($this->has_arg('lca')) {
-            array_push($where_arr, 'sr.refinedCell_a <= :'.(sizeof($args)+1));
-            array_push($args, $this->arg('lca'));
-        }
-        // refined cell b
-        if ($this->has_arg('gcb')) {
-            array_push($where_arr, 'sr.refinedCell_b >= :'.(sizeof($args)+1));
-            array_push($args, $this->arg('gcb'));
-        }
-        if ($this->has_arg('lcb')) {
-            array_push($where_arr, 'sr.refinedCell_b <= :'.(sizeof($args)+1));
-            array_push($args, $this->arg('lcb'));
-        }
-        // refined cell c
-        if ($this->has_arg('gcc')) {
-            array_push($where_arr, 'sr.refinedCell_c >= :'.(sizeof($args)+1));
-            array_push($args, $this->arg('gcc'));
-        }
-        if ($this->has_arg('lcc')) {
-            array_push($where_arr, 'sr.refinedCell_c <= :'.(sizeof($args)+1));
-            array_push($args, $this->arg('lcc'));
-        }
-        // refined cell alpha
-        if ($this->has_arg('gcal')) {
-            array_push($where_arr, 'sr.refinedCell_alpha >= :'.(sizeof($args)+1));
-            array_push($args, $this->arg('gcal'));
-        }
-        if ($this->has_arg('lcal')) {
-            array_push($where_arr, 'sr.refinedCell_alpha <= :'.(sizeof($args)+1));
-            array_push($args, $this->arg('lcal'));
-        }
-        // refined cell beta
-        if ($this->has_arg('gcbe')) {
-            array_push($where_arr, 'sr.refinedCell_beta >= :'.(sizeof($args)+1));
-            array_push($args, $this->arg('gcbe'));
-        }
-        if ($this->has_arg('lcbe')) {
-            array_push($where_arr, 'sr.refinedCell_beta <= :'.(sizeof($args)+1));
-            array_push($args, $this->arg('lcbe'));
-        }
-        // refined cell gamma
-        if ($this->has_arg('gcga')) {
-            array_push($where_arr, 'sr.refinedCell_gamma >= :'.(sizeof($args)+1));
-            array_push($args, $this->arg('gcga'));
-        }
-        if ($this->has_arg('lcga')) {
-            array_push($where_arr, 'sr.refinedCell_gamma <= :'.(sizeof($args)+1));
-            array_push($args, $this->arg('lcga'));
-        }
-        // resolution limit high
-        if ($this->has_arg('grlh')) {
-            array_push($where_arr, 'sr.resolutionLimitHigh >= :'.(sizeof($args)+1));
-            array_push($args, $this->arg('grlh'));
-        }
-        if ($this->has_arg('lrlh')) {
-            array_push($where_arr, 'sr.resolutionLimitHigh <= :'.(sizeof($args)+1));
-            array_push($args, $this->arg('lrlh'));
-        }
-        // rmeas within i plus i minus
-        if ($this->has_arg('grm')) {
-            array_push($where_arr, 'sr.rMeasWithinIPlusIMinus >= :'.(sizeof($args)+1));
-            array_push($args, $this->arg('grm'));
-        }
-        if ($this->has_arg('lrm')) {
-            array_push($where_arr, 'sr.rMeasWithinIPlusIMinus <= :'.(sizeof($args)+1));
-            array_push($args, $this->arg('lrm'));
-        }
-        // cc anomalous 
-        if ($this->has_arg('gcc')) {
-            array_push($where_arr, 'sr.ccAnomalous >= :'.(sizeof($args)+1));
-            array_push($args, $this->arg('gcc'));
-        }
-        if ($this->has_arg('lcc')) {
-            array_push($where_arr, 'sr.ccAnomalous <= :'.(sizeof($args)+1));
-            array_push($args, $this->arg('lcc'));
-        }
-        // // best map cc 
-        // if ($this->has_arg('gmcc')) {
-        //     array_push($where_arr, 'gmcc >= :'.(sizeof($args)+1));
-        //     array_push($args, $this->arg('gmcc'));
-        // }
-        // if ($this->has_arg('lmcc')) {
-        //     array_push($where_arr, 'lmcc <= :'.(sizeof($args)+1));
-        //     array_push($args, $this->arg('lmcc'));
-        // }
-        // // resol
-        // if ($this->has_arg('gresol')) {
-        //     array_push($where_arr, 'gresol >= :'.(sizeof($args)+1));
-        //     array_push($args, $this->arg('gresol'));
-        // }
-        // if ($this->has_arg('lresol')) {
-        //     array_push($where_arr, 'lresol <= :'.(sizeof($args)+1));
-        //     array_push($args, $this->arg('lresol'));
-        // }
-        // r free final 
-        if ($this->has_arg('grff')) {
-            array_push($where_arr, 'sr.rFreeValueEnd >= :'.(sizeof($args)+1));
-            array_push($args, $this->arg('grff'));
-        }
-        if ($this->has_arg('lrff')) {
-            array_push($where_arr, 'sr.rFreeValueEnd <= :'.(sizeof($args)+1));
-            array_push($args, $this->arg('lrff'));
-        }
-        // r free initial 
-        if ($this->has_arg('grfi')) {
-            array_push($where_arr, 'sr.rFreeValueStart >= :'.(sizeof($args)+1));
-            array_push($args, $this->arg('grfi'));
-        }
-        if ($this->has_arg('lrfi')) {
-            array_push($where_arr, 'sr.rFreeValueStart <= :'.(sizeof($args)+1));
-            array_push($args, $this->arg('lrfi'));
+        array_push($where_arr, 'ap.refinedCell_a >= :'.(sizeof($args)+1));
+        array_push($args, $this->arg('gca'));
         }
 
-
+        // AND is the delimieter between seperate queries, converted to string
         $where = implode(" AND ", $where_arr);
+
+        if (count($order_arr) > 0) {
+            $order = implode(", ", $order_arr);
+        }
+        
+
+        // get tot query
+        $tot_args = $args;
+
+        $tot = $this->db->pq(
+            "SELECT count(ap.refinedcell_a) as tot 
+            FROM Proposal p
+                LEFT JOIN BLSession b ON b.proposalId = p.proposalId 
+                LEFT JOIN Container c ON c.sessionId = b.sessionId
+                LEFT JOIN BLSample b2 ON b2.containerId = c.containerId
+                LEFT JOIN DataCollectionGroup dcg ON dcg.sessionId = b.sessionId 
+                LEFT JOIN DataCollection dc ON dc.dataCollectionGroupId = dcg.dataCollectionGroupId
+                LEFT JOIN AutoProcIntegration api ON api.dataCollectionId = dc.dataCollectionId
+                LEFT JOIN AutoProcProgram app ON app.autoProcProgramId = api.autoProcProgramId
+                LEFT JOIN ProcessingJob pj ON pj.processingJobId = app.processingJobId 
+                LEFT JOIN AutoProc ap ON ap.autoProcProgramId = app.autoProcProgramId 
+                LEFT JOIN SpaceGroup sg ON sg.spaceGroupName = ap.spaceGroup  
+                LEFT JOIN AutoProcScaling aps ON aps.autoProcId = ap.autoProcId 
+                LEFT JOIN AutoProcScalingStatistics apss ON apss.autoProcScalingId = aps.autoProcScalingId 
+                LEFT JOIN MXMRRun m ON m.autoProcScalingId = apss.autoProcScalingId
+            WHERE $where AND b.beamLineName IN ('i02', 'i02-1', 'i02-2', 'i03', 'i04-1', 'i23', 'i24', 'i19-1' 'i19-2')
+                         AND ap.spaceGroup is NOT NULL            
+            GROUP BY dc.dataCollectionId, app.processingPrograms
+            ORDER BY $order"
+            , $tot_args);
+    
+        $tot = sizeof($tot) ? intval($tot[0]['TOT']) : 0;
 
         // paginate
         $pp = $this->has_arg('per_page') ? $this->arg('per_page') : 15;
@@ -650,22 +544,53 @@ class Summary extends Page
         array_push($args, $start);
         array_push($args, $end);
 
+        $pgs = intval($tot/$pp);
+        if ($tot % $pp != 0) $pgs++;
 
         // sql query
         $rows = $this->db->paginate(
-            "SELECT sr.processingPrograms, sr.scalingStatisticsType, sr.spaceGroup, sr.refinedCell_a, sr.refinedCell_b, sr.refinedCell_c, sr.refinedCell_alpha, sr.refinedCell_beta, sr.refinedCell_gamma, sr.resolutionLimitHigh, rMeasWithinIPlusIMinus, sr.ccAnomalous, sr.rFreeValueStart, sr.rFreeValueEnd 
-            FROM SummaryResults sr
-            WHERE $where
-            ORDER BY $order"
-            , $args);
+        "SELECT p.proposalId, CONCAT(p.proposalCode, p.proposalNumber) as prop, 
+        dc.dataCollectionId, b.visit_number, dc.fileTemplate, b2.name, b.beamLineName, 
+        b.startDate, b.endDate, app.processingPrograms, 
+        GROUP_CONCAT( apss.scalingStatisticsType ) as SCALINGSTATISTICSTYPE,
+        GROUP_CONCAT( ap.spaceGroup ) as SPACEGROUP,
+        GROUP_CONCAT( ap.refinedCell_a ) as REFINEDCELL_A,
+        GROUP_CONCAT( ap.refinedCell_b ) as REFINEDCELL_B,
+        GROUP_CONCAT( ap.refinedCell_c ) as REFINEDCELL_C,
+        GROUP_CONCAT( ap.refinedCell_alpha ) as REFINEDCELL_ALPHA,
+        GROUP_CONCAT( ap.refinedCell_beta ) as REFINEDCELL_BETA,
+        GROUP_CONCAT( ap.refinedCell_gamma ) as REFINEDCELL_GAMMA,
+        GROUP_CONCAT( apss.resolutionLimitHigh ) as RESOLUTIONLIMITHIGH,
+        GROUP_CONCAT( apss.rMeasWithinIPlusIMinus ) as RMEASWITHINIPLUSIMINUS,
+        GROUP_CONCAT( apss.ccAnomalous ) as CCANOMALOUS,
+        GROUP_CONCAT( m.rFreeValueStart ) as RFREEVALUESTART,
+        GROUP_CONCAT( m.rFreeValueEnd ) as RFREEVALUEEND
+                FROM Proposal p
+                        LEFT JOIN BLSession b ON b.proposalId = p.proposalId 
+                        LEFT JOIN Container c ON c.sessionId = b.sessionId
+                        LEFT JOIN BLSample b2 ON b2.containerId = c.containerId
+                        LEFT JOIN DataCollectionGroup dcg ON dcg.sessionId = b.sessionId 
+                        LEFT JOIN DataCollection dc ON dc.dataCollectionGroupId = dcg.dataCollectionGroupId
+                        LEFT JOIN AutoProcIntegration api ON api.dataCollectionId = dc.dataCollectionId
+                        LEFT JOIN AutoProcProgram app ON app.autoProcProgramId = api.autoProcProgramId
+                        LEFT JOIN ProcessingJob pj ON pj.processingJobId = app.processingJobId 
+                        LEFT JOIN AutoProc ap ON ap.autoProcProgramId = app.autoProcProgramId 
+                        LEFT JOIN SpaceGroup sg ON sg.spaceGroupName = ap.spaceGroup  
+                        LEFT JOIN AutoProcScaling aps ON aps.autoProcId = ap.autoProcId 
+                        LEFT JOIN AutoProcScalingStatistics apss ON apss.autoProcScalingId = aps.autoProcScalingId 
+                        LEFT JOIN MXMRRun m ON m.autoProcScalingId = apss.autoProcScalingId
+                WHERE $where AND b.beamLineName IN ('i02', 'i02-1', 'i02-2', 'i03', 'i04-1', 'i23', 'i24', 'i19-1' 'i19-2')
+                            AND ap.spaceGroup is NOT NULL
+                GROUP BY dc.dataCollectionId, app.processingPrograms
+                ORDER BY $order"
+        , $args);
+
+        // if (!$rows) {
+        // $this->_error($this->arg('TITLE') . ' could not be found anywhere!', 404);
+        // }
         
         // sql query output
-        $this->_output(array(
-            'data' =>  $rows,
-            'where' => $where,
-            'args' => $args
-
-        ));
+        $this->_output(array('data' => $rows, 'total' => $tot ));
 
     }
 
