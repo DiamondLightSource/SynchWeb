@@ -810,11 +810,14 @@ class Shipment extends Page
 
             if (!$this->has_arg('DEWARID')) $this->_error('No dewar specified');
 
-            $dew = $this->db->pq("SELECT d.dewarid, d.barcode, d.storagelocation, s.shippingid
-              FROM dewar d 
-              INNER JOIN shipping s ON s.shippingid = d.shippingid 
-              INNER JOIN proposal p ON p.proposalid = s.proposalid
-              WHERE d.dewarid=:1 and p.proposalid=:2", array($this->arg('DEWARID'), $this->proposalid));
+            $dew = $this->db->pq(
+                "SELECT d.dewarid, d.barcode, d.storagelocation, s.shippingid
+                FROM dewar d 
+                INNER JOIN shipping s ON s.shippingid = d.shippingid 
+                INNER JOIN proposal p ON p.proposalid = s.proposalid
+                WHERE d.dewarid=:1 and p.proposalid=:2",
+                array($this->arg('DEWARID'), $this->proposalid)
+            );
 
             if (!sizeof($dew)) $this->_error('No such dewar');
             else $dew = $dew[0];
@@ -827,19 +830,26 @@ class Shipment extends Page
             $dewar_location = $this->has_arg('LOCATION)') ? $this->arg('LOCATION') : "";
 
             if (empty($dewar_location)) {
-              // What was the last history entry for this dewar?
-              // User may have accidentally removed location from form
-              $last_history_results = $this->db->pq("SELECT storageLocation FROM dewartransporthistory WHERE dewarId = :1 ORDER BY DewarTransportHistoryId DESC LIMIT 1", array($dew['DEWARID']));
+                // What was the last history entry for this dewar?
+                // User may have accidentally removed location from form
+                $last_history_results = $this->db->pq(
+                    "SELECT storageLocation
+                    FROM dewartransporthistory
+                    WHERE dewarId = :1
+                    ORDER BY DewarTransportHistoryId DESC
+                    LIMIT 1",
+                    array($dew['DEWARID'])
+                );
 
-              if (sizeof($last_history_results)) {
-                  $last_history = $last_history_results[0];
-                  
-                  $dewar_location = $last_history['STORAGELOCATION'];
-              } else {
-                  // Use the current location of the dewar instead if no history
-                  $dewar_location = $dew['STORAGELOCATION'];
-              }              
+                if (sizeof($last_history_results)) {
+                    $last_history = $last_history_results[0];
+                    $dewar_location = $last_history['STORAGELOCATION'];
+                } else {
+                    // Use the current location of the dewar instead if no history
+                    $dewar_location = $dew['STORAGELOCATION'];
+                }              
             }
+
             // Check if the last history storage location is an EBIC prefix or not
             // Case insensitive search
             if (stripos($dewar_location, 'ebic') !== false) {
@@ -847,12 +857,20 @@ class Shipment extends Page
             }
 
             // Update dewar transport history with provided location.
-            $this->db->pq("INSERT INTO dewartransporthistory (dewartransporthistoryid,dewarid,dewarstatus,storagelocation,arrivaldate) 
-              VALUES (s_dewartransporthistory.nextval,:1,'dispatch-requested',:2,CURRENT_TIMESTAMP) RETURNING dewartransporthistoryid INTO :id", 
-              array($dew['DEWARID'], $this->arg('LOCATION')));
+            $this->db->pq(
+                "INSERT INTO dewartransporthistory (dewartransporthistoryid,dewarid,dewarstatus,storagelocation,arrivaldate) 
+                VALUES (s_dewartransporthistory.nextval,:1,'dispatch-requested',:2,CURRENT_TIMESTAMP)
+                RETURNING dewartransporthistoryid INTO :id",
+                array($dew['DEWARID'], $dewar_location)
+            );
 
             // Also update the dewar status and storage location to keep it in sync with history...
-            $this->db->pq("UPDATE dewar set dewarstatus='dispatch-requested', storagelocation=lower(:2) WHERE dewarid=:1", array($dew['DEWARID'], $this->arg('LOCATION')));
+            $this->db->pq(
+                "UPDATE dewar
+                set dewarstatus='dispatch-requested', storagelocation=lower(:2)
+                WHERE dewarid=:1",
+                array($dew['DEWARID'], $dewar_location)
+            );
 
             # Prepare e-mail response for dispatch request
             $subject_line = '*** Dispatch requested for Dewar '.$dew['BARCODE'].' from '.$dispatch_from_location.' - Pickup Date: '.$this->args['DELIVERYAGENT_SHIPPINGDATE'].' ***';
