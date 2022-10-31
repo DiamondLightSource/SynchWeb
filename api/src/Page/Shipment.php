@@ -890,6 +890,9 @@ class Shipment extends Page
             if (!array_key_exists('FACILITYCODE', $data)) $data['FACILITYCODE'] = '';
             if (!array_key_exists('AWBNUMBER', $data)) $data['AWBNUMBER'] = '';
             if (!array_key_exists('DELIVERYAGENT_AGENTCODE', $data)) $data['DELIVERYAGENT_AGENTCODE'] = '';
+            if (!array_key_exists('LOCATION', $data)) $data['LOCATION'] = $dewar_location;
+            if (!array_key_exists('LOCALCONTACT', $data)) $data['LOCALCONTACT'] = $local_contact;
+            if (!array_key_exists('LCEMAIL', $data)) $data['LCEMAIL'] = '';
             $email->data = $data;
 
             $recpts = $dispatch_email.', '.$this->arg('EMAILADDRESS');
