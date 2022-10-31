@@ -1,5 +1,5 @@
 <template>
-    <div class="tw-border-l-2 tw-flex">
+    <div class="tw-border-l tw-flex">
       <slot name="title" />
       <button
         @click="toggleAccordion()"
@@ -8,7 +8,7 @@
         :aria-controls="`collapse${_uid}`"
       >
         <svg
-          class="tw-w-3 tw-transition-all tw-duration-200 tw-transform"
+          class="tw-w-3 tw-h-4 tw-transition-all tw-duration-200 tw-transform"
           :class="{
             'tw-rotate-180': isOpen,
             'tw-rotate-0': !isOpen,
@@ -20,13 +20,14 @@
           aria-hidden="true"
         >
           <path
-            d="M15 1.2l-7 7-7-7"
+            d="m12.14 8.753-5.482 4.796c-.646.566-1.658.106-1.658-.753V3.204a1 1 0 0 1 1.659-.753l5.48 4.796a1 1 0 0 1 0 1.506z"
             stroke-width="2"
             stroke-linecap="round"
             stroke-linejoin="round"
           />
         </svg>
       </button>
+ 
 
       <div
           class="tw-relative

@@ -17,13 +17,12 @@
 
 
                     <div class="tw-grid tw-grid-cols-2 tw-gap-4">
-                        <div class="tw-col-span-3 tw-mt-3">
+                        <div class="tw-col-span-3 tw-mt-3 tw-ml-3">
                             <h> Filter </h>
                         </div>
                         <div class="tw-col-span-1 tw-col-start-5 tw-mt-2 tw-mr-3 ">
 
-
-                            <div class="tw-flex">
+                            <div class="tw-flex tw-mb-2">
                                 <button @click="searchFilterParams" 
                                 class="tw-text-center tw-bg-content-active hover:tw-bg-teal-700 
                                 tw-border-content-active hover:tw-border-teal-700 tw-text-xs tw-border-4 tw-text-black tw-py-1 tw-px-1 
@@ -258,7 +257,7 @@
                                     id="default-checkbox" type="checkbox" value="" 
                                     class="tw-w-4 tw-h-4 tw-text-blue-600 tw-bg-gray-100 tw-rounded 
                                     tw-border-gray-300 focus:tw-ring-blue-500 focus:tw-ring-2">
-                                    <a href="#" class="tw-block tw-text-xs tw-py-2 tw-px-4 hover:tw-bg-gray-100"> {{ value.title }} </a>
+                                    <a class="tw-block tw-text-xs tw-py-2 tw-px-4 hover:tw-bg-gray-100"> {{ value.title }} </a>
 
                                 </div>
                             </li>
@@ -374,7 +373,7 @@
                         <p v-if="value.checked == true && value.expandable == false && value.isbutton == false" class="tw-p-2 tw-text-center">{{ result[value.key] }}</p>
                         <p v-if="value.checked == true && value.expandable == false && value.isbutton == true" class="tw-p-2 tw-text-center">
                             <button v-on:click="toggleExpandAutoProc(rowIndex)"
-                                    class="tw-rounded-full tw-h-6 tw-max-w-xs tw-ml-1 tw-pt-1 
+                                    class="tw-z-60 tw-rounded-full tw-h-6 tw-max-w-xs tw-ml-1 tw-pt-1 
                                     tw-pr-1 tw-pl-1 tw-bg-content-active">{{ result[value.key] }}</button>
                         </p>
                         <div :ref="'autoproc-' + rowIndex" v-if="expandProcessing == false && value.checked == true && value.expandable == true " class="tw-p-2" >
@@ -948,11 +947,9 @@ export default {
             // this.expandProcessing = !this.expandProcessing;
             if($(this.$refs['autoproc-' + index]).is(":hidden")) {
                 $(this.$refs['autoproc-' + index]).show();
-                console.log('is hidden but now here!')
             }
             else {
                 $(this.$refs['autoproc-' + index]).hide();
-                console.log('is hidden!')
             }
         },
         onPrefixSearch() {
@@ -1040,6 +1037,12 @@ export default {
 
 
 <style scoped>
+
+    .hide {
+    position: absolute !important;
+    top: -9999px !important;
+    left: -9999px !important;
+    }
     .status {
     height: 100px;
     width: 50px;

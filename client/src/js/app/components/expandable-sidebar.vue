@@ -12,7 +12,7 @@
                     :aria-controls="`collapse${_uid}`"
                 >
                 <svg
-                class="tw-w-3 tw-transition-all tw-duration-200 tw-transform"
+                class="tw-w-3 tw-h-4 tw-ml-2 tw-transition-all tw-duration-200 tw-transform"
                 :class="{
                 'tw-rotate-180': isOpen,
                 'tw-rotate-0': !isOpen,
@@ -24,7 +24,7 @@
                 aria-hidden="true"
                 >
                 <path
-                d="M15 1.2l-7 7-7-7"
+                d="M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z"
                 stroke-width="2"
                 stroke-linecap="round"
                 stroke-linejoin="round"
@@ -36,7 +36,7 @@
 
             <div>
             <div
-            class="  tw-relative tw-bg-header-background
+            class="tw-relative tw-bg-table-header-background tw-rounded-md
             tw-ease-in-out tw-transition-all tw-delay-150 tw-duration-300"
             :class="{
                 'filter-height': isOpen,
@@ -44,10 +44,10 @@
                 }"
             >
                 <div v-if="loadContent" class="
-                tw-w-full tw-bg-table-header-background tw-h-12"
+                tw-w-full  tw-h-12"
                 :class="loadContent ? 'tw-h-10' : 'tw-h-0'">
 
-                    <div class="tw-relative tw-ml-3 tw-text-xl tw-text-white">
+                    <div class="tw-relative tw-bg-content-sub-header-background tw-text-xl tw-text-white">
                         <slot name="filter-bar-title" />
                     </div>
                 </div>
