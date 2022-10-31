@@ -158,11 +158,7 @@ class Shipment extends Page
                               array('/dewars/transfer', 'post', '_transfer_dewar'),
                               array('/dewars/dispatch', 'post', '_dispatch_dewar'),
 
-                              array('/dewars/email', 'post', '_dummy_email_send'),
-
                               array('/dewars/tracking(/:DEWARID)', 'get', '_get_dewar_tracking'),
-
-
 
                               array('/containers(/:cid)(/did/:did)', 'get', '_get_all_containers'),
                               array('/containers/', 'post', '_add_container'),
@@ -217,30 +213,6 @@ class Shipment extends Page
         }
 
 
-        function _dummy_email_send() {
-            global $dispatch_email;
-            global $email_from;
-            // $email = new Email('dewar-dispatch', "Dummy email subject");
-            // $data = $this->args;
-            // if (!array_key_exists('FACILITYCODE', $data)) $data['FACILITYCODE'] = '';
-            // if (!array_key_exists('AWBNUMBER', $data)) $data['AWBNUMBER'] = '';
-            // if (!array_key_exists('DELIVERYAGENT_AGENTCODE', $data)) $data['DELIVERYAGENT_AGENTCODE'] = '';
-            // $email->data = $data;
-
-            $recpts = 'matthew.pritchard@diamond.ac.uk';
-            $subject = 'Test email';
-            $content = 'Test email content. Please ignore';
-            
-            $headers = "From: ".$email_from."\r\n";
-            $headers .= "Reply-To: ".$email_from."\r\n";
-
-            // $result = $email->send($recpts);
-            $result = mail($recpts, $subject, $content, $headers);
-
-            $this->_output($result);
-        }
-
-        
         # ------------------------------------------------------------------------
         # List of shipments for a proposal
         function _get_shipments() {
