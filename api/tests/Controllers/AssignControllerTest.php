@@ -77,7 +77,7 @@ final class AssignControllerTest extends TestCase
         $this->assignController->args['visit'] = 3;
         $this->assignController->args['cid'] = 4;
         $this->assignController->args['pos'] = 5;
-        $this->dataLayerStub->expects($this->exactly(1))->method('getContainer')->with(3, 4, 5)->willReturn(array());
+        $this->dataLayerStub->expects($this->exactly(1))->method('getContainer')->with(3, 4)->willReturn(array());
         $this->dataLayerStub->expects($this->never())->method('assignContainer');
 
         $this->assignController->assignContainer();
@@ -89,7 +89,7 @@ final class AssignControllerTest extends TestCase
         $this->assignController->args['visit'] = 3;
         $this->assignController->args['cid'] = 4;
         $this->assignController->args['pos'] = 5;
-        $this->dataLayerStub->expects($this->exactly(1))->method('getContainer')->with(3, 4, 5)->willReturn(array(1,2,3));
+        $this->dataLayerStub->expects($this->exactly(1))->method('getContainer')->with(3, 4)->willReturn(array(1,2,3));
         $this->dataLayerStub->expects($this->exactly(1))->method('assignContainer')->with(1, 5);
 
         $this->assignController->assignContainer();
@@ -102,7 +102,7 @@ final class AssignControllerTest extends TestCase
         $this->assignController->args['visit'] = 3;
         $this->assignController->args['cid'] = 4;
         $this->assignController->args['pos'] = 5;
-        $this->dataLayerStub->expects($this->exactly(1))->method('getContainer')->with(3, 4, 5)->willReturn(array());
+        $this->dataLayerStub->expects($this->exactly(1))->method('getContainer')->with(3, 4)->willReturn(array());
         $this->dataLayerStub->expects($this->never())->method('unassignContainer');
 
         $this->assignController->unassignContainer();
@@ -114,7 +114,7 @@ final class AssignControllerTest extends TestCase
         $this->assignController->args['visit'] = 3;
         $this->assignController->args['cid'] = 4;
         $this->assignController->args['pos'] = 5;
-        $this->dataLayerStub->expects($this->exactly(1))->method('getContainer')->with(3, 4, 5)->willReturn(array(1,2,3));
+        $this->dataLayerStub->expects($this->exactly(1))->method('getContainer')->with(3, 4)->willReturn(array(1,2,3));
         $this->dataLayerStub->expects($this->exactly(1))->method('unassignContainer')->with(1);
 
         $this->assignController->unassignContainer();

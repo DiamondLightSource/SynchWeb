@@ -133,7 +133,7 @@ function setupDependencyInjectionContainer($app, $isb, $port)
 
     $app->container->singleton('assignController', function () use ($app)
     {
-        return new AssignController($app, $app->container['db'], $app->container['user'], $app->container['userData']);
+        return new AssignController($app, $app->container['db'], $app->container['user'], $app->container['assignData']);
     });
 
     $app->container->singleton('imagingShared', function () use ($app)

@@ -31,7 +31,7 @@ class AssignController extends Page
 
     function assignContainer()
     {
-        $cs = $this->assignData->getContainer($this->arg('visit'), $this->arg('cid'), $this->arg('pos'));
+        $cs = $this->assignData->getContainer($this->arg('visit'), $this->arg('cid'));
 
         if (sizeof($cs) > 0)
         {
@@ -46,7 +46,7 @@ class AssignController extends Page
 
     function unassignContainer()
     {
-        $cs = $this->assignData->getContainer($this->arg('visit'), $this->arg('cid'), $this->arg('pos'));
+        $cs = $this->assignData->getContainer($this->arg('visit'), $this->arg('cid'));
 
         if (sizeof($cs) > 0)
         {

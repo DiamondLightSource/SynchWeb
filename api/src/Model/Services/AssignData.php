@@ -14,7 +14,7 @@ class AssignData
     # ------------------------------------------------------------------------
     # Get a container
     # $visitId is an aggregate of the group name, proposal number and visit number - e.g. group: 'mx', proposal: 28866, visit: 4 -> $visitId = 'mx28866-4'
-    function getContainer($visitId, $containerId, $location)
+    function getContainer($visitId, $containerId)
     {
         return $this->db->pq("SELECT d.dewarid,bl.beamlinename,c.containerid,c.code FROM container c
                                 INNER JOIN dewar d ON d.dewarid = c.dewarid

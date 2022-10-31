@@ -45,7 +45,7 @@ final class AssignDataTest extends TestCase
 
     public function testGetContainerCreatesCorrectSql(): void
     {
-        $this->assignData->getContainer('testVisitId', 'testContainerId', 'testLocation');
+        $this->assignData->getContainer('testVisitId', 'testContainerId');
         $this->assertEquals("SELECT d.dewarid,bl.beamlinename,c.containerid,c.code FROM Container c INNER JOIN Dewar d ON d.dewarid = c.dewarid INNER JOIN Shipping s ON s.shippingid = d.shippingid INNER JOIN BLSession bl ON bl.proposalid = s.proposalid INNER JOIN Proposal p ON s.proposalid = p.proposalid WHERE CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), bl.visit_number) LIKE 'testVisitId' AND c.containerid='testContainerId'", $this->db->getLastQuery());
     }
 
