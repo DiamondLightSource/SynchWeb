@@ -101,14 +101,10 @@ define(['marionette', 'views/form',
             if (this.ui.noexp.is(':checked')) {
                 this.ui.first.html('<option value=""> - </option>')
                 this.ui.dynamic.prop('checked', false)
-
-                var text = '' // this.getOption('comments').automated || ''
-                this.ui.comments.val(text)
             } else {
-                this.ui.first.html(this.visits.opts())    
-                this.ui.comments.val('')
+                this.ui.first.html(this.visits.opts())
             }
-        },  
+        },
 
         updateDynamicSchedule: function() {
             // Added as a fix to allow dynamic sessions
@@ -119,15 +115,12 @@ define(['marionette', 'views/form',
             if (this.ui.dynamic.is(':checked')) {
                 this.ui.first.html('<option value=""> - </option>')
                 this.ui.noexp.prop('checked', false)
-                var text = '' // this.getOption('comments').dynamic || ''
-                this.ui.comments.val(text)
                 this.$el.find(".remoteform").show()
                 if (industrial_visit) {
                     this.$el.find(".remoteormailin").show()
                 }
             } else {
                 this.ui.first.html(this.visits.opts())
-                this.ui.comments.val('')
                 this.$el.find(".remoteform").hide()
                 if (industrial_visit) {
                     this.$el.find(".remoteormailin").hide()
