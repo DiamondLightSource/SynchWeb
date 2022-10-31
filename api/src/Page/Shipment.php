@@ -46,7 +46,7 @@ class Shipment extends Page
                               'DEWARREGISTRYID' => '\d+',
 
                               'BARCODE' => '([\w-])+',
-                              'LOCATION' => '[\w|\s|-]*',
+                              'LOCATION' => '[\w|\s|-]+',
                               'NEXTLOCATION' => '\w+|^(?![\s\S])',
                               'STATUS' => '[\w|\s|-]+',
 
@@ -60,7 +60,7 @@ class Shipment extends Page
                               'FAMILYNAME' => '.*',
                               'GIVENNAME' => '.*',
                               'LABNAME' => '.*',
-                              'LOCALCONTACT' => '[\w|\s+|-]*',
+                              'LOCALCONTACT' => '[\w|\s+|-]+',
                               'NEXTLOCALCONTACT' => '\w+|^(?![\s\S])',
                               'PHONENUMBER' => '.*',
                               'VISIT' => '\w+\d+-\d+',
@@ -824,7 +824,7 @@ class Shipment extends Page
             // If no location specified (i.e. deleted), then read from dewar transport history.
             // If no dewar transport history fall back to dewar location
             // We still update history based on provided location to record action from user
-            $dewar_location = $this->arg('LOCATION');
+            $dewar_location = $this->has_arg('LOCATION)') ? $this->arg('LOCATION') : "";
 
             if (empty($dewar_location)) {
               // What was the last history entry for this dewar?
@@ -860,10 +860,11 @@ class Shipment extends Page
 
             // If a local contact is given, try to find their email address
             // First try LDAP, if unsuccessful look at the ISPyB person record for a matching staff user
-            if ($this->args['LOCALCONTACT']) {
-                $this->args['LCEMAIL'] = $this->_get_email_fn($this->arg('LOCALCONTACT'));
+            $local_contact = $this->has_arg('LOCALCONTACT') ? $this->args['LOCALCONTACT'] : '';
+            if ($local_contact) {
+                $this->args['LCEMAIL'] = $this->_get_email_fn($local_contact);
                 if (!$this->args['LCEMAIL']) {
-                    $this->args['LCEMAIL'] = $this->_get_ispyb_email_fn($this->args['LOCALCONTACT']);
+                    $this->args['LCEMAIL'] = $this->_get_ispyb_email_fn($local_contact);
                 }
             }
 
@@ -874,7 +875,8 @@ class Shipment extends Page
             $email->data = $data;
 
             $recpts = $dispatch_email.', '.$this->arg('EMAILADDRESS');
-            if ($this->args['LCEMAIL']) $recpts .= ', '.$this->args['LCEMAIL'];
+            $local_contact_email = $this->has_arg('LCEMAIL') ? $this->args['LCEMAIL'] : '';
+            if ($local_contact_email) $recpts .= ', '.$local_contact_email;
 
             $email->send($recpts);
 
