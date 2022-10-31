@@ -747,7 +747,7 @@ class Page
         global $ip2bl;
         $parts = explode('.', $_SERVER['REMOTE_ADDR']);
 
-        if (array_key_exists($parts[2], $ip2bl))
+        if ($parts && sizeof($parts) > 1 && array_key_exists($parts[2], $ip2bl))
         {
             return $ip2bl[$parts[2]];
         }

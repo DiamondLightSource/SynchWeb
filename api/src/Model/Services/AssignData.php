@@ -27,18 +27,29 @@ class AssignData
 
     function assignContainer($container, $location)
     {
-        $this->db->pq("UPDATE dewar 
-                            SET dewarstatus='processing' 
-                            WHERE dewarid=:1", array($container['DEWARID']));
+        $this->updateDewar($container['DEWARID'], 'processing');
 
-        $this->updateContainer($container['CONTAINERID'], 'processing', $container['BEAMLINENAME'], $location);
+        $this->updateContainerAndHistory($container['CONTAINERID'], 'processing', $container['BEAMLINENAME'], $location);
 
         $this->updateDewarHistory($container['DEWARID'], 'processing', $container['BEAMLINENAME'], $container['CODE'] . ' => ' . $location);
     }
 
     function unassignContainer($container)
     {
-        $this->updateContainer($container['CONTAINERID'], 'at facility', $container['BEAMLINENAME'], '');
+        $this->updateContainerAndHistory($container['CONTAINERID'], 'at facility', $container['BEAMLINENAME'], '');
+    }
+
+    function updateContainerAndHistory($containerId, $status, $beamlineName, $location)
+    {
+        $this->updateContainer($containerId, $status, $beamlineName, $location);
+        $this->updateContainerHistory($containerId, $status, $beamlineName, $location);
+    }
+
+    function updateContainerHistory($containerId, $status, $beamlineName, $location)
+    {
+        $this->db->pq("INSERT INTO containerhistory 
+                            (containerid, status, location, beamlinename) 
+                            VALUES (:1,:2,:3,:4)", array($containerId, $status, $location, $beamlineName));
     }
 
     function updateContainer($containerId, $status, $beamlineName, $location)
@@ -46,10 +57,6 @@ class AssignData
         $this->db->pq("UPDATE container 
                             SET beamlinelocation=:1, samplechangerlocation=:2, containerstatus=:3 
                             WHERE containerid=:4", array($beamlineName, $location, $status, $containerId));
-
-        $this->db->pq("INSERT INTO containerhistory 
-                            (containerid, status, location, beamlinename) 
-                            VALUES (:1,:2,:3,:4)", array($containerId, $status, $location, $beamlineName));
     }
 
     function getDewar($dewarId, $proposalId, $visitId)
@@ -69,6 +76,13 @@ class AssignData
                                 WHERE $where AND d.dewarid=:2", array($arg, $dewarId));
     }
 
+    function updateDewar($dewarId, $status)
+    {
+        if ($status == 'unprocessing')
+            $status = 'at facility';
+        $this->db->pq("UPDATE dewar SET dewarstatus=:1 WHERE dewarid=:2", array($status, $dewarId));
+    }
+
     function deactivateDewar($dewarId)
     {
         $this->updateDewarHistory($dewarId, 'unprocessing');
@@ -76,7 +90,7 @@ class AssignData
         $conts = $this->db->pq("SELECT containerid as id FROM container WHERE dewarid=:1", array($dewarId));
         foreach ($conts as $container)
         {
-            $this->updateContainer($container['CONTAINERID'], 'at facility', '', '');
+            $this->updateContainerAndHistory($container['CONTAINERID'], 'at facility', '', '');
         }
     }
 
@@ -89,12 +103,10 @@ class AssignData
                         (dewarid, dewarstatus, storagelocation, arrivaldate) 
                         VALUES (:1, :2, :3, CURRENT_TIMESTAMP)", array($did, $st, $beamline));
 
-        if ($status == 'unprocessing')
-            $status = 'at facility';
-        $this->db->pq("UPDATE dewar SET dewarstatus=:1 WHERE dewarid=:2", array($status, $did));
+        $this->updateDewar($did, $status);
     }
 
-    function getContainerBarcodes($proposalId)
+    function getContainerBarcodesForProposal($proposalId)
     {
         return $this->db->pq("SELECT cr.barcode 
                 FROM containerregistry cr

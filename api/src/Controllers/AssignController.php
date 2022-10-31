@@ -121,9 +121,7 @@ class AssignController extends Page
             array_push($pvs, $pv_prefix . '-MO-ROBOT-01:PUCK_' . $id . '_NAME');
         }
 
-        $vals = $this->pv(array_values($pvs), true, true);
-
-        $rows = $this->assignData->getContainerBarcodes($this->proposalid);
+        $rows = $this->assignData->getContainerBarcodesForProposal($this->proposalid);
         $codes = array();
         foreach ($rows as $r)
         {
@@ -131,6 +129,7 @@ class AssignController extends Page
         }
 
         $return = array();
+        $vals = $this->pv(array_values($pvs), true, true);
         foreach ($vals as $k => $v)
         {
             if (preg_match('/PUCK_(\d+)_NAME/', $k, $mat))

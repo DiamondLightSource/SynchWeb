@@ -5,11 +5,9 @@ namespace SynchWeb\Controllers;
 use Slim\Slim;
 use Mockery;
 use PHPUnit\Framework\TestCase;
-use SynchWeb\Controllers\UserController;
 use SynchWeb\Model\Services\UserData;
 use SynchWeb\Model\User;
 use SynchWeb\Database\Type\MySQL;
-use SynchWeb\Controllers\AppStub;
 
 require_once __DIR__ . '/Utils/Functions.php';
 
