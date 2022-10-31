@@ -57,7 +57,7 @@
                     <p>%maxcore 5024 # global scratch memory limit (in MB) per processing core.</p>
                     <br />
 
-                    <p>%pal nprocs 4 # requested number of CPUs</p>
+                    <p>%pal nprocs 4 # request parallel computation</p>
                     <span>end</span>
                     <br/><br/>
 
@@ -164,7 +164,7 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
                         <span v-if="errors.has('orbWin1Stop')" class="errormessage ferror">{{ errors.first('orbWin1Stop') }}</span>
                     </li>
                     <li>
-                        <label class="left">Load structure (.xyz, .gmnt):</label>
+                        <label class="left">Load structure (.xyz, .gzmt):</label>
                         <input type="file" ref="orcaStructureFile" v-on:change="setStructureFile($event); overviewBuilder($event)" title="Use file for structure (must be in correct format) or manually add structure using Atoms"/>
                         <button type="button" ref="clearStructureFile" name="clearStructureFile" class="button" v-on:click="clearFile($event)">Clear</button>
                     </li>
@@ -973,7 +973,7 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
                     }
                     else {
                         console.log(structureFileName)
-                        app.alert({title: 'error', message: 'Orca structure file must be .xyz or .gmnt'})
+                        app.alert({title: 'error', message: 'Orca structure file must be .xyz or .gzmt'})
                         this.$refs.fdmnesStructureFile.value = ''
                         this.$refs.orcaStructureFile.value = ''
                     }
