@@ -2,6 +2,8 @@
 
 namespace SynchWeb\Model\Services;
 
+require_once(__DIR__ . '/Utils.php');
+
 class UserData
 {
     private $db;
@@ -143,17 +145,13 @@ class UserData
         }
 
         $start = 0;
-        $pp = $perPage;
-        $end = $pp;
-
+        $end = $perPage;
         if ($page)
         {
             $pg = $page - 1;
-            $start = $pg * $pp;
-            $end = $pg * $pp + $pp;
+            $start = $pg * $perPage;
+            $end = $pg * $perPage + $perPage;
         }
-
-        $st = sizeof($args) + 1;
         array_push($args, $start);
         array_push($args, $end);
 
@@ -195,7 +193,7 @@ class UserData
     function addUser($loginId, $givenName, $familyName, $emailAddress = null)
     {
         $this->db->pq("INSERT INTO person (login, givenname, familyname, emailaddress) VALUES (:1, :2, :3, :4)",
-                array($loginId, $givenName, $familyName, $emailAddress));
+            array($loginId, $givenName, $familyName, $emailAddress));
         return $this->db->id();
     }
 
@@ -229,7 +227,7 @@ class UserData
         if ($laboratoryId)
         {
             $this->db->pq("UPDATE laboratory SET name=:1, address=:2, city=:3, postcode=:4, country=:5 WHERE laboratoryid=:6",
-                    array($labName, $labAddress, $city, $postcode, $country, $laboratoryId));
+                array($labName, $labAddress, $city, $postcode, $country, $laboratoryId));
         }
         else
         {
@@ -291,18 +289,7 @@ class UserData
             return intval($tot[0]['TOT']);
         }
 
-        $start = 0;
-        $pp = $perPage;
-        $end = $pp;
-
-        if ($startPage)
-        {
-            $pg = $startPage - 1;
-            $start = $pg * $pp;
-            $end = $start + $pp;
-        }
-        array_push($args, $start);
-        array_push($args, $end);
+        setupPagingParameters($args, $perPage, $startPage);
 
         return $this->db->paginate("SELECT p.permissionid, p.type, p.description
                                     FROM permission p
