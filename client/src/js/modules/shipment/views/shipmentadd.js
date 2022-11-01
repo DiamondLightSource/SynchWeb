@@ -117,9 +117,11 @@ define(['marionette', 'views/form',
                 this.ui.noexp.prop('checked', false)
                 this.$el.find(".remoteform").show()
                 if (industrial_visit) {
+                    this.model.validation.REMOTEORMAILIN.required = true
                     this.$el.find(".remoteormailin").show()
                 }
             } else {
+                this.model.validation.REMOTEORMAILIN.required = false
                 this.ui.first.html(this.visits.opts())
                 this.$el.find(".remoteform").hide()
                 if (industrial_visit) {

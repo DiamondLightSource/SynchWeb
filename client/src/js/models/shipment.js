@@ -18,6 +18,10 @@ define(['backbone'], function (Backbone) {
         pattern: 'fcode',
       },
 
+      REMOTEORMAILIN: {
+        required: false,
+      },
+
       SESSIONLENGTH: {
         required: false,
         pattern: 'number',
@@ -48,7 +52,6 @@ define(['backbone'], function (Backbone) {
         required: false,
         pattern: 'wwsdash'
       },
-
 
       DELIVERYAGENT_SHIPPINGDATE: {
         required: false,
