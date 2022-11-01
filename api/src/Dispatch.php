@@ -57,6 +57,11 @@ class Dispatch
             $app->container['assignController'];
         });
 
+        $app->group('/cal', function () use ($app)
+        {
+            $app->container['calendarController'];
+        });
+
         $this->app->notFound(function () use ($app)
         {
             $app->halt(404, json_encode(array('status' => 404, 'message' => 'not found')));
