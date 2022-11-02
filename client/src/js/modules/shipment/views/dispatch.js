@@ -1,6 +1,7 @@
 define(['marionette', 'views/form',
     'collections/visits',
     'collections/labcontacts',
+    'collections/countries',
     'modules/shipment/collections/dewarhistory',
 
     'modules/shipment/models/dispatch',
@@ -11,7 +12,7 @@ define(['marionette', 'views/form',
     'backbone-validation',
     
     ], function(Marionette, FormView,
-        Visits, LabContacts, DewarHistory,
+        Visits, LabContacts, Countries, DewarHistory,
         DispatchModel,
         template, $_, Backbone) {
 
@@ -40,6 +41,9 @@ define(['marionette', 'views/form',
             gn: 'input[name=GIVENNAME]',
             fn: 'input[name=FAMILYNAME]',
             addr: 'textarea[name=ADDRESS]',
+            city: 'input[name=CITY]',
+            postcode: 'input[name=POSTCODE]',
+            country: 'select[name=COUNTRY]',
             em: 'input[name=EMAILADDRESS]',
             ph: 'input[name=PHONENUMBER]',
             lab: 'input[name=LABNAME]',
@@ -98,6 +102,11 @@ define(['marionette', 'views/form',
                 this.ui.accountNumber.attr('disabled', true)
                 this.model.shipmentHasAgentCode = true
             }
+            $.when(this.ready).done(this.populateCountries.bind(this))
+        },
+
+        populateCountries: function() {
+            this.ui.country.html(this.countries.opts())
         },
 
         initialize: function(options) {
@@ -131,6 +140,10 @@ define(['marionette', 'views/form',
             })
             // Shipping option should be a backbone model
             this.shipping = options.shipping
+
+            this.countries = new Countries()
+            this.countries.state.pageSize = 9999
+            this.countries.fetch()
         },
 
         updateLC: function() {
@@ -161,8 +174,9 @@ define(['marionette', 'views/form',
                 this.ui.fn.val(lc.get('FAMILYNAME'))
                 this.ui.em.val(lc.get('EMAILADDRESS'))
                 this.ui.ph.val(lc.get('PHONENUMBER'))
-                this.ui.addr.val([lc.get('ADDRESS'),lc.get('CITY'),lc.get('POSTCODE'),lc.get('COUNTRY')].join("\n"))
                 this.ui.lab.val(lc.get('LABNAME'))
+                this.ui.addr.val([lc.get('ADDRESS'), lc.get('CITY'), lc.get('POSTCODE')].join('\n'))
+                this.ui.country.val(lc.get('COUNTRY'))
             }
         },
         

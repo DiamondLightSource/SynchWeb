@@ -55,6 +55,7 @@ class Shipment extends Page
                               'REPORT' => '.*',
 
                               'ADDRESS' => '.*',
+                              'COUNTRY' => '.*',
                               'DESCRIPTION' => '.*',
                               'EMAILADDRESS' => '.*',
                               'FAMILYNAME' => '.*',
@@ -800,7 +801,9 @@ class Shipment extends Page
 
 
         function _dispatch_dewar() {
+            global $facility_country;
             global $dispatch_email;
+            global $dispatch_email_intl;
             // Variable to store where the dewar is (Synchrotron or eBIC building)
             // Could map this to dewar storage locations in ISPyB to make more generic...?
             $dispatch_from_location = 'Synchrotron';
@@ -863,13 +866,23 @@ class Shipment extends Page
               $this->args['LCEMAIL'] = $this->_get_ispyb_email_fn($this->args['LOCALCONTACT']);
             }
 
+            $country = $this->arg('COUNTRY');
+
             $data = $this->args;
             if (!array_key_exists('FACILITYCODE', $data)) $data['FACILITYCODE'] = '';
             if (!array_key_exists('AWBNUMBER', $data)) $data['AWBNUMBER'] = '';
             if (!array_key_exists('DELIVERYAGENT_AGENTCODE', $data)) $data['DELIVERYAGENT_AGENTCODE'] = '';
+            $data['ADDRESS'] = $data['ADDRESS'] . '\n' . $country;
             $email->data = $data;
 
-            $recpts = $dispatch_email.', '.$this->arg('EMAILADDRESS');
+            if ($country != $facility_country && !is_null($dispatch_email_intl)) {
+                $recpts = $dispatch_email_intl;
+            }
+            else {
+                $recpts = $dispatch_email;
+            }
+
+            $recpts .= ', '.$this->arg('EMAILADDRESS');
             if ($this->args['LCEMAIL']) $recpts .= ', '.$this->args['LCEMAIL'];
 
             $email->send($recpts);
