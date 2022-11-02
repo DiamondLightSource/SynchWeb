@@ -232,10 +232,15 @@ class UserData
         else
         {
             # TODO: the logic here appears dubious - may result in duplicate entries for labs, rather than reusing these?  Perhaps this is ok, though...
-            $this->db->pq("INSERT INTO laboratory ('NAME', 'ADDRESS', 'CITY', 'POSTCODE', 'COUNTRY') VALUES (:1, :2, :3, :4, :5)", array($labName, $labAddress, $city, $postcode, $country));
-            $laboratoryId = $this->db->id();
+            $laboratoryId = $this->addLaboratory($labName, $labAddress, $city, $postcode, $country);
             $this->db->pq("UPDATE person SET laboratoryid=:1 WHERE personid=:2", array($laboratoryId, $personId));
         }
+    }
+
+    function addLaboratory($labName, $labAddress, $city, $postcode, $country)
+    {
+        $this->db->pq("INSERT INTO laboratory ('NAME', 'ADDRESS', 'CITY', 'POSTCODE', 'COUNTRY') VALUES (:1, :2, :3, :4, :5)", array($labName, $labAddress, $city, $postcode, $country));
+        return $this->db->id();
     }
 
     function addGroupUser($personId, $gid)
