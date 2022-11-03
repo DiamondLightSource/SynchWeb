@@ -868,11 +868,15 @@ class Shipment extends Page
 
             $country = $this->arg('COUNTRY');
 
+            if (!$this->arg('COUNTRY')) {
+                $this->_error('Error submitting country: ' . $country);
+            }
+
             $data = $this->args;
             if (!array_key_exists('FACILITYCODE', $data)) $data['FACILITYCODE'] = '';
             if (!array_key_exists('AWBNUMBER', $data)) $data['AWBNUMBER'] = '';
             if (!array_key_exists('DELIVERYAGENT_AGENTCODE', $data)) $data['DELIVERYAGENT_AGENTCODE'] = '';
-            $data['ADDRESS'] = $data['ADDRESS'] . '\n' . $country;
+            $data['ADDRESS'] = $data['ADDRESS'] . PHP_EOL . $country;
             $email->data = $data;
 
             if ($country != $facility_country && !is_null($dispatch_email_intl)) {
