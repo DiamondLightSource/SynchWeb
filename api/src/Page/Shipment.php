@@ -810,6 +810,12 @@ class Shipment extends Page
 
             if (!$this->has_arg('DEWARID')) $this->_error('No dewar specified');
 
+            $country = $this->arg('COUNTRY');
+
+            if (!$this->arg('COUNTRY')) {
+                $this->_error('Error submitting country: ' . $country);
+            }
+
             $dew = $this->db->pq("SELECT d.dewarid, d.barcode, d.storagelocation, s.shippingid
               FROM dewar d 
               INNER JOIN shipping s ON s.shippingid = d.shippingid 
@@ -864,12 +870,6 @@ class Shipment extends Page
             // So look at the ISPyB person record for a matching staff user
             if (!$this->args['LCEMAIL'] && $this->args['LOCALCONTACT']) {
               $this->args['LCEMAIL'] = $this->_get_ispyb_email_fn($this->args['LOCALCONTACT']);
-            }
-
-            $country = $this->arg('COUNTRY');
-
-            if (!$this->arg('COUNTRY')) {
-                $this->_error('Error submitting country: ' . $country);
             }
 
             $data = $this->args;
