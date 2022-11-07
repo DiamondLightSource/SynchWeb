@@ -105,7 +105,9 @@ class DHL
 
     function get_tracking_info($options)
     {
-        if (!array_key_exists('AWB', $options)) return;
+        $given_awb = array_key_exists('AWB', $options);
+        $given_lpnumber = array_key_exists('LPNumber', $options);
+        if (!$given_awb && !$given_lpnumber) return;
 
         $request = new Tracking();
         $request->SiteID = $this->_user;
@@ -113,16 +115,19 @@ class DHL
         $request->MessageReference = '12345678901234567890' . (string)time();
         $request->MessageTime = date('c');
         $request->LanguageCode = 'en';
-        $request->AWBNumber = $options['AWB'];
-        $request->LevelOfDetails = array_key_exists('LAST_ONLY', $options) ? 'LAST_CHECK_POINT_ONLY' : 'ALL_CHECK_POINTS';
+        if ($given_awb) $request->AWBNumber = $options['AWB'];
+        if ($given_lpnumber) $request->LPNumber = $options['LPNumber'];
         $request->PiecesEnabled = 'S';
+        $request->LevelOfDetails = array_key_exists('LAST_ONLY', $options) ? 'LAST_CHECK_POINT_ONLY' : 'ALL_CHECK_POINTS';
 
-        if ($this->log) file_put_contents('logs/trackingrequest_' . date('Ymd-Hi') . '_' . str_replace(' ', '_', $options['AWB'] . '.xml'), $request->toXML());
+        $tracking_number = ($given_lpnumber) ? $options['LPNumber'] : $options['AWB'];
+
+        if ($this->log) file_put_contents('./logs/trackingrequest_' . date('Ymd-Hi') . '_' . str_replace(' ', '_', $tracking_number . '.xml'), $request->toXML());
 
         $client = new WebserviceClient($this->env);
         $xml = $client->call($request);
 
-        if ($this->log) file_put_contents('logs/trackingresponse_' . date('Ymd-Hi') . '_' . str_replace(' ', '_', $options['AWB'] . '.xml'), $xml);
+        if ($this->log) file_put_contents('./logs/trackingresponse_' . date('Ymd-Hi') . '_' . str_replace(' ', '_', $tracking_number . '.xml'), $xml);
 
         $xml = simplexml_load_string(str_replace('req:', '', $xml));
         return $xml;

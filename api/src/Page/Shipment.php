@@ -894,61 +894,82 @@ class Shipment extends Page
                 $args = array($this->arg('DEWARID'));
             }
 
-            $dew = $this->db->pq("SELECT d.trackingnumbertosynchrotron,d.trackingnumberfromsynchrotron, LOWER(s.deliveryagent_agentname) as deliveryagent_agentname
-              FROM dewar d 
-              INNER JOIN shipping s ON s.shippingid = d.shippingid 
-              INNER JOIN proposal p ON p.proposalid = s.proposalid
-              WHERE d.dewarid=:1 $where", $args);
+            $dewar = $this->db->pq(
+                "SELECT d.trackingnumbertosynchrotron,d.trackingnumberfromsynchrotron, LOWER(s.deliveryagent_agentname) as deliveryagent_agentname
+                FROM dewar d 
+                INNER JOIN shipping s ON s.shippingid = d.shippingid 
+                INNER JOIN proposal p ON p.proposalid = s.proposalid
+                WHERE d.dewarid=:1 $where",
+                $args
+            );
 
-            if (!sizeof($dew)) $this->_error('No such dewar');
-            else $dew = $dew[0];
+            if (!sizeof($dewar)) $this->_error('No such dewar');
+            else $dewar = $dewar[0];
 
-            if ($dew['DELIVERYAGENT_AGENTNAME'] == 'dhl' 
-                  && (($dew['TRACKINGNUMBERTOSYNCHROTRON'] && strlen($dew['TRACKINGNUMBERTOSYNCHROTRON']) <= 10) || 
-                     ($dew['TRACKINGNUMBERFROMSYNCHROTRON'] && strlen($dew['TRACKINGNUMBERFROMSYNCHROTRON']) <= 10))
-            ) {
-                $tr = $this->_dewar_tracking($dew);
+            $tracking_number_to_synchrotron = (string)($dewar['TRACKINGNUMBERTOSYNCHROTRON']);
+            $tracking_number_from_synchrotron = (string)($dewar['TRACKINGNUMBERFROMSYNCHROTRON']);
 
-                $this->_output(array(
-                  'ORIGIN' => (string)$tr['status']->AWBInfo->ShipmentInfo->OriginServiceArea->Description,
-                  'DESTINATION' => (string)$tr['status']->AWBInfo->ShipmentInfo->DestinationServiceArea->Description,
-                  'EVENTS' => $tr['events']
-                ));
+            $tracking_number = ($tracking_number_from_synchrotron) ? $tracking_number_from_synchrotron : $tracking_number_to_synchrotron;
 
+            if (!$tracking_number) $this->_error('Can\'t find tracking number for DewarId='.$this->arg('DEWARID'));
+
+            $delivery_agent = $dewar['DELIVERYAGENT_AGENTNAME'];
+
+            if ($delivery_agent == 'dhl') {
+                $tracking_history = $this->_dhl_dewar_tracking($tracking_number);
+                $this->_output($tracking_history);
             } else {
-                $this->_output();
+                $this->_error('Can\'t get tracking history for this delivery agent: '.$delivery_agent.PHP_EOL.'Tracking is only currently supported for DHL');
             }
         }
 
-        function _dewar_tracking($dewar) {
-            if ($dewar['TRACKINGNUMBERFROMSYNCHROTRON']) $status = $this->dhl->get_tracking_info(array('AWB' => $dewar['TRACKINGNUMBERFROMSYNCHROTRON']));
-            else $status = $this->dhl->get_tracking_info(array('AWB' => (string)($dewar['TRACKINGNUMBERTOSYNCHROTRON'])));
+        function _dhl_dewar_tracking($tracking_number) {
+            $parsed_tracking_numbers = array();
+            $lpnumber_matched = preg_match('/J?(JD\d+)/', $tracking_number, $parsed_tracking_numbers);
+            $awb_matched = ($lpnumber_matched) ? false :preg_match('/(\d{10})/', $tracking_number, $parsed_tracking_numbers);
 
-            if ($status->Response->Status) $this->_error($status->Response->Status);
-            else {
-                if ($status->AWBInfo->Status->ActionStatus != 'success') $this->_error((string)$status->AWBInfo->Status->ActionStatus);
-                else {
-                    $events = array();
-                    // print_r($status->AWBInfo->ShipmentInfo);
-                    $i = 1;
-                    foreach ($status->AWBInfo->ShipmentInfo->ShipmentEvent as $e) {
-                        $st = (string)$e->ServiceEvent->EventCode;
-                        $event = array(
-                            'EVENTID' => $i++,
-                            'STISO' => (string)$e->Date.'T'.(string)$e->Time,
-                            'DATE' => (string)$e->Date.' '.(string)$e->Time,
-                            'EVENT' => (string)$e->ServiceEvent->EventCode,
-                            'STATE' => $this->dhl->tracking_status($st),
-                            'LOCATION' => (string)$e->ServiceArea->Description,
-                            'SIGNATORY' => (string)$e->Signatory
-                        );
-
-                        array_push($events, $event);
-                    }
-
-                    return array('status' => $status, 'events' => $events);
-                }
+            if (!$awb_matched && !$lpnumber_matched) {
+                $this->_error('Tracking number \''.$tracking_number.'\' doesn\'t satisfy DHL requirements');
             }
+
+            $tracking_number = $parsed_tracking_numbers[1];
+
+            if ($lpnumber_matched) {
+                $status = $this->dhl->get_tracking_info(array('LPNumber' => $tracking_number));
+            } else if ($awb_matched) {
+                $status = $this->dhl->get_tracking_info(array('AWB' => $tracking_number));
+            }
+
+            if ($status->Response->Status) {
+                $this->_error($status->Response->Status);
+            }
+            if ($status->AWBInfo->Status->ActionStatus != 'success') {
+                $this->_error('Bad DHL action status: '.(string)$status->AWBInfo->Status->ActionStatus);
+            }
+
+            $events = array();
+            $i = 1;
+            foreach ($status->AWBInfo->ShipmentInfo->ShipmentEvent as $event) {
+                $event_code = (string)$event->ServiceEvent->EventCode;
+                $event_date = (string)$event->Date;
+                $event_time = (string)$event->Time;
+                $event = array(
+                    'EVENTID' => $i++,
+                    'STISO' => (string)$event_date.'T'.$event_time,
+                    'DATE' => (string)$event_date.' '.$event_time,
+                    'EVENT' => $event_code,
+                    'STATE' => $this->dhl->tracking_status($event_code),
+                    'LOCATION' => (string)$event->ServiceArea->Description,
+                    'SIGNATORY' => (string)$event->Signatory
+                );
+                array_push($events, $event);
+            }
+
+            return array(
+                'ORIGIN' => (string)$status->AWBInfo->ShipmentInfo->OriginServiceArea->Description,
+                'DESTINATION' => (string)$status->AWBInfo->ShipmentInfo->DestinationServiceArea->Description,
+                'EVENTS' => $events
+            );
         }
 
         
