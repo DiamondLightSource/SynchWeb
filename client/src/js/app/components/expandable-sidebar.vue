@@ -39,7 +39,7 @@
             class="tw-relative tw-bg-table-header-background tw-rounded-md
             tw-ease-in-out tw-transition-all tw-delay-150 tw-duration-300"
             :class="{
-                'filter-height': isOpen,
+                'tw-h-50 ': isOpen,
                 'tw-h-0': !isOpen,
                 }"
             >
@@ -87,34 +87,35 @@
         contentDelay() {
  
             if (!this.loadContent) { 
-            setTimeout(() => this.loadContent = true, 200);
+                this.loadContent = true;
+                // setTimeout(() => this.loadContent = true, 200);
             } else {
-                setTimeout(() => this.loadContent = false, 300);
+                this.loadContent = false;
+                // setTimeout(() => this.loadContent = false, 300);
             }
         }
         },
 
     watch: {
-        // isOpen: {
-        // immediate: true,
-        // handler(isOpen) {
-        //     if (process.client) {
-        //     if (isOpen) document.body.style.setProperty("overflow", "hidden");
-        //     else document.body.style.removeProperty("overflow");
-        //     }
-        // }
+
         }
     };
 
     
 </script>
 
-<style scoped>
+<!-- <style scoped>
 
-    .filter-height {
-    height: 400px;
+    .transform-filter-height {
+        height: 400px;
+        max-height: 600px;
     }
 
-</style>
+    .filter-height {
+    height: 100%;
+    max-height: 600px;
+    }
+
+</style> -->
 
 

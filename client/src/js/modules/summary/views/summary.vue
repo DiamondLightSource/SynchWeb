@@ -68,7 +68,7 @@
                             textField="PROP"
                             valueField="PROP"
                             size="small"
-                            :canCreateNewItem=false
+                            :can-create-new-item="false"
                             v-model="selectedProposal"
                             defaultText=""
                             ></combo-box>
@@ -80,8 +80,9 @@
                     </div>
 
                     
-                    <div class="tw-grid tw-grid-rows-2 tw-grid-flow-col tw-gap-2">
-                        <div v-for="options in groupedOptions" :key=options.id class="tw-grid tw-grid-cols-3 tw-grid-flow-col tw-gap-2">
+                    <div class="tw-grid tw-grid-cols-4 tw-grid-flow-col tw-gap-2">
+                        
+                        <div v-for="options in groupedOptions" :key=options.id class="tw-grid tw-grid-rows-5 tw-grid-flow-col tw-gap-2">
 
                             <custom-accordian class="tw-pt-6 tw-pb-6" v-for="value in options" :key="value.id">
                             <template v-slot:title>
@@ -123,9 +124,9 @@
                                     :textField="value.textField"
                                     :valueField="value.valueField"
                                     size="small"
-                                    :canCreateNewItem=true
+                                    @create-new-option="addSGCombo"
                                     v-model="value.selectedValue"
-                                    defaultText=""
+                                    :defaultText="value.selectedValue"
                                     ></combo-box>
                                     <p class="tw-italic tw-ml-2">Search for your <br>{{ value.title }}</p>
                                 </div>
@@ -300,7 +301,8 @@
                     <td></td>
                     <td v-for="(value, index) in summaryColumns" :key="value.id">
                         <div class="tw-flex">
-                            <p v-if="value.checked == true" :class="'tw-w-1/' + selectedColumns.length + ' tw-text-center tw-pt-5 tw-pb-5 tw-pl-12 tw-pr-2'">{{ value.title }}</p>
+                            <p v-if="value.checked == true" 
+                            :class="'tw-w-1/' + selectedColumns.length + ' tw-text-center tw-pt-5 tw-pb-5 tw-pl-12 tw-pr-2'">{{ value.title }}</p>
                             <button
                             v-on:click="toggleOrderBy(index)"
                             class="tw-bg-transparent tw-z-20 tw-mb-2 tw-mr-2"
@@ -368,7 +370,6 @@
                                 title="Download MTZ file"><i class="fa fa-download"></i></a>
                         </p>
                     </td>
-                    <!-- <td v-for="(value, valueIndex) in summaryColumns" :key="value.id"> -->
                     <td v-for="(value) in summaryColumns" :key="value.id">
                         <p v-if="value.checked == true && value.expandable == false && value.isbutton == false" class="tw-p-2 tw-text-center">{{ result[value.key] }}</p>
                         <p v-if="value.checked == true && value.expandable == false && value.isbutton == true" class="tw-p-2 tw-text-center">
@@ -486,7 +487,7 @@ export default {
                     expandable: false,
                 },
                 {
-                    key: "NAME",
+                    key: "_NAME",
                     title: 'Sample Name',
                     checked: true,
                     isDesc : false,
@@ -497,8 +498,8 @@ export default {
                     expandable: false,
                 },
                 {
-                    key: "STARTDATE",
-                    title: 'Start Date',
+                    key: "STARTTIME",
+                    title: 'Start Time',
                     checked: true,
                     isDesc : false,
                     orderByCount: 2,
@@ -508,37 +509,16 @@ export default {
                     expandable: false,
                 },
                 {
-                    key: "ENDDATE",
-                    title: 'End Date',
-                    checked: true,
-                    isDesc : false,
-                    orderByCount: 2,
-                    descParam : 'descendt',
-                    ascParam : 'ascendt',
-                    isbutton: false,
-                    expandable: false,
-                },
-                {
                     key: "PROCESSINGPROGRAMS",
                     title: 'Processing Programs',
                     checked: true,
                     isDesc : false,
                     orderByCount: 2,
-                    descParam : 'descendt',
-                    ascParam : 'ascendt',
+                    // needing changed
+                    descParam : 'descpp',
+                    ascParam : 'ascpp',
                     isbutton: true,
                     expandable: false,
-                },
-                {
-                    key: "SCALINGSTATISTICSTYPE",
-                    title: 'Shell',
-                    checked: true,
-                    isDesc : false,
-                    orderByCount: 2,
-                    descParam : 'descendt',
-                    ascParam : 'ascendt',
-                    isbutton: false,
-                    expandable: true,
                 },
                 {
                     key: "SPACEGROUP",
@@ -617,62 +597,172 @@ export default {
                     isbutton: false,
                     expandable: true,
                 },
+                // ----------------------------------------------------
                 {
-                    key: "RMEASWITHINIPLUSIMINUS",
-                    title: 'RMeas',
+                    key: "RMEASWITHINIPLUSIMINUS_INNER",
+                    title: 'RMeas (Inner)',
                     checked: true,
                     isDesc : false,
                     orderByCount: 2,
-                    descParam : 'descrmeas',
-                    ascParam : 'ascrmeas',
+                    descParam : 'descrmeasin',
+                    ascParam : 'ascrmeasin',
                     isbutton: false,
                     expandable: true,
                 },
                 {
-                    key: "RESOLUTIONLIMITHIGH",
-                    title: 'Resolution Limit (High)',
+                    key: "RMEASWITHINIPLUSIMINUS_OUTER",
+                    title: 'RMeas (Outer)',
                     checked: true,
                     isDesc : false,
                     orderByCount: 2,
-                    descParam : 'descrlh',
-                    ascParam : 'ascrlh',
+                    descParam : 'descrmeasou',
+                    ascParam : 'ascrmeasou',
                     isbutton: false,
                     expandable: true,
                 },
                 {
-                    key: "CCANOMALOUS",
-                    title: 'cc Anomalous',
+                    key: "RMEASWITHINIPLUSIMINUS_OVERALL",
+                    title: 'RMeas (Overall)',
                     checked: true,
                     isDesc : false,
                     orderByCount: 2,
-                    descParam : 'desccca',
-                    ascParam : 'asccca',
+                    descParam : 'descrmeasov',
+                    ascParam : 'ascrmeasov',
                     isbutton: false,
                     expandable: true,
                 },
                 {
-                    key: "RFREEVALUESTART",
-                    title: 'R Free Initial',
+                    key: "RESOLUTIONLIMITHIGH_INNER",
+                    title: 'Resolution Limit High (Inner)',
                     checked: true,
                     isDesc : false,
                     orderByCount: 2,
-                    descParam : 'descrfs',
-                    ascParam : 'ascrfs',
+                    descParam : 'descrlhin',
+                    ascParam : 'ascrlhin',
                     isbutton: false,
                     expandable: true,
                 },
                 {
-                    key: "RFREEVALUEEND",
-                    title: 'R Free Final',
+                    key: "RESOLUTIONLIMITHIGH_OUTER",
+                    title: 'Resolution Limit High (Outer)',
                     checked: true,
                     isDesc : false,
                     orderByCount: 2,
-                    descParam : 'descrfe',
-                    ascParam : 'ascrfe',
+                    descParam : 'descrlhou',
+                    ascParam : 'ascrlhou',
                     isbutton: false,
                     expandable: true,
                 },
-
+                {
+                    key: "RESOLUTIONLIMITHIGH_OVERALL",
+                    title: 'Resolution Limit High (Overall)',
+                    checked: true,
+                    isDesc : false,
+                    orderByCount: 2,
+                    descParam : 'descrlhov',
+                    ascParam : 'ascrlhov',
+                    isbutton: false,
+                    expandable: true,
+                },
+                {
+                    key: "CCANOMALOUS_INNER",
+                    title: 'CC Anomalous (Inner)',
+                    checked: true,
+                    isDesc : false,
+                    orderByCount: 2,
+                    descParam : 'descccain',
+                    ascParam : 'ascccain',
+                    isbutton: false,
+                    expandable: true,
+                },
+                {
+                    key: "CCANOMALOUS_OUTER",
+                    title: 'CC Anomalous (Outer)',
+                    checked: true,
+                    isDesc : false,
+                    orderByCount: 2,
+                    descParam : 'descccaou',
+                    ascParam : 'ascccaou',
+                    isbutton: false,
+                    expandable: true,
+                },
+                {
+                    key: "CCANOMALOUS_OVERALL",
+                    title: 'CC Anomalous (Overall)',
+                    checked: true,
+                    isDesc : false,
+                    orderByCount: 2,
+                    descParam : 'descccaov',
+                    ascParam : 'ascccaov',
+                    isbutton: false,
+                    expandable: true,
+                },
+                {
+                    key: "RFREEVALUESTART_INNER",
+                    title: 'R Free Initial (Inner)',
+                    checked: true,
+                    isDesc : false,
+                    orderByCount: 2,
+                    descParam : 'descrfsin',
+                    ascParam : 'ascrfsin',
+                    isbutton: false,
+                    expandable: true,
+                },
+                {
+                    key: "RFREEVALUESTART_OUTER",
+                    title: 'R Free Initial (Outer)',
+                    checked: true,
+                    isDesc : false,
+                    orderByCount: 2,
+                    descParam : 'descrfsou',
+                    ascParam : 'ascrfsou',
+                    isbutton: false,
+                    expandable: true,
+                },
+                {
+                    key: "RFREEVALUESTART_OVERALL",
+                    title: 'R Free Initial (Overall)',
+                    checked: true,
+                    isDesc : false,
+                    orderByCount: 2,
+                    descParam : 'descrfsov',
+                    ascParam : 'ascrfsov',
+                    isbutton: false,
+                    expandable: true,
+                },
+                {
+                    key: "RFREEVALUEEND_INNER",
+                    title: 'R Free Final  (Inner)',
+                    checked: true,
+                    isDesc : false,
+                    orderByCount: 2,
+                    descParam : 'descrfein',
+                    ascParam : 'ascrfein',
+                    isbutton: false,
+                    expandable: true,
+                },
+                {
+                    key: "RFREEVALUEEND_OUTER",
+                    title: 'R Free Final (Outer)',
+                    checked: true,
+                    isDesc : false,
+                    orderByCount: 2,
+                    descParam : 'descrfeou',
+                    ascParam : 'ascrfeou',
+                    isbutton: false,
+                    expandable: true,
+                },
+                {
+                    key: "RFREEVALUEEND_OVERALL",
+                    title: 'R Free Final (Overall)',
+                    checked: true,
+                    isDesc : false,
+                    orderByCount: 2,
+                    descParam : 'descrfeov',
+                    ascParam : 'ascrfeov',
+                    isbutton: false,
+                    expandable: true,
+                },
             ],
             filterOptions: {
                 SPACEGROUP : {
@@ -683,37 +773,100 @@ export default {
                     valueField: "SPACEGROUPNAME",
                     data: []
                 },
-                RESLIMITHIGH : {
-                    title: 'Resolution Limit (High)',
+                RESLIMITHIGH_OUTER : {
+                    title: 'Resolution Limit High (Outer)',
                     inputtype: 'greater-than-less-than',
                     filteredLt: '',
-                    filteredGt: ''
+                    filteredGt: '',
                 },
-                RMEASWIPLUSIMINUS : {
-                    title: 'Rmeas',
+                RMEASWIPLUSIMINUS_OUTER : {
+                    title: 'Rmeas (Outer)',
                     inputtype: 'greater-than-less-than',
                     filteredLt: '',
-                    filteredGt: ''
+                    filteredGt: '',
                 },
-                CCANOM : {
-                    title: 'CC Anomalous',
+                CCANOM_OUTER : {
+                    title: 'CC Anomalous (Outer)',
                     inputtype: 'greater-than-less-than',
                     filteredLt: '',
-                    filteredGt: ''
+                    filteredGt: '',
                 },
-                RFREEINITIAL : {
-                    title: 'RFree Initial',
+                RFREEINITIAL_OUTER : {
+                    title: 'RFree Initial (Outer)',
                     inputtype: 'greater-than-less-than',
                     filteredLt: '',
-                    filteredGt: ''
+                    filteredGt: '',
                 },
-                RFREEFINAL : {
-                    title: 'RFree Final',
+                RFREEFINAL_OUTER : {
+                    title: 'RFree Final (Outer)',
                     inputtype: 'greater-than-less-than',
                     filteredLt: '',
-                    filteredGt: ''
+                    filteredGt: '',
+                },
+                // ----------------------------
+                RESLIMITHIGH_INNER : {
+                    title: 'Resolution Limit High (Inner)',
+                    inputtype: 'greater-than-less-than',
+                    filteredLt: '',
+                    filteredGt: '',
+                },
+                RMEASWIPLUSIMINUS_INNER : {
+                    title: 'Rmeas (Inner)',
+                    inputtype: 'greater-than-less-than',
+                    filteredLt: '',
+                    filteredGt: '',
+                },
+                CCANOM_INNER : {
+                    title: 'CC Anomalous (Inner)',
+                    inputtype: 'greater-than-less-than',
+                    filteredLt: '',
+                    filteredGt: '',
+                },
+                RFREEINITIAL_INNER : {
+                    title: 'RFree Initial (Inner)',
+                    inputtype: 'greater-than-less-than',
+                    filteredLt: '',
+                    filteredGt: '',
+                },
+                RFREEFINAL_INNER : {
+                    title: 'RFree Final (Inner)',
+                    inputtype: 'greater-than-less-than',
+                    filteredLt: '',
+                    filteredGt: '',
+                },
+                // ----------------------------
+                RESLIMITHIGH_OVERALL : {
+                    title: 'Resolution Limit High (Overall)',
+                    inputtype: 'greater-than-less-than',
+                    filteredLt: '',
+                    filteredGt: '',
+                },
+                RMEASWIPLUSIMINUS_OVERALL : {
+                    title: 'Rmeas (Overall)',
+                    inputtype: 'greater-than-less-than',
+                    filteredLt: '',
+                    filteredGt: '',
+                },
+                CCANOM_OVERALL : {
+                    title: 'CC Anomalous (Overall)',
+                    inputtype: 'greater-than-less-than',
+                    filteredLt: '',
+                    filteredGt: '',
+                },
+                RFREEINITIAL_OVERALL : {
+                    title: 'RFree Initial (Overall)',
+                    inputtype: 'greater-than-less-than',
+                    filteredLt: '',
+                    filteredGt: '',
+                },
+                RFREEFINAL_OVERALL : {
+                    title: 'RFree Final (Overall)',
+                    inputtype: 'greater-than-less-than',
+                    filteredLt: '',
+                    filteredGt: '',
                 },
             },
+            inputChanged : '',
             selectedProposal : '',
             searchedGtUnitCellA : '',
             searchedLtUnitCellA : '',
@@ -754,6 +907,7 @@ export default {
             this.getQueryParams(false);
 
             const results = await this.$store.dispatch('getCollection', this.summaryCollection);
+
             this.summaryData = results.toJSON();
 
             this.isLoading = false;
@@ -805,6 +959,8 @@ export default {
         },
         async handlePageChange(data) {
 
+            this.isLoading = true;
+
             this.currentPage = data.currentPage;
             this.pageSize = data.pageSize;
             if (this.selectedProposal){
@@ -813,7 +969,11 @@ export default {
 
                 const results = await this.$store.dispatch('getCollection', this.summaryCollection);
                 this.summaryData = results.toJSON();
+
             };
+
+
+            this.isLoading = false;
 
         },
         async downloadFile() {
@@ -858,64 +1018,64 @@ export default {
             }
             
 
-            if (this.searchedPrefix) {
-                this.summaryCollection.queryParams.sprefix = this.searchedPrefix;
-            }
+            // if (this.searchedPrefix) {
+            //     this.summaryCollection.queryParams.sprefix = this.searchedPrefix;
+            // }
             if (this.selectedProposal) {
                 this.summaryCollection.queryParams.prop = this.selectedProposal;
             }
-            if (this.selectedSpaceGroup) {
-                this.summaryCollection.queryParams.sg = this.filterOptions.SPACEGROUP.selectedValue;
-            }
-            if (this.searchedGtUnitCellA) {
-                this.summaryCollection.queryParams.gca = this.searchedGtUnitCellA;
-            }
-            if (this.searchedLtUnitCellA) {
-                this.summaryCollection.queryParams.lca = this.searchedLtUnitCellA;
-            }
-            if (this.searchedGtUnitCellB) {
-                this.summaryCollection.queryParams.gcb = this.searchedGtUnitCellB;
-            }
-            if (this.searchedLtUnitCellB) {
-                this.summaryCollection.queryParams.lcb = this.searchedLtUnitCellB;
-            }
-            if (this.searchedGtUnitCellC) {
-                this.summaryCollection.queryParams.gc = this.searchedGtUnitCellC;
-            }
-            if (this.searchedLtUnitCellC) {
-                this.summaryCollection.queryParams.lc = this.searchedLtUnitCellC;
-            }
-            if (this.filterOptions.RESLIMITHIGH.filteredGt) {
-                this.summaryCollection.queryParams.grlh = this.filterOptions.RESLIMITHIGH.filteredGt;
-            }
+            // if (this.searchedGtUnitCellA) {
+            //     this.summaryCollection.queryParams.gca = this.searchedGtUnitCellA;
+            // }
+            // if (this.searchedLtUnitCellA) {
+            //     this.summaryCollection.queryParams.lca = this.searchedLtUnitCellA;
+            // }
+            // if (this.searchedGtUnitCellB) {
+            //     this.summaryCollection.queryParams.gcb = this.searchedGtUnitCellB;
+            // }
+            // if (this.searchedLtUnitCellB) {
+            //     this.summaryCollection.queryParams.lcb = this.searchedLtUnitCellB;
+            // }
+            // if (this.searchedGtUnitCellC) {
+            //     this.summaryCollection.queryParams.gc = this.searchedGtUnitCellC;
+            // }
+            // if (this.searchedLtUnitCellC) {
+            //     this.summaryCollection.queryParams.lc = this.searchedLtUnitCellC;
+            // }
+            // if (this.filterOptions.SPACEGROUP.selectedValue) {
+            //     this.summaryCollection.queryParams.sg = this.filterOptions.SPACEGROUP.selectedValue;
+            // }
+            // if (this.filterOptions.RESLIMITHIGH.filteredGt) {
+            //     this.summaryCollection.queryParams.grlh = this.filterOptions.RESLIMITHIGH.filteredGt;
+            // }
 
-            if (this.filterOptions.RESLIMITHIGH.filteredLt) {
-                this.summaryCollection.queryParams.lrlh = this.filterOptions.RESLIMITHIGH.filteredLt;
-            }
-            if (this.filterOptions.RMEASWIPLUSIMINUS.filteredGt) {
-                this.summaryCollection.queryParams.grm = this.filterOptions.RMEASWIPLUSIMINUS.filteredGt;
-            }
-            if (this.filterOptions.RMEASWIPLUSIMINUS.filteredLt) {
-                this.summaryCollection.queryParams.lrm = this.filterOptions.RMEASWIPLUSIMINUS.filteredLt;
-            }
-            if (this.filterOptions.CCANOM.filteredGt) {
-                this.summaryCollection.queryParams.gcc = this.filterOptions.CCANOM.filteredGt;
-            }
-            if (this.filterOptions.CCANOM.filteredLt) {
-                this.summaryCollection.queryParams.lcc = this.filterOptions.CCANOM.filteredLt;
-            }
-            if (this.filterOptions.RFREEFINAL.filteredGt) {  
-                this.summaryCollection.queryParams.grff = this.filterOptions.RFREEFINAL.filteredGt;
-            }  
-            if (this.filterOptions.RFREEFINAL.filteredLt) {
-                this.summaryCollection.queryParams.lrff = this.filterOptions.RFREEFINAL.filteredLt;
-            }
-            if (this.filterOptions.RFREEINITIAL.filteredGt) {
-                this.summaryCollection.queryParams.grfi = this.filterOptions.RFREEINITIAL.filteredGt;
-            }
-            if (this.filterOptions.RFREEINITIAL.filteredLt) {
-                this.summaryCollection.queryParams.lrfi = this.filterOptions.RFREEINITIAL.filteredLt;
-            }
+            // if (this.filterOptions.RESLIMITHIGH.filteredLt) {
+            //     this.summaryCollection.queryParams.lrlh = this.filterOptions.RESLIMITHIGH.filteredLt;
+            // }
+            // if (this.filterOptions.RMEASWIPLUSIMINUS.filteredGt) {
+            //     this.summaryCollection.queryParams.grm = this.filterOptions.RMEASWIPLUSIMINUS.filteredGt;
+            // }
+            // if (this.filterOptions.RMEASWIPLUSIMINUS.filteredLt) {
+            //     this.summaryCollection.queryParams.lrm = this.filterOptions.RMEASWIPLUSIMINUS.filteredLt;
+            // }
+            // if (this.filterOptions.CCANOM.filteredGt) {
+            //     this.summaryCollection.queryParams.gcc = this.filterOptions.CCANOM.filteredGt;
+            // }
+            // if (this.filterOptions.CCANOM.filteredLt) {
+            //     this.summaryCollection.queryParams.lcc = this.filterOptions.CCANOM.filteredLt;
+            // }
+            // if (this.filterOptions.RFREEFINAL.filteredGt) {  
+            //     this.summaryCollection.queryParams.grff = this.filterOptions.RFREEFINAL.filteredGt;
+            // }  
+            // if (this.filterOptions.RFREEFINAL.filteredLt) {
+            //     this.summaryCollection.queryParams.lrff = this.filterOptions.RFREEFINAL.filteredLt;
+            // }
+            // if (this.filterOptions.RFREEINITIAL.filteredGt) {
+            //     this.summaryCollection.queryParams.grfi = this.filterOptions.RFREEINITIAL.filteredGt;
+            // }
+            // if (this.filterOptions.RFREEINITIAL.filteredLt) {
+            //     this.summaryCollection.queryParams.lrfi = this.filterOptions.RFREEINITIAL.filteredLt;
+            // }
 
  
         },
@@ -1004,13 +1164,17 @@ export default {
             else {
                 return [];
             }
-
+        },
+        addSGCombo(value) {
+            console.log('hello space group!', value)
+            this.filterOptions.SPACEGROUP.selectedValue = value;
         }
+
 
     },
     computed:{
         groupedOptions() {
-            const chunksize = 3;
+            const chunksize = 5;
 
             const obj = this.filterOptions
             

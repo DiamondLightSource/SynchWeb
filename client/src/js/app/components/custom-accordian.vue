@@ -1,5 +1,5 @@
 <template>
-    <div class="tw-border-l tw-flex">
+    <div class="tw-border-l tw-pl-1">
       <slot name="title" />
       <button
         @click="toggleAccordion()"
@@ -20,7 +20,7 @@
           aria-hidden="true"
         >
           <path
-            d="m12.14 8.753-5.482 4.796c-.646.566-1.658.106-1.658-.753V3.204a1 1 0 0 1 1.659-.753l5.48 4.796a1 1 0 0 1 0 1.506z"
+            d="M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z"
             stroke-width="2"
             stroke-linecap="round"
             stroke-linejoin="round"
@@ -33,8 +33,8 @@
           class="tw-relative
           tw-ease-in-out tw-transition-all tw-delay-150 tw-duration-300"
           :class="{
-            'tw-w-full': isOpen,
-            'tw-w-0': !isOpen,
+            'tw-h-10': isOpen,
+            'tw-h-0': !isOpen,
           }"
           >
         <div v-show="loadContent">
@@ -43,10 +43,7 @@
 
       </div>
 
-<!--   
-      <div v-show="isOpen" :id="`collapse${_uid}`">
-        <slot name="content" />
-      </div> -->
+
     </div>
   </template>
   
@@ -77,4 +74,6 @@
     },
   };
   </script>
+
+  
 
