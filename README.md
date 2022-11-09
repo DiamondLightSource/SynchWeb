@@ -5,21 +5,28 @@ The client includes some newer components written in Vue.js
 Read More: https://diamondlightsource.github.io/SynchWeb/
 
 ## Installation
-Running SynchWeb requires setting up a Linux, Apache, MariaDB and PHP (LAMP) software stack. If running in production you should configure your Apache and PHP to serve secure pages only. The steps below describe how to build the software so it is ready to deploy onto your target server.
+Running SynchWeb requires setting up a Linux, Apache, MariaDB and PHP (LAMP) software stack. If running in production you should configure your Apache and PHP to serve secure pages only. The steps below describe how to build the software so it is ready to deploy onto your target server. 
+The [podman](./podman) folder provides support for creating a containerised 
+production deployment. Full instructions [here](./podman/README.md).
 
-For development, a simple environment can be setup by using scripts provided [here](https://github.com/DiamondLightSource/synchweb-devel-env). They are not intended for production use but include scripts to automatically build and deploy the software on a local VM.
+For development, a simple environment can be setup by using scripts provided [here](https://github.com/DiamondLightSource/synchweb-devel-env). They are not intended for production use but include scripts to automatically build and deploy the software on a local VM or in a Podman container.
 
 ### Requirements
-To build SynchWeb on a machine you will need [npm](https://docs.npmjs.com/) and [composer](https://getcomposer.org/)
+If not using the Podman containter, to build SynchWeb on a machine you will need the following on the build machine:
 
-You will also need php5 on the build machine.
+- [npm](https://docs.npmjs.com/) 
+- [composer](https://getcomposer.org/)
+- php5
 
-If not using the development VMs you will also need an instance of the ISPyB database [here](https://github.com/DiamondLightSource/ispyb-database)
+If not using the development VMs you will also need an instance of the
+ISPyB database - available
+[here](https://github.com/DiamondLightSource/ispyb-database).
 
 ### Check out the code
 ```sh
 $ git clone https://github.com/DiamondLightSource/SynchWeb
 ```
+
 ### Customise front end - config.json
 An example configuration is provided in client/src/js/config_sample.json
 This file should be copied to create a client/src/js/config.json file and edited to customise the application for your site.
@@ -62,9 +69,12 @@ $ cd SynchWeb/api
 $ composer install
 ```
 
+Note, the front and backend are built automatically in the Podman deployment.
+
 ### Developing the client application
 It is possible to run the client code on a local machine and connect to an existing SynchWeb installation on a server.
-The steps required are to build the front end code and then run a webpack dev server to host the client code.
+The steps required are to build the front end code and then run a webpack dev server to host the client code.  Note, this is possible for both the
+Podman and VM approach detailed [here](https://github.com/DiamondLightSource/synchweb-devel-env).
 ```sh
 $ cd SynchWeb/client
 $ npm run build:dev
@@ -78,7 +88,7 @@ The command line options available are described in this table. These override t
 | ------ | ------ |
 | env.port | Webpack dev server port |
 | env.proxy.target | Full address of the SynchWeb PHP backend server (can include port if required) |
-| env.proxy.secure | Flag to set if connecting to an https address for the SynchWeb backend |
+| env.proxy.secure | Flag to set if connecting to an https address for the SynchWeb backend.  Setting to `false` can also help with self-signed SSL certs (which may be insecure so should not be used in production). |
 
 
 Acknowledgements
@@ -86,6 +96,3 @@ Acknowledgements
 If you make use of code from this repository, please reference:
 Fisher et al., J. Appl. Cryst. (2015). 48, 927-932, doi:10.1107/S1600576715004847
 https://journals.iucr.org/j/issues/2015/03/00/fs5101/index.html
-
-
-

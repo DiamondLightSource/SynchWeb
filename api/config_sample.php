@@ -14,17 +14,14 @@
     $isb  = array('user' => 'user', 'pass' => 'pass', 'db' => 'localhost/ispyb');
     $dbtype = 'mysql';
 
-
     # Encoded JWT key, used to sign and check validaty of jwt tokens
     # - Create one of these using /api/authenticate/key
     #   This can be changed to invalidate all currently active tokens
     $jwt_key = '';
 
-
     # Auth type
     # Can be cas, ldap
     $authentication_type = 'cas';
-
 
     # CAS url (if using cas, assume https)
     $cas_url = 'cas.server.ac.uk';
@@ -34,7 +31,6 @@
 
     # CAS CA Cert (for SSO)
     $cacert = '/etc/certs/ca-bundle.crt';
-
 
     # ldap server, used for lookup and authentication (if using)
     # Update the ldap(s) prefix, hostname and search settings as required
@@ -136,7 +132,7 @@
     # - The feedback form uses this address
     $email_admin = 'webmaster@server.ac.uk';
 
-    # Recepients for dewar Dispatch / Transfers Emails when users request dispatch or tranfser from the shipping page
+    # Recipients for dewar Dispatch / Transfers Emails when users request dispatch or tranfser from the shipping page
     $dispatch_email = 'ehc@server.ac.uk, goods@server.ac.uk';
     $transfer_email = 'ehc@server.ac.uk';
 
