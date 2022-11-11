@@ -4,6 +4,7 @@ namespace SynchWeb\Shipment\Courier;
 
 use DHL\Client\Web as WebserviceClient;
 use DHL\Datatype\AM\PieceType;
+use DHL\Datatype\AM\Reference;
 use DHL\Datatype\GB\Piece;
 use DHL\Entity\AM\GetQuote;
 use DHL\Entity\GB\BookPURequest;
@@ -162,6 +163,8 @@ class DHL
         $shipment->Consignee->Contact->PhoneNumber = $options['receiver']['phone'];
         $shipment->Consignee->Contact->Email = $options['receiver']['email'];
 
+        $shipment->Reference->ReferenceID = $options['shipperid'];
+
         $shipment->ShipmentDetails->NumberOfPieces = sizeof($options['pieces']);
         $shipment->ShipmentDetails->WeightUnit = 'K';
         $shipment->ShipmentDetails->GlobalProductCode = $options['service'];
@@ -190,7 +193,7 @@ class DHL
 
         $shipment->ShipmentDetails->Weight = $weight;
 
-        $shipment->Shipper->ShipperID = (string)rand(10000000, 9999999);
+        $shipment->Shipper->ShipperID = $options['shipperid'];
         $shipment->Shipper->CompanyName = $options['sender']['company'];
         foreach (split("\n", $options['sender']['address']) as $l) {
             if ($l) $shipment->Shipper->addAddressLine($l);
