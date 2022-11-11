@@ -25,7 +25,7 @@
     "stomp-php/stomp-php": "3.0.6",
     "symfony/http-foundation": "^2.8",
     "symfony/filesystem": "^2.8",
-    "mtcmedia/dhl-api": "dev-master#472ed023"
+    "mtcmedia/dhl-api": "dev-master#9b4b6315"
   },
   "autoload": {
     "psr-4": {
