@@ -129,16 +129,16 @@ class PDF extends Page
             else $ship = $ship[0];
             
             $addr = array($ship['ADDRESS']);
-            if ($ship['CITY']) array_push($addr, $ship['CITY']."\n");
-            if ($ship['POSTCODE']) array_push($addr, $ship['POSTCODE']."\n");
-            if ($ship['COUNTRY']) array_push($addr, $ship['COUNTRY']."\n");
-            $ship['ADDRESS'] = str_replace("\n", '<br/>',  implode('', $addr));
+            if ($ship['CITY']) array_push($addr, PHP_EOL.$ship['CITY']);
+            if ($ship['POSTCODE']) array_push($addr, PHP_EOL.$ship['POSTCODE']);
+            if ($ship['COUNTRY']) array_push($addr, PHP_EOL.$ship['COUNTRY'].PHP_EOL);
+            $ship['ADDRESS'] = str_replace(PHP_EOL, '<br/>',  implode('', $addr));
 
             $addr = array($ship['ADDRESS2']);
-            if ($ship['CITY2']) array_push($addr, $ship['CITY2']."\n");
-            if ($ship['POSTCODE2']) array_push($addr, $ship['POSTCODE2']."\n");
-            if ($ship['COUNTRY2']) array_push($addr, $ship['COUNTRY2']."\n");
-            $ship['ADDRESS2'] = str_replace("\n", '<br/>',  implode('', $addr));
+            if ($ship['CITY2']) array_push($addr, PHP_EOL.$ship['CITY2']);
+            if ($ship['POSTCODE2']) array_push($addr, PHP_EOL.$ship['POSTCODE2']);
+            if ($ship['COUNTRY2']) array_push($addr, PHP_EOL.$ship['COUNTRY2'].PHP_EOL);
+            $ship['ADDRESS2'] = str_replace(PHP_EOL, '<br/>',  implode('', $addr));
             
             global $facility_fao, $facility_company, $facility_address, $facility_city, $facility_postcode, $facility_country, $facility_phone;
             $addr = array($facility_fao, $facility_company, str_replace("\n", '<br />', $facility_address), $facility_city, $facility_postcode, $facility_country, $facility_phone);
