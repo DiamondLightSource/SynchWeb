@@ -152,9 +152,9 @@ class DHL
         $shipment->Consignee->CompanyName = $options['receiver']['company'];
 
         $reciever_address_lines = explode(PHP_EOL, $options['receiver']['address']);
-        if ($reciever_address_lines[0]) $shipment->Consignee->addAddressLine1($reciever_address_lines[0]);
-        if ($reciever_address_lines[1]) $shipment->Consignee->addAddressLine2($reciever_address_lines[1]);
-        if ($reciever_address_lines[2]) $shipment->Consignee->addAddressLine3($reciever_address_lines[2]);
+        if (isset($reciever_address_lines[0])) $shipment->Consignee->addAddressLine1($reciever_address_lines[0]);
+        if (isset($reciever_address_lines[1])) $shipment->Consignee->addAddressLine2($reciever_address_lines[1]);
+        if (isset($reciever_address_lines[2])) $shipment->Consignee->addAddressLine3($reciever_address_lines[2]);
 
         $shipment->Consignee->City = $options['receiver']['city'];
         $shipment->Consignee->PostalCode = $options['receiver']['postcode'];
@@ -189,9 +189,9 @@ class DHL
         $shipment->Shipper->CompanyName = $options['sender']['company'];
 
         $shipper_address_lines = explode(PHP_EOL, $options['sender']['address']);
-        if ($shipper_address_lines[0]) $shipment->Shipper->addAddressLine1($shipper_address_lines[0]);
-        if ($shipper_address_lines[1]) $shipment->Shipper->addAddressLine2($shipper_address_lines[1]);
-        if ($shipper_address_lines[2]) $shipment->Shipper->addAddressLine3($shipper_address_lines[2]);
+        if (isset($shipper_address_lines[0])) $shipment->Shipper->addAddressLine1($shipper_address_lines[0]);
+        if (isset($shipper_address_lines[1])) $shipment->Shipper->addAddressLine2($shipper_address_lines[1]);
+        if (isset($shipper_address_lines[2])) $shipment->Shipper->addAddressLine3($shipper_address_lines[2]);
 
         $shipment->Shipper->City = $options['sender']['city'];
         $shipment->Shipper->PostalCode = $options['sender']['postcode'];
