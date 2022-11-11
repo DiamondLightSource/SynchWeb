@@ -1,5 +1,9 @@
 <template>
-    <div class="tw-border-l tw-pl-1">
+    <div class="tw-pl-2"
+    :class="{
+            'tw-border-table-header-background tw-rounded-lg tw-shadow-xl': isOpen,
+            'tw-h-10 tw-w-8/12 tw-border-table-header-background tw-rounded-lg  tw-shadow-xl': !isOpen,
+          }">
       <slot name="title" />
       <button
         @click="toggleAccordion()"

@@ -6,7 +6,6 @@ use SynchWeb\Page;
 
 class Summary extends Page
 {
-    // localhost:8082/api/summary/proposal?prop=nt488&TITLE=resolutino&page=1&per_page=5
 
     public static $arg_list = array(
         //proposal
@@ -29,6 +28,7 @@ class Summary extends Page
         'frg' => '\d+', // frag
         'mfrg' => '\d+', // max frag
         'db' => '\d+', // num dimple blobs
+        'com' => '\w+', //comment
 
 
         // Filter Parameters - Refined Cell - Greater (g)/Less(l) than
@@ -45,21 +45,21 @@ class Summary extends Page
         'gcga' => '\d+(.\d+)?', // (g)- gamma
         'lcga' => '\d+(.\d+)?', // (l)- gamma
 
-        //Filter Parameters - Greater (g)/Less(l) than
-        'grlh' => '\d+(.\d+)?', // (g) - resolution limit high
-        'lrlh' => '\d+(.\d+)?', // (l) - resolution limit high
-        'grm' => '\d+(.\d+)?', // (g) - rmeas within i plus i minus
-        'lrm' => '\d+(.\d+)?', // (l) - rmeas within i plus i minus
-        'gcc' => '\d+(.\d+)?', // (g) - cc anomalous 
-        'lcc' => '\d+(.\d+)?', // (l) - cc anomalous 
-        'gmcc' => '\d+(.\d+)?', // (g) - best map cc 
-        'lmcc' => '\d+(.\d+)?', // (l) - best map cc 
-        'gresol' => '\d+(.\d+)?', // (g) - resol
-        'lresol' => '\d+(.\d+)?', // (l) - resol
-        'grff' =>  '\d+(.\d+)?', // (g) - r free final 
-        'lrff' =>  '\d+(.\d+)?', // (l) - r free final 
-        'grfi' =>  '\d+(.\d+)?', // (g) - r free initial 
-        'lrfi' =>  '\d+(.\d+)?', // (l) - r free initial
+        // //Filter Parameters - Greater (g)/Less(l) than
+        // 'grlh' => '\d+(.\d+)?', // (g) - resolution limit high
+        // 'lrlh' => '\d+(.\d+)?', // (l) - resolution limit high
+        // 'grm' => '\d+(.\d+)?', // (g) - rmeas within i plus i minus
+        // 'lrm' => '\d+(.\d+)?', // (l) - rmeas within i plus i minus
+        // 'gcc' => '\d+(.\d+)?', // (g) - cc anomalous 
+        // 'lcc' => '\d+(.\d+)?', // (l) - cc anomalous 
+        // 'gmcc' => '\d+(.\d+)?', // (g) - best map cc 
+        // 'lmcc' => '\d+(.\d+)?', // (l) - best map cc 
+        // 'gresol' => '\d+(.\d+)?', // (g) - resol
+        // 'lresol' => '\d+(.\d+)?', // (l) - resol
+        // 'grff' =>  '\d+(.\d+)?', // (g) - r free final 
+        // 'lrff' =>  '\d+(.\d+)?', // (l) - r free final 
+        // 'grfi' =>  '\d+(.\d+)?', // (g) - r free initial 
+        // 'lrfi' =>  '\d+(.\d+)?', // (l) - r free initial
 
         //Filter Parameters (Overall, Outer, Inner) - Greater (g)/Less(l) than
         'grlhou' => '\d+(.\d+)?', // (g) - resolution limit high outer
@@ -126,16 +126,16 @@ class Summary extends Page
         'ascrcb' => '\w+', // asc refined cell b
         'descrcc' => '\w+', // desc  refined cell c
         'ascrcc' => '\w+', // asc refined cell c
-        'descrmeas' => '\w+', // desc rmeas
-        'ascrmeas' => '\w+', // asc rmeas
-        'descrlh' => '\w+', // desc resolution limit high
-        'ascrlh' => '\w+', // asc resolution limit high
-        'desccca' => '\w+', // desc cc anomalous
-        'asccca' => '\w+', // asc cc anomalous
-        'descrfs' => '\w+', // desc rfree value start
-        'ascrfs' => '\w+', // asc rfree value start
-        'descrfe' => '\w+', // desc rfree value end
-        'ascrfe' => '\w+', // asc rfree value end
+        // 'descrmeas' => '\w+', // desc rmeas
+        // 'ascrmeas' => '\w+', // asc rmeas
+        // 'descrlh' => '\w+', // desc resolution limit high
+        // 'ascrlh' => '\w+', // asc resolution limit high
+        // 'desccca' => '\w+', // desc cc anomalous
+        // 'asccca' => '\w+', // asc cc anomalous
+        // 'descrfs' => '\w+', // desc rfree value start
+        // 'ascrfs' => '\w+', // asc rfree value start
+        // 'descrfe' => '\w+', // desc rfree value end
+        // 'ascrfe' => '\w+', // asc rfree value end
 
         //Asc and Desc Outer, Inner, Overall
         'descrmeasou' => '\w+', // desc rmeas
@@ -175,7 +175,6 @@ class Summary extends Page
 
     public static $dispatch = array(
         array('/results', 'get', '_get_results'),
-        array('/proposal', 'get', '_get_proposal'),
         array('/example', 'get', '_get_example'),
     );
 
@@ -258,41 +257,6 @@ class Summary extends Page
         if ($this->has_arg('ascrcc')) {
             array_push($order_arr, 'ap.refinedCell_c ASC');
         }
-        // // rmeas
-        // if ($this->has_arg('descrmeas')) {
-        //     array_push($order_arr, 'apss.rMeasWithinIPlusIMinus DESC');
-        // }
-        // if ($this->has_arg('ascrmeas')) {
-        //     array_push($order_arr, 'apss.rMeasWithinIPlusIMinus ASC');
-        // }
-        // // resolution limit high
-        // if ($this->has_arg('descrlh')) {
-        //     array_push($order_arr, 'apss.resolutionLimitHigh DESC');
-        // }
-        // if ($this->has_arg('ascrlh')) {
-        //     array_push($order_arr, 'apss.resolutionLimitHigh ASC');
-        // }
-        // // cc anomalous
-        // if ($this->has_arg('desccca')) {
-        //     array_push($order_arr, 'apss.ccAnomalous DESC');
-        // }
-        // if ($this->has_arg('asccca')) {
-        //     array_push($order_arr, 'apss.ccAnomalous ASC');
-        // }
-        // // rfree start
-        // if ($this->has_arg('descrfs')) {
-        //     array_push($order_arr, 'm.rFreeValueStart DESC');
-        // }
-        // if ($this->has_arg('ascrfs')) {
-        //     array_push($order_arr, 'm.rFreeValueStart ASC');
-        // }
-        // // rfree end
-        // if ($this->has_arg('descrfe')) {
-        //     array_push($order_arr, 'm.rFreeValueEnd DESC');
-        // }
-        // if ($this->has_arg('ascrfe')) {
-        //     array_push($order_arr, 'm.rFreeValueEnd ASC');
-        // }
 
 
         // ASCENDING and DESCENDING with Outer, Inner, Overall
@@ -411,6 +375,10 @@ class Summary extends Page
             array_push($where_arr, 'dc.dataCollectionId = :'.(sizeof($args)+1));
             array_push($args, $this->arg('dcid'));
         }
+        // if has comment
+        if ($this->has_arg('com')) {
+            array_push($where_arr, "dcc.comments LIKE '%_FLAG_%' ");
+        }
         // space group
         if ($this->has_arg('sg')) {
             array_push($where_arr, 'ap.spaceGroup = :'.(sizeof($args)+1));
@@ -470,51 +438,6 @@ class Summary extends Page
             array_push($where_arr, 'ap.refinedCell_gamma <= :'.(sizeof($args)+1));
             array_push($args, $this->arg('lcga'));
         }
-        // // resolution limit high
-        // if ($this->has_arg('grlh')) {
-        //     array_push($where_arr, 'apss.resolutionLimitHigh >= :'.(sizeof($args)+1));
-        //     array_push($args, $this->arg('grlh'));
-        // }
-        // if ($this->has_arg('lrlh')) {
-        //     array_push($where_arr, 'apss.resolutionLimitHigh <= :'.(sizeof($args)+1));
-        //     array_push($args, $this->arg('lrlh'));
-        // }
-        // // rmeas within i plus i minus
-        // if ($this->has_arg('grm')) {
-        //     array_push($where_arr, 'apss.rMeasWithinIPlusIMinus >= :'.(sizeof($args)+1));
-        //     array_push($args, $this->arg('grm'));
-        // }
-        // if ($this->has_arg('lrm')) {
-        //     array_push($where_arr, 'apss.rMeasWithinIPlusIMinus <= :'.(sizeof($args)+1));
-        //     array_push($args, $this->arg('lrm'));
-        // }
-        // // cc anomalous 
-        // if ($this->has_arg('gcc')) {
-        //     array_push($where_arr, 'apss.ccAnomalous >= :'.(sizeof($args)+1));
-        //     array_push($args, $this->arg('gcc'));
-        // }
-        // if ($this->has_arg('lcc')) {
-        //     array_push($where_arr, 'apss.ccAnomalous <= :'.(sizeof($args)+1));
-        //     array_push($args, $this->arg('lcc'));
-        // }
-        // // r free final
-        // if ($this->has_arg('grff')) {
-        //     array_push($where_arr, 'm.rFreeValueEnd >= :'.(sizeof($args)+1));
-        //     array_push($args, $this->arg('grff'));
-        // }
-        // if ($this->has_arg('lrff')) {
-        //     array_push($where_arr, 'm.rFreeValueEnd <= :'.(sizeof($args)+1));
-        //     array_push($args, $this->arg('lrff'));
-        // }
-        // // r free initial 
-        // if ($this->has_arg('grfi')) {
-        //     array_push($where_arr, 'm.rFreeValueStart >= :'.(sizeof($args)+1));
-        //     array_push($args, $this->arg('grfi'));
-        // }
-        // if ($this->has_arg('lrfi')) {
-        //     array_push($where_arr, 'm.rFreeValueStart <= :'.(sizeof($args)+1));
-        //     array_push($args, $this->arg('lrfi'));
-        // }
 
         // Filter Params Greater/Less than Overall, Outer, Inner
         // resolution limit high outer
@@ -671,7 +594,7 @@ class Summary extends Page
         $tot_args = $args;
 
         $tot = $this->db->pq(
-            "SELECT count(dc.dataCollectionId) as tot 
+            "SELECT COUNT(DISTINCT(dc.dataCollectionId)) as tot 
             FROM DataCollection dc
                 LEFT JOIN AutoProcIntegration api ON api.dataCollectionId = dc.dataCollectionId
                 LEFT JOIN AutoProcProgram app ON app.autoProcProgramId = api.autoProcProgramId
@@ -679,13 +602,14 @@ class Summary extends Page
                 LEFT JOIN AutoProc ap ON ap.autoProcProgramId = app.autoProcProgramId
                 LEFT JOIN AutoProcScaling aps ON aps.autoProcId = ap.autoProcId  
                 LEFT JOIN DataCollectionGroup dcg ON dc.dataCollectionGroupId = dcg.dataCollectionGroupId
+                LEFT JOIN DataCollectionComment dcc ON dcc.dataCollectionId = dc.dataCollectionId
                 LEFT JOIN BLSession b ON dcg.sessionId = b.sessionId
                 LEFT JOIN Container c ON c.sessionId = b.sessionId
                 LEFT JOIN BLSample b2 ON b2.containerId = c.containerId
-                LEFT JOIN Proposal p ON b.proposalId = p.proposalId 
+                LEFT JOIN Proposal p ON b.proposalId = p.proposalId
+                LEFT JOIN Person p2 on p2.personId = p.personId 
             WHERE $where AND b.beamLineName IN ('i02', 'i02-1', 'i02-2', 'i03', 'i04-1', 'i23', 'i24', 'i19-1' 'i19-2')
-                         AND ap.spaceGroup is NOT NULL            
-            GROUP BY dc.dataCollectionId"
+                         AND ap.spaceGroup is NOT NULL"
             , $tot_args);
     
         $tot = sizeof($tot) ? intval($tot[0]['TOT']) : 0;
@@ -717,22 +641,24 @@ class Summary extends Page
             GROUP_CONCAT(ap.refinedCell_alpha) as REFINEDCELL_ALPHA, 
             GROUP_CONCAT(ap.refinedCell_beta) as REFINEDCELL_BETA, 
             GROUP_CONCAT(ap.refinedCell_gamma) as REFINEDCELL_GAMMA,
-            GROUP_CONCAT(RESOLUTIONLIMITHIGH_OVERALL) as RESOLUTIONLIMITHIGH_OVERALL,
-            GROUP_CONCAT(RESOLUTIONLIMITHIGH_INNER) as RESOLUTIONLIMITHIGH_INNER,
-            GROUP_CONCAT(RESOLUTIONLIMITHIGH_OUTER) as RESOLUTIONLIMITHIGH_OUTER,
-            GROUP_CONCAT(RMEASWITHINIPLUSIMINUS_OVERALL) as RMEASWITHINIPLUSIMINUS_OVERALL,
-            GROUP_CONCAT(RMEASWITHINIPLUSIMINUS_INNER) as RMEASWITHINIPLUSIMINUS_INNER,
-            GROUP_CONCAT(RMEASWITHINIPLUSIMINUS_OUTER) as RMEASWITHINIPLUSIMINUS_OUTER,
-            GROUP_CONCAT(CCANOMALOUS_OVERALL) as CCANOMALOUS_OVERALL,
-            GROUP_CONCAT(CCANOMALOUS_INNER) as CCANOMALOUS_INNER,
-            GROUP_CONCAT(CCANOMALOUS_OUTER) as CCANOMALOUS_OUTER,
-            GROUP_CONCAT(RFREEVALUESTART_OVERALL) as RFREEVALUESTART_OVERALL,
-            GROUP_CONCAT(RFREEVALUESTART_INNER) as RFREEVALUESTART_INNER,
-            GROUP_CONCAT(RFREEVALUESTART_OUTER) as RFREEVALUESTART_OUTER,
-            GROUP_CONCAT(RFREEVALUEEND_OVERALL) as RFREEVALUEEND_OVERALL,
-            GROUP_CONCAT(RFREEVALUEEND_INNER) as RFREEVALUEEND_INNER,
-            GROUP_CONCAT(RFREEVALUEEND_OUTER) as RFREEVALUEEND_OUTER,
+            GROUP_CONCAT(RESOLUTIONLIMITHIGH_OVERALL_1) as RESOLUTIONLIMITHIGH_OVERALL,
+            GROUP_CONCAT(RESOLUTIONLIMITHIGH_INNER_1) as RESOLUTIONLIMITHIGH_INNER,
+            GROUP_CONCAT(RESOLUTIONLIMITHIGH_OUTER_1) as RESOLUTIONLIMITHIGH_OUTER,
+            GROUP_CONCAT(RMEASWITHINIPLUSIMINUS_OVERALL_1) as RMEASWITHINIPLUSIMINUS_OVERALL,
+            GROUP_CONCAT(RMEASWITHINIPLUSIMINUS_INNER_1) as RMEASWITHINIPLUSIMINUS_INNER,
+            GROUP_CONCAT(RMEASWITHINIPLUSIMINUS_OUTER_1) as RMEASWITHINIPLUSIMINUS_OUTER,
+            GROUP_CONCAT(CCANOMALOUS_OVERALL_1) as CCANOMALOUS_OVERALL,
+            GROUP_CONCAT(CCANOMALOUS_INNER_1) as CCANOMALOUS_INNER,
+            GROUP_CONCAT(CCANOMALOUS_OUTER_1) as CCANOMALOUS_OUTER,
+            GROUP_CONCAT(RFREEVALUESTART_OVERALL_1) as RFREEVALUESTART_OVERALL,
+            GROUP_CONCAT(RFREEVALUESTART_INNER_1) as RFREEVALUESTART_INNER,
+            GROUP_CONCAT(RFREEVALUESTART_OUTER_1) as RFREEVALUESTART_OUTER,
+            GROUP_CONCAT(RFREEVALUEEND_OVERALL_1) as RFREEVALUEEND_OVERALL,
+            GROUP_CONCAT(RFREEVALUEEND_INNER_1) as RFREEVALUEEND_INNER,
+            GROUP_CONCAT(RFREEVALUEEND_OUTER_1) as RFREEVALUEEND_OUTER,
             b.visit_number as VISIT_NUMBER,
+            dcc.comments as DC_COMMENTS,
+            p2.personId,
             p.proposalId, CONCAT(p.proposalCode, p.proposalNumber) as prop
             FROM DataCollection dc
                 LEFT JOIN AutoProcIntegration api ON api.dataCollectionId = dc.dataCollectionId
@@ -741,12 +667,15 @@ class Summary extends Page
                 LEFT JOIN AutoProc ap ON ap.autoProcProgramId = app.autoProcProgramId
                 LEFT JOIN AutoProcScaling aps ON aps.autoProcId = ap.autoProcId  
                 LEFT JOIN DataCollectionGroup dcg ON dc.dataCollectionGroupId = dcg.dataCollectionGroupId
+                LEFT JOIN DataCollectionComment dcc ON dcc.dataCollectionId = dc.dataCollectionId
                 LEFT JOIN BLSession b ON dcg.sessionId = b.sessionId
                 LEFT JOIN Container c ON c.sessionId = b.sessionId
                 LEFT JOIN BLSample b2 ON b2.containerId = c.containerId
-                LEFT JOIN Proposal p ON b.proposalId = p.proposalId 
+                LEFT JOIN Proposal p ON b.proposalId = p.proposalId
+                LEFT JOIN Person p2 on p2.personId = p.personId
                 LEFT JOIN (
                     SELECT GROUP_CONCAT(apss.scalingStatisticsType) as temp, apss.autoProcScalingId as autoProcScalingId_2,
+                    IFNULL(
                     SUBSTR( 
                         GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', apss.resolutionLimitHigh, '}'),
                         INSTR( GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', apss.resolutionLimitHigh, '}'), '{overall') + 10, 
@@ -754,8 +683,10 @@ class Summary extends Page
                         GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', apss.resolutionLimitHigh, '}'),
                         INSTR( GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', apss.resolutionLimitHigh, '}'), '{overall') ) -
                         (INSTR( GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', apss.resolutionLimitHigh, '}'), '{overall') + 10)
-                            ) 
-                    as RESOLUTIONLIMITHIGH_OVERALL,
+                            )
+                    , 'NULL')
+                    as RESOLUTIONLIMITHIGH_OVERALL_1,
+                    IFNULL(
                     SUBSTR( 
                         GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', apss.resolutionLimitHigh, '}'),
                         INSTR( GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', apss.resolutionLimitHigh, '}'), '{innerShell') + 13, 
@@ -763,8 +694,10 @@ class Summary extends Page
                         GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', apss.resolutionLimitHigh, '}'),
                         INSTR( GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', apss.resolutionLimitHigh, '}'), '{innerShell') ) -
                         (INSTR( GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', apss.resolutionLimitHigh, '}'), '{innerShell') + 13)
-                        ) 
-                    as RESOLUTIONLIMITHIGH_INNER,
+                        )
+                    , 'NULL')
+                    as RESOLUTIONLIMITHIGH_INNER_1,
+                    IFNULL(
                     SUBSTR( 
                         GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', apss.resolutionLimitHigh, '}'),
                         INSTR( GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', apss.resolutionLimitHigh, '}'), '{outerShell') + 13, 
@@ -773,7 +706,9 @@ class Summary extends Page
                         INSTR( GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', apss.resolutionLimitHigh, '}'), '{outerShell') ) -
                         (INSTR( GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', apss.resolutionLimitHigh, '}'), '{outerShell') + 13) 
                         ) 
-                    as RESOLUTIONLIMITHIGH_OUTER,
+                    , 'NULL')
+                    as RESOLUTIONLIMITHIGH_OUTER_1,
+                    IFNULL(
                     SUBSTR( 
                         GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', apss.rMeasWithinIPlusIMinus, '}'),
                         INSTR( GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', apss.rMeasWithinIPlusIMinus, '}'), '{overall') + 10, 
@@ -781,8 +716,10 @@ class Summary extends Page
                         GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', apss.rMeasWithinIPlusIMinus, '}'),
                         INSTR( GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', apss.rMeasWithinIPlusIMinus, '}'), '{overall') ) -
                         (INSTR( GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', apss.rMeasWithinIPlusIMinus, '}'), '{overall') + 10)
-                        ) 
-                    as RMEASWITHINIPLUSIMINUS_OVERALL,
+                        )
+                    , 'NULL')
+                    as RMEASWITHINIPLUSIMINUS_OVERALL_1,
+                    IFNULL(
                     SUBSTR( 
                         GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', apss.rMeasWithinIPlusIMinus, '}'),
                         INSTR( GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', apss.rMeasWithinIPlusIMinus, '}'), '{innerShell') + 13, 
@@ -790,8 +727,10 @@ class Summary extends Page
                         GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', apss.rMeasWithinIPlusIMinus, '}'),
                         INSTR( GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', apss.rMeasWithinIPlusIMinus, '}'), '{innerShell') ) -
                         (INSTR( GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', apss.rMeasWithinIPlusIMinus, '}'), '{innerShell') + 13) 
-                        ) 
-                    as RMEASWITHINIPLUSIMINUS_INNER,
+                        )
+                    , 'NULL')
+                    as RMEASWITHINIPLUSIMINUS_INNER_1,
+                    IFNULL(
                     SUBSTR( 
                         GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', apss.rMeasWithinIPlusIMinus, '}'),
                         INSTR( GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', apss.rMeasWithinIPlusIMinus, '}'), '{outerShell') + 13, 
@@ -800,7 +739,9 @@ class Summary extends Page
                         INSTR( GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', apss.rMeasWithinIPlusIMinus, '}'), '{outerShell') ) -
                         (INSTR( GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', apss.rMeasWithinIPlusIMinus, '}'), '{outerShell') + 13)  
                         ) 
-                    as RMEASWITHINIPLUSIMINUS_OUTER,
+                    , 'NULL')
+                    as RMEASWITHINIPLUSIMINUS_OUTER_1,
+                    IFNULL(
                     SUBSTR( 
                         GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', apss.ccAnomalous, '}'),
                         INSTR( GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', apss.ccAnomalous, '}'), '{overall') + 10, 
@@ -809,7 +750,9 @@ class Summary extends Page
                         INSTR( GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', apss.ccAnomalous, '}'), '{overall') ) -
                         (INSTR( GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', apss.ccAnomalous, '}'), '{overall') + 10)   
                         ) 
-                    as CCANOMALOUS_OVERALL,
+                    , 'NULL')
+                    as CCANOMALOUS_OVERALL_1,
+                    IFNULL(
                     SUBSTR( 
                         GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', apss.ccAnomalous, '}'),
                         INSTR( GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', apss.ccAnomalous, '}'), '{innerShell') + 13, 
@@ -818,7 +761,9 @@ class Summary extends Page
                         INSTR( GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', apss.ccAnomalous, '}'), '{innerShell') ) -
                         (INSTR( GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', apss.ccAnomalous, '}'), '{innerShell') + 13)    
                         ) 
-                    as CCANOMALOUS_INNER,
+                    , 'NULL')
+                    as CCANOMALOUS_INNER_1,
+                    IFNULL(
                     SUBSTR( 
                         GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', apss.ccAnomalous, '}'),
                         INSTR( GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', apss.ccAnomalous, '}'), '{outerShell') + 13, 
@@ -827,7 +772,9 @@ class Summary extends Page
                         INSTR( GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', apss.ccAnomalous, '}'), '{outerShell') ) -
                         (INSTR( GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', apss.ccAnomalous, '}'), '{outerShell') + 13)     
                         ) 
-                    as CCANOMALOUS_OUTER,
+                    , 'NULL')
+                    as CCANOMALOUS_OUTER_1,
+                    IFNULL(
                     SUBSTR( 
                         GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', m.rFreeValueStart, '}'),
                         INSTR( GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', m.rFreeValueStart, '}'), '{overall') + 10, 
@@ -836,7 +783,9 @@ class Summary extends Page
                         INSTR( GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', m.rFreeValueStart, '}'), '{overall') ) -
                         (INSTR( GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', m.rFreeValueStart, '}'), '{overall') + 10) 
                         ) 
-                    as RFREEVALUESTART_OVERALL,
+                    , 'NULL')
+                    as RFREEVALUESTART_OVERALL_1,
+                    IFNULL(
                     SUBSTR( 
                         GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', m.rFreeValueStart, '}'),
                         INSTR( GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', m.rFreeValueStart, '}'), '{innerShell') + 13, 
@@ -845,7 +794,9 @@ class Summary extends Page
                         INSTR( GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', m.rFreeValueStart, '}'), '{innerShell') ) -
                         (INSTR( GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', m.rFreeValueStart, '}'), '{innerShell') + 13) 
                         ) 
-                    as RFREEVALUESTART_INNER,
+                    , 'NULL')
+                    as RFREEVALUESTART_INNER_1,
+                    IFNULL(
                     SUBSTR( 
                         GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', m.rFreeValueStart, '}'),
                         INSTR( GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', m.rFreeValueStart, '}'), '{outerShell') + 13, 
@@ -854,7 +805,9 @@ class Summary extends Page
                         INSTR( GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', m.rFreeValueStart, '}'), '{outerShell') ) -
                         (INSTR( GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', m.rFreeValueStart, '}'), '{outerShell') + 13)  
                         ) 
-                    as RFREEVALUESTART_OUTER,
+                    , 'NULL')
+                    as RFREEVALUESTART_OUTER_1,
+                    IFNULL(
                     SUBSTR( 
                         GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', m.rFreeValueEnd, '}'),
                         INSTR( GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', m.rFreeValueEnd, '}'), '{overall') + 10, 
@@ -863,7 +816,9 @@ class Summary extends Page
                         INSTR( GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', m.rFreeValueEnd, '}'), '{overall') ) -
                         (INSTR( GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', m.rFreeValueEnd, '}'), '{overall') + 10)  
                         ) 
-                    as RFREEVALUEEND_OVERALL,
+                    , 'NULL')
+                    as RFREEVALUEEND_OVERALL_1,
+                    IFNULL(
                     SUBSTR( 
                         GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', m.rFreeValueEnd, '}'),
                         INSTR( GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', m.rFreeValueEnd, '}'), '{innerShell') + 13, 
@@ -872,7 +827,9 @@ class Summary extends Page
                         INSTR( GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', m.rFreeValueEnd, '}'), '{innerShell') ) -
                         (INSTR( GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', m.rFreeValueEnd, '}'), '{innerShell') + 13)   
                         ) 
-                    as RFREEVALUEEND_INNER,
+                    , 'NULL')
+                    as RFREEVALUEEND_INNER_1,
+                    IFNULL(
                     SUBSTR( 
                         GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', m.rFreeValueEnd, '}'),
                         INSTR( GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', m.rFreeValueEnd, '}'), '{outerShell') + 13, 
@@ -881,7 +838,8 @@ class Summary extends Page
                         INSTR( GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', m.rFreeValueEnd, '}'), '{outerShell') ) -
                         (INSTR( GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', m.rFreeValueEnd, '}'), '{outerShell') + 13)   
                         ) 
-                    as RFREEVALUEEND_OUTER
+                    , 'NULL')
+                    as RFREEVALUEEND_OUTER_1
                     FROM AutoProcScalingStatistics apss
                         LEFT JOIN MXMRRun m ON m.autoProcScalingId = apss.autoProcScalingId
                     GROUP BY apss.autoProcScalingId
@@ -903,60 +861,6 @@ class Summary extends Page
 
     }
 
-    function _get_proposal() {
-        // $where = '';
-        // $where_arr = array();
-        // $args = array();
-        // $order = 'p.proposalid ASC';
-
-        // // Search
-        // // proposal code and number
-        // if ($this->has_arg('prop')) {
-        //     array_push($where_arr, 'CONCAT(p.proposalCode, p.proposalNumber) = :'.(sizeof($args)+1));
-        //     array_push($args, $this->arg('prop'));
-        // }
-        // // proposal title
-        // if ($this->has_arg('TITLE')) {
-        //     array_push($where_arr, 'p.title LIKE :'.(sizeof($args)+1));
-        //     array_push($args, '%'.$this->arg('title').'%');
-        // }
-        
-        // // AND is the delimieter between seperate queries, converted to string
-        // $where = implode(" AND ", $where_arr);
-
-
-        // // paginate
-        // $pp = $this->has_arg('per_page') ? $this->arg('per_page') : 15;
-        // $pg = $this->has_arg('page') ? $this->arg('page')-1 : 0;
-        // $start = $pg*$pp;
-        // $end = $pg*$pp+$pp;
-        
-        // $st = sizeof($args)+1;
-        // $en = $st + 1;
-        // array_push($args, $start);
-        // array_push($args, $end);
-
-        // // sql query
-        // $rows = $this->db->paginate(
-        //     "SELECT p.proposalId, p.title, p.proposalCode, p.proposalNumber
-        //     FROM proposal p
-        //     WHERE $where
-        //     ORDER BY $order"
-        //     , $args);
-
-        // if (!$rows) {
-        // $this->_error($this->arg('TITLE') . ' could not be found anywhere!', 404);
-        // }
-        
-        // // sql query output
-        // $this->_output(array(
-        //     'data' =>  $rows,
-        //     'where' => $where,
-        //     'args' => $args
-
-        // ));
-
-    }
 
     function _get_results() {
         $where = '';
@@ -977,16 +881,40 @@ class Summary extends Page
             array_push($args, $this->arg('dcid'));
         }
 
+        if ($this->has_arg('com')) {
+            array_push($where_arr, "dcc.comments LIKE '%_FLAG_%' ");
+        }
+
         // AND is the delimieter between seperate queries, converted to string
         $where = implode(" AND ", $where_arr);
 
         if (count($order_arr) > 0) {
             $order = implode(", ", $order_arr);
         }
+
+        // get tot query
+        $tot_args = $args;
+
+        $tot = $this->db->pq(
+            "SELECT COUNT(DISTINCT(dc.dataCollectionId)) as tot 
+            FROM DataCollection dc
+                LEFT JOIN AutoProcIntegration api ON api.dataCollectionId = dc.dataCollectionId
+                LEFT JOIN AutoProcProgram app ON app.autoProcProgramId = api.autoProcProgramId
+                LEFT JOIN ProcessingJob pj ON pj.processingJobId = app.processingJobId 
+                LEFT JOIN AutoProc ap ON ap.autoProcProgramId = app.autoProcProgramId
+                LEFT JOIN AutoProcScaling aps ON aps.autoProcId = ap.autoProcId  
+                LEFT JOIN DataCollectionGroup dcg ON dc.dataCollectionGroupId = dcg.dataCollectionGroupId
+                LEFT JOIN DataCollectionComment dcc ON dcc.dataCollectionId = dc.dataCollectionId
+                LEFT JOIN BLSession b ON dcg.sessionId = b.sessionId
+                LEFT JOIN Container c ON c.sessionId = b.sessionId
+                LEFT JOIN BLSample b2 ON b2.containerId = c.containerId
+                LEFT JOIN Proposal p ON b.proposalId = p.proposalId
+                LEFT JOIN Person p2 on p2.personId = p.personId 
+            WHERE $where AND b.beamLineName IN ('i02', 'i02-1', 'i02-2', 'i03', 'i04-1', 'i23', 'i24', 'i19-1' 'i19-2')
+                         AND ap.spaceGroup is NOT NULL"
+            , $tot_args);
         
 
-        // // get tot query
-        // $tot_args = $args;
 
         // $tot = $this->db->pq(
         //     "SELECT count(dc.dataCollectionId) as tot 
@@ -1040,7 +968,10 @@ class Summary extends Page
             GROUP_CONCAT(ap.refinedCell_alpha) as REFINEDCELL_ALPHA, 
             GROUP_CONCAT(ap.refinedCell_beta) as REFINEDCELL_BETA, 
             GROUP_CONCAT(ap.refinedCell_gamma) as REFINEDCELL_GAMMA,
-            temp,
+            GROUP_CONCAT(RESOLUTIONLIMITHIGH_OVERALL_1) as RESOLUTIONLIMITHIGH_OVERALL,
+            b.visit_number as VISIT_NUMBER,
+            dcc.comments as DC_COMMENTS,
+            p2.personId,
             p.proposalId, CONCAT(p.proposalCode, p.proposalNumber) as prop
             FROM DataCollection dc
                 LEFT JOIN AutoProcIntegration api ON api.dataCollectionId = dc.dataCollectionId
@@ -1049,30 +980,42 @@ class Summary extends Page
                 LEFT JOIN AutoProc ap ON ap.autoProcProgramId = app.autoProcProgramId
                 LEFT JOIN AutoProcScaling aps ON aps.autoProcId = ap.autoProcId  
                 LEFT JOIN DataCollectionGroup dcg ON dc.dataCollectionGroupId = dcg.dataCollectionGroupId
+                LEFT JOIN DataCollectionComment dcc ON dcc.dataCollectionId = dc.dataCollectionId
                 LEFT JOIN BLSession b ON dcg.sessionId = b.sessionId
                 LEFT JOIN Container c ON c.sessionId = b.sessionId
                 LEFT JOIN BLSample b2 ON b2.containerId = c.containerId
-                LEFT JOIN Proposal p ON b.proposalId = p.proposalId 
+                LEFT JOIN Proposal p ON b.proposalId = p.proposalId
+                LEFT JOIN Person p2 on p2.personId = p.personId
                 LEFT JOIN (
-                    SELECT GROUP_CONCAT(m.rFreeValueStart) as temp, apss.autoProcScalingId as autoProcScalingId_2
+                    SELECT GROUP_CONCAT(apss.scalingStatisticsType) as temp, apss.autoProcScalingId as autoProcScalingId_2,
+                    IFNULL(
+                    SUBSTR( 
+                        GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', apss.resolutionLimitHigh, '}'),
+                        INSTR( GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', apss.resolutionLimitHigh, '}'), '{overall') + 10, 
+                        LOCATE( '}', 
+                        GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', apss.resolutionLimitHigh, '}'),
+                        INSTR( GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', apss.resolutionLimitHigh, '}'), '{overall') ) -
+                        (INSTR( GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', apss.resolutionLimitHigh, '}'), '{overall') + 10)
+                            )
+                    , 'NULL')
+                    as RESOLUTIONLIMITHIGH_OVERALL_1
                     FROM AutoProcScalingStatistics apss
                         LEFT JOIN MXMRRun m ON m.autoProcScalingId = apss.autoProcScalingId
                     GROUP BY apss.autoProcScalingId
                 ) as detail 
                     ON aps.autoProcScalingId = detail.autoProcScalingId_2
-            WHERE $where AND b.beamLineName IN ('i02', 'i02-1', 'i02-2', 'i03', 'i04-1', 'i23', 'i24', 'i19-1' 'i19-2')
-                         AND ap.spaceGroup is NOT NULL
-            GROUP BY dc.dataCollectionId
-            ORDER BY dc.dataCollectionId
-            "
-            , $args);
+        WHERE $where AND b.beamLineName IN ('i02', 'i02-1', 'i02-2', 'i03', 'i04-1', 'i23', 'i24', 'i19-1' 'i19-2')
+                     AND ap.spaceGroup is NOT NULL
+        GROUP BY dc.dataCollectionId
+        ORDER BY $order"
+        , $args);
 
         // if (!$rows) {
         // $this->_error($this->arg('TITLE') . ' could not be found anywhere!', 404);
         // }
         
         // sql query output
-        $this->_output(array( 'rows' => $rows, 'where' => $where, 'args' => $args ));
+        $this->_output(array( 'tot' => $tot, 'rows' => $rows, 'where' => $where, 'args' => $args ));
 
     }
 

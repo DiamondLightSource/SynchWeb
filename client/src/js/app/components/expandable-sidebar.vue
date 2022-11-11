@@ -2,7 +2,7 @@
     <div class="custom-sidebar">
         <div>
             <div class="tw-flex">
-                <div class="tw-flex tw-rounded-full tw-h-6 tw-ml-1 tw-mb-2 tw-pt-1 
+                <div class="tw-flex tw-rounded-full tw-h-6 tw-pl-2 tw-mb-2 tw-pt-1 
                                     tw-pr-1 tw-pl-1 tw-bg-content-active">
                 <p> Advanced Filter </p>
                 <button
@@ -12,7 +12,7 @@
                     :aria-controls="`collapse${_uid}`"
                 >
                 <svg
-                class="tw-w-3 tw-h-4 tw-ml-2 tw-transition-all tw-duration-200 tw-transform"
+                class="tw-w-3 tw-h-4 tw-ml-2 tw-mr-2 tw-transition-all tw-duration-200 tw-transform"
                 :class="{
                 'tw-rotate-180': isOpen,
                 'tw-rotate-0': !isOpen,
@@ -47,7 +47,7 @@
                 tw-w-full  tw-h-12"
                 :class="loadContent ? 'tw-h-10' : 'tw-h-0'">
 
-                    <div class="tw-relative tw-bg-content-sub-header-background tw-text-xl tw-text-white">
+                    <div class="tw-relative tw-ml-2 tw-border-b tw-text-xl tw-text-white">
                         <slot name="filter-bar-title" />
                     </div>
                 </div>

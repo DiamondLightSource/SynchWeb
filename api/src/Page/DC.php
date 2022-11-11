@@ -49,6 +49,7 @@ class DC extends Page
 
                               array('/comments(/:dcid)', 'get', '_get_comments'),
                               array('/comments', 'post', '_add_comment'),
+                              array('/patchcomments', 'post', '_update_comment'),
 
                               array('/dat/:id', 'get', '_plot'),
                             );
@@ -1210,6 +1211,24 @@ class DC extends Page
                 'FAMILYNAME' => $this->user->familyname,
                 'CREATETIME' => date('d-m-Y H:i:s')
             ));
+        }
+
+        function _update_comment() {
+            if (!$this->has_arg('DATACOLLECTIONID')) $this->_error('No datacollection specified');
+            if (!$this->has_arg('PERSONID')) $this->_error('No person specified');
+            if (!$this->has_arg('COMMENTS')) $this->_error('No comment specified');
+
+            $this->db->pq("UPDATE datacollectioncomment
+            SET comments=:3, createTime=current_timestamp(), modTime=NULL
+            WHERE dataCollectionId=:1 AND personId=:2;
+            ", array($this->arg('DATACOLLECTIONID'), $this->arg('PERSONID'), $this->arg('COMMENTS')));
+
+            $this->_output(array('DATACOLLECTIONCOMMENTID' => $this->db->id(), 
+            'GIVENNAME' => $this->user->givenname, 
+            'FAMILYNAME' => $this->user->familyname,
+            'UPDATETIME' => date('d-m-Y H:i:s')
+            ));
+
         }
 
 
