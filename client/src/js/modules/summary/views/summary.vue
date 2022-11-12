@@ -889,7 +889,6 @@ export default {
                     filteredGt: '',
                 },
             },
-            inputChanged : '',
             selectedProposal : '',
             searchedGtUnitCellA : '',
             searchedLtUnitCellA : '',
@@ -1133,8 +1132,7 @@ export default {
                     };
                     if (this.summaryColumns[index].filteredGt) {
                         this.summaryCollection.queryParams[this.summaryColumns[index].paramGt] = this.summaryColumns[index].filteredGt;
-                    };
-
+                    }; 
                 } catch {};
 
             }
@@ -1148,31 +1146,32 @@ export default {
             if (this.filterOptions.SPACEGROUP.selectedValue) {
                 this.summaryCollection.queryParams.sg = this.filterOptions.SPACEGROUP.selectedValue;
             }
-           
+
+            this.summaryCollection.queryParams.gca = this.searchedGtUnitCellA;
+            this.summaryCollection.queryParams.lca = this.searchedLtUnitCellA;
+            this.summaryCollection.queryParams.gcb = this.searchedGtUnitCellB;
+            this.summaryCollection.queryParams.lcb = this.searchedLtUnitCellB;
+            this.summaryCollection.queryParams.gc = this.searchedGtUnitCellC;
+            this.summaryCollection.queryParams.lc = this.searchedLtUnitCellC;
 
  
         },
         clearQueryParams() {
 
-            this.searchedPrefix = '';
             this.selectedProposal = '';
-            this.selectedSpaceGroup = '';
+            this.searchedPrefix = '';
             this.searchedGtUnitCellA = '';
             this.searchedLtUnitCellA = '';
             this.searchedGtUnitCellB = '';
             this.searchedLtUnitCellB = '';
             this.searchedGtUnitCellC = '';
             this.searchedLtUnitCellC = '';
-            this.filterOptions.RESLIMITHIGH.filteredGt = '';
-            this.filterOptions.RESLIMITHIGH.filteredLt = '';
-            this.filterOptions.RMEASWIPLUSIMINUS.filteredGt = '';
-            this.filterOptions.RMEASWIPLUSIMINUS.filteredLt = '';
-            this.filterOptions.CCANOM.filteredGt = '';
-            this.filterOptions.CCANOM.filteredLt = '';
-            this.filterOptions.RFREEFINAL.filteredGt = '';
-            this.filterOptions.RFREEFINAL.filteredLt = '';
-            this.filterOptions.RFREEINITIAL.filteredGt = '';
-            this.filterOptions.RFREEINITIAL.filteredLt = '';
+            this.filterOptions.SPACEGROUP.selectedValue
+
+            for (var index in this.summaryColumns) {
+                this.summaryColumns[index].filteredLt = '';
+                this.summaryColumns[index].filteredGt = '';
+            };
 
             
         },

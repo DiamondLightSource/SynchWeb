@@ -262,110 +262,110 @@ class Summary extends Page
         // ASCENDING and DESCENDING with Outer, Inner, Overall
         // rmeas outer
         if ($this->has_arg('descrmeasou')) {
-            array_push($order_arr, 'RMEASWITHINIPLUSIMINUS_OUTER DESC');
+            array_push($order_arr, 'RMEASWITHINIPLUSIMINUS_OUTER_1 DESC');
         }
         if ($this->has_arg('ascrmeasou')) {
-            array_push($order_arr, 'RMEASWITHINIPLUSIMINUS_OUTER ASC');
+            array_push($order_arr, 'RMEASWITHINIPLUSIMINUS_OUTER_1 ASC');
         }
         // resolution limit high outer
         if ($this->has_arg('descrlhou')) {
-            array_push($order_arr, 'RESOLUTIONLIMITHIGH_OUTER DESC');
+            array_push($order_arr, 'RESOLUTIONLIMITHIGH_OUTER_1 DESC');
         }
         if ($this->has_arg('ascrlhou')) {
-            array_push($order_arr, 'RESOLUTIONLIMITHIGH_OUTER ASC');
+            array_push($order_arr, 'RESOLUTIONLIMITHIGH_OUTER_1 ASC');
         }
         // cc anomalous outer
         if ($this->has_arg('descccaou')) {
-            array_push($order_arr, 'CCANOMALOUS_OUTER DESC');
+            array_push($order_arr, 'CCANOMALOUS_OUTER_1 DESC');
         }
         if ($this->has_arg('ascccaou')) {
-            array_push($order_arr, 'CCANOMALOUS_OUTER ASC');
+            array_push($order_arr, 'CCANOMALOUS_OUTER_1 ASC');
         }
         // rfree start outer
         if ($this->has_arg('descrfsou')) {
-            array_push($order_arr, 'RFREEVALUESTART_OUTER DESC');
+            array_push($order_arr, 'RFREEVALUESTART_OUTER_1 DESC');
         }
         if ($this->has_arg('ascrfsou')) {
-            array_push($order_arr, 'RFREEVALUESTART_OUTER ASC');
+            array_push($order_arr, 'RFREEVALUESTART_OUTER_1 ASC');
         }
         // rfree end outer
         if ($this->has_arg('descrfeou')) {
-            array_push($order_arr, 'RFREEVALUEEND_OUTER DESC');
+            array_push($order_arr, 'RFREEVALUEEND_OUTER_1 DESC');
         }
         if ($this->has_arg('ascrfeou')) {
-            array_push($order_arr, 'RFREEVALUEEND_OUTER ASC');
+            array_push($order_arr, 'RFREEVALUEEND_OUTER_1 ASC');
         }
 
         // rmeas inner
         if ($this->has_arg('descrmeasin')) {
-            array_push($order_arr, 'RMEASWITHINIPLUSIMINUS_INNER DESC');
+            array_push($order_arr, 'RMEASWITHINIPLUSIMINUS_INNER_1 DESC');
         }
         if ($this->has_arg('ascrmeasin')) {
-            array_push($order_arr, 'RMEASWITHINIPLUSIMINUS_INNER ASC');
+            array_push($order_arr, 'RMEASWITHINIPLUSIMINUS_INNER_1 ASC');
         }
         // resolution limit high inner
         if ($this->has_arg('descrlhin')) {
-            array_push($order_arr, 'RESOLUTIONLIMITHIGH_INNER DESC');
+            array_push($order_arr, 'RESOLUTIONLIMITHIGH_INNER_1 DESC');
         }
         if ($this->has_arg('ascrlhin')) {
-            array_push($order_arr, 'RESOLUTIONLIMITHIGH_INNER ASC');
+            array_push($order_arr, 'RESOLUTIONLIMITHIGH_INNER_1 ASC');
         }
         // cc anomalous inner
         if ($this->has_arg('descccain')) {
-            array_push($order_arr, 'CCANOMALOUS_INNER DESC');
+            array_push($order_arr, 'CCANOMALOUS_INNER_1 DESC');
         }
         if ($this->has_arg('ascccain')) {
-            array_push($order_arr, 'CCANOMALOUS_INNER ASC');
+            array_push($order_arr, 'CCANOMALOUS_INNER_1 ASC');
         }
         // rfree start inner
         if ($this->has_arg('descrfsin')) {
-            array_push($order_arr, 'RFREEVALUESTART_INNER DESC');
+            array_push($order_arr, 'RFREEVALUESTART_INNER_1 DESC');
         }
         if ($this->has_arg('ascrfsin')) {
-            array_push($order_arr, 'RFREEVALUESTART_INNER ASC');
+            array_push($order_arr, 'RFREEVALUESTART_INNER_1 ASC');
         }
         // rfree end inner
         if ($this->has_arg('descrfein')) {
-            array_push($order_arr, 'RFREEVALUEEND_INNER DESC');
+            array_push($order_arr, 'RFREEVALUEEND_INNER_1 DESC');
         }
         if ($this->has_arg('ascrfein')) {
-            array_push($order_arr, 'RFREEVALUEEND_INNER ASC');
+            array_push($order_arr, 'RFREEVALUEEND_INNER_1 ASC');
         }
 
         // rmeas overall
         if ($this->has_arg('descrmeasov')) {
-            array_push($order_arr, 'RMEASWITHINIPLUSIMINUS_OVERALL DESC');
+            array_push($order_arr, 'RMEASWITHINIPLUSIMINUS_OVERALL_1 DESC');
         }
         if ($this->has_arg('ascrmeasov')) {
-            array_push($order_arr, 'RMEASWITHINIPLUSIMINUS_OVERALL ASC');
+            array_push($order_arr, 'RMEASWITHINIPLUSIMINUS_OVERALL_1 ASC');
         }
         // resolution limit high overall
         if ($this->has_arg('descrlhov')) {
-            array_push($order_arr, 'RESOLUTIONLIMITHIGH_OVERALL DESC');
+            array_push($order_arr, 'RESOLUTIONLIMITHIGH_OVERALL_1 DESC');
         }
         if ($this->has_arg('ascrlhov')) {
-            array_push($order_arr, 'RESOLUTIONLIMITHIGH_OVERALL ASC');
+            array_push($order_arr, 'RESOLUTIONLIMITHIGH_OVERALL_1 ASC');
         }
         // cc anomalous overall
         if ($this->has_arg('descccaov')) {
-            array_push($order_arr, 'CCANOMALOUS_OVERALL DESC');
+            array_push($order_arr, 'CCANOMALOUS_OVERALL_1 DESC');
         }
         if ($this->has_arg('ascccaov')) {
-            array_push($order_arr, 'CCANOMALOUS_OVERALL ASC');
+            array_push($order_arr, 'CCANOMALOUS_OVERALL_1 ASC');
         }
         // rfree start overall
         if ($this->has_arg('descrfsov')) {
-            array_push($order_arr, 'RFREEVALUESTART_OVERALL DESC');
+            array_push($order_arr, 'RFREEVALUESTART_OVERALL_1 DESC');
         }
         if ($this->has_arg('ascrfsov')) {
-            array_push($order_arr, 'RFREEVALUESTART_OVERALL ASC');
+            array_push($order_arr, 'RFREEVALUESTART_OVERALL_1 ASC');
         }
         // rfree end overall
         if ($this->has_arg('descrfeov')) {
-            array_push($order_arr, 'RFREEVALUEEND_OVERALL DESC');
+            array_push($order_arr, 'RFREEVALUEEND_OVERALL_1 DESC');
         }
         if ($this->has_arg('ascrfeov')) {
-            array_push($order_arr, 'RFREEVALUEEND_OVERALL ASC');
+            array_push($order_arr, 'RFREEVALUEEND_OVERALL_1 ASC');
         }
 
 
@@ -442,141 +442,141 @@ class Summary extends Page
         // Filter Params Greater/Less than Overall, Outer, Inner
         // resolution limit high outer
         if ($this->has_arg('grlhou')) {
-            array_push($where_arr, 'RESOLUTIONLIMITHIGH_OUTER >= :'.(sizeof($args)+1));
+            array_push($where_arr, 'RESOLUTIONLIMITHIGH_OUTER_1 >= :'.(sizeof($args)+1));
             array_push($args, $this->arg('grlhou'));
         }
         if ($this->has_arg('lrlhou')) {
-            array_push($where_arr, 'RESOLUTIONLIMITHIGH_OUTER <= :'.(sizeof($args)+1));
+            array_push($where_arr, 'RESOLUTIONLIMITHIGH_OUTER_1 <= :'.(sizeof($args)+1));
             array_push($args, $this->arg('lrlhou'));
         }
         // rmeas within i plus i minus outer
         if ($this->has_arg('grmou')) {
-            array_push($where_arr, 'RMEASWITHINIPLUSIMINUS_OUTER >= :'.(sizeof($args)+1));
+            array_push($where_arr, 'RMEASWITHINIPLUSIMINUS_OUTER_1 >= :'.(sizeof($args)+1));
             array_push($args, $this->arg('grmou'));
         }
         if ($this->has_arg('lrmou')) {
-            array_push($where_arr, 'RMEASWITHINIPLUSIMINUS_OUTER <= :'.(sizeof($args)+1));
+            array_push($where_arr, 'RMEASWITHINIPLUSIMINUS_OUTER_1 <= :'.(sizeof($args)+1));
             array_push($args, $this->arg('lrmou'));
         }
         // cc anomalous outer
         if ($this->has_arg('gccou')) {
-            array_push($where_arr, 'CCANOMALOUS_OUTER >= :'.(sizeof($args)+1));
+            array_push($where_arr, 'CCANOMALOUS_OUTER_1 >= :'.(sizeof($args)+1));
             array_push($args, $this->arg('gccou'));
         }
         if ($this->has_arg('lccou')) {
-            array_push($where_arr, 'CCANOMALOUS_OUTER <= :'.(sizeof($args)+1));
+            array_push($where_arr, 'CCANOMALOUS_OUTER_1 <= :'.(sizeof($args)+1));
             array_push($args, $this->arg('lccou'));
         }
         // r free final outer
         if ($this->has_arg('grffou')) {
-            array_push($where_arr, 'RFREEVALUEEND_OUTER >= :'.(sizeof($args)+1));
+            array_push($where_arr, 'RFREEVALUEEND_OUTER_1 >= :'.(sizeof($args)+1));
             array_push($args, $this->arg('grffou'));
         }
         if ($this->has_arg('lrffou')) {
-            array_push($where_arr, 'RFREEVALUEEND_OUTER <= :'.(sizeof($args)+1));
+            array_push($where_arr, 'RFREEVALUEEND_OUTER_1 <= :'.(sizeof($args)+1));
             array_push($args, $this->arg('lrffou'));
         }
         // r free initial outer
         if ($this->has_arg('grfiou')) {
-            array_push($where_arr, 'RFREEVALUESTART_OUTER >= :'.(sizeof($args)+1));
+            array_push($where_arr, 'RFREEVALUESTART_OUTER_1 >= :'.(sizeof($args)+1));
             array_push($args, $this->arg('grfiou'));
         }
         if ($this->has_arg('lrfiou')) {
-            array_push($where_arr, 'RFREEVALUESTART_OUTER <= :'.(sizeof($args)+1));
+            array_push($where_arr, 'RFREEVALUESTART_OUTER_1 <= :'.(sizeof($args)+1));
             array_push($args, $this->arg('lrfiou'));
         }
 
 
         // resolution limit high inner
         if ($this->has_arg('grlhin')) {
-            array_push($where_arr, 'RESOLUTIONLIMITHIGH_INNER >= :'.(sizeof($args)+1));
+            array_push($where_arr, 'RESOLUTIONLIMITHIGH_INNER_1 >= :'.(sizeof($args)+1));
             array_push($args, $this->arg('grlhin'));
         }
         if ($this->has_arg('lrlhin')) {
-            array_push($where_arr, 'RESOLUTIONLIMITHIGH_INNER <= :'.(sizeof($args)+1));
+            array_push($where_arr, 'RESOLUTIONLIMITHIGH_INNER_1 <= :'.(sizeof($args)+1));
             array_push($args, $this->arg('lrlhin'));
         }
         // rmeas within i plus i minus inner
         if ($this->has_arg('grmin')) {
-            array_push($where_arr, 'RMEASWITHINIPLUSIMINUS_INNER >= :'.(sizeof($args)+1));
+            array_push($where_arr, 'RMEASWITHINIPLUSIMINUS_INNER_1 >= :'.(sizeof($args)+1));
             array_push($args, $this->arg('grmin'));
         }
         if ($this->has_arg('lrmin')) {
-            array_push($where_arr, 'RMEASWITHINIPLUSIMINUS_INNER <= :'.(sizeof($args)+1));
+            array_push($where_arr, 'RMEASWITHINIPLUSIMINUS_INNER_1 <= :'.(sizeof($args)+1));
             array_push($args, $this->arg('lrmin'));
         }
         // cc anomalous inner
         if ($this->has_arg('gccin')) {
-            array_push($where_arr, 'CCANOMALOUS_INNER >= :'.(sizeof($args)+1));
+            array_push($where_arr, 'CCANOMALOUS_INNER_1 >= :'.(sizeof($args)+1));
             array_push($args, $this->arg('gccin'));
         }
         if ($this->has_arg('lccin')) {
-            array_push($where_arr, 'CCANOMALOUS_INNER <= :'.(sizeof($args)+1));
+            array_push($where_arr, 'CCANOMALOUS_INNER_1 <= :'.(sizeof($args)+1));
             array_push($args, $this->arg('lccin'));
         }
         // r free final inner
         if ($this->has_arg('grffin')) {
-            array_push($where_arr, 'RFREEVALUEEND_INNER >= :'.(sizeof($args)+1));
+            array_push($where_arr, 'RFREEVALUEEND_INNER_1 >= :'.(sizeof($args)+1));
             array_push($args, $this->arg('grffin'));
         }
         if ($this->has_arg('lrffin')) {
-            array_push($where_arr, 'RFREEVALUEEND_INNER <= :'.(sizeof($args)+1));
+            array_push($where_arr, 'RFREEVALUEEND_INNER_1 <= :'.(sizeof($args)+1));
             array_push($args, $this->arg('lrffin'));
         }
         // r free initial inner
         if ($this->has_arg('grfiin')) {
-            array_push($where_arr, 'RFREEVALUESTART_INNER >= :'.(sizeof($args)+1));
+            array_push($where_arr, 'RFREEVALUESTART_INNER_1 >= :'.(sizeof($args)+1));
             array_push($args, $this->arg('grfiin'));
         }
         if ($this->has_arg('lrfiin')) {
-            array_push($where_arr, 'RFREEVALUESTART_INNER <= :'.(sizeof($args)+1));
+            array_push($where_arr, 'RFREEVALUESTART_INNER_1 <= :'.(sizeof($args)+1));
             array_push($args, $this->arg('lrfiin'));
         }
 
 
         // resolution limit high overall
         if ($this->has_arg('grlhov')) {
-            array_push($where_arr, 'RESOLUTIONLIMITHIGH_OVERALL >= :'.(sizeof($args)+1));
+            array_push($where_arr, 'RESOLUTIONLIMITHIGH_OVERALL_1 >= :'.(sizeof($args)+1));
             array_push($args, $this->arg('grlhov'));
         }
         if ($this->has_arg('lrlhov')) {
-            array_push($where_arr, 'RESOLUTIONLIMITHIGH_OVERALL <= :'.(sizeof($args)+1));
+            array_push($where_arr, 'RESOLUTIONLIMITHIGH_OVERALL_1 <= :'.(sizeof($args)+1));
             array_push($args, $this->arg('lrlhov'));
         }
         // rmeas within i plus i minus overall
         if ($this->has_arg('grmov')) {
-            array_push($where_arr, 'RMEASWITHINIPLUSIMINUS_OVERALL >= :'.(sizeof($args)+1));
+            array_push($where_arr, 'RMEASWITHINIPLUSIMINUS_OVERALL_1 >= :'.(sizeof($args)+1));
             array_push($args, $this->arg('grmov'));
         }
         if ($this->has_arg('lrmov')) {
-            array_push($where_arr, 'RMEASWITHINIPLUSIMINUS_OVERALL <= :'.(sizeof($args)+1));
+            array_push($where_arr, 'RMEASWITHINIPLUSIMINUS_OVERALL_1 <= :'.(sizeof($args)+1));
             array_push($args, $this->arg('lrmov'));
         }
         // cc anomalous overall
         if ($this->has_arg('gccov')) {
-            array_push($where_arr, 'CCANOMALOUS_OVERALL >= :'.(sizeof($args)+1));
+            array_push($where_arr, 'CCANOMALOUS_OVERALL_1 >= :'.(sizeof($args)+1));
             array_push($args, $this->arg('gccov'));
         }
         if ($this->has_arg('lccov')) {
-            array_push($where_arr, 'CCANOMALOUS_OVERALL <= :'.(sizeof($args)+1));
+            array_push($where_arr, 'CCANOMALOUS_OVERALL_1 <= :'.(sizeof($args)+1));
             array_push($args, $this->arg('lccov'));
         }
         // r free final overall
         if ($this->has_arg('grffov')) {
-            array_push($where_arr, 'RFREEVALUEEND_OVERALL >= :'.(sizeof($args)+1));
+            array_push($where_arr, 'RFREEVALUEEND_OVERALL_1 >= :'.(sizeof($args)+1));
             array_push($args, $this->arg('grffov'));
         }
         if ($this->has_arg('lrffov')) {
-            array_push($where_arr, 'RFREEVALUEEND_OVERALL <= :'.(sizeof($args)+1));
+            array_push($where_arr, 'RFREEVALUEEND_OVERALL_1 <= :'.(sizeof($args)+1));
             array_push($args, $this->arg('lrffov'));
         }
         // r free initial overall
         if ($this->has_arg('grfiov')) {
-            array_push($where_arr, 'RFREEVALUESTART_OVERALL >= :'.(sizeof($args)+1));
+            array_push($where_arr, 'RFREEVALUESTART_OVERALL_1 >= :'.(sizeof($args)+1));
             array_push($args, $this->arg('grfiov'));
         }
         if ($this->has_arg('lrfiov')) {
-            array_push($where_arr, 'RFREEVALUESTART_OVERALL <= :'.(sizeof($args)+1));
+            array_push($where_arr, 'RFREEVALUESTART_OVERALL_1 <= :'.(sizeof($args)+1));
             array_push($args, $this->arg('lrfiov'));
         }
 
@@ -607,7 +607,179 @@ class Summary extends Page
                 LEFT JOIN Container c ON c.sessionId = b.sessionId
                 LEFT JOIN BLSample b2 ON b2.containerId = c.containerId
                 LEFT JOIN Proposal p ON b.proposalId = p.proposalId
-                LEFT JOIN Person p2 on p2.personId = p.personId 
+                LEFT JOIN Person p2 on p2.personId = p.personId
+                LEFT JOIN (
+                    SELECT GROUP_CONCAT(apss.scalingStatisticsType) as temp, apss.autoProcScalingId as autoProcScalingId_2,
+                    IFNULL(
+                    SUBSTR( 
+                        GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', apss.resolutionLimitHigh, '}'),
+                        INSTR( GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', apss.resolutionLimitHigh, '}'), '{overall') + 10, 
+                        LOCATE( '}', 
+                        GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', apss.resolutionLimitHigh, '}'),
+                        INSTR( GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', apss.resolutionLimitHigh, '}'), '{overall') ) -
+                        (INSTR( GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', apss.resolutionLimitHigh, '}'), '{overall') + 10)
+                            )
+                    , 'NULL')
+                    as RESOLUTIONLIMITHIGH_OVERALL_1,
+                    IFNULL(
+                    SUBSTR( 
+                        GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', apss.resolutionLimitHigh, '}'),
+                        INSTR( GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', apss.resolutionLimitHigh, '}'), '{innerShell') + 13, 
+                        LOCATE( '}', 
+                        GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', apss.resolutionLimitHigh, '}'),
+                        INSTR( GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', apss.resolutionLimitHigh, '}'), '{innerShell') ) -
+                        (INSTR( GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', apss.resolutionLimitHigh, '}'), '{innerShell') + 13)
+                        )
+                    , 'NULL')
+                    as RESOLUTIONLIMITHIGH_INNER_1,
+                    IFNULL(
+                    SUBSTR( 
+                        GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', apss.resolutionLimitHigh, '}'),
+                        INSTR( GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', apss.resolutionLimitHigh, '}'), '{outerShell') + 13, 
+                        LOCATE( '}', 
+                        GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', apss.resolutionLimitHigh, '}'),
+                        INSTR( GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', apss.resolutionLimitHigh, '}'), '{outerShell') ) -
+                        (INSTR( GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', apss.resolutionLimitHigh, '}'), '{outerShell') + 13) 
+                        ) 
+                    , 'NULL')
+                    as RESOLUTIONLIMITHIGH_OUTER_1,
+                    IFNULL(
+                    SUBSTR( 
+                        GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', apss.rMeasWithinIPlusIMinus, '}'),
+                        INSTR( GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', apss.rMeasWithinIPlusIMinus, '}'), '{overall') + 10, 
+                        LOCATE( '}', 
+                        GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', apss.rMeasWithinIPlusIMinus, '}'),
+                        INSTR( GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', apss.rMeasWithinIPlusIMinus, '}'), '{overall') ) -
+                        (INSTR( GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', apss.rMeasWithinIPlusIMinus, '}'), '{overall') + 10)
+                        )
+                    , 'NULL')
+                    as RMEASWITHINIPLUSIMINUS_OVERALL_1,
+                    IFNULL(
+                    SUBSTR( 
+                        GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', apss.rMeasWithinIPlusIMinus, '}'),
+                        INSTR( GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', apss.rMeasWithinIPlusIMinus, '}'), '{innerShell') + 13, 
+                        LOCATE( '}', 
+                        GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', apss.rMeasWithinIPlusIMinus, '}'),
+                        INSTR( GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', apss.rMeasWithinIPlusIMinus, '}'), '{innerShell') ) -
+                        (INSTR( GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', apss.rMeasWithinIPlusIMinus, '}'), '{innerShell') + 13) 
+                        )
+                    , 'NULL')
+                    as RMEASWITHINIPLUSIMINUS_INNER_1,
+                    IFNULL(
+                    SUBSTR( 
+                        GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', apss.rMeasWithinIPlusIMinus, '}'),
+                        INSTR( GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', apss.rMeasWithinIPlusIMinus, '}'), '{outerShell') + 13, 
+                        LOCATE( '}', 
+                        GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', apss.rMeasWithinIPlusIMinus, '}'),
+                        INSTR( GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', apss.rMeasWithinIPlusIMinus, '}'), '{outerShell') ) -
+                        (INSTR( GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', apss.rMeasWithinIPlusIMinus, '}'), '{outerShell') + 13)  
+                        ) 
+                    , 'NULL')
+                    as RMEASWITHINIPLUSIMINUS_OUTER_1,
+                    IFNULL(
+                    SUBSTR( 
+                        GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', apss.ccAnomalous, '}'),
+                        INSTR( GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', apss.ccAnomalous, '}'), '{overall') + 10, 
+                        LOCATE( '}', 
+                        GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', apss.ccAnomalous, '}'),
+                        INSTR( GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', apss.ccAnomalous, '}'), '{overall') ) -
+                        (INSTR( GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', apss.ccAnomalous, '}'), '{overall') + 10)   
+                        ) 
+                    , 'NULL')
+                    as CCANOMALOUS_OVERALL_1,
+                    IFNULL(
+                    SUBSTR( 
+                        GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', apss.ccAnomalous, '}'),
+                        INSTR( GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', apss.ccAnomalous, '}'), '{innerShell') + 13, 
+                        LOCATE( '}', 
+                        GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', apss.ccAnomalous, '}'),
+                        INSTR( GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', apss.ccAnomalous, '}'), '{innerShell') ) -
+                        (INSTR( GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', apss.ccAnomalous, '}'), '{innerShell') + 13)    
+                        ) 
+                    , 'NULL')
+                    as CCANOMALOUS_INNER_1,
+                    IFNULL(
+                    SUBSTR( 
+                        GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', apss.ccAnomalous, '}'),
+                        INSTR( GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', apss.ccAnomalous, '}'), '{outerShell') + 13, 
+                        LOCATE( '}', 
+                        GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', apss.ccAnomalous, '}'),
+                        INSTR( GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', apss.ccAnomalous, '}'), '{outerShell') ) -
+                        (INSTR( GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', apss.ccAnomalous, '}'), '{outerShell') + 13)     
+                        ) 
+                    , 'NULL')
+                    as CCANOMALOUS_OUTER_1,
+                    IFNULL(
+                    SUBSTR( 
+                        GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', m.rFreeValueStart, '}'),
+                        INSTR( GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', m.rFreeValueStart, '}'), '{overall') + 10, 
+                        LOCATE( '}', 
+                        GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', m.rFreeValueStart, '}'),
+                        INSTR( GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', m.rFreeValueStart, '}'), '{overall') ) -
+                        (INSTR( GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', m.rFreeValueStart, '}'), '{overall') + 10) 
+                        ) 
+                    , 'NULL')
+                    as RFREEVALUESTART_OVERALL_1,
+                    IFNULL(
+                    SUBSTR( 
+                        GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', m.rFreeValueStart, '}'),
+                        INSTR( GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', m.rFreeValueStart, '}'), '{innerShell') + 13, 
+                        LOCATE( '}', 
+                        GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', m.rFreeValueStart, '}'),
+                        INSTR( GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', m.rFreeValueStart, '}'), '{innerShell') ) -
+                        (INSTR( GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', m.rFreeValueStart, '}'), '{innerShell') + 13) 
+                        ) 
+                    , 'NULL')
+                    as RFREEVALUESTART_INNER_1,
+                    IFNULL(
+                    SUBSTR( 
+                        GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', m.rFreeValueStart, '}'),
+                        INSTR( GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', m.rFreeValueStart, '}'), '{outerShell') + 13, 
+                        LOCATE( '}', 
+                        GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', m.rFreeValueStart, '}'),
+                        INSTR( GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', m.rFreeValueStart, '}'), '{outerShell') ) -
+                        (INSTR( GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', m.rFreeValueStart, '}'), '{outerShell') + 13)  
+                        ) 
+                    , 'NULL')
+                    as RFREEVALUESTART_OUTER_1,
+                    IFNULL(
+                    SUBSTR( 
+                        GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', m.rFreeValueEnd, '}'),
+                        INSTR( GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', m.rFreeValueEnd, '}'), '{overall') + 10, 
+                        LOCATE( '}', 
+                        GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', m.rFreeValueEnd, '}'),
+                        INSTR( GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', m.rFreeValueEnd, '}'), '{overall') ) -
+                        (INSTR( GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', m.rFreeValueEnd, '}'), '{overall') + 10)  
+                        ) 
+                    , 'NULL')
+                    as RFREEVALUEEND_OVERALL_1,
+                    IFNULL(
+                    SUBSTR( 
+                        GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', m.rFreeValueEnd, '}'),
+                        INSTR( GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', m.rFreeValueEnd, '}'), '{innerShell') + 13, 
+                        LOCATE( '}', 
+                        GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', m.rFreeValueEnd, '}'),
+                        INSTR( GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', m.rFreeValueEnd, '}'), '{innerShell') ) -
+                        (INSTR( GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', m.rFreeValueEnd, '}'), '{innerShell') + 13)   
+                        ) 
+                    , 'NULL')
+                    as RFREEVALUEEND_INNER_1,
+                    IFNULL(
+                    SUBSTR( 
+                        GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', m.rFreeValueEnd, '}'),
+                        INSTR( GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', m.rFreeValueEnd, '}'), '{outerShell') + 13, 
+                        LOCATE( '}', 
+                        GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', m.rFreeValueEnd, '}'),
+                        INSTR( GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', m.rFreeValueEnd, '}'), '{outerShell') ) -
+                        (INSTR( GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', m.rFreeValueEnd, '}'), '{outerShell') + 13)   
+                        ) 
+                    , 'NULL')
+                    as RFREEVALUEEND_OUTER_1
+                    FROM AutoProcScalingStatistics apss
+                        LEFT JOIN MXMRRun m ON m.autoProcScalingId = apss.autoProcScalingId
+                    GROUP BY apss.autoProcScalingId
+                ) as detail 
+                    ON aps.autoProcScalingId = detail.autoProcScalingId_2
             WHERE $where AND b.beamLineName IN ('i02', 'i02-1', 'i02-2', 'i03', 'i04-1', 'i23', 'i24', 'i19-1' 'i19-2')
                          AND ap.spaceGroup is NOT NULL"
             , $tot_args);
@@ -881,9 +1053,18 @@ class Summary extends Page
             array_push($args, $this->arg('dcid'));
         }
 
-        if ($this->has_arg('com')) {
-            array_push($where_arr, "dcc.comments LIKE '%_FLAG_%' ");
+        // resolution limit high overall
+        if ($this->has_arg('descrlhov')) {
+            array_push($order_arr, 'RESOLUTIONLIMITHIGH_OVERALL_1 DESC');
         }
+
+        // resolution limit high overall
+        if ($this->has_arg('grlhov')) {
+            array_push($where_arr, 'RESOLUTIONLIMITHIGH_OVERALL_1 >= :'.(sizeof($args)+1));
+            array_push($args, $this->arg('grlhov'));
+        }
+
+
 
         // AND is the delimieter between seperate queries, converted to string
         $where = implode(" AND ", $where_arr);
@@ -895,24 +1076,24 @@ class Summary extends Page
         // get tot query
         $tot_args = $args;
 
-        $tot = $this->db->pq(
-            "SELECT COUNT(DISTINCT(dc.dataCollectionId)) as tot 
-            FROM DataCollection dc
-                LEFT JOIN AutoProcIntegration api ON api.dataCollectionId = dc.dataCollectionId
-                LEFT JOIN AutoProcProgram app ON app.autoProcProgramId = api.autoProcProgramId
-                LEFT JOIN ProcessingJob pj ON pj.processingJobId = app.processingJobId 
-                LEFT JOIN AutoProc ap ON ap.autoProcProgramId = app.autoProcProgramId
-                LEFT JOIN AutoProcScaling aps ON aps.autoProcId = ap.autoProcId  
-                LEFT JOIN DataCollectionGroup dcg ON dc.dataCollectionGroupId = dcg.dataCollectionGroupId
-                LEFT JOIN DataCollectionComment dcc ON dcc.dataCollectionId = dc.dataCollectionId
-                LEFT JOIN BLSession b ON dcg.sessionId = b.sessionId
-                LEFT JOIN Container c ON c.sessionId = b.sessionId
-                LEFT JOIN BLSample b2 ON b2.containerId = c.containerId
-                LEFT JOIN Proposal p ON b.proposalId = p.proposalId
-                LEFT JOIN Person p2 on p2.personId = p.personId 
-            WHERE $where AND b.beamLineName IN ('i02', 'i02-1', 'i02-2', 'i03', 'i04-1', 'i23', 'i24', 'i19-1' 'i19-2')
-                         AND ap.spaceGroup is NOT NULL"
-            , $tot_args);
+        // $tot = $this->db->pq(
+        //     "SELECT COUNT(DISTINCT(dc.dataCollectionId)) as tot 
+        //     FROM DataCollection dc
+        //         LEFT JOIN AutoProcIntegration api ON api.dataCollectionId = dc.dataCollectionId
+        //         LEFT JOIN AutoProcProgram app ON app.autoProcProgramId = api.autoProcProgramId
+        //         LEFT JOIN ProcessingJob pj ON pj.processingJobId = app.processingJobId 
+        //         LEFT JOIN AutoProc ap ON ap.autoProcProgramId = app.autoProcProgramId
+        //         LEFT JOIN AutoProcScaling aps ON aps.autoProcId = ap.autoProcId  
+        //         LEFT JOIN DataCollectionGroup dcg ON dc.dataCollectionGroupId = dcg.dataCollectionGroupId
+        //         LEFT JOIN DataCollectionComment dcc ON dcc.dataCollectionId = dc.dataCollectionId
+        //         LEFT JOIN BLSession b ON dcg.sessionId = b.sessionId
+        //         LEFT JOIN Container c ON c.sessionId = b.sessionId
+        //         LEFT JOIN BLSample b2 ON b2.containerId = c.containerId
+        //         LEFT JOIN Proposal p ON b.proposalId = p.proposalId
+        //         LEFT JOIN Person p2 on p2.personId = p.personId 
+        //     WHERE $where AND b.beamLineName IN ('i02', 'i02-1', 'i02-2', 'i03', 'i04-1', 'i23', 'i24', 'i19-1' 'i19-2')
+        //                  AND ap.spaceGroup is NOT NULL"
+        //     , $tot_args);
         
 
 
@@ -962,12 +1143,12 @@ class Summary extends Page
             GROUP_CONCAT(dc.startTime) as STARTTIME, 
             GROUP_CONCAT(app.processingPrograms) as PROCESSINGPROGRAMS,
             GROUP_CONCAT(ap.spaceGroup) as SPACEGROUP,
-            GROUP_CONCAT(ap.refinedCell_a) as REFINEDCELL_A, 
-            GROUP_CONCAT(ap.refinedCell_b) as REFINEDCELL_B,
-            GROUP_CONCAT(ap.refinedCell_c) as REFINEDCELL_C,
-            GROUP_CONCAT(ap.refinedCell_alpha) as REFINEDCELL_ALPHA, 
-            GROUP_CONCAT(ap.refinedCell_beta) as REFINEDCELL_BETA, 
-            GROUP_CONCAT(ap.refinedCell_gamma) as REFINEDCELL_GAMMA,
+            -- GROUP_CONCAT(ap.refinedCell_a) as REFINEDCELL_A, 
+            -- GROUP_CONCAT(ap.refinedCell_b) as REFINEDCELL_B,
+            -- GROUP_CONCAT(ap.refinedCell_c) as REFINEDCELL_C,
+            -- GROUP_CONCAT(ap.refinedCell_alpha) as REFINEDCELL_ALPHA, 
+            -- GROUP_CONCAT(ap.refinedCell_beta) as REFINEDCELL_BETA, 
+            -- GROUP_CONCAT(ap.refinedCell_gamma) as REFINEDCELL_GAMMA,
             GROUP_CONCAT(RESOLUTIONLIMITHIGH_OVERALL_1) as RESOLUTIONLIMITHIGH_OVERALL,
             b.visit_number as VISIT_NUMBER,
             dcc.comments as DC_COMMENTS,
@@ -1015,7 +1196,7 @@ class Summary extends Page
         // }
         
         // sql query output
-        $this->_output(array( 'tot' => $tot, 'rows' => $rows, 'where' => $where, 'args' => $args ));
+        $this->_output(array( 'rows' => $rows, 'where' => $where, 'args' => $args ));
 
     }
 
