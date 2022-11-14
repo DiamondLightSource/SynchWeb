@@ -5,7 +5,6 @@
         tw-mx-auto tw-border-b tw-border-gray-500">
         Data Collection Summary</p>
 
-
         <div class="tw-mt-12 tw-mb-4">
             
         </div>
@@ -14,10 +13,9 @@
         <div>
             <expandable-sidebar >
                 <template v-slot:filter-bar-title> 
-
-
                     <div class="tw-grid tw-grid-cols-2 tw-gap-4">
                         <div class="tw-col-span-3 tw-mt-3 tw-ml-3">
+                            <i class="fa fa-filter tw-mb-1"></i>
                             <h> Filter </h>
                         </div>
                         <div class="tw-col-span-1 tw-col-start-5 tw-mt-2 tw-mr-3 ">
@@ -292,8 +290,9 @@
             </div>
         </div>
 
-        <div v-if="isLoading == true" role="status">
-                <svg class="status tw-absolute tw-text-teal-200 tw-fill-current tw-animate-spin" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
+
+        <div v-if="isLoading" role="status">
+                <svg class="status tw-text-teal-200 tw-fill-current tw-animate-spin" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M73,50c0-12.7-10.3-23-23-23S27,37.3,27,50 M30.9,50c0-10.5,8.5-19.1,19.1-19.1S69.1,39.5,69.1,50">
                         </path>
                     </svg>
@@ -301,8 +300,8 @@
         </div>
 
 
-
         <div class="tw-overflow-x-scroll tw-scrolling-touch tw-z-20 tw-mt-2">
+
             <table class="summary-result-table tw-w-full">
                 <thead>
                     <tr >
@@ -368,6 +367,7 @@
                             }">
                             <button class="tw-ra tw-ml-1" title="Click to add this data collection to the list of favourite data collections"
                                     @click="favourite(result)">
+
                                 <i v-if=!isFavourite(result) class="fa fa-star-o"></i>
                                 <i v-if=isFavourite(result) class="fa fa-star"></i>
                             </button>
@@ -514,109 +514,72 @@ export default {
                 {
                     key: "DATACOLLECTIONID",
                     title: 'Data Collection Id',
-                    checked: true,
-                    isDesc : false,
-                    orderByCount: 2,
                     descParam : 'descdcid',
                     ascParam : 'ascdcid',
                 },
                 {
                     key: "FILETEMPLATE",
                     title: 'Prefix',
-                    checked: true,
-                    isDesc : false,
-                    orderByCount: 2,
                     descParam : 'descpref',
                     ascParam : 'ascpref',
                 },
                 {
                     key: "_NAME",
                     title: 'Sample Name',
-                    checked: true,
-                    isDesc : false,
-                    orderByCount: 2,
                     descParam : 'descsmpl',
                     ascParam : 'ascsmpl',
                 },
                 {
                     key: "STARTTIME",
                     title: 'Start Time',
-                    checked: true,
-                    isDesc : false,
-                    orderByCount: 2,
                     descParam : 'descstdt',
                     ascParam : 'ascstdt',
                 },
                 {
                     key: "PROCESSINGPROGRAMS",
                     title: 'Processing Programs',
-                    checked: true,
-                    isDesc : false,
-                    orderByCount: 2,
-                    // needing changed
                     descParam : 'descpp',
                     ascParam : 'ascpp',
                 },
                 {
                     key: "SPACEGROUP",
                     title: 'Space Group',
-                    checked: true,
-                    isDesc : false,
-                    orderByCount: 2,
                     descParam : 'descsg',
                     ascParam : 'ascsg',
                 },
                 {
                     key: "REFINEDCELL_A",
                     title: 'Unit Cell A',
-                    checked: true,
-                    isDesc : false,
-                    orderByCount: 2,
                     descParam : 'descrca',
                     ascParam : 'ascrca',
                 },
                 {
                     key: "REFINEDCELL_B",
                     title: 'Unit Cell B',
-                    checked: true,
-                    isDesc : false,
-                    orderByCount: 2,
                     descParam : 'descrcb',
                     ascParam : 'ascrcb',
                 },
                 {
                     key: "REFINEDCELL_C",
                     title: 'Unit Cell C',
-                    checked: true,
-                    isDesc : false,
-                    orderByCount: 2,
                     descParam : 'descrcc',
                     ascParam : 'ascrcc',
                 },
                 {
                     key: "REFINEDCELL_ALPHA",
                     title: 'Unit Cell Alpha',
-                    checked: true,
-                    isDesc : false,
-                    orderByCount: 2,
                     descParam : 'descrca',
                     ascParam : 'ascrca',
                 },
                 {
                     key: "REFINEDCELL_BETA",
                     title: 'Unit Cell Beta',
-                    checked: true,
-                    isDesc : false,
-                    orderByCount: 2,
                     descParam : 'descrcb',
                     ascParam : 'ascrcb',
                 },
                 {
                     key: "REFINEDCELL_GAMMA",
                     title: 'Unit Cell Gamma',
-                    checked: true,
-                    isDesc : false,
-                    orderByCount: 2,
                     descParam : 'descrcc',
                     ascParam : 'ascrcc',
                 },
@@ -624,135 +587,90 @@ export default {
                 {
                     key: "RMEASWITHINIPLUSIMINUS_INNER",
                     title: 'RMeas (Inner)',
-                    checked: true,
-                    isDesc : false,
-                    orderByCount: 2,
                     descParam : 'descrmeasin',
                     ascParam : 'ascrmeasin',
                 },
                 {
                     key: "RMEASWITHINIPLUSIMINUS_OUTER",
                     title: 'RMeas (Outer)',
-                    checked: true,
-                    isDesc : false,
-                    orderByCount: 2,
                     descParam : 'descrmeasou',
                     ascParam : 'ascrmeasou',
                 },
                 {
                     key: "RMEASWITHINIPLUSIMINUS_OVERALL",
                     title: 'RMeas (Overall)',
-                    checked: true,
-                    isDesc : false,
-                    orderByCount: 2,
                     descParam : 'descrmeasov',
                     ascParam : 'ascrmeasov',
                 },
                 {
                     key: "RESOLUTIONLIMITHIGH_INNER",
                     title: 'Resolution Limit High (Inner)',
-                    checked: true,
-                    isDesc : false,
-                    orderByCount: 2,
                     descParam : 'descrlhin',
                     ascParam : 'ascrlhin',
                 },
                 {
                     key: "RESOLUTIONLIMITHIGH_OUTER",
                     title: 'Resolution Limit High (Outer)',
-                    checked: true,
-                    isDesc : false,
-                    orderByCount: 2,
                     descParam : 'descrlhou',
                     ascParam : 'ascrlhou',
                 },
                 {
                     key: "RESOLUTIONLIMITHIGH_OVERALL",
                     title: 'Resolution Limit High (Overall)',
-                    checked: true,
-                    isDesc : false,
-                    orderByCount: 2,
                     descParam : 'descrlhov',
                     ascParam : 'ascrlhov',
                 },
                 {
                     key: "CCANOMALOUS_INNER",
                     title: 'CC Anomalous (Inner)',
-                    checked: true,
-                    isDesc : false,
-                    orderByCount: 2,
                     descParam : 'descccain',
                     ascParam : 'ascccain',
                 },
                 {
                     key: "CCANOMALOUS_OUTER",
                     title: 'CC Anomalous (Outer)',
-                    checked: true,
-                    isDesc : false,
-                    orderByCount: 2,
                     descParam : 'descccaou',
                     ascParam : 'ascccaou',
                 },
                 {
                     key: "CCANOMALOUS_OVERALL",
                     title: 'CC Anomalous (Overall)',
-                    checked: true,
-                    isDesc : false,
-                    orderByCount: 2,
                     descParam : 'descccaov',
                     ascParam : 'ascccaov',
                 },
                 {
                     key: "RFREEVALUESTART_INNER",
                     title: 'R Free Initial (Inner)',
-                    checked: true,
-                    isDesc : false,
-                    orderByCount: 2,
                     descParam : 'descrfsin',
                     ascParam : 'ascrfsin',
                 },
                 {
                     key: "RFREEVALUESTART_OUTER",
                     title: 'R Free Initial (Outer)',
-                    checked: true,
-                    isDesc : false,
-                    orderByCount: 2,
                     descParam : 'descrfsou',
                     ascParam : 'ascrfsou',
                 },
                 {
                     key: "RFREEVALUESTART_OVERALL",
                     title: 'R Free Initial (Overall)',
-                    checked: true,
-                    isDesc : false,
-                    orderByCount: 2,
                     descParam : 'descrfsov',
                     ascParam : 'ascrfsov',
                 },
                 {
                     key: "RFREEVALUEEND_INNER",
                     title: 'R Free Final  (Inner)',
-                    checked: true,
-                    isDesc : false,
-                    orderByCount: 2,
                     descParam : 'descrfein',
                     ascParam : 'ascrfein',
                 },
                 {
                     key: "RFREEVALUEEND_OUTER",
                     title: 'R Free Final (Outer)',
-                    checked: true,
-                    isDesc : false,
-                    orderByCount: 2,
                     descParam : 'descrfeou',
                     ascParam : 'ascrfeou',
                 },
                 {
                     key: "RFREEVALUEEND_OVERALL",
                     title: 'R Free Final (Overall)',
-                    checked: true,
-                    isDesc : false,
-                    orderByCount: 2,
                     descParam : 'descrfeov',
                     ascParam : 'ascrfeov',
                 },
@@ -901,128 +819,192 @@ export default {
         }
     },
     created() {
+        this.mapSummaryColumns()
         this.searchProposal()
         this.getSpaceGroupsCollection()
         this.populateSelectedColumns()
-
     },
     mounted() {
         window.onerror = (msg) => {
             alert('Error message: '+msg);
             return true;
         }
-            // window.onresize = () => {
-            //     this.windowWidth = window.innerWidth
-            // }
     },
     methods: {
         async toggleOrderBy(column) {
+            // toggles order by - ascending and descending which is specified in summary columns. changes svg depending on orderByCount
+            try {
+                this.isLoading = true;
 
-            this.isLoading = true;
+                this.summaryColumns[column].isDesc = !this.summaryColumns[column].isDesc;
+                this.summaryColumns[column].orderByCount += 1;
 
-            this.summaryColumns[column].isDesc = !this.summaryColumns[column].isDesc;
-            this.summaryColumns[column].orderByCount += 1;
+                console.log(this.summaryColumns)
 
-            console.log(this.summaryColumns)
-
-            if (this.summaryColumns[column].orderByCount > 2) {
-                this.summaryColumns[column].orderByCount = 0;
-                this.summaryColumns[column].isDesc = false;
-                };
-            
-            this.getQueryParams(false);
-
-            const results = await this.$store.dispatch('getCollection', this.summaryCollection);
-
-            this.summaryData = results.toJSON();
-
-            this.mapSummaryResults();
-
-            this.isLoading = false;
-
-        },
-        async searchProposal() {
-
-            this.isLoading = true;
-
-            this.proposalCollection = new ProposalCollection();
-            this.proposalCollection.queryParams.s = this.proposalText;
-            this.proposalCollection.state.pageSize = 1999;
-
-            const results = await this.$store.dispatch('getCollection', this.proposalCollection);
-            this.proposals = results.toJSON();
-
-            this.isLoading = false;
-        },
-        async getSpaceGroupsCollection() {
-
-            this.isLoading = true;
-
-            this.spaceGroupsCollection = new SpaceGroups(null, { state: { pageSize: 9999 } })
-            if (!this.SPACEGROUP) {
-                this.spaceGroupsCollection.queryParams.ty = this.containerGroup
-            }
-
-            const result = await this.$store.dispatch('getCollection', this.spaceGroupsCollection)
-            this.filterOptions.SPACEGROUP.data = result.toJSON()
-
-            this.isLoading = false;
-
-        },
-        async searchFilterParams() {
-
-            this.isLoading = true;
-
-            this.getQueryParams(false);
-
-            const results = await this.$store.dispatch('getCollection', this.summaryCollection);
-
-            this.totalRecords = results.state.totalRecords;
-            this.summaryData = results.toJSON();
-
-            this.mapSummaryResults()
-
-            console.log('summarydata2', this.summaryData)
-
-            this.isLoading = false;
-
-        },
-        async handlePageChange(data) {
-
-            this.isLoading = true;
-
-            this.currentPage = data.currentPage;
-            this.pageSize = data.pageSize;
-            if (this.selectedProposal){
+                if (this.summaryColumns[column].orderByCount > 2) {
+                    this.summaryColumns[column].orderByCount = 0;
+                    this.summaryColumns[column].isDesc = false;
+                    };
 
                 this.getQueryParams(false);
 
                 const results = await this.$store.dispatch('getCollection', this.summaryCollection);
+
+                this.summaryData = results.toJSON();
+
+                this.mapSummaryResults();
+
+                this.isLoading = false;
+
+            } catch(e) {                
+                
+                window.onerror('Cannot Order By: ' + e);
+                this.isLoading = false;
+                return ;
+
+            }
+
+        },
+        async searchProposal() {
+            // gets proposal list for combo box from proposal collection 
+            try {
+                this.isLoading = true;
+
+                this.proposalCollection = new ProposalCollection();
+                this.proposalCollection.queryParams.s = this.proposalText;
+                this.proposalCollection.state.pageSize = 1999;
+
+                const results = await this.$store.dispatch('getCollection', this.proposalCollection);
+                this.proposals = results.toJSON();
+
+                this.isLoading = false;
+
+            } catch(e) {
+
+                window.onerror('Cannot get Proposals Collection: ' + e);
+                this.isLoading = false;
+                return ;
+
+            }
+
+
+        },
+        async getSpaceGroupsCollection() {
+            // gets space group list for combo box from space group collection 
+            try {
+                this.isLoading = true;
+
+                this.spaceGroupsCollection = new SpaceGroups(null, { state: { pageSize: 9999 } })
+                if (!this.SPACEGROUP) {
+                    this.spaceGroupsCollection.queryParams.ty = this.containerGroup
+                }
+
+                const result = await this.$store.dispatch('getCollection', this.spaceGroupsCollection)
+                this.filterOptions.SPACEGROUP.data = result.toJSON()
+
+                this.isLoading = false;
+                 
+            } catch (e) {
+
+                window.onerror('Cannot get space group collection: ' + e);
+                this.isLoading = false;
+                return ;
+
+
+            }
+
+
+
+        },
+        async searchFilterParams() {
+          // searches for results with filter parameters applied which is in getQueryParams
+            try {
+                 
+                this.isLoading = true;
+
+                this.getQueryParams(false);
+
+                const results = await this.$store.dispatch('getCollection', this.summaryCollection);
+
+                this.totalRecords = results.state.totalRecords;
                 this.summaryData = results.toJSON();
 
                 this.mapSummaryResults()
 
-            };
+                this.isLoading = false;
 
-            this.isLoading = false;
+            } catch(e) {
+
+                window.onerror('Cannot get filtered results: ' + e);
+                this.isLoading = false;
+                return ;
+
+            }
+
+
+        },
+        async handlePageChange(data) {
+          // searches for results where pagination is handled in the backend with the pageSize and currentPage parameters. Also takes into account current 
+          //   filter params
+            try {
+
+                this.isLoading = true;
+
+                this.currentPage = data.currentPage;
+                this.pageSize = data.pageSize;
+
+                if (this.selectedProposal){
+
+                    this.getQueryParams(false);
+
+                    const results = await this.$store.dispatch('getCollection', this.summaryCollection);
+                    this.summaryData = results.toJSON();
+
+                    this.mapSummaryResults()
+
+                };
+
+                this.isLoading = false;
+
+            } catch(e) {
+
+                window.onerror('Cannot go to selected page: ' + e);
+                this.isLoading = false;
+                return ;
+                
+            }
+
+
 
         },
         async downloadFile() {
-            console.log('download')
+          // downloads all results (not page by page) whilst taking into account current filter params.  
+            try {
+                console.log('download')
 
-            if (this.summaryData) {
-                this.getQueryParams(true);
+                if (this.summaryData) {
+                    this.getQueryParams(true);
 
-                const results = await this.$store.dispatch('getCollection', this.summaryCollection);
-                this.summaryExport = results.toJSON();
+                    const results = await this.$store.dispatch('getCollection', this.summaryCollection);
+                    this.summaryExport = results.toJSON();
 
-                const csv = this.convertToCSV(this.summaryExport);
-                this.exportCSV(csv);
+                    const csv = this.convertToCSV(this.summaryExport);
+                    this.exportCSV(csv);
 
-                this.summaryExport = [];
+                    this.summaryExport = [];
+                }
+
+            } catch(e) {
+                
+                window.onerror('Cannot download csv: ' + e);
+                return ;
+                
             }
+
         },
         async favourite(result) {
+            // adds favourites by adding a _FLAG_ comment to DataCollection comments table. updatetype is always specified as a 'POST' rather than 'PATCH' due to some errors in 
+            // api not pushing data to 'patch' endpoint. if patching the endpoint we point to dc/patchcomments, which will patch (UPDATE) through sql code. 
             try {
                 var dispatchUrl = '/dc/patchcomments';
 
@@ -1054,39 +1036,52 @@ export default {
 
             }
             catch (e) {
+
                 window.onerror('Cannot favourite: ' + e);
                 return ;
+            
             }
         },
         async getFavourites() {
-            this.showFavourites = !this.showFavourites;
+        // gets favourites based on whether the DataCollection comments table contains _FLAG_ in its comments.  
+            try{
+                this.showFavourites = !this.showFavourites;
 
-            if (this.showFavourites) {
-            this.isLoading = true;
+                if (this.showFavourites) {
+                this.isLoading = true;
 
-            this.summaryCollection = new SummaryCollection();
+                this.summaryCollection = new SummaryCollection();
 
-            this.summaryCollection.queryParams = { page: this.currentPage, per_page: this.pageSize };
+                this.summaryCollection.queryParams = { page: this.currentPage, per_page: this.pageSize };
 
-            this.summaryCollection.queryParams.com = "_FLAG_";
+                this.summaryCollection.queryParams.com = "_FLAG_";
 
-            if (this.selectedProposal) {
-                this.summaryCollection.queryParams.prop = this.selectedProposal;
+                if (this.selectedProposal) {
+                    this.summaryCollection.queryParams.prop = this.selectedProposal;
+                }
+
+                console.log('dismatch', this.summaryCollection.queryParams)
+                const results = await this.$store.dispatch('getCollection', this.summaryCollection);
+
+                this.totalRecords = results.state.totalRecords;
+                this.summaryData = results.toJSON();
+
+                this.mapSummaryResults()
+
+                this.isLoading = false;
+
+                }else {
+                    this.searchFilterParams();
+                }
+
+            } catch(e) {
+
+                window.onerror('Cannot get favourites: ' + e);
+                this.isLoading = false;
+                return ;
+
             }
 
-            console.log('dismatch', this.summaryCollection.queryParams)
-            const results = await this.$store.dispatch('getCollection', this.summaryCollection);
-
-            this.totalRecords = results.state.totalRecords;
-            this.summaryData = results.toJSON();
-
-            this.mapSummaryResults()
-
-            this.isLoading = false;
-
-            }else {
-                this.searchFilterParams();
-            }
 
 
         },
@@ -1102,12 +1097,19 @@ export default {
                 return { ...e, isVisible: false, loadContent: false };
             })
         },
+        mapSummaryColumns() {
+            this.summaryColumns = 
+                this.summaryColumns.map((e) => {
+                return { ...e, checked: true, isDesc : false, orderByCount: 2};
+            })
+        },
         getQueryParams(isexport) {
-
+        // gets query params from summaryColumns or standalone variables i.e. selected Proposal etc. if this is an export then the pageSize will be for total records
+        // rather than what is specified by the front page spinner. 
             console.log('getqueryparams')
             this.summaryCollection = new SummaryCollection()
 
-            if (isexport == true) {
+            if (isexport) {
                 console.log(this.totalRecords);
                 this.summaryCollection.queryParams = { page: this.currentPage, per_page: this.totalRecords };
             }
@@ -1243,6 +1245,8 @@ export default {
                 };
         },
         addSGCombo(value) {
+            // basic: adds new Space Group option when click 'create new'. other methods 'post' to the spacegroup collection but opted against that 
+            // to avoid non-validated inserts to db. 
             this.filterOptions.SPACEGROUP.selectedValue = value;
         }
 
@@ -1250,6 +1254,7 @@ export default {
     },
     computed:{
         groupedOptions() {
+            // chunks filter drop downs in advanced filter to chunks of 5 to fit into grid space easier. 
             const chunksize = 5;
 
             const obj = this.filterOptions
@@ -1278,16 +1283,15 @@ export default {
 
 <style scoped>
 
+.status {
+    height: 125px;
+    width: 75px;
+    justify-content: center;
+    align-items: center;
+    display: flex;
+    position: fixed;
+    top: 45%;
+    left: 50%;
+}
 
-    .hide {
-    position: absolute !important;
-    top: -9999px !important;
-    left: -9999px !important;
-    }
-    .status {
-    height: 100px;
-    width: 50px;
-    margin-left: 550px;
-    
-    }
 </style>

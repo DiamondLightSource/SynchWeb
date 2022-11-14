@@ -3,8 +3,8 @@ define(['backbone.paginator', 'modules/summary/models/summaryresult'], function(
     return PageableCollection.extend({
         model: SummaryResult,
         mode: 'server',
-        url: '/summary/example',
-        // url: '/summary/results',
+        // url: '/summary/example',
+        url: '/summary/results',
                                     
 
         state: {

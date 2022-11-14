@@ -29,7 +29,7 @@ define([], function() {
             'dewars/overview': { title: 'Logistics', icon: 'fa-truck', permission: 'all_dewars' },
             statistics: { title: 'Stats', icon: 'fa-pie-chart' },
             faults: { title: 'Fault Reports', icon: 'fa-tasks' },
-            summary: { title: 'Summary', icon: 'fa-tasks' },
+            summary: { title: 'Summary', icon: 'fa-filter' },
         },
     }
 })

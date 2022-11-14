@@ -18,7 +18,7 @@ define([], function() {
         
         admin: {
             faults: { title: 'Fault Reports', icon: 'fa-tasks' },
-            summary: { title: 'Summary', icon: 'fa-tasks' },
+            summary: { title: 'Summary', icon: 'fa-filter' },
         },
     }
     
