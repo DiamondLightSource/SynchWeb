@@ -91,11 +91,13 @@ define(['marionette', 'views/form',
                 self.updateLC()
             })
 
-            if (this.shipping.get('DELIVERYAGENT_AGENTCODE')) {
+            if (this.shipping.get('TERMSACCEPTED') == 0) {
                 this.ui.courier.val(this.shipping.get('DELIVERYAGENT_AGENTNAME'))
                 this.ui.accountNumber.val(this.shipping.get('DELIVERYAGENT_AGENTCODE'))
-                this.ui.courier.attr('disabled', true)
-                this.ui.accountNumber.attr('disabled', true)
+                if (this.shipping.get('DELIVERYAGENT_AGENTNAME') && this.shipping.get('DELIVERYAGENT_AGENTCODE')) {
+                    this.ui.courier.attr('disabled', true)
+                    this.ui.accountNumber.attr('disabled', true)
+                }
                 this.model.shipmentHasAgentCode = true
             }
         },
