@@ -128,13 +128,13 @@ class PDF extends Page
             if (!sizeof($ship)) $this->_error('No such shipment', 'The specified shipment doesnt exist');
             else $ship = $ship[0];
             
-            $addr = array($ship['ADDRESS']);
+            $addr = array(rtrim($ship['ADDRESS']));
             if ($ship['CITY']) array_push($addr, PHP_EOL.$ship['CITY']);
             if ($ship['POSTCODE']) array_push($addr, PHP_EOL.$ship['POSTCODE']);
             if ($ship['COUNTRY']) array_push($addr, PHP_EOL.$ship['COUNTRY'].PHP_EOL);
             $ship['ADDRESS'] = str_replace(PHP_EOL, '<br/>',  implode('', $addr));
 
-            $addr = array($ship['ADDRESS2']);
+            $addr = array(rtrim($ship['ADDRESS2']));
             if ($ship['CITY2']) array_push($addr, PHP_EOL.$ship['CITY2']);
             if ($ship['POSTCODE2']) array_push($addr, PHP_EOL.$ship['POSTCODE2']);
             if ($ship['COUNTRY2']) array_push($addr, PHP_EOL.$ship['COUNTRY2'].PHP_EOL);
