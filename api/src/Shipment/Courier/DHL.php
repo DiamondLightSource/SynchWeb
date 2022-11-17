@@ -142,7 +142,7 @@ class DHL
         $shipment->RequestedPickupTime = 'Y';
         $shipment->LanguageCode = 'en';
         $shipment->SoftwareName = 'Synchweb';
-        $shipment->SoftwareVersion = $synchweb_version;
+        $shipment->SoftwareVersion = (isset($synchweb_version)) ? $synchweb_version : '4.0';
         $shipment->Billing->ShippingPaymentType = $options['payee'];
         $shipment->Billing->ShipperAccountNumber = $options['accountnumber'];
         if ($options['payee'] != 'S') {
