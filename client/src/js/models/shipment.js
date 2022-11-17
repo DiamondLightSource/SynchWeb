@@ -36,11 +36,6 @@ define(['backbone'], function(Backbone) {
         pattern: 'wwsdash'
       },
 
-      COUNTRY: {
-          required: true,
-          pattern: 'country',
-      },
-
       DELIVERYAGENT_SHIPPINGDATE: {
         required: false,
         pattern: 'edate'
