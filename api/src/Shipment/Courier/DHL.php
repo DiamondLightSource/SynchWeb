@@ -350,6 +350,7 @@ class DHL
         $quote->BkgDetails->DimensionUnit = 'CM';
         $quote->BkgDetails->WeightUnit = 'KG';
         $quote->BkgDetails->PaymentCountryCode = $this->_country_codes[$options['receiver']['country']];
+        $quote->BkgDetails->PaymentAccountNumber = $options['payment_account_number'];
 
         $quote->From->CountryCode = $this->_country_codes[$options['sender']['country']];
         $quote->From->Postalcode = $options['sender']['postcode'];

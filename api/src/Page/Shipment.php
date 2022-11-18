@@ -2468,9 +2468,18 @@ class Shipment extends Page
             if (!$this->has_arg('DEWARS')) $this->_error('No dewars specified');
             if (!is_array($this->arg('DEWARS'))) $this->_error('No dewars specified');
             
-            $ship = $this->db->pq("SELECT s.shippingid,s.sendinglabcontactid,s.returnlabcontactid, TO_CHAR(s.deliveryagent_shippingdate, 'YYYY-MM-DD') as deliveryagent_shippingdate, TO_CHAR(s.readybytime, 'HH24:MI') as readybytime
+            $ship = $this->db->pq(
+                "SELECT
+                 s.shippingid,
+                 s.sendinglabcontactid,
+                 s.returnlabcontactid,
+                 TO_CHAR(s.deliveryagent_shippingdate, 'YYYY-MM-DD') as deliveryagent_shippingdate,
+                 TO_CHAR(s.readybytime, 'HH24:MI') as readybytime,
+                 s.deliveryagent_agentcode
                 FROM shipping s 
-                WHERE s.proposalid = :1 AND s.shippingid = :2", array($this->proposalid,$this->arg('sid')));
+                WHERE s.proposalid = :1 AND s.shippingid = :2",
+                array($this->proposalid,$this->arg('sid'))
+            );
             if (!sizeof($ship)) $this->_error('No such shipment');
             $ship = $ship[0];
 
@@ -2523,6 +2532,8 @@ class Shipment extends Page
                     'date' => $ship['DELIVERYAGENT_SHIPPINGDATE'],
                     'declaredvalue' => $this->arg('DECLAREDVALUE'),
                     'readyby' => $ship['READYBYTIME'],
+
+                    'payment_account_number' => $ship['DELIVERYAGENT_AGENTCODE'],
 
                     'sender' => $this->has_arg('RETURN') ? $facility : $user,
                     'receiver' => $this->has_arg('RETURN') ? $user : $facility,
