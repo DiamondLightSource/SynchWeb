@@ -122,7 +122,7 @@
                                     :textField="value.textField"
                                     :valueField="value.valueField"
                                     size="small"
-                                    @create-new-option="addSGCombo"
+                                    v-on:create-new-option="(...args)=>addToCombo([value.key,...args])"
                                     v-model="value.selectedValue"
                                     :defaultText="value.selectedValue"
                                     ></combo-box>
@@ -197,32 +197,62 @@
                         </custom-accordian>
 
                     </div>
+
+
+                    <div class="tw-grid tw-grid-cols-12 tw-pb-2 tw-p-3" tabindex="0"  @focusout="updateParamsFromUserEntered">
+
+                        <textarea v-model="userEnteredParametersString" spellcheck="false" 
+                        class="tw-p-2 tw-text-white tw-shadow-xl tw-border-table-header-background tw-bg-table-header-background tw-rounded tw-col-span-6">
+                        </textarea>
+
+                        <button class="tw-p-2 focus:tw-outline-none" id="copyToClipboard" v-on:click.prevent="copyToClipboard(userEnteredParametersString)">
+                            <i class="fa fa-clipboard"></i>
+                        </button>
+
+
+                    </div>
                     
 
                 </template>
             </expandable-sidebar>
         </div>
+
+        <div class="copied">
+            <p class=" tw-rounded-full tw-h-6 tw-mt-1 tw-ml-4 tw-pt-1 tw-pl-3 tw-pr-3 
+                        tw-text-white tw-font-bold tw-bg-black tw-transition-opacity tw-duration-300 tw-ease-in"
+                        :class="{
+                            'tw-opacity-50': isCopied,
+                            'tw-opacity-0': !isCopied,
+                            }">
+          Copied!</p>
+        </div>
         
         <div class="tw-grid tw-grid-cols-2 gap-8">
             <div class="tw-flex">
-                <form class="tw-mt-10 tw-items-center">   
+                <div class="tw-mt-10 tw-items-center">   
                     <label for="simple-search" class="sr-only">Search</label>
                     <div class="tw-relative tw-w-full">
                         <input 
                         v-on:keyup.enter="onPrefixSearch" 
-                        v-model = "tempPrefix"
+                        v-model = "tempSamplePrefix"
                         type="text" id="simple-search" 
-                        class="tw-block tw-pl-10 tw-p-2.5 tw-appearance-none 
+                        class="tw-block tw-pl-5 tw-pr-10 tw-p-2.5 tw-appearance-none 
                         tw-text-gray-700 tw-bg-white tw-border 
-                        hover:tw-border-gray-500 tw-px-4 tw-rounded-lg tw-shadow tw-leading-tight focus:tw-outline-none 
+                        hover:tw-border-gray-500 tw-px-4 tw-rounded-xl tw-shadow tw-leading-tight focus:tw-outline-none 
                         focus:tw-shadow-outline"
                         placeholder="Press Enter to Search Prefix" required>
 
-                        <div class="tw-flex tw-absolute tw-inset-y-0 tw-left-0 tw-items-center tw-pl-3 tw-pointer-events-none">
-                            <svg aria-hidden="true" class="tw-w-5 tw-h-5 tw-text-gray-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"></path></svg>
-                        </div>
+                        <button 
+                            v-on:click="onPrefixSearch"
+                            class="tw-flex tw-absolute tw-inset-y-0 tw-right-0 tw-items-center tw-ml-3 tw-p-1 tw-rounded-xl"
+                                :class="{
+                            'tw-bg-content-active': isLoading,
+                            'tw-bg-content-sub-header-background tw-text-white': !isLoading,
+                            }">
+                            <svg aria-hidden="true" class="tw-w-5 tw-h-5 tw-text-white" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"></path></svg>
+                        </button>
                     </div>
-                </form>
+                </div>
                 <button
                     v-on:click="getFavourites"
                     class="tw-mt-10 tw-items-center tw-block tw-pl-5 tw-pr-5 tw-h-6 tw-ml-2
@@ -276,11 +306,14 @@
                         </div>
 
                         <div class="tw-absolute tw-right-0 tw-top-0"> 
-                            <ul class="tw-flex">
+                            <ul v-if="windowWidth > 900" class="tw-flex">
                                 <div v-for="(title, index) in selectedColumns" :key="title.id">
-                                    <p v-if="index <= 2"
+      
+                                    <p v-if="index <= pillIndex"
                                     class="tw-rounded-full tw-h-6 tw-max-w-xs tw-ml-1 tw-pt-1 
-                                    tw-pr-1 tw-pl-1 tw-bg-content-active "> {{ title }} </p>
+                                    tw-pr-1 tw-pl-1 tw-bg-content-active ">
+                                    <button v-on:click="togglePills(title)" class="fa fa-times tw-text-black"></button>
+                                    {{ title }} </p>
                                 </div>
                             </ul>
                         </div>
@@ -399,8 +432,8 @@
                                             <svg
                                                 class="tw-w-3 tw-h-4 tw-ml-1 tw-transition-all tw-duration-200 tw-transform"
                                                 :class="{
-                                                    'tw-rotate-180': !result.isVisible,
-                                                    'tw-rotate-0': result.isVisible,
+                                                    'tw-rotate-0': !result.isVisible,
+                                                    'tw-rotate-180': result.isVisible,
                                                 }"
                                                 fill="none"
                                                 stroke="currentColor"
@@ -461,6 +494,7 @@
 import SummaryCollection from 'modules/summary/collections/summaryresults.js'
 import ProposalCollection from 'collections/proposals'
 import SpaceGroups from 'collections/spacegroups'
+import ProcessingPipelines from 'collections/processingpipelines'
 
 import Pagination from 'app/components/pagination.vue'
 
@@ -473,12 +507,9 @@ import BaseInputText from '../../../app/components/base-input-text.vue'
 import ExpandableSidebar from '../../../app/components/expandable-sidebar.vue'
 import CustomAccordian from '../../../app/components/custom-accordian.vue'
 
-import { chunk } from 'lodash';
-import { isNullOrUndefined } from 'util'
-
-
 
 export default {
+
     name: 'Summary',
     components: {
     'custom-table-component': CustomTableComponent,
@@ -496,7 +527,10 @@ export default {
     data() {
         
         return {
+            windowWidth: window.innerWidth,
+            pillIndex : 2,
             isLoading : false,
+            isCopied : false,
             isHidden: true,
             showFavourites: false,
             totalRecords:  10,
@@ -507,6 +541,8 @@ export default {
             summaryExport : [],
             proposalCollection : null,
             proposals : [],
+            userEnteredParameters : [],
+            userEnteredParametersString : '',
             deselectedColumns: [],
             selectedColumns: [],
             expandProcessing : false,
@@ -537,7 +573,7 @@ export default {
                 },
                 {
                     key: "PROCESSINGPROGRAMS",
-                    title: 'Processing Programs',
+                    title: 'Processing Pipeline',
                     descParam : 'descpp',
                     ascParam : 'ascpp',
                 },
@@ -679,9 +715,15 @@ export default {
                 SPACEGROUP : {
                     title: 'Space Group',
                     inputtype: 'combo-box',
-                    selectedValue: '',
                     textField: "SPACEGROUPNAME",
                     valueField: "SPACEGROUPNAME",
+                    data: []
+                },
+                PROCESSINGPIPELINE : {
+                    title: 'Processing Pipeline',
+                    inputtype: 'combo-box',
+                    textField: "NAME",
+                    valueField: "NAME",
                     data: []
                 },
                 RESLIMITHIGH_OUTER : {
@@ -689,40 +731,35 @@ export default {
                     inputtype: 'greater-than-less-than',
                     paramLt: 'lrlhou',
                     paramGt: 'grlhou',
-                    filteredLt: '',
-                    filteredGt: '',
+
                 },
                 RMEASWIPLUSIMINUS_OUTER : {
                     title: 'Rmeas (Outer)',
                     inputtype: 'greater-than-less-than',
                     paramLt: 'lrmou',
                     paramGt: 'grmou',
-                    filteredLt: '',
-                    filteredGt: '',
+
                 },
                 CCANOM_OUTER : {
                     title: 'CC Anomalous (Outer)',
                     inputtype: 'greater-than-less-than',
                     paramLt: 'lccou',
                     paramGt: 'gccou',
-                    filteredLt: '',
-                    filteredGt: '',
+
                 },
                 RFREEINITIAL_OUTER : {
                     title: 'RFree Initial (Outer)',
                     inputtype: 'greater-than-less-than',
                     paramLt: 'lrfiou',
                     paramGt: 'grfiou',
-                    filteredLt: '',
-                    filteredGt: '',
+
                 },
                 RFREEFINAL_OUTER : {
                     title: 'RFree Final (Outer)',
                     inputtype: 'greater-than-less-than',
                     paramLt: 'lrffou',
                     paramGt: 'grffou',
-                    filteredLt: '',
-                    filteredGt: '',
+
                 },
                 // ----------------------------
                 RESLIMITHIGH_INNER : {
@@ -730,40 +767,35 @@ export default {
                     inputtype: 'greater-than-less-than',
                     paramLt: 'lrlhin',
                     paramGt: 'grlhin',
-                    filteredLt: '',
-                    filteredGt: '',
+
                 },
                 RMEASWIPLUSIMINUS_INNER : {
                     title: 'Rmeas (Inner)',
                     inputtype: 'greater-than-less-than',
                     paramLt: 'lrmin',
                     paramGt: 'grmin',
-                    filteredLt: '',
-                    filteredGt: '',
+
                 },
                 CCANOM_INNER : {
                     title: 'CC Anomalous (Inner)',
                     inputtype: 'greater-than-less-than',
                     paramLt: 'lccin',
                     paramGt: 'gccin',
-                    filteredLt: '',
-                    filteredGt: '',
+
                 },
                 RFREEINITIAL_INNER : {
                     title: 'RFree Initial (Inner)',
                     inputtype: 'greater-than-less-than',
                     paramLt: 'lrfiin',
                     paramGt: 'grfiin',
-                    filteredLt: '',
-                    filteredGt: '',
+
                 },
                 RFREEFINAL_INNER : {
                     title: 'RFree Final (Inner)',
                     inputtype: 'greater-than-less-than',
                     paramLt: 'lrffin',
                     paramGt: 'grffin',
-                    filteredLt: '',
-                    filteredGt: '',
+
                 },
                 // ----------------------------
                 RESLIMITHIGH_OVERALL : {
@@ -771,40 +803,35 @@ export default {
                     inputtype: 'greater-than-less-than',
                     paramLt: 'lrlhov',
                     paramGt: 'grlhov',
-                    filteredLt: '',
-                    filteredGt: '',
+
                 },
                 RMEASWIPLUSIMINUS_OVERALL : {
                     title: 'Rmeas (Overall)',
                     inputtype: 'greater-than-less-than',
                     paramLt: 'lrmov',
                     paramGt: 'grmov',
-                    filteredLt: '',
-                    filteredGt: '',
+
                 },
                 CCANOM_OVERALL : {
                     title: 'CC Anomalous (Overall)',
                     inputtype: 'greater-than-less-than',
                     paramLt: 'lccov',
                     paramGt: 'gccov',
-                    filteredLt: '',
-                    filteredGt: '',
+
                 },
                 RFREEINITIAL_OVERALL : {
                     title: 'RFree Initial (Overall)',
                     inputtype: 'greater-than-less-than',
                     paramLt: 'lrfiov',
                     paramGt: 'grfiov',
-                    filteredLt: '',
-                    filteredGt: '',
+
                 },
                 RFREEFINAL_OVERALL : {
                     title: 'RFree Final (Overall)',
                     inputtype: 'greater-than-less-than',
                     paramLt: 'lrffov',
                     paramGt: 'grffov',
-                    filteredLt: '',
-                    filteredGt: '',
+
                 },
             },
             selectedProposal : '',
@@ -814,23 +841,84 @@ export default {
             searchedLtUnitCellB : '',
             searchedGtUnitCellC : '',
             searchedLtUnitCellC : '',
-            tempPrefix : '',
-            searchedPrefix : '',
+            tempSamplePrefix : '',
+            searchedSamplePrefix : '',
         }
     },
     created() {
         this.mapSummaryColumns()
+        this.mapFilterOptions()
         this.searchProposal()
         this.getSpaceGroupsCollection()
+        this.getProcessingPipelinesCollection() 
         this.populateSelectedColumns()
     },
     mounted() {
+        this.mapUserEnteredParameters()
         window.onerror = (msg) => {
             alert('Error message: '+msg);
             return true;
         }
+        window.addEventListener('resize', () => {
+            this.windowWidth = window.innerWidth;
+        })
     },
     methods: {
+        mapSummaryResults() {
+                this.summaryData = 
+                this.summaryData.map((e) => {
+                return { ...e, isVisible: false, loadContent: false };
+            })
+        },
+        mapSummaryColumns() {
+            this.summaryColumns = 
+                this.summaryColumns.map((e) => {
+                return { ...e, checked: true, isDesc : false, orderByCount: 2};
+            })
+        },
+        mapFilterOptions() {
+            Object.keys(this.filterOptions).forEach(title => {
+
+                if(this.filterOptions[title].inputtype == 'combo-box') {
+                    this.filterOptions[title] = 
+                    {...this.filterOptions[title], key: title, selectedValue: ''};
+                }
+                if(this.filterOptions[title].inputtype== 'greater-than-less-than') {
+                    this.filterOptions[title] = 
+                    {...this.filterOptions[title], key: title, filteredLt: '',
+                    filteredGt: ''};
+                }
+
+            });
+        },
+        mapUserEnteredParameters() {
+
+            this.userEnteredParameters = [];
+
+            this.userEnteredParameters.push(
+                {title: "PROP", search_value: this.selectedProposal},
+                {title: "REFINEDCELL_A", greater_than: this.searchedGtUnitCellA, less_than: this.searchedLtUnitCellA},
+                {title: "REFINEDCELL_B", greater_than: this.searchedGtUnitCellB, less_than: this.searchedLtUnitCellB},
+                {title: "REFINEDCELL_C", greater_than: this.searchedGtUnitCellC, less_than: this.searchedLtUnitCellC});
+
+
+            Object.values(this.filterOptions).forEach(value => {
+                if(value.inputtype == 'combo-box') {
+                    this.userEnteredParameters.push({
+                        title: value.key, search_value: value.selectedValue});
+                }
+                if(value.inputtype == 'greater-than-less-than') {
+                    this.userEnteredParameters.push({
+                        title: value.key, greater_than: value.filteredGt, less_than: value.filteredLt});
+                }
+                
+            });
+
+            console.log(this.userEnteredParameters)
+
+            this.userEnteredParametersString = JSON.stringify(this.userEnteredParameters)
+
+        },
         async toggleOrderBy(column) {
             // toggles order by - ascending and descending which is specified in summary columns. changes svg depending on orderByCount
             try {
@@ -839,7 +927,6 @@ export default {
                 this.summaryColumns[column].isDesc = !this.summaryColumns[column].isDesc;
                 this.summaryColumns[column].orderByCount += 1;
 
-                console.log(this.summaryColumns)
 
                 if (this.summaryColumns[column].orderByCount > 2) {
                     this.summaryColumns[column].orderByCount = 0;
@@ -866,8 +953,10 @@ export default {
 
         },
         async searchProposal() {
+
             // gets proposal list for combo box from proposal collection 
             try {
+
                 this.isLoading = true;
 
                 this.proposalCollection = new ProposalCollection();
@@ -912,9 +1001,26 @@ export default {
 
 
             }
+        },
+        async getProcessingPipelinesCollection() {
+            // gets processing pipelines list for combo box from processing pipeline collection 
+            try {
+                this.isLoading = true;
 
+                let processingPipelinesCollection = new ProcessingPipelines()
 
+                const result = await this.$store.dispatch('getCollection', processingPipelinesCollection)
+                this.filterOptions.PROCESSINGPIPELINE.data = result.toJSON()
 
+                this.isLoading = false;
+                 
+            } catch (e) {
+
+                window.onerror('Cannot get processing pipeline collection: ' + e);
+                this.isLoading = false;
+                return ;
+
+            }
         },
         async searchFilterParams() {
           // searches for results with filter parameters applied which is in getQueryParams
@@ -929,6 +1035,8 @@ export default {
                 this.totalRecords = results.state.totalRecords;
                 this.summaryData = results.toJSON();
 
+                console.log(this.summaryData)
+
                 this.mapSummaryResults()
 
                 this.isLoading = false;
@@ -940,7 +1048,6 @@ export default {
                 return ;
 
             }
-
 
         },
         async handlePageChange(data) {
@@ -973,8 +1080,6 @@ export default {
                 return ;
                 
             }
-
-
 
         },
         async downloadFile() {
@@ -1060,7 +1165,6 @@ export default {
                     this.summaryCollection.queryParams.prop = this.selectedProposal;
                 }
 
-                console.log('dismatch', this.summaryCollection.queryParams)
                 const results = await this.$store.dispatch('getCollection', this.summaryCollection);
 
                 this.totalRecords = results.state.totalRecords;
@@ -1082,8 +1186,6 @@ export default {
 
             }
 
-
-
         },
         isFavourite(result) {
             if(!result.DC_COMMENTS) {
@@ -1091,32 +1193,22 @@ export default {
             };
             return result.DC_COMMENTS.includes('_FLAG_');
         },
-        mapSummaryResults() {
-                this.summaryData = 
-                this.summaryData.map((e) => {
-                return { ...e, isVisible: false, loadContent: false };
-            })
-        },
-        mapSummaryColumns() {
-            this.summaryColumns = 
-                this.summaryColumns.map((e) => {
-                return { ...e, checked: true, isDesc : false, orderByCount: 2};
-            })
-        },
         getQueryParams(isexport) {
         // gets query params from summaryColumns or standalone variables i.e. selected Proposal etc. if this is an export then the pageSize will be for total records
         // rather than what is specified by the front page spinner. 
             console.log('getqueryparams')
             this.summaryCollection = new SummaryCollection()
 
+
             if (isexport) {
-                console.log(this.totalRecords);
                 this.summaryCollection.queryParams = { page: this.currentPage, per_page: this.totalRecords };
             }
             else {
                 this.summaryCollection.queryParams = { page: this.currentPage, per_page: this.pageSize };
             }
 
+
+            // loop through summaryColumns and assign variables for order by 
             for (var index in this.summaryColumns) {
                 if(this.summaryColumns[index].orderByCount < 2 && this.summaryColumns[index].isDesc == true) {
                     var desc = this.summaryColumns[index].descParam;
@@ -1127,26 +1219,31 @@ export default {
                     this.summaryCollection.queryParams[asc] = 'asc';
                 }
 
-                try {
+            };
 
-                    if (this.summaryColumns[index].filteredLt) {
-                        this.summaryCollection.queryParams[this.summaryColumns[index].paramLt] = this.summaryColumns[index].filteredLt;
-                    };
-                    if (this.summaryColumns[index].filteredGt) {
-                        this.summaryCollection.queryParams[this.summaryColumns[index].paramGt] = this.summaryColumns[index].filteredGt;
-                    }; 
-                } catch {};
-
+            // loop through filterOptions and assign variables
+            for (var index in this.filterOptions) {
+                if (this.filterOptions[index].filteredLt) {
+                this.summaryCollection.queryParams[this.filterOptions[index].paramLt] = this.filterOptions[index].filteredLt;
+                };
+                if (this.filterOptions[index].filteredGt) {
+                    this.summaryCollection.queryParams[this.filterOptions[index].paramGt] = this.filterOptions[index].filteredGt;
+                }; 
             }
+
+
 
             if (this.selectedProposal) {
                 this.summaryCollection.queryParams.prop = this.selectedProposal;
             }            
-            if (this.searchedPrefix) {
-                this.summaryCollection.queryParams.sprefix = this.searchedPrefix;
+            if (this.searchedSamplePrefix) {
+                this.summaryCollection.queryParams.sprefix = this.searchedSamplePrefix;
             }
             if (this.filterOptions.SPACEGROUP.selectedValue) {
                 this.summaryCollection.queryParams.sg = this.filterOptions.SPACEGROUP.selectedValue;
+            }
+            if (this.filterOptions.PROCESSINGPIPELINE.selectedValue) {
+                this.summaryCollection.queryParams.pp = this.filterOptions.PROCESSINGPIPELINE.selectedValue;
             }
 
             this.summaryCollection.queryParams.gca = this.searchedGtUnitCellA;
@@ -1161,14 +1258,16 @@ export default {
         clearQueryParams() {
 
             this.selectedProposal = '';
-            this.searchedPrefix = '';
+            this.searchedSamplePrefix = '';
             this.searchedGtUnitCellA = '';
             this.searchedLtUnitCellA = '';
             this.searchedGtUnitCellB = '';
             this.searchedLtUnitCellB = '';
             this.searchedGtUnitCellC = '';
             this.searchedLtUnitCellC = '';
-            this.filterOptions.SPACEGROUP.selectedValue
+            this.filterOptions.SPACEGROUP.selectedValue = '';
+            this.filterOptions.PROCESSINGPIPELINE.selectedValue = '';
+
 
             for (var index in this.summaryColumns) {
                 this.summaryColumns[index].filteredLt = '';
@@ -1177,13 +1276,66 @@ export default {
 
             
         },
+        addToCombo(args) {
+            // basic: adds new combo box option when click 'create new'. other methods 'post' to the collection but opted against that 
+            // to avoid non-validated inserts to db. 
+
+            if (args[0] == 'PROCESSINGPIPELINE'){
+                this.filterOptions.PROCESSINGPIPELINE.selectedValue = args[1];
+            }
+
+            if (args[0] == 'SPACEGROUP'){
+                this.filterOptions.SPACEGROUP.selectedValue = args[1];
+            }
+  
+        },
+        updateParamsFromUserEntered() {
+            this.userEnteredParameters = eval(this.userEnteredParametersString);
+
+            for (var value in this.userEnteredParameters ) {
+
+                console.log(this.userEnteredParameters[value])
+                
+                if (this.userEnteredParameters[value].title == 'PROP') {
+                    this.selectedProposal = this.userEnteredParameters[value].search_value;
+                    continue;
+                };
+                if (this.userEnteredParameters[value].title == 'REFINEDCELL_A') {
+                    this.searchedGtUnitCellA = this.userEnteredParameters[value].greater_than;
+                    this.searchedLtUnitCellA = this.userEnteredParameters[value].less_than;
+                    continue;
+                };
+                if (this.userEnteredParameters[value].title == 'REFINEDCELL_B') {
+                    this.searchedGtUnitCellB = this.userEnteredParameters[value].greater_than;
+                    this.searchedLtUnitCellB = this.userEnteredParameters[value].less_than;
+                    continue;
+                };
+                if (this.userEnteredParameters[value].title == 'REFINEDCELL_C') {
+                    this.searchedGtUnitCellC = this.userEnteredParameters[value].greater_than;
+                    this.searchedLtUnitCellC = this.userEnteredParameters[value].less_than;
+                    continue;
+                };
+
+                if (this.filterOptions[this.userEnteredParameters[value].title].filteredLt) {
+                    this.filterOptions[this.userEnteredParameters[value].title].filteredLt =  this.userEnteredParameters[value].less_than;
+                    this.filterOptions[this.userEnteredParameters[value].title].filteredGt =  this.userEnteredParameters[value].greater_than;                   
+                };
+
+                if (this.filterOptions[this.userEnteredParameters[value].title].selectedValue) {
+                    this.filterOptions[this.userEnteredParameters[value].title].selectedValue = this.userEnteredParameters[value].search_value;
+                };
+
+            }
+
+        },
         toggleExpandAutoProc(index) {
-            console.log(this.summaryData[index])
+
             this.summaryData[index].isVisible = !this.summaryData[index].isVisible;
 
             this.contentDelay(index)
         },
         contentDelay(index) {
+
             if (!this.summaryData[index].loadContent) { 
           setTimeout(() => this.summaryData[index].loadContent = true, 400);
           } else {
@@ -1192,15 +1344,23 @@ export default {
 
         },
         onPrefixSearch() {
-            this.searchedPrefix = this.tempPrefix;
+
+            this.searchedSamplePrefix = this.tempSamplePrefix;
             this.searchFilterParams();
+
         },  
         populateSelectedColumns() {
+            
+
             for (const value of Object.entries(this.summaryColumns)) {
                 this.selectedColumns.push(value[1].title);
             };
+
+            this.selectedColumns.reverse();
+
         },
         checkedColumns(index) {
+
             this.summaryColumns[index].checked = !this.summaryColumns[index].checked;
             if (this.summaryColumns[index].checked == false){
 
@@ -1229,30 +1389,96 @@ export default {
             return result;
         },
         exportCSV(csv) {
+
             const anchor = document.createElement('a');
             anchor.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
             anchor.target = '_blank';
             anchor.download = 'summary_export.csv';
             anchor.click();
+
+        },
+        copyToClipboard(textToCopy){
+            navigator.clipboard.writeText(textToCopy);  
+            
+            this.isCopied = true;
+
+            setTimeout(() => this.isCopied = false, 5000);
+            
+            
         },
         getProcRow(value, result) {
+            // return an array for results, also change decimal places for floats
                 if (result[value]) {
                     var dataArray = result[value].split(",");
+                    
+
+                    if( value !== 'DATACOLLECTIONID' && 
+                        value !== 'FILETEMPLATE' &&
+                        value !== 'STARTTIME' && 
+                        value !== 'PROCESSINGPROGRAMS' && 
+                        value !== 'SPACEGROUP'
+                    ) {
+                        if(value.includes('RESOLUTIONLIMIT')) {
+                            return dataArray.map(function (x) { 
+                                return parseFloat(x).toFixed(4);
+                             });
+                        } else {
+                            return dataArray.map(function (x) { 
+                                return parseFloat(x).toFixed(2);
+                             });
+                        }
+                    };
+                        
+
                     return dataArray;
                 }
                 else {
                     return [];
                 };
         },
-        addSGCombo(value) {
-            // basic: adds new Space Group option when click 'create new'. other methods 'post' to the spacegroup collection but opted against that 
-            // to avoid non-validated inserts to db. 
-            this.filterOptions.SPACEGROUP.selectedValue = value;
+        togglePills(value) {
+
+            for (var index in this.summaryColumns) {
+
+                if (this.summaryColumns[index].title == value)
+                    this.checkedColumns(index);
+            }
+
+        },
+        resizePills() {
+            // change number of pills visible based on width of window
+
+            if (this.windowWidth > 1000 ) {
+                this.pillIndex = 1;
+            }
+
+            if (this.windowWidth > 1200 ) {
+                this.pillIndex = 2;
+            }
+
+            if (this.windowWidth > 1600 ) {
+                this.pillIndex = 3;
+            }
+
+            if (this.windowWidth > 1800 ) {
+                this.pillIndex = 4;
+            }
+
+            if (this.windowWidth > 2200 ) {
+                this.pillIndex = 5;
+            }
+
+            if (this.windowWidth > 2800 ) {
+                this.pillIndex = 6;
+            }
+
+
         }
 
 
+
     },
-    computed:{
+    computed: {
         groupedOptions() {
             // chunks filter drop downs in advanced filter to chunks of 5 to fit into grid space easier. 
             const chunksize = 5;
@@ -1271,9 +1497,28 @@ export default {
             console.log(output)
 
             return output;
+        },
+        watchParams() {
+            return `${this.selectedProposal}|${this.searchedGtUnitCellA}|${this.searchedLtUnitCellA}
+            |${this.searchedGtUnitCellB}|${this.searchedLtUnitCellB}|${this.searchedGtUnitCellC}
+            |${this.searchedLtUnitCellC}`;
         }
 
     },
+    watch: {
+        watchParams() {
+            this.mapUserEnteredParameters();
+        },
+        filterOptions: {
+            handler(val){
+                this.mapUserEnteredParameters();
+            },
+            deep: true
+        },
+        windowWidth() {
+            this.resizePills();
+        }
+    }
 
     
 }
@@ -1282,6 +1527,17 @@ export default {
 
 
 <style scoped>
+
+.copied {
+    height: 125px;
+    width: 75px;
+    justify-content: center;
+    align-items: center;
+    display: flex;
+    position: fixed;
+    top: 20%;
+    left: 50%;
+}
 
 .status {
     height: 125px;

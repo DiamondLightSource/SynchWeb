@@ -352,10 +352,24 @@ class Summary extends Page
         if ($this->has_arg('com')) {
             array_push($where_arr, "dcc.comments LIKE '%_FLAG_%' ");
         }
+        // search prefix and sample name 
+        if ($this->has_arg('sprefix')) {
+            $st = sizeof($args) + 1;
+            array_push($where_arr, "lower(dc.fileTemplate) LIKE lower(CONCAT(CONCAT('%',:$st),'%')) ESCAPE '$'");
+            array_push($args, $this->arg('sprefix'));
+        }
         // space group
         if ($this->has_arg('sg')) {
-            array_push($where_arr, 'ap.spaceGroup = :'.(sizeof($args)+1));
+            // array_push($where_arr, 'ap.spaceGroup = :'.(sizeof($args)+1));
+            $st = sizeof($args) + 1;
+            array_push($where_arr, "lower(ap.spaceGroup) LIKE lower(CONCAT(CONCAT('%',:$st),'%')) ESCAPE '$' ");
             array_push($args, $this->arg('sg'));
+        }
+        // processing programs
+        if ($this->has_arg('pp')) {
+            $st = sizeof($args) + 1;
+            array_push($where_arr, "lower(app.processingPrograms) LIKE lower(CONCAT(CONCAT('%',:$st),'%')) ESCAPE '$' ");
+            array_push($args, $this->arg('pp'));
         }
           // refined cell a
         if ($this->has_arg('gca')) {
@@ -568,21 +582,22 @@ class Summary extends Page
 
         $tot = $this->db->pq(
             "SELECT COUNT(DISTINCT(dc.dataCollectionId)) as tot 
-            FROM DataCollection dc
-                LEFT JOIN AutoProcIntegration api ON api.dataCollectionId = dc.dataCollectionId
-                LEFT JOIN AutoProcProgram app ON app.autoProcProgramId = api.autoProcProgramId
-                LEFT JOIN ProcessingJob pj ON pj.processingJobId = app.processingJobId 
-                LEFT JOIN AutoProc ap ON ap.autoProcProgramId = app.autoProcProgramId
-                LEFT JOIN AutoProcScaling aps ON aps.autoProcId = ap.autoProcId  
-                LEFT JOIN DataCollectionGroup dcg ON dc.dataCollectionGroupId = dcg.dataCollectionGroupId
+             FROM DataCollection dc
+                JOIN AutoProcIntegration api ON api.dataCollectionId = dc.dataCollectionId
+                JOIN AutoProcProgram app ON app.autoProcProgramId = api.autoProcProgramId
+                JOIN AutoProcScaling_has_Int apshi ON apshi.autoProcIntegrationId = api.autoProcIntegrationId
+                JOIN AutoProcScaling aps ON aps.autoProcScalingId = apshi.autoProcScalingId
+                JOIN AutoProc ap ON ap.autoProcId = aps.autoProcId
+                JOIN ProcessingJob pj ON pj.processingJobId = app.processingJobId 
+                JOIN DataCollectionGroup dcg ON dc.dataCollectionGroupId = dcg.dataCollectionGroupId
                 LEFT JOIN DataCollectionComment dcc ON dcc.dataCollectionId = dc.dataCollectionId
-                LEFT JOIN BLSession b ON dcg.sessionId = b.sessionId
+                JOIN BLSession b ON dcg.sessionId = b.sessionId
                 LEFT JOIN Container c ON c.sessionId = b.sessionId
                 LEFT JOIN BLSample b2 ON b2.containerId = c.containerId
-                LEFT JOIN Proposal p ON b.proposalId = p.proposalId
-                LEFT JOIN Person p2 on p2.personId = p.personId
+                JOIN Proposal p ON b.proposalId = p.proposalId
+                JOIN Person p2 on p2.personId = p.personId
                 LEFT JOIN (
-                    SELECT GROUP_CONCAT(apss.scalingStatisticsType) as temp, apss.autoProcScalingId as autoProcScalingId_2,
+                    SELECT apss.autoProcScalingId as autoProcScalingId_2,
                     IFNULL(
                     SUBSTR( 
                         GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', apss.resolutionLimitHigh, '}'),
@@ -777,7 +792,8 @@ class Summary extends Page
         $rows = $this->db->paginate(
             "SELECT dc.dataCollectionId, 
             GROUP_CONCAT(dc.fileTemplate) as FILETEMPLATE, 
-            GROUP_CONCAT(dc.startTime) as STARTTIME, 
+            GROUP_CONCAT(dc.startTime) as STARTTIME,
+            GROUP_CONCAT(b2.name) as _NAME,
             GROUP_CONCAT(app.processingPrograms) as PROCESSINGPROGRAMS,
             GROUP_CONCAT(ap.spaceGroup) as SPACEGROUP,
             GROUP_CONCAT(ap.refinedCell_a) as REFINEDCELL_A, 
@@ -806,20 +822,21 @@ class Summary extends Page
             p2.personId,
             p.proposalId, CONCAT(p.proposalCode, p.proposalNumber) as prop
             FROM DataCollection dc
-                LEFT JOIN AutoProcIntegration api ON api.dataCollectionId = dc.dataCollectionId
-                LEFT JOIN AutoProcProgram app ON app.autoProcProgramId = api.autoProcProgramId
-                LEFT JOIN ProcessingJob pj ON pj.processingJobId = app.processingJobId 
-                LEFT JOIN AutoProc ap ON ap.autoProcProgramId = app.autoProcProgramId
-                LEFT JOIN AutoProcScaling aps ON aps.autoProcId = ap.autoProcId  
-                LEFT JOIN DataCollectionGroup dcg ON dc.dataCollectionGroupId = dcg.dataCollectionGroupId
+                JOIN AutoProcIntegration api ON api.dataCollectionId = dc.dataCollectionId
+                JOIN AutoProcProgram app ON app.autoProcProgramId = api.autoProcProgramId
+                JOIN AutoProcScaling_has_Int apshi ON apshi.autoProcIntegrationId = api.autoProcIntegrationId
+                JOIN AutoProcScaling aps ON aps.autoProcScalingId = apshi.autoProcScalingId
+                JOIN AutoProc ap ON ap.autoProcId = aps.autoProcId
+                JOIN ProcessingJob pj ON pj.processingJobId = app.processingJobId 
+                JOIN DataCollectionGroup dcg ON dc.dataCollectionGroupId = dcg.dataCollectionGroupId
                 LEFT JOIN DataCollectionComment dcc ON dcc.dataCollectionId = dc.dataCollectionId
-                LEFT JOIN BLSession b ON dcg.sessionId = b.sessionId
+                JOIN BLSession b ON dcg.sessionId = b.sessionId
                 LEFT JOIN Container c ON c.sessionId = b.sessionId
                 LEFT JOIN BLSample b2 ON b2.containerId = c.containerId
-                LEFT JOIN Proposal p ON b.proposalId = p.proposalId
-                LEFT JOIN Person p2 on p2.personId = p.personId
+                JOIN Proposal p ON b.proposalId = p.proposalId
+                JOIN Person p2 on p2.personId = p.personId
                 LEFT JOIN (
-                    SELECT GROUP_CONCAT(apss.scalingStatisticsType) as temp, apss.autoProcScalingId as autoProcScalingId_2,
+                    SELECT apss.autoProcScalingId as autoProcScalingId_2,
                     IFNULL(
                     SUBSTR( 
                         GROUP_CONCAT( '{', apss.scalingStatisticsType, ': ', apss.resolutionLimitHigh, '}'),
