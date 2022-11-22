@@ -19,7 +19,7 @@
             <a class="button send" href="#"><i class="fa fa-plane"></i> Mark as Sent</a>
         <% } %>
 
-        <% if (DHL_ENABLE) { %>
+        <% if (DHL_ENABLE && (DELIVERYAGENT_AGENTNAME.toLowerCase() == 'dhl' || !DELIVERYAGENT_AGENTNAME)) { %>
         <% if (DELIVERYAGENT_HAS_LABEL == '1') { %>
             <a class="button pdf" href="<%-APIURL%>/pdf/awb/sid/<%-SHIPPINGID%>"><i class="fa fa-print"></i> Print Airway Bill</a>
             <!-- <a class="button cancel" href="#"><i class="fa fa-truck"></i> Cancel Pickup</a> -->
@@ -29,7 +29,7 @@
         <% } else if (COUNTRY && COUNTRY !="United Kingdom" ) { %>
             <a class="button" href="#"><i class="fa fa-credit-card"></i> Create Airway Bill - Disabled</a>
         <% } else { %>
-            <a class="button awb" href="/shipments/awb/sid/<%-SHIPPINGID%>"><i class="fa fa-credit-card"></i> Create Airway Bill</a>
+            <a class="button awb" href="/shipments/awb/sid/<%-SHIPPINGID%>"><i class="fa fa-credit-card"></i> Create DHL Airway Bill</a>
         <% } %>
         <% } %>
 
