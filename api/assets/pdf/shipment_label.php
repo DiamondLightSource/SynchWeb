@@ -93,17 +93,13 @@
             <div class="right thirty ca">
                 <img src="assets/images/dls_logo.jpg" width="250px" />
 
-                <br />
-                <br />
-
-                <p class="bold">Frozen samples in Dry-Shipper for experiments at facility</p>
-                <br />
-                <p class="bold">Not restricted,<br />As per IATA special provision A152</p>
-
                 <img src="assets/images/arrow.png"  width="250px" />
 
                 <p class="bold">HANDLE WITH CARE</p>
                 <p class="bold">DO NOT DROP</p>
+
+                <br />
+                <p class="bold">Cryogenic dry shipper. Not restricted,<br/>ADR A346, IATA A152.</p>
 
                 <?php if ($d['AUTO'] > 0): ?>
                     <div class="notification">
@@ -188,17 +184,13 @@
             <div class="right thirty ca">
                 <img src="assets/images/dls_logo.jpg" width="250px" />
 
-                <br />
-                <br />
-
-                <p class="bold">Frozen samples in Dry-Shipper for experiments at DLS</p>
-                <br />
-                <p class="bold">Not restricted,<br />As per IATA special provision A152</p>
-
                 <img src="assets/images/arrow.png"  width="250px" />
 
                 <p class="bold">HANDLE WITH CARE</p>
                 <p class="bold">DO NOT DROP</p>
+
+                <br />
+                <p class="bold">Cryogenic dry shipper. Not restricted,<br/>ADR A346, IATA A152.</p>
             </div>
 
             <div class="ca pad">
