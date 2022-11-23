@@ -167,7 +167,6 @@ class DHL
 
         $shipment->Reference->ReferenceID = $options['shipperid'];
 
-        $shipment->ShipmentDetails->NumberOfPieces = sizeof($options['pieces']);
         $shipment->ShipmentDetails->WeightUnit = 'K';
         $shipment->ShipmentDetails->GlobalProductCode = $options['service'];
         $shipment->ShipmentDetails->Date = array_key_exists('date', $options) ? $options['date'] : date('Y-m-d');
