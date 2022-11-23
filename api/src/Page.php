@@ -361,8 +361,11 @@ class Page
             if (get_class($this) == 'Download') return;
             
             $action = $act ? 'LOGON' : 'LOGOFF';
+
+            global $log_activity_to_ispyb;
+            $log_activity = isset($log_activity_to_ispyb) ? $log_activity_to_ispyb : true;
             
-            if ($this->user) {
+            if ($this->user && $log_activity) {
                 $com = 'ISPyB2: '.($com ? $com : $_SERVER['REQUEST_URI']);
                 $chk = $this->db->pq("SELECT comments FROM adminactivity WHERE username LIKE :1", array($this->user->login));
                 
