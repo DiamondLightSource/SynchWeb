@@ -131,10 +131,10 @@ class Authentication
 		    	} else {
 		    		$this->_error(400, 'Invalid one time authorisation token');
 		    	}
-		    }
 
-		    # Remove tokens more than 10 seconds old, they should have been used
-		    $this->db->pq("DELETE FROM SW_onceToken WHERE recordTimeStamp < NOW() - INTERVAL 10 SECOND");
+				# Remove tokens more than 10 seconds old, they should have been used
+				$this->db->pq("DELETE FROM SW_onceToken WHERE recordTimeStamp < NOW() - INTERVAL 10 SECOND");
+		    }
 
             if ($need_auth) $this->check_auth();
 		}
