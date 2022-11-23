@@ -470,17 +470,17 @@ export default {
 </script>
 <style scoped>
 /* Chrome, Safari, Edge, Opera */
->>> input.tabbed-sample-column[type="number"]::-webkit-outer-spin-button,
->>> input.tabbed-sample-column[type="number"]::-webkit-inner-spin-button {
+:deep() input.tabbed-sample-column[type="number"]::-webkit-outer-spin-button,
+:deep() input.tabbed-sample-column[type="number"]::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
 
 /* Firefox */
->>> input.tabbed-sample-column[type="number"] {
+:deep() input.tabbed-sample-column[type="number"] {
   -moz-appearance: textfield;
 }
->>> input.tabbed-sample-column[type="number"]:disabled {
+:deep() input.tabbed-sample-column[type="number"]:disabled {
   @apply tw-bg-content-dark-background
 }
 </style>

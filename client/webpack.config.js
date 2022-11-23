@@ -1,8 +1,6 @@
 const path = require('path');
 const webpack = require("webpack");
 const childProcess = require('child_process')
-// As of v3.0.3 GitRevisionPlugin does not work with MiniCssExtractPlugin
-// const GitRevisionPlugin = require('git-revision-webpack-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const CopyPlugin = require('copy-webpack-plugin');
 const VueLoaderPlugin = require('vue-loader/lib/plugin')
@@ -21,6 +19,7 @@ module.exports = (env, argv) => ({
     publicPath: path.join('/dist', gitHash, '/'),
   },
   devServer: {
+    static: __dirname,
     host: (env && env.host) || 'localhost',
     port: (env && env.port) || 9000,
     https: true,
@@ -260,24 +259,35 @@ module.exports = (env, argv) => ({
     // Anything matching in the from path is copied so images/file.png => assets/images/file.png
     // Also copy jquery to assets dir, so we can use it for Dialog popup with log files (see js/views/log.js)
     // Also copy config.json to assets dir, app uses the assets/js/config.json to tell if client needs updating
-    new CopyPlugin([
-      { context: path.resolve(__dirname, 'src'),
-        from: 'images/**',
-        to: path.resolve(__dirname, 'assets') },
-      { context: path.resolve(__dirname, 'src'),
-        from: 'js/config.json',
-        to: path.resolve(__dirname, 'assets/js/') },
-      { context: path.resolve(__dirname, 'src'),
-        from: 'js/vendor/jquery/jquery-1.9.1.min.js',
-        to: path.resolve(__dirname, 'assets/js/') },
-      { context: path.resolve(__dirname, 'src'),
-        from: 'files/**',
-        to: path.resolve(__dirname, 'assets') }
-    ]),
+    new CopyPlugin({ 
+        patterns: [
+            { 
+                context: path.resolve(__dirname, 'src'),
+                from: 'images/**',
+                to: path.resolve(__dirname, 'assets') 
+            },
+            { 
+                context: path.resolve(__dirname, 'src'),
+                from: 'js/config.json',
+                to: path.resolve(__dirname, 'assets/js/') 
+            },
+            { 
+                context: path.resolve(__dirname, 'src'),
+                from: 'js/vendor/jquery/jquery-1.9.1.min.js',
+                to: path.resolve(__dirname, 'assets/js/') 
+            },
+            { 
+                context: path.resolve(__dirname, 'src'),
+                from: 'files/**',
+                to: path.resolve(__dirname, 'assets') 
+            }
+        ]
+    }),
     new VueLoaderPlugin(),
     new MiniCssExtractPlugin({
       filename: '[name].css',
       chunkFilename: '[id].css',
+      ignoreOrder: true, // see https://stackoverflow.com/questions/51971857/mini-css-extract-plugin-warning-in-chunk-chunkname-mini-css-extract-plugin-con/67579319#67579319
     }),
     // Allow use to use process.env.NODE_ENV in the build
     // NODE_ENV should be set in scripts for production builds

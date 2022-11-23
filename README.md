@@ -78,9 +78,9 @@ Podman and VM approach detailed [here](https://github.com/DiamondLightSource/syn
 ```sh
 $ cd SynchWeb/client
 $ npm run build:dev
-$ npm run serve -- --env.port=8080 --env.proxy.target=http://192.168.33.10
+$ npm run serve -- --env port=8080 --env.proxy.target=http://localhost:8082
 ```
-In this example a browser pointed at localhost:8080 will connect to a SynchWeb back end on 192.168.33.10. Don't ignore the middle '--' otherwise the dev server will not receive the arguments!
+In this example a browser pointed at localhost:9000 will connect to a SynchWeb back end on localhost:8082. Don't ignore the middle '--' otherwise the dev server will not receive the arguments!
 
 The command line options available are described in this table. These override the defaults set in webpack.config.js.
 

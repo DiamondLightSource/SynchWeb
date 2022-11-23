@@ -529,22 +529,22 @@ export default {
 </script>
 <style scoped>
 /* Chrome, Safari, Edge, Opera */
->>> input.single-sample-input[type=number]::-webkit-outer-spin-button,
->>> input.single-sample-input[type=number]::-webkit-inner-spin-button{
+:deep() input.single-sample-input[type=number]::-webkit-outer-spin-button,
+:deep() input.single-sample-input[type=number]::-webkit-inner-spin-button{
   -webkit-appearance: none;
   margin: 0;
 }
 
 /* Firefox */
->>> input.single-sample-input[type=number] {
+:deep() input.single-sample-input[type=number] {
   -moz-appearance: textfield;
 }
 
->>> input.single-sample-input[type="number"]:disabled {
+:deep() input.single-sample-input[type="number"]:disabled {
   @apply tw-bg-content-dark-background
 }
 
->>> .sample-group-select .items-list, >>> .protein-select .items-list {
+:deep() .sample-group-select .items-list, :deep() .protein-select .items-list {
   height: 100px;
   overflow-y: auto;
 }
