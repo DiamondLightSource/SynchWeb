@@ -75,11 +75,11 @@ const routes = [
   },
   // List Visits
   // Replicating the optional visit url page and/or search term
-  {
-    path: '/visits(/s/)?:s([a-zA-Z0-9_-]+)?(/page/)?:page([0-9]+)?',
-    component: MarionetteView,
-    props: getVisitProps,
-  },
+  // {
+  //   path: '/visits(/s/)?:s([a-zA-Z0-9_-]+)?(/page/)?:page([0-9]+)?',
+  //   component: MarionetteView,
+  //   props: getVisitProps,
+  // },
 ]
 
 export default routes
