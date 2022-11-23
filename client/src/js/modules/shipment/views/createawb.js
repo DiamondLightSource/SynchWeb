@@ -52,7 +52,6 @@ define(['backbone',
 
             DESCRIPTION: {
                 required: true,
-                pattern: 'wwsdash',
             }
         }
     })
