@@ -4,6 +4,7 @@ namespace SynchWeb\Shipment\Courier;
 
 use Mtc\Dhl\Client\Web as DHLWebClient;
 use Mtc\Dhl\Datatype\AM\PieceType;
+use Mtc\Dhl\Datatype\AM\Reference;
 use Mtc\Dhl\Datatype\EU\Piece;
 use Mtc\Dhl\Entity\AM\GetQuote;
 use Mtc\Dhl\Entity\EU\BookPURequest;
@@ -164,6 +165,9 @@ class DHL
         $shipment->Consignee->Contact->PhoneNumber = $options['receiver']['phone'];
         $shipment->Consignee->Contact->Email = $options['receiver']['email'];
 
+        $shipment->Reference->ReferenceID = $options['shipperid'];
+
+        $shipment->ShipmentDetails->NumberOfPieces = sizeof($options['pieces']);
         $shipment->ShipmentDetails->WeightUnit = 'K';
         $shipment->ShipmentDetails->GlobalProductCode = $options['service'];
         $shipment->ShipmentDetails->Date = array_key_exists('date', $options) ? $options['date'] : date('Y-m-d');
@@ -175,7 +179,6 @@ class DHL
         if (array_key_exists('message', $options)) $shipment->Notification->Message = $options['message'];
 
         foreach ($options['pieces'] as $i => $d) {
-
             $piece = new Piece();
             $piece->PieceID = ($i + 1);
             $piece->Weight = $d['weight'];
@@ -185,7 +188,7 @@ class DHL
             $shipment->ShipmentDetails->addPiece($piece);
         }
 
-        $shipment->Shipper->ShipperID = (string)rand(10000000, 9999999);
+        $shipment->Shipper->ShipperID = $options['shipperid'];
         $shipment->Shipper->CompanyName = $options['sender']['company'];
 
         $shipper_address_lines = explode(PHP_EOL, rtrim($options['sender']['address']));
