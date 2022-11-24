@@ -2341,7 +2341,7 @@ class Shipment extends Page
             if (!sizeof($ship)) $this->_error('No such shipment');
             $ship = $ship[0];
 
-            if (!$ship['DELIVERYAGENT_FLIGHTCODE']) $this->_error('That shipment does not have an airway bill');
+            if (!$ship['DELIVERYAGENT_FLIGHTCODE']) $this->_error('That shipment does not have an air waybill');
 
             $cont = $this->db->pq("SELECT p.givenname, p.familyname, p.phonenumber, p.emailaddress, l.name, l.address, l.city, l.country, l.postcode
                 FROM labcontact c 
