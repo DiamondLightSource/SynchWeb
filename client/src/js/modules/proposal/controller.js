@@ -4,9 +4,9 @@ define(['underscore', 'marionette',
 
         'collections/visits',
     
-        'modules/proposal/visit_list',
-        'modules/types/saxs/proposal/views/visit_list',
-        'modules/types/gen/proposal/views/visit_list',
+        // 'modules/proposal/visit_list',
+        // 'modules/types/saxs/proposal/views/visit_list',
+        // 'modules/types/gen/proposal/views/visit_list',
 
 ], function(_, Marionette, ProposalList, Proposals, Visits, VisitList, SAXSVisitList, GenVisitList) {
   var controller = {
@@ -23,26 +23,26 @@ define(['underscore', 'marionette',
       })
     },
        
-    visit_list: function(s, page) {
-        app.bc.reset([{ title: 'Proposals', url: '/proposal' },
-                      { title: 'Visits for '+app.prop }])
-        app.loading()
-        page = page ? parseInt(page) : 1
+    // visit_list: function(s, page) {
+    //     app.bc.reset([{ title: 'Proposals', url: '/proposal' },
+    //                   { title: 'Visits for '+app.prop }])
+    //     app.loading()
+    //     page = page ? parseInt(page) : 1
         
-        var visits = new Visits(null, { state: { currentPage: page }, queryParams: { s: s } })
-        visits.fetch().done(function() {
-            var views = {
-                saxs: SAXSVisitList,
-                mx: VisitList,
-            }
+    //     var visits = new Visits(null, { state: { currentPage: page }, queryParams: { s: s } })
+    //     visits.fetch().done(function() {
+    //         var views = {
+    //             saxs: SAXSVisitList,
+    //             mx: VisitList,
+    //         }
             
-            var ty = app.proposal && app.proposal.get('TYPE')
-            if (ty in views) view = views[ty]
-            else view = GenVisitList
+    //         var ty = app.proposal && app.proposal.get('TYPE')
+    //         if (ty in views) view = views[ty]
+    //         else view = GenVisitList
             
-            app.content.show(new view({ collection: visits, params: { s: s } }))
-        })
-    }
+    //         app.content.show(new view({ collection: visits, params: { s: s } }))
+    //     })
+    // }
   }
        
        
@@ -53,10 +53,10 @@ define(['underscore', 'marionette',
       controller.list()
     })
       
-    app.on('visits:show', function() {
-      app.navigate('visits')
-      controller.visit_list()
-    })
+    // app.on('visits:show', function() {
+    //   app.navigate('visits')
+    //   controller.visit_list()
+    // })
   })
        
   return controller

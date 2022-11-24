@@ -16,11 +16,11 @@ define(['marionette', 'backbone',
         template: '',
     })
 
-    var EditVisitsList = VisitsList.extend({ 
-        clickableRow: ClickableRow, 
-        linksCell: LinksCell,
-        showTitle: false,
-    })
+    // var EditVisitsList = VisitsList.extend({ 
+    //     clickableRow: ClickableRow, 
+    //     linksCell: LinksCell,
+    //     showTitle: false,
+    // })
 
     return Marionette.LayoutView.extend({
         className: 'content',
