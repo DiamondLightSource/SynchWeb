@@ -39,6 +39,7 @@
                                 <p v-if="value.key != 'COMMENTS' && value.key != 'ARCHIVED'">{{visit[value.key]}}</p>
                                 <p v-if="value.key == 'COMMENTS' && visit.clicked == false">{{visit.COMMENTS}}</p>
                                 <input v-if="value.key == 'COMMENTS' && visit.clicked == true"
+                                       title="Comment cannot be seen by User Office"
                                        v-model="visit.edited_comment"
                                        v-on:keyup.enter="onEnter(visit)" />
                                 <i class="fa fa-archive r" title="This visit is archived, file is no longer available on disk" v-if="value.key == 'ARCHIVED' && visit.ARCHIVED == 1"></i>
