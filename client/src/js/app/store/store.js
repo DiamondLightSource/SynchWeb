@@ -43,7 +43,8 @@ const store = new Vuex.Store({
     motd: '',
     help: false, // Global help flag used to denote if we should display inline help on pages
     skipHomePage: config.skipHome || false,
-    models: {}
+    models: {},
+    appOptions: {}
   },
   mutations: {
     // For future use - save a model to a specified name
@@ -58,6 +59,7 @@ const store = new Vuex.Store({
       state.auth.type = options.get('authentication_type')
       state.auth.cas_sso = options.get('cas_sso')
       state.auth.cas_url = options.get('cas_url')
+      state.appOptions = options.toJSON()
 
       state.motd = options.get('motd') || state.motd
 
@@ -257,13 +259,22 @@ const store = new Vuex.Store({
       })
     },
     // post data to the backend that is not attached to any model
-    async saveDataToApi({ state, commit, rootState }, { url, data, requestType }) {
+    async saveDataToApi({ state, commit, rootState }, args) {
+      const { url, data, requestType, ...others } = args
       return await Backbone.ajax({
         url: app.apiurl + url,
         type: 'POST',
         data,
+        ...others,
 
         success: function(response) {
+          commit('notifications/addNotification', {
+            title: 'Action Successful',
+            message: requestType,
+            level: 'success'
+          }, {
+            root: true
+          })
           return response
         },
         error: function() {
@@ -278,13 +289,22 @@ const store = new Vuex.Store({
       })
     },
     // update data to the backend that is not attached to any model
-    async updateDataToApi({ state, commit, rootState }, { url, data, requestType, updateType }) {
+    async updateDataToApi({ state, commit, rootState }, args) {
+      const { url, data, requestType, type, ...others } = args
       return await Backbone.ajax({
         url: app.apiurl + url,
-        type: updateType,
+        type,
         data,
+        ...others,
 
         success: function(response) {
+          commit('notifications/addNotification', {
+            title: 'Update Successful',
+            message: requestType,
+            level: 'success'
+          }, {
+            root: true
+          })
           return response
         },
         error: function() {
@@ -324,7 +344,8 @@ const store = new Vuex.Store({
     sso: state => state.auth.cas_sso,
     sso_url: state => state.auth.cas_url,
     apiUrl: state => state.apiUrl,
-    appUrl: state => state.appUrl
+    appUrl: state => state.appUrl,
+    getAppOptions: state => state.appOptions
   }
 })
 
