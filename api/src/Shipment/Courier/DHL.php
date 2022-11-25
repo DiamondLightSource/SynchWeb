@@ -2,17 +2,17 @@
 
 namespace SynchWeb\Shipment\Courier;
 
-use DHL\Client\Web as WebserviceClient;
-use DHL\Datatype\AM\PieceType;
-use DHL\Datatype\GB\Piece;
-use DHL\Entity\AM\GetQuote;
-use DHL\Entity\GB\BookPURequest;
-use DHL\Entity\GB\BookPUResponse;
-use DHL\Entity\GB\CancelPURequest;
-use DHL\Entity\GB\CancelPUResponse;
-use DHL\Entity\GB\KnownTrackingRequest as Tracking;
-use DHL\Entity\GB\ShipmentRequest;
-use DHL\Entity\GB\ShipmentResponse;
+use Mtc\Dhl\Client\Web as DHLWebClient;
+use Mtc\Dhl\Datatype\AM\PieceType;
+use Mtc\Dhl\Datatype\EU\Piece;
+use Mtc\Dhl\Entity\AM\GetQuote;
+use Mtc\Dhl\Entity\EU\BookPURequest;
+use Mtc\Dhl\Entity\EU\BookPUResponse;
+use Mtc\Dhl\Entity\EU\CancelPURequest;
+use Mtc\Dhl\Entity\EU\CancelPUResponse;
+use Mtc\Dhl\Entity\EU\ShipmentRequest;
+use Mtc\Dhl\Entity\EU\ShipmentResponse;
+use Mtc\Dhl\Entity\EU\KnownTrackingRequest;
 
 class DHL
 {
@@ -107,7 +107,7 @@ class DHL
     {
         if (!array_key_exists('AWB', $options)) return;
 
-        $request = new Tracking();
+        $request = new KnownTrackingRequest();
         $request->SiteID = $this->_user;
         $request->Password = $this->_password;
         $request->MessageReference = '12345678901234567890' . (string)time();
@@ -119,7 +119,7 @@ class DHL
 
         if ($this->log) file_put_contents('logs/trackingrequest_' . date('Ymd-Hi') . '_' . str_replace(' ', '_', $options['AWB'] . '.xml'), $request->toXML());
 
-        $client = new WebserviceClient($this->env);
+        $client = new DHLWebClient($this->env);
         $xml = $client->call($request);
 
         if ($this->log) file_put_contents('logs/trackingresponse_' . date('Ymd-Hi') . '_' . str_replace(' ', '_', $options['AWB'] . '.xml'), $xml);
@@ -130,6 +130,8 @@ class DHL
 
     function create_awb($options)
     {
+        global $synchweb_version;
+
         $shipment = new ShipmentRequest();
         $shipment->SiteID = $this->_user;
         $shipment->Password = $this->_password;
@@ -139,21 +141,21 @@ class DHL
         $shipment->RegionCode = $this->region;
         $shipment->RequestedPickupTime = 'Y';
         $shipment->LanguageCode = 'en';
-        $shipment->PiecesEnabled = 'Y';
+        $shipment->SoftwareName = 'Synchweb';
+        $shipment->SoftwareVersion = (isset($synchweb_version)) ? $synchweb_version : '4.0';
         $shipment->Billing->ShippingPaymentType = $options['payee'];
         $shipment->Billing->ShipperAccountNumber = $options['accountnumber'];
         if ($options['payee'] != 'S') {
             $shipment->Billing->BillingAccountNumber = $options['accountnumber'];
         }
-        $shipment->Billing->DutyPaymentType = 'R';
-
-        $shipment->Dutiable->DeclaredValue = $options['declaredvalue'];
-        $shipment->Dutiable->DeclaredCurrency = 'GBP';
 
         $shipment->Consignee->CompanyName = $options['receiver']['company'];
-        foreach (split("\n", $options['receiver']['address']) as $l) {
-            if ($l) $shipment->Consignee->addAddressLine($l);
-        }
+
+        $reciever_address_lines = explode(PHP_EOL, rtrim($options['receiver']['address']));
+        if (isset($reciever_address_lines[0])) $shipment->Consignee->addAddressLine1($reciever_address_lines[0]);
+        if (isset($reciever_address_lines[1])) $shipment->Consignee->addAddressLine2($reciever_address_lines[1]);
+        if (isset($reciever_address_lines[2])) $shipment->Consignee->addAddressLine3($reciever_address_lines[2]);
+
         $shipment->Consignee->City = $options['receiver']['city'];
         $shipment->Consignee->PostalCode = $options['receiver']['postcode'];
         $shipment->Consignee->CountryName = $options['receiver']['country'];
@@ -162,22 +164,17 @@ class DHL
         $shipment->Consignee->Contact->PhoneNumber = $options['receiver']['phone'];
         $shipment->Consignee->Contact->Email = $options['receiver']['email'];
 
-        $shipment->ShipmentDetails->NumberOfPieces = sizeof($options['pieces']);
         $shipment->ShipmentDetails->WeightUnit = 'K';
         $shipment->ShipmentDetails->GlobalProductCode = $options['service'];
         $shipment->ShipmentDetails->Date = array_key_exists('date', $options) ? $options['date'] : date('Y-m-d');
         $shipment->ShipmentDetails->Contents = $options['description'];
         $shipment->ShipmentDetails->DimensionUnit = 'C';
         $shipment->ShipmentDetails->CurrencyCode = 'GBP';
-        $shipment->ShipmentDetails->DoorTo = 'DD';
-        // $shipment->ShipmentDetails->IsDutiable = 'Y';
 
         if (array_key_exists('notification', $options)) $shipment->Notification->EmailAddress = $options['notification'];
         if (array_key_exists('message', $options)) $shipment->Notification->Message = $options['message'];
 
-        $weight = 0;
         foreach ($options['pieces'] as $i => $d) {
-            $weight += $d['weight'];
 
             $piece = new Piece();
             $piece->PieceID = ($i + 1);
@@ -188,13 +185,14 @@ class DHL
             $shipment->ShipmentDetails->addPiece($piece);
         }
 
-        $shipment->ShipmentDetails->Weight = $weight;
-
         $shipment->Shipper->ShipperID = (string)rand(10000000, 9999999);
         $shipment->Shipper->CompanyName = $options['sender']['company'];
-        foreach (split("\n", $options['sender']['address']) as $l) {
-            if ($l) $shipment->Shipper->addAddressLine($l);
-        }
+
+        $shipper_address_lines = explode(PHP_EOL, rtrim($options['sender']['address']));
+        if (isset($shipper_address_lines[0])) $shipment->Shipper->addAddressLine1($shipper_address_lines[0]);
+        if (isset($shipper_address_lines[1])) $shipment->Shipper->addAddressLine2($shipper_address_lines[1]);
+        if (isset($shipper_address_lines[2])) $shipment->Shipper->addAddressLine3($shipper_address_lines[2]);
+
         $shipment->Shipper->City = $options['sender']['city'];
         $shipment->Shipper->PostalCode = $options['sender']['postcode'];
         $shipment->Shipper->CountryCode = $this->_country_codes[$options['sender']['country']];
@@ -207,14 +205,13 @@ class DHL
 
         if ($this->log) file_put_contents('logs/shipmentrequest_' . date('Ymd-Hi') . '_' . str_replace(' ', '_', $options['sender']['name'] . '.xml'), $shipment->toXML());
 
-        $client = new WebserviceClient($this->env);
+        $client = new DHLWebClient($this->env);
         $xml = $client->call($shipment);
 
         if ($this->log) file_put_contents('logs/shipmentresponse_' . date('Ymd-Hi') . '_' . str_replace(' ', '_', $options['sender']['name'] . '.xml'), $xml);
 
         $response = new ShipmentResponse();
         $response->initFromXML($xml);
-        // echo $response->toXML();
 
         $pieces = array();
         foreach ($response->Pieces as $p) {
@@ -276,14 +273,13 @@ class DHL
 
         if ($this->log) file_put_contents('logs/pickuprequest_' . date('Ymd-Hi') . '_' . str_replace(' ', '_', $options['requestor']['name'] . '.xml'), $pickup->toXML());
 
-        $client = new WebserviceClient($this->env);
+        $client = new DHLWebClient($this->env);
         $xml = $client->call($pickup);
 
         if ($this->log) file_put_contents('logs/pickupresponse_' . date('Ymd-Hi') . '_' . str_replace(' ', '_', $options['requestor']['name'] . '.xml'), $xml);
 
         $response = new BookPUResponse();
         $response->initFromXML($xml);
-        // echo $response->toXML();
 
         return array(
             'confirmationnumber' => $response->ConfirmationNumber,
@@ -312,14 +308,13 @@ class DHL
 
         if ($this->log) file_put_contents('logs/cancelpickuprequest_' . date('Ymd-Hi') . '_' . str_replace(' ', '_', $options['confirmationnumber'] . '.xml'), $cancelpickup->toXML());
 
-        $client = new WebserviceClient($this->env);
+        $client = new DHLWebClient($this->env);
         $xml = $client->call($cancelpickup);
 
         if ($this->log) file_put_contents('logs/cancelpickupresponse_' . date('Ymd-Hi') . '_' . str_replace(' ', '_', $options['confirmationnumber'] . '.xml'), $xml);
 
         $response = new CancelPUResponse();
         $response->initFromXML($xml);
-        // echo $response->toXML();
 
         return array();
     }
@@ -364,7 +359,7 @@ class DHL
 
         if ($this->log) file_put_contents('logs/quoterequest_' . date('Ymd-Hi') . '_' . str_replace(' ', '_', $options['sender']['city'] . '.xml'), $quote->toXML());
 
-        $client = new WebserviceClient($this->env);
+        $client = new DHLWebClient($this->env);
         $xml = $client->call($quote);
 
         if ($this->log) file_put_contents('logs/quoteresponse_' . date('Ymd-Hi') . '_' . str_replace(' ', '_', $options['sender']['city'] . '.xml'), $xml);
@@ -382,6 +377,8 @@ class DHL
                 $del = explode('-', (string)$q->DeliveryDate);
 
                 $code = (string)$q->GlobalProductCode;
+
+                // Skip over medical express
                 if ($code == 'C') continue;
 
                 array_push($products, array(
