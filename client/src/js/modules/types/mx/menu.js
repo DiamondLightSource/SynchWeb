@@ -4,7 +4,7 @@ define([], function() {
         menu: {
             dc: 'View All Data',
             visits: 'Visits',
-            calendar: 'Calendar',
+            cal: 'Calendar',
             assign: 'Assign Containers',
             shipments: 'Shipments',
             'dewars/registry': 'Registered Dewars',
