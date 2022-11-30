@@ -26,11 +26,12 @@
         <li>Resolution: <%-RESOLUTION%>&#197;</li>
         <li>Wavelength: <%-WAVELENGTH%>&#197;</li>
         <li>Exposure: <%-EXPOSURETIME%>s</li>
-        <% if (TOTALDOSE) { %>
-            <li>Dose: <%-TOTALDOSE%> MGy</li>
+        <% if (DCT == 'SAD') { %>
+            <%if (TOTALDOSE) { %>
+            <li>Dose:  <%-TOTALDOSE%> MGy</li>
         <% } else { %>
             <li>No Dose Available</li>
-        <% } %>
+        <% } } %>
         <li>Transmission: <%-TRANSMISSION%>%</li>
         <li>Beamsize: <%-BSX%>x<%-BSY%>&mu;m</li>
         <li>Type: <% if (DCT) print(DCT) %></li>
