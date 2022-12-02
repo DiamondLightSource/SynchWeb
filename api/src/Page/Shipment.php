@@ -55,6 +55,7 @@ class Shipment extends Page
                               'REPORT' => '.*',
 
                               'ADDRESS' => '.*',
+                              'COUNTRY' => '.*',
                               'DESCRIPTION' => '.*',
                               'EMAILADDRESS' => '.*',
                               'FAMILYNAME' => '.*',
@@ -188,8 +189,6 @@ class Shipment extends Page
 
                               array('/dewars/tracking(/:DEWARID)', 'get', '_get_dewar_tracking'),
 
-
-
                               array('/containers(/:cid)(/did/:did)', 'get', '_get_all_containers'),
                               array('/containers/', 'post', '_add_container'),
                               array('/containers/:cid', 'patch', '_update_container'),
@@ -242,14 +241,13 @@ class Shipment extends Page
             $this->dhl = new DHL($dhl_user, $dhl_pass, $dhl_env);
         }
 
-
         // Get the args that will be passsed into the 'extra' JSON column of the Shipping table
         function _get_extra_args() {
             $extra_args = array();
             foreach($this->extra_arg_list as $arg) {
-                // if ($this->has_arg($arg)) {
-                $extra_args[$arg] = $this->arg($arg);
-                // }
+                $this->has_arg($arg)) {
+                    $extra_args[$arg] = $this->arg($arg);
+                }
             }
             return $extra_args;
         }
@@ -849,12 +847,20 @@ class Shipment extends Page
 
 
         function _dispatch_dewar() {
+            global $facility_country;
             global $dispatch_email;
+            global $dispatch_email_intl;
             // Variable to store where the dewar is (Synchrotron or eBIC building)
             // Could map this to dewar storage locations in ISPyB to make more generic...?
             $dispatch_from_location = 'Synchrotron';
 
             if (!$this->has_arg('DEWARID')) $this->_error('No dewar specified');
+
+            $country = $this->arg('COUNTRY');
+
+            if (!$this->arg('COUNTRY')) {
+                $this->_error('Error submitting country: ' . $country);
+            }
 
             $dew = $this->db->pq(
                 "SELECT d.dewarid, d.barcode, d.storagelocation, s.shippingid
@@ -864,6 +870,7 @@ class Shipment extends Page
                 WHERE d.dewarid=:1 and p.proposalid=:2",
                 array($this->arg('DEWARID'), $this->proposalid)
             );
+
 
             if (!sizeof($dew)) $this->_error('No such dewar');
             else $dew = $dew[0];
@@ -939,9 +946,17 @@ class Shipment extends Page
             if (!array_key_exists('LOCATION', $data)) $data['LOCATION'] = $dewar_location;
             if (!array_key_exists('LOCALCONTACT', $data)) $data['LOCALCONTACT'] = $local_contact;
             if (!array_key_exists('LCEMAIL', $data)) $data['LCEMAIL'] = '';
+            $data['ADDRESS'] = $data['ADDRESS'] . PHP_EOL . $country;
             $email->data = $data;
+            
+            if ($country != $facility_country && !is_null($dispatch_email_intl)) {
+                $recpts = $dispatch_email_intl;
+            }
+            else {
+                $recpts = $dispatch_email;
+            }
 
-            $recpts = $dispatch_email.', '.$this->arg('EMAILADDRESS');
+            $recpts .= ', '.$this->arg('EMAILADDRESS');
             $local_contact_email = $this->has_arg('LCEMAIL') ? $this->args['LCEMAIL'] : '';
             if ($local_contact_email) $recpts .= ', '.$local_contact_email;
 
