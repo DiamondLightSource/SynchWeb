@@ -5,11 +5,11 @@
 
     <% if (DHL_ENABLE) { %>
         <% if (DELIVERYAGENT_HAS_LABEL == '1') { %>
-            <p class="message notify">You can print your Airway Bill by clicking &quot;Print Airway Bill&quot; below</p>
+            <p class="message notify">You can print your Air Waybill by clicking &quot;Print Air Waybill&quot; below</p>
         <% } else if (COUNTRY && COUNTRY !="United Kingdom" ) { %>
             <p class="message alert">International shipping is currently disabled from this application. Please see <a href="https://www.diamond.ac.uk/Instruments/Mx/I03/I03-Manual/Shipping-Samples.html">here</a></p>
         <% } else { %>
-            <p class="message notify">You can now book your shipment with DHL using &quot;Create Airway Bill&quot; below</p>
+            <p class="message notify">You can now book your shipment with DHL using &quot;Create Air Waybill&quot; below</p>
         <% } %>
     <% } %>
 
@@ -19,17 +19,17 @@
             <a class="button send" href="#"><i class="fa fa-plane"></i> Mark as Sent</a>
         <% } %>
 
-        <% if (DHL_ENABLE) { %>
+        <% if (DHL_ENABLE && (DELIVERYAGENT_AGENTNAME.toLowerCase() == 'dhl' || !DELIVERYAGENT_AGENTNAME)) { %>
         <% if (DELIVERYAGENT_HAS_LABEL == '1') { %>
-            <a class="button pdf" href="<%-APIURL%>/pdf/awb/sid/<%-SHIPPINGID%>"><i class="fa fa-print"></i> Print Airway Bill</a>
+            <a class="button pdf" href="<%-APIURL%>/pdf/awb/sid/<%-SHIPPINGID%>"><i class="fa fa-print"></i> Print Air Waybill</a>
             <!-- <a class="button cancel" href="#"><i class="fa fa-truck"></i> Cancel Pickup</a> -->
             <% if (!DELIVERYAGENT_PICKUPCONFIRMATION) { %>
                 <a class="button awb" href="/shipments/pickup/sid/<%-SHIPPINGID%>"><i class="fa fa-truck"></i> Rebook Pickup</a>
             <% } %>
         <% } else if (COUNTRY && COUNTRY !="United Kingdom" ) { %>
-            <a class="button" href="#"><i class="fa fa-credit-card"></i> Create Airway Bill - Disabled</a>
+            <a class="button" href="#"><i class="fa fa-credit-card"></i> Create Air Waybill - Disabled</a>
         <% } else { %>
-            <a class="button awb" href="/shipments/awb/sid/<%-SHIPPINGID%>"><i class="fa fa-credit-card"></i> Create Airway Bill</a>
+            <a class="button awb" href="/shipments/awb/sid/<%-SHIPPINGID%>"><i class="fa fa-credit-card"></i> Create DHL Air Waybill</a>
         <% } %>
         <% } %>
 
@@ -81,7 +81,7 @@
             </li>
 
             <li>
-                <span class="label">Shipping Airway Bill</span>
+                <span class="label">Shipping Air Waybill</span>
                 <span class="DELIVERYAGENT_FLIGHTCODE"><%-DELIVERYAGENT_FLIGHTCODE%></span>
             </li>
 
@@ -121,6 +121,60 @@
                 <span class="label">Estimated Delivery Date</span>
                 <span class="DELIVERYAGENT_DELIVERYDATE"><%-DELIVERYAGENT_DELIVERYDATE%></span>
             </li>
+
+            <% if (ENCLOSEDHARDDRIVE) {%>
+            <li>
+                <span class="label">Hard drive enclosed</span>
+                <span class="ENCLOSEDHARDDRIVE"><%-ENCLOSEDHARDDRIVE %></span>
+            </li>
+            <% } %>
+
+            <% if (ENCLOSEDTOOLS) {%>
+            <li>
+                <span class="label">Tools enclosed</span>
+                <span class="ENCLOSEDTOOLS"><%-ENCLOSEDTOOLS %></span>
+            </li>
+            <% } %>
+            
+
+            <% if (DYNAMIC) {%>
+            <% if (REMOTEORMAILIN) {%>
+            <li class="remoteormailin">
+                <span class="label">Remote or mail in</span>
+                <span class="REMOTEORMAILIN"><%-REMOTEORMAILIN %></span>
+            </li>
+            <% } %>
+
+            <li>
+                <span class="label">Session length</span>
+                <span class="SESSIONLENGTH"><%-SESSIONLENGTH %></span>
+            </li>
+
+            <li>
+                <span class="label">Energy/wavelength requirements</span>
+                <span class="ENERGY"><%-ENERGY %></span>
+            </li>
+
+            <li>
+                <span class="label">Microfocus beam requested</span>
+                <span class="MICROFOCUSBEAM"><%-MICROFOCUSBEAM %></span>
+            </li>
+
+            <li>
+                <span class="label">Scheduling restrictions</span>
+                <span class="SCHEDULINGRESTRICTIONS"><%-SCHEDULINGRESTRICTIONS %></span>
+            </li>
+
+            <li>
+                <span class="label">Consider for last-minute beamtime</span>
+                <span class="LASTMINUTEBEAMTIME"><%-LASTMINUTEBEAMTIME %></span>
+            </li>
+
+            <li>
+                <span class="label">Group Dewars</span>
+                <span class="DEWARGROUPING"><%-DEWARGROUPING %></span>
+            </li>
+            <% } %>
 
             <li>
                 <span class="label">Comments</span>

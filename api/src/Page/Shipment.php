@@ -81,6 +81,19 @@ class Shipment extends Page
                               'SAFETYLEVEL' => '\w+',
                               'DEWARS' => '\d+',
                               //'FIRSTEXPERIMENTID' => '\w+\d+-\d+',
+
+                              // Fields for responsive remote questions:
+                              'DYNAMIC' => '1?',
+                              'REMOTEORMAILIN' => '.*',
+                              'SESSIONLENGTH' => '\w+',
+                              'ENERGY' => '.*',
+                              'MICROFOCUSBEAM' => '1?|Yes|No',
+                              'SCHEDULINGRESTRICTIONS' => '.*',
+                              'LASTMINUTEBEAMTIME' => '1?|Yes|No',
+                              'DEWARGROUPING' => '.*',
+                              'ENCLOSEDHARDDRIVE' => '1?|Yes|No',
+                              'ENCLOSEDTOOLS' => '1?|Yes|No',
+
                               'COMMENTS' => '.*',
                               
                               'assigned' => '\d',
@@ -128,9 +141,24 @@ class Shipment extends Page
                               );
         
 
+        var $extra_arg_list = array(
+            'DYNAMIC',
+            'REMOTEORMAILIN',
+            'SESSIONLENGTH',
+            'ENERGY',
+            'MICROFOCUSBEAM',
+            'SCHEDULINGRESTRICTIONS',
+            'LASTMINUTEBEAMTIME',
+            'DEWARGROUPING',
+            'ENCLOSEDHARDDRIVE',
+            'ENCLOSEDTOOLS'
+        );
+        
+
         public static $dispatch = array(array('/shipments(/:sid)', 'get', '_get_shipments'),
                               array('/shipments', 'post', '_add_shipment'),
                               array('/shipments/:sid', 'patch', '_update_shipment'),
+                              array('/shipments/:sid', 'put', '_dummy_shipment_put'),
                               array('/send/:sid', 'get', '_send_shipment'),
                               array('/countries', 'get', '_get_countries'),
 
@@ -213,7 +241,17 @@ class Shipment extends Page
             $this->dhl = new DHL($dhl_user, $dhl_pass, $dhl_env);
         }
 
-
+        // Get the args that will be passsed into the 'extra' JSON column of the Shipping table
+        function _get_extra_args() {
+            $extra_args = array();
+            foreach($this->extra_arg_list as $arg) {
+                $this->has_arg($arg)) {
+                    $extra_args[$arg] = $this->arg($arg);
+                }
+            }
+            return $extra_args;
+        }
+        
         # ------------------------------------------------------------------------
         # List of shipments for a proposal
         function _get_shipments() {
@@ -270,7 +308,7 @@ class Shipment extends Page
                 if (array_key_exists($this->arg('sort_by'), $cols)) $order = $cols[$this->arg('sort_by')].' '.$dir;
             }
 
-            $rows = $this->db->paginate("SELECT s.deliveryagent_agentname, s.deliveryagent_agentcode, TO_CHAR(s.deliveryagent_shippingdate, 'DD-MM-YYYY') as deliveryagent_shippingdate, TO_CHAR(s.deliveryagent_deliverydate, 'DD-MM-YYYY') as deliveryagent_deliverydate, s.safetylevel, count(d.dewarid) as dcount,s.sendinglabcontactid, c.cardname as lcout, c2.cardname as lcret, s.returnlabcontactid, s.shippingid, s.shippingname, s.shippingstatus,TO_CHAR(s.creationdate, 'DD-MM-YYYY') as created, s.isstorageshipping, s.shippingtype, s.comments, s.deliveryagent_flightcode, IF(s.deliveryAgent_label IS NOT NULL, 1, 0) as deliveryagent_has_label, TO_CHAR(s.readybytime, 'HH24:MI') as readybytime, TO_CHAR(s.closetime, 'HH24:MI') as closetime, s.physicallocation, s.deliveryagent_pickupconfirmation, TO_CHAR(s.deliveryagent_readybytime, 'HH24:MI') as deliveryAgent_readybytime, TO_CHAR(s.deliveryAgent_callintime, 'HH24:MI') as deliveryAgent_callintime, CONCAT(p.proposalcode, p.proposalnumber) as prop, TO_CHAR(s.deliveryagent_flightcodetimestamp, 'HH24:MI DD-MM-YYYY') as deliveryagent_flightcodetimestamp, sum(d.weight) as weight, pe.givenname, pe.familyname, l.name as labname, l.address, l.city, l.postcode, l.country, CONCAT(p.proposalcode, p.proposalnumber) as prop, GROUP_CONCAT(IF(d.facilitycode, d.facilitycode, d.code)) as dewars, s.deliveryagent_productcode, IF(cta.couriertermsacceptedid,1,0) as termsaccepted, GROUP_CONCAT(d.deliveryagent_barcode) as deliveryagent_barcode, pe2.login as deliveryagent_flightcodeperson
+            $rows = $this->db->paginate("SELECT s.deliveryagent_agentname, s.deliveryagent_agentcode, TO_CHAR(s.deliveryagent_shippingdate, 'DD-MM-YYYY') as deliveryagent_shippingdate, TO_CHAR(s.deliveryagent_deliverydate, 'DD-MM-YYYY') as deliveryagent_deliverydate, s.safetylevel, count(d.dewarid) as dcount,s.sendinglabcontactid, c.cardname as lcout, c2.cardname as lcret, s.returnlabcontactid, s.shippingid, s.shippingname, s.shippingstatus,TO_CHAR(s.creationdate, 'DD-MM-YYYY') as created, s.isstorageshipping, s.shippingtype, s.comments, s.deliveryagent_flightcode, IF(s.deliveryAgent_label IS NOT NULL, 1, 0) as deliveryagent_has_label, TO_CHAR(s.readybytime, 'HH24:MI') as readybytime, TO_CHAR(s.closetime, 'HH24:MI') as closetime, s.physicallocation, s.deliveryagent_pickupconfirmation, TO_CHAR(s.deliveryagent_readybytime, 'HH24:MI') as deliveryAgent_readybytime, TO_CHAR(s.deliveryAgent_callintime, 'HH24:MI') as deliveryAgent_callintime, CONCAT(p.proposalcode, p.proposalnumber) as prop, TO_CHAR(s.deliveryagent_flightcodetimestamp, 'HH24:MI DD-MM-YYYY') as deliveryagent_flightcodetimestamp, sum(d.weight) as weight, pe.givenname, pe.familyname, l.name as labname, l.address, l.city, l.postcode, l.country, CONCAT(p.proposalcode, p.proposalnumber) as prop, GROUP_CONCAT(IF(d.facilitycode, d.facilitycode, d.code)) as dewars, s.deliveryagent_productcode, IF(cta.couriertermsacceptedid,1,0) as termsaccepted, GROUP_CONCAT(d.deliveryagent_barcode) as deliveryagent_barcode, pe2.login as deliveryagent_flightcodeperson, s.extra
               FROM proposal p 
               INNER JOIN shipping s ON p.proposalid = s.proposalid 
               LEFT OUTER JOIN labcontact c2 ON s.returnlabcontactid = c2.labcontactid 
@@ -286,6 +324,14 @@ class Shipment extends Page
 
             foreach ($rows as &$s) {
                 $s['DELIVERYAGENT_BARCODE'] = str_replace(',', ', ', $s['DELIVERYAGENT_BARCODE']);
+                $extra_json = json_decode($s['EXTRA'], true);
+                if (is_null($extra_json)) {
+                    $extra_json = array();
+                    foreach($this->extra_arg_list as $arg) {
+                        $extra_json[$arg] = "";
+                    }
+                }
+                $s = array_merge($s, $extra_json);
             }
             
             if ($this->has_arg('sid')) {
@@ -816,11 +862,15 @@ class Shipment extends Page
                 $this->_error('Error submitting country: ' . $country);
             }
 
-            $dew = $this->db->pq("SELECT d.dewarid, d.barcode, d.storagelocation, s.shippingid
-              FROM dewar d 
-              INNER JOIN shipping s ON s.shippingid = d.shippingid 
-              INNER JOIN proposal p ON p.proposalid = s.proposalid
-              WHERE d.dewarid=:1 and p.proposalid=:2", array($this->arg('DEWARID'), $this->proposalid));
+            $dew = $this->db->pq(
+                "SELECT d.dewarid, d.barcode, d.storagelocation, s.shippingid
+                FROM dewar d 
+                INNER JOIN shipping s ON s.shippingid = d.shippingid 
+                INNER JOIN proposal p ON p.proposalid = s.proposalid
+                WHERE d.dewarid=:1 and p.proposalid=:2",
+                array($this->arg('DEWARID'), $this->proposalid)
+            );
+
 
             if (!sizeof($dew)) $this->_error('No such dewar');
             else $dew = $dew[0];
@@ -830,22 +880,29 @@ class Shipment extends Page
             // If no location specified (i.e. deleted), then read from dewar transport history.
             // If no dewar transport history fall back to dewar location
             // We still update history based on provided location to record action from user
-            $dewar_location = $this->arg('LOCATION');
+            $dewar_location = $this->has_arg('LOCATION)') ? $this->arg('LOCATION') : "";
 
             if (empty($dewar_location)) {
-              // What was the last history entry for this dewar?
-              // User may have accidentally removed location from form
-              $last_history_results = $this->db->pq("SELECT storageLocation FROM dewartransporthistory WHERE dewarId = :1 ORDER BY DewarTransportHistoryId DESC LIMIT 1", array($dew['DEWARID']));
+                // What was the last history entry for this dewar?
+                // User may have accidentally removed location from form
+                $last_history_results = $this->db->pq(
+                    "SELECT storageLocation
+                    FROM dewartransporthistory
+                    WHERE dewarId = :1
+                    ORDER BY DewarTransportHistoryId DESC
+                    LIMIT 1",
+                    array($dew['DEWARID'])
+                );
 
-              if (sizeof($last_history_results)) {
-                  $last_history = $last_history_results[0];
-                  
-                  $dewar_location = $last_history['STORAGELOCATION'];
-              } else {
-                  // Use the current location of the dewar instead if no history
-                  $dewar_location = $dew['STORAGELOCATION'];
-              }              
+                if (sizeof($last_history_results)) {
+                    $last_history = $last_history_results[0];
+                    $dewar_location = $last_history['STORAGELOCATION'];
+                } else {
+                    // Use the current location of the dewar instead if no history
+                    $dewar_location = $dew['STORAGELOCATION'];
+                }              
             }
+
             // Check if the last history storage location is an EBIC prefix or not
             // Case insensitive search
             if (stripos($dewar_location, 'ebic') !== false) {
@@ -853,32 +910,45 @@ class Shipment extends Page
             }
 
             // Update dewar transport history with provided location.
-            $this->db->pq("INSERT INTO dewartransporthistory (dewartransporthistoryid,dewarid,dewarstatus,storagelocation,arrivaldate) 
-              VALUES (s_dewartransporthistory.nextval,:1,'dispatch-requested',:2,CURRENT_TIMESTAMP) RETURNING dewartransporthistoryid INTO :id", 
-              array($dew['DEWARID'], $this->arg('LOCATION')));
+            $this->db->pq(
+                "INSERT INTO dewartransporthistory (dewartransporthistoryid,dewarid,dewarstatus,storagelocation,arrivaldate) 
+                VALUES (s_dewartransporthistory.nextval,:1,'dispatch-requested',:2,CURRENT_TIMESTAMP)
+                RETURNING dewartransporthistoryid INTO :id",
+                array($dew['DEWARID'], $dewar_location)
+            );
 
             // Also update the dewar status and storage location to keep it in sync with history...
-            $this->db->pq("UPDATE dewar set dewarstatus='dispatch-requested', storagelocation=lower(:2) WHERE dewarid=:1", array($dew['DEWARID'], $this->arg('LOCATION')));
+            $this->db->pq(
+                "UPDATE dewar
+                set dewarstatus='dispatch-requested', storagelocation=lower(:2)
+                WHERE dewarid=:1",
+                array($dew['DEWARID'], $dewar_location)
+            );
 
             # Prepare e-mail response for dispatch request
             $subject_line = '*** Dispatch requested for Dewar '.$dew['BARCODE'].' from '.$dispatch_from_location.' - Pickup Date: '.$this->args['DELIVERYAGENT_SHIPPINGDATE'].' ***';
             $email = new Email('dewar-dispatch', $subject_line);
 
-            $this->args['LCEMAIL'] = $this->_get_email_fn($this->arg('LOCALCONTACT'));
-
-            // LDAP email search does not always provide a match
-            // So look at the ISPyB person record for a matching staff user
-            if (!$this->args['LCEMAIL'] && $this->args['LOCALCONTACT']) {
-              $this->args['LCEMAIL'] = $this->_get_ispyb_email_fn($this->args['LOCALCONTACT']);
+            // If a local contact is given, try to find their email address
+            // First try LDAP, if unsuccessful look at the ISPyB person record for a matching staff user
+            $local_contact = $this->has_arg('LOCALCONTACT') ? $this->args['LOCALCONTACT'] : '';
+            if ($local_contact) {
+                $this->args['LCEMAIL'] = $this->_get_email_fn($local_contact);
+                if (!$this->args['LCEMAIL']) {
+                    $this->args['LCEMAIL'] = $this->_get_ispyb_email_fn($local_contact);
+                }
             }
 
             $data = $this->args;
             if (!array_key_exists('FACILITYCODE', $data)) $data['FACILITYCODE'] = '';
             if (!array_key_exists('AWBNUMBER', $data)) $data['AWBNUMBER'] = '';
             if (!array_key_exists('DELIVERYAGENT_AGENTCODE', $data)) $data['DELIVERYAGENT_AGENTCODE'] = '';
+            if (!array_key_exists('LOCATION', $data)) $data['LOCATION'] = $dewar_location;
+            if (!array_key_exists('LOCALCONTACT', $data)) $data['LOCALCONTACT'] = $local_contact;
+            if (!array_key_exists('LCEMAIL', $data)) $data['LCEMAIL'] = '';
             $data['ADDRESS'] = $data['ADDRESS'] . PHP_EOL . $country;
             $email->data = $data;
-
+            
             if ($country != $facility_country && !is_null($dispatch_email_intl)) {
                 $recpts = $dispatch_email_intl;
             }
@@ -887,7 +957,8 @@ class Shipment extends Page
             }
 
             $recpts .= ', '.$this->arg('EMAILADDRESS');
-            if ($this->args['LCEMAIL']) $recpts .= ', '.$this->args['LCEMAIL'];
+            $local_contact_email = $this->has_arg('LCEMAIL') ? $this->args['LCEMAIL'] : '';
+            if ($local_contact_email) $recpts .= ', '.$local_contact_email;
 
             $email->send($recpts);
 
@@ -908,61 +979,82 @@ class Shipment extends Page
                 $args = array($this->arg('DEWARID'));
             }
 
-            $dew = $this->db->pq("SELECT d.trackingnumbertosynchrotron,d.trackingnumberfromsynchrotron, LOWER(s.deliveryagent_agentname) as deliveryagent_agentname
-              FROM dewar d 
-              INNER JOIN shipping s ON s.shippingid = d.shippingid 
-              INNER JOIN proposal p ON p.proposalid = s.proposalid
-              WHERE d.dewarid=:1 $where", $args);
+            $dewar = $this->db->pq(
+                "SELECT d.trackingnumbertosynchrotron,d.trackingnumberfromsynchrotron, LOWER(s.deliveryagent_agentname) as deliveryagent_agentname
+                FROM dewar d 
+                INNER JOIN shipping s ON s.shippingid = d.shippingid 
+                INNER JOIN proposal p ON p.proposalid = s.proposalid
+                WHERE d.dewarid=:1 $where",
+                $args
+            );
 
-            if (!sizeof($dew)) $this->_error('No such dewar');
-            else $dew = $dew[0];
+            if (!sizeof($dewar)) $this->_error('No such dewar');
+            else $dewar = $dewar[0];
 
-            if ($dew['DELIVERYAGENT_AGENTNAME'] == 'dhl' 
-                  && (($dew['TRACKINGNUMBERTOSYNCHROTRON'] && strlen($dew['TRACKINGNUMBERTOSYNCHROTRON']) <= 10) || 
-                     ($dew['TRACKINGNUMBERFROMSYNCHROTRON'] && strlen($dew['TRACKINGNUMBERFROMSYNCHROTRON']) <= 10))
-            ) {
-                $tr = $this->_dewar_tracking($dew);
+            $tracking_number_to_synchrotron = (string)($dewar['TRACKINGNUMBERTOSYNCHROTRON']);
+            $tracking_number_from_synchrotron = (string)($dewar['TRACKINGNUMBERFROMSYNCHROTRON']);
 
-                $this->_output(array(
-                  'ORIGIN' => (string)$tr['status']->AWBInfo->ShipmentInfo->OriginServiceArea->Description,
-                  'DESTINATION' => (string)$tr['status']->AWBInfo->ShipmentInfo->DestinationServiceArea->Description,
-                  'EVENTS' => $tr['events']
-                ));
+            $tracking_number = ($tracking_number_from_synchrotron) ? $tracking_number_from_synchrotron : $tracking_number_to_synchrotron;
 
+            if (!$tracking_number) $this->_error('Can\'t find tracking number for DewarId='.$this->arg('DEWARID'));
+
+            $delivery_agent = $dewar['DELIVERYAGENT_AGENTNAME'];
+
+            if ($delivery_agent == 'dhl') {
+                $tracking_history = $this->_dhl_dewar_tracking($tracking_number);
+                $this->_output($tracking_history);
             } else {
-                $this->_output();
+                $this->_error('Can\'t get tracking history for this delivery agent: '.$delivery_agent.PHP_EOL.'Tracking is only currently supported for DHL');
             }
         }
 
-        function _dewar_tracking($dewar) {
-            if ($dewar['TRACKINGNUMBERFROMSYNCHROTRON']) $status = $this->dhl->get_tracking_info(array('AWB' => $dewar['TRACKINGNUMBERFROMSYNCHROTRON']));
-            else $status = $this->dhl->get_tracking_info(array('AWB' => (string)($dewar['TRACKINGNUMBERTOSYNCHROTRON'])));
+        function _dhl_dewar_tracking($tracking_number) {
+            $parsed_tracking_numbers = array();
+            $lpnumber_matched = preg_match('/J?(JD\d+)/', $tracking_number, $parsed_tracking_numbers);
+            $awb_matched = ($lpnumber_matched) ? false :preg_match('/(\d{10})/', $tracking_number, $parsed_tracking_numbers);
 
-            if ($status->Response->Status) $this->_error($status->Response->Status);
-            else {
-                if ($status->AWBInfo->Status->ActionStatus != 'success') $this->_error((string)$status->AWBInfo->Status->ActionStatus);
-                else {
-                    $events = array();
-                    // print_r($status->AWBInfo->ShipmentInfo);
-                    $i = 1;
-                    foreach ($status->AWBInfo->ShipmentInfo->ShipmentEvent as $e) {
-                        $st = (string)$e->ServiceEvent->EventCode;
-                        $event = array(
-                            'EVENTID' => $i++,
-                            'STISO' => (string)$e->Date.'T'.(string)$e->Time,
-                            'DATE' => (string)$e->Date.' '.(string)$e->Time,
-                            'EVENT' => (string)$e->ServiceEvent->EventCode,
-                            'STATE' => $this->dhl->tracking_status($st),
-                            'LOCATION' => (string)$e->ServiceArea->Description,
-                            'SIGNATORY' => (string)$e->Signatory
-                        );
-
-                        array_push($events, $event);
-                    }
-
-                    return array('status' => $status, 'events' => $events);
-                }
+            if (!$awb_matched && !$lpnumber_matched) {
+                $this->_error('Tracking number \''.$tracking_number.'\' doesn\'t satisfy DHL requirements');
             }
+
+            $tracking_number = $parsed_tracking_numbers[1];
+
+            if ($lpnumber_matched) {
+                $status = $this->dhl->get_tracking_info(array('LPNumber' => $tracking_number));
+            } else if ($awb_matched) {
+                $status = $this->dhl->get_tracking_info(array('AWB' => $tracking_number));
+            }
+
+            if ($status->Response->Status) {
+                $this->_error($status->Response->Status);
+            }
+            if ($status->AWBInfo->Status->ActionStatus != 'success') {
+                $this->_error('Bad DHL action status: '.(string)$status->AWBInfo->Status->ActionStatus);
+            }
+
+            $events = array();
+            $i = 1;
+            foreach ($status->AWBInfo->ShipmentInfo->ShipmentEvent as $event) {
+                $event_code = (string)$event->ServiceEvent->EventCode;
+                $event_date = (string)$event->Date;
+                $event_time = (string)$event->Time;
+                $event = array(
+                    'EVENTID' => $i++,
+                    'STISO' => (string)$event_date.'T'.$event_time,
+                    'DATE' => (string)$event_date.' '.$event_time,
+                    'EVENT' => $event_code,
+                    'STATE' => $this->dhl->tracking_status($event_code),
+                    'LOCATION' => (string)$event->ServiceArea->Description,
+                    'SIGNATORY' => (string)$event->Signatory
+                );
+                array_push($events, $event);
+            }
+
+            return array(
+                'ORIGIN' => (string)$status->AWBInfo->ShipmentInfo->OriginServiceArea->Description,
+                'DESTINATION' => (string)$status->AWBInfo->ShipmentInfo->DestinationServiceArea->Description,
+                'EVENTS' => $events
+            );
         }
 
         
@@ -1131,7 +1223,7 @@ class Shipment extends Page
             
             if (!sizeof($ship)) $this->_error('No such shipment');
             
-            $fields = array('SHIPPINGNAME', 'SAFETYLEVEL', 'COMMENTS', 'DELIVERYAGENT_AGENTNAME', 'DELIVERYAGENT_AGENTCODE', 'DELIVERYAGENT_SHIPPINGDATE', 'DELIVERYAGENT_DELIVERYDATE', 'SENDINGLABCONTACTID', 'RETURNLABCONTACTID', 'READYBYTIME', 'CLOSETIME', 'PHYSICALLOCATION');
+            $fields = array('SHIPPINGNAME','SAFETYLEVEL', 'DELIVERYAGENT_AGENTNAME', 'DELIVERYAGENT_AGENTCODE', 'DELIVERYAGENT_SHIPPINGDATE', 'DELIVERYAGENT_DELIVERYDATE', 'SENDINGLABCONTACTID', 'RETURNLABCONTACTID', 'READYBYTIME', 'CLOSETIME', 'PHYSICALLOCATION', 'COMMENTS');
             foreach ($fields as $f) {
                 if ($this->has_arg($f)) {
                     $fl = ':1';
@@ -1153,6 +1245,17 @@ class Shipment extends Page
                 }
             }
 
+            foreach ($this->extra_arg_list as $extra_arg_name) {
+                if ($this->has_arg($extra_arg_name)) {
+                    $extra_arg_value = addslashes($this->arg($extra_arg_name));
+                    $shippingid = $this->arg('sid');
+                    $this->db->pq(
+                        "UPDATE shipping SET extra = JSON_SET(extra, '$.".$extra_arg_name."', '".$extra_arg_value."') WHERE shippingid=:1",
+                        array($shippingid)
+                    );
+                    $this->_output(array($extra_arg_name => $extra_arg_value));
+                }
+            }
         }
         
         
@@ -2062,6 +2165,14 @@ class Shipment extends Page
             if (!$this->has_arg('name')) $this->_error('No key specified');
             $this->_output($this->user->cache($this->arg('name')));
         }
+
+        function _dummy_shipment_put() {
+            // Does nothing when a PUT request is made on the shipment endpoint
+            // this can happen when a user edits a labcontact and selects the current labcontact
+            if (!$this->has_arg('sid')) $this->_error('No shipping id specified');
+            $sid = $this->arg('sid');
+            $this->_output(array('SHIPPINGID' => $sid));
+        }
         
         
         # Ajax shipment registration
@@ -2081,13 +2192,47 @@ class Shipment extends Page
             $rt = $this->has_arg('READYBYTIME') ? $this->arg('READYBYTIME') : null;
             $ct = $this->has_arg('CLOSETIME') ? $this->arg('CLOSETIME') : null;
             $loc = $this->has_arg('PHYSICALLOCATION') ? $this->arg('PHYSICALLOCATION') : null;
-
             
+            $hard_drive_enclosed = $this->arg('ENCLOSEDHARDDRIVE') ? "Yes" : "No";
+            $tools_enclosed = $this->arg('ENCLOSEDTOOLS') ? "Yes" : "No";
+
+            $dynamic = $this->arg("DYNAMIC");
+
+            $extra_array = array(
+                "ENCLOSEDHARDDRIVE"=> $hard_drive_enclosed,
+                "ENCLOSEDTOOLS" => $tools_enclosed,
+                "DYNAMIC" => $dynamic,
+            );
+
+            if ($dynamic) {
+                $remote_or_mailin = $this->has_arg('REMOTEORMAILIN') ? $this->arg('REMOTEORMAILIN') : '';
+                $session_length = $this->has_arg('SESSIONLENGTH') ? $this->arg('SESSIONLENGTH'): '';
+                $energy_requirements = $this->has_arg('ENERGY') ? $this->arg('ENERGY'): '';
+                $microfocus_beam = $this->arg('MICROFOCUSBEAM') ? "Yes" : "No";
+                $scheduling_restrictions = $this->arg('SCHEDULINGRESTRICTIONS') ? $this->arg('SCHEDULINGRESTRICTIONS') : "None";
+                $last_minute_beamtime = $this->arg('LASTMINUTEBEAMTIME') ? "Yes" : "No";
+                $dewar_grouping = $this->has_arg('DEWARGROUPING') ? $this->arg('DEWARGROUPING') : '';
+                $dynamic_options = array(
+                    "REMOTEORMAILIN" => $remote_or_mailin,
+                    "SESSIONLENGTH" => $session_length,
+                    "ENERGY" => $energy_requirements,
+                    "MICROFOCUSBEAM" => $microfocus_beam,
+                    "SCHEDULINGRESTRICTIONS" => $scheduling_restrictions,
+                    "LASTMINUTEBEAMTIME" => $last_minute_beamtime,
+                    "DEWARGROUPING" => $dewar_grouping
+                );
+                $extra_array = array_merge($extra_array, $dynamic_options);
+            }
+
+            $extra = json_encode($extra_array);
+
             $this->db->pq("INSERT INTO shipping (shippingid, proposalid, shippingname, deliveryagent_agentname, deliveryagent_agentcode, deliveryagent_shippingdate, deliveryagent_deliverydate, bltimestamp, creationdate, comments, sendinglabcontactid, returnlabcontactid, shippingstatus, safetylevel, readybytime, closetime, physicallocation) 
               VALUES (s_shipping.nextval,:1,:2,:3,:4,TO_DATE(:5,'DD-MM-YYYY'), TO_DATE(:6,'DD-MM-YYYY'),CURRENT_TIMESTAMP,CURRENT_TIMESTAMP,:7,:8,:9,'opened',:10, :11, :12, :13) RETURNING shippingid INTO :id", 
               array($this->proposalid, $this->arg('SHIPPINGNAME'), $an, $ac, $sd, $dd, $com, $this->arg('SENDINGLABCONTACTID'), $this->arg('RETURNLABCONTACTID'), $this->arg('SAFETYLEVEL'), $rt, $ct, $loc));
-            
+                        
             $sid = $this->db->id();
+
+            $this->db->pq("UPDATE shipping SET extra=:1 WHERE shippingid=:2", array($extra, $sid));
             
             if ($this->has_arg('DEWARS')) {
                 if ($this->arg('DEWARS') > 0) {
@@ -2284,6 +2429,7 @@ class Shipment extends Page
                     $awb = $this->dhl->create_awb(array(
                         'payee' => $payee,
                         'accountnumber' => $accno,
+                        'shipperid' => $ship['PROP'],
                         'service' => $product,
                         'date' => $ship['DELIVERYAGENT_SHIPPINGDATE'],
                         'declaredvalue' => $this->arg('DECLAREDVALUE'),
@@ -2355,7 +2501,7 @@ class Shipment extends Page
             if (!sizeof($ship)) $this->_error('No such shipment');
             $ship = $ship[0];
 
-            if (!$ship['DELIVERYAGENT_FLIGHTCODE']) $this->_error('That shipment does not have an airway bill');
+            if (!$ship['DELIVERYAGENT_FLIGHTCODE']) $this->_error('That shipment does not have an air waybill');
 
             $cont = $this->db->pq("SELECT p.givenname, p.familyname, p.phonenumber, p.emailaddress, l.name, l.address, l.city, l.country, l.postcode
                 FROM labcontact c 
@@ -2482,9 +2628,18 @@ class Shipment extends Page
             if (!$this->has_arg('DEWARS')) $this->_error('No dewars specified');
             if (!is_array($this->arg('DEWARS'))) $this->_error('No dewars specified');
             
-            $ship = $this->db->pq("SELECT s.shippingid,s.sendinglabcontactid,s.returnlabcontactid, TO_CHAR(s.deliveryagent_shippingdate, 'YYYY-MM-DD') as deliveryagent_shippingdate, TO_CHAR(s.readybytime, 'HH24:MI') as readybytime
+            $ship = $this->db->pq(
+                "SELECT
+                 s.shippingid,
+                 s.sendinglabcontactid,
+                 s.returnlabcontactid,
+                 TO_CHAR(s.deliveryagent_shippingdate, 'YYYY-MM-DD') as deliveryagent_shippingdate,
+                 TO_CHAR(s.readybytime, 'HH24:MI') as readybytime,
+                 s.deliveryagent_agentcode
                 FROM shipping s 
-                WHERE s.proposalid = :1 AND s.shippingid = :2", array($this->proposalid,$this->arg('sid')));
+                WHERE s.proposalid = :1 AND s.shippingid = :2",
+                array($this->proposalid,$this->arg('sid'))
+            );
             if (!sizeof($ship)) $this->_error('No such shipment');
             $ship = $ship[0];
 
@@ -2537,6 +2692,8 @@ class Shipment extends Page
                     'date' => $ship['DELIVERYAGENT_SHIPPINGDATE'],
                     'declaredvalue' => $this->arg('DECLAREDVALUE'),
                     'readyby' => $ship['READYBYTIME'],
+
+                    'payment_account_number' => $ship['DELIVERYAGENT_AGENTCODE'],
 
                     'sender' => $this->has_arg('RETURN') ? $facility : $user,
                     'receiver' => $this->has_arg('RETURN') ? $user : $facility,

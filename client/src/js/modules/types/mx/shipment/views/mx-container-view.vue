@@ -118,6 +118,8 @@
           ref="samples"
           :containerId="containerId"
           :invalid="invalid"
+          :currentlyEditingRow="editingSampleLocation"
+          @update-editing-row="updateEditingSampleLocation"
           @save-sample="onSaveSample"
           @clone-sample="onCloneSample"
           @clear-sample="onClearSample"
@@ -126,6 +128,8 @@
           @clone-container-column="onCloneColumn"
           @clone-container-row="onCloneRow"
           @bulk-update-samples="onUpdateSamples"
+          @update-samples-with-sample-group="handleSampleFieldChangeWithSampleGroups"
+          @save-sample-move="saveSampleMove"
         />
       </div>
 
@@ -202,7 +206,7 @@ export default {
       required: true
     }
   },
-  data: function() {
+  data() {
     return {
       container: {},
       containerId: 0,
@@ -245,7 +249,8 @@ export default {
       dewars: [],
       dewarsCollection: null,
       selectedDewarId: null,
-      selectedShipmentId: null
+      selectedShipmentId: null,
+      editingSampleLocation: null
     }
   },
   computed: {
@@ -253,7 +258,7 @@ export default {
       return this.$store.getters['samples/getContainerSamplesGroupData']
     },
   },
-  created: function() {
+  created() {
     // Get samples for this container id
     this.fetchShipments()
     this.loadContainerData()
@@ -287,7 +292,12 @@ export default {
     },
     // Callback from pagination
     onUpdateHistory(payload) {
-      let collection = new ContainerHistory( null, {state: { pageSize: payload.pageSize, currentPage: payload.currentPage}})
+      let collection = new ContainerHistory(null, {
+        state: {
+          pageSize: payload.pageSize,
+          currentPage: payload.currentPage
+        }
+      })
       this.getHistory(collection)
     },
     // Effectively a patch request to update specific fields
@@ -340,7 +350,7 @@ export default {
         })
       })
     },
-    onContainerCellClicked: function(location) {
+    onContainerCellClicked: function (location) {
       this.sampleLocation = location - 1
     },
     onQueueContainer() {
@@ -471,6 +481,24 @@ export default {
 
       sample.INITIALSAMPLEGROUP = matchingSampleGroup ? matchingSampleGroup['BLSAMPLEGROUPID'] : ''
       return sample
+    },
+    updateEditingSampleLocation(value) {
+      this.editingSampleLocation = value
+    },
+    async saveSampleMove(data) {
+      try {
+        this.$store.commit('loading', true)
+        await this.$store.dispatch('saveDataToApi', {
+          url: `/sample/move/${data['BLSAMPLEID']}`,
+          data,
+          requestType: 'moving sample to another container'
+        })
+
+        await this.loadSampleGroupInformation()
+        this.$refs.containerForm.reset()
+      } finally {
+        this.$store.commit('loading', false)
+      }
     }
   },
   watch: {

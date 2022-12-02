@@ -71,7 +71,7 @@ define(['marionette', 'views/form',
             first: 'select[name=FIRSTEXPERIMENTID]',
             name: 'input[name=SHIPPINGNAME]',
             noexp: 'input[name=noexp]',
-            dynamic: 'input[name=dynamic]', // A checkbox to indicate dynamic/remote mail-in scheduling
+            dynamic: 'input[name=DYNAMIC]', // A checkbox to indicate dynamic/remote mail-in scheduling
             comments: 'textarea[name=COMMENTS]', // We need this so we can prefill comments to aid users
         },
         
@@ -101,26 +101,32 @@ define(['marionette', 'views/form',
             if (this.ui.noexp.is(':checked')) {
                 this.ui.first.html('<option value=""> - </option>')
                 this.ui.dynamic.prop('checked', false)
-
-                var text = this.getOption('comments').automated || ''
-                this.ui.comments.val(text)
             } else {
-                this.ui.first.html(this.visits.opts())    
-                this.ui.comments.val('')
+                this.ui.first.html(this.visits.opts())
             }
-        },  
+        },
 
         updateDynamicSchedule: function() {
             // Added as a fix to allow dynamic sessions
             // An extra option for proposals with no sessions yet that are not automated
+            proposal_code = app.proposal.get('PROPOSALCODE')
+            industrial_codes = ['in', 'sw']
+            industrial_visit = industrial_codes.includes(proposal_code)
             if (this.ui.dynamic.is(':checked')) {
                 this.ui.first.html('<option value=""> - </option>')
                 this.ui.noexp.prop('checked', false)
-                var text = this.getOption('comments').dynamic || ''
-                this.ui.comments.val(text)
+                this.$el.find(".remoteform").show()
+                if (industrial_visit) {
+                    this.model.validation.REMOTEORMAILIN.required = true
+                    this.$el.find(".remoteormailin").show()
+                }
             } else {
+                this.model.validation.REMOTEORMAILIN.required = false
                 this.ui.first.html(this.visits.opts())
-                this.ui.comments.val('')
+                this.$el.find(".remoteform").hide()
+                if (industrial_visit) {
+                    this.$el.find(".remoteormailin").hide()
+                }
             }
         },
 
@@ -143,6 +149,9 @@ define(['marionette', 'views/form',
 
             this.fcodes = new Backbone.Collection()
             this.$el.find('li.d .floated').append(new FCodes({ collection: this.fcodes, dewars: this.dewars }).render().el)
+
+            this.$el.find(".remoteform").hide()
+            this.$el.find(".remoteormailin").hide()
             
             this.checkFCodes()
         },
