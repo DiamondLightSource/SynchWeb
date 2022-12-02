@@ -172,7 +172,7 @@ class PDF extends Page
             if ($ship[0]['DELIVERYAGENT_LABEL']) {
                 $this->app->contentType('application/pdf');
                 echo base64_decode($ship[0]['DELIVERYAGENT_LABEL']);
-            } else $this->_error('No airway bill for this shipment');
+            } else $this->_error('No air waybill for this shipment');
         }
         
         

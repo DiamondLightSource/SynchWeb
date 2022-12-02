@@ -422,7 +422,7 @@ define(['backbone',
             }
 
             this.$el.addClass('loading')
-            app.alert({ message: 'Creating Airway Bill and Booking Pickup, Please Wait...'})
+            app.alert({ message: 'Creating Air Waybill and Booking Pickup, Please Wait...'})
 
             var self = this
             Backbone.ajax({
@@ -435,7 +435,7 @@ define(['backbone',
                     PRODUCTCODE: prod,
                 },
                 success: function(resp) {
-                    app.alert({ message: 'Airway Bill Successfully Created'})
+                    app.alert({ message: 'Air Waybill Successfully Created'})
                     setTimeout(function() {
                         app.trigger('shipment:show', self.shipment.get('SHIPPINGID'))
                     }, 1000)

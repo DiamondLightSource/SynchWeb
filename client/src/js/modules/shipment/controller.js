@@ -109,7 +109,7 @@ define(['backbone',
         var shipment = new Shipment({ SHIPPINGID: sid })
         shipment.fetch({
             success: function() {
-                app.bc.reset([bc, { title: shipment.get('SHIPPINGNAME') }, { title: 'Create Airway Bill' }])
+                app.bc.reset([bc, { title: shipment.get('SHIPPINGNAME') }, { title: 'Create Air Waybill' }])
                 app.content.show(new CreateAWBView({ shipment: shipment }))
             },
             error: function() {
