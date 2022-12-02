@@ -122,6 +122,60 @@
                 <span class="DELIVERYAGENT_DELIVERYDATE"><%-DELIVERYAGENT_DELIVERYDATE%></span>
             </li>
 
+            <% if (ENCLOSEDHARDDRIVE) {%>
+            <li>
+                <span class="label">Hard drive enclosed</span>
+                <span class="ENCLOSEDHARDDRIVE"><%-ENCLOSEDHARDDRIVE %></span>
+            </li>
+            <% } %>
+
+            <% if (ENCLOSEDTOOLS) {%>
+            <li>
+                <span class="label">Tools enclosed</span>
+                <span class="ENCLOSEDTOOLS"><%-ENCLOSEDTOOLS %></span>
+            </li>
+            <% } %>
+            
+
+            <% if (DYNAMIC) {%>
+            <% if (REMOTEORMAILIN) {%>
+            <li class="remoteormailin">
+                <span class="label">Remote or mail in</span>
+                <span class="REMOTEORMAILIN"><%-REMOTEORMAILIN %></span>
+            </li>
+            <% } %>
+
+            <li>
+                <span class="label">Session length</span>
+                <span class="SESSIONLENGTH"><%-SESSIONLENGTH %></span>
+            </li>
+
+            <li>
+                <span class="label">Energy/wavelength requirements</span>
+                <span class="ENERGY"><%-ENERGY %></span>
+            </li>
+
+            <li>
+                <span class="label">Microfocus beam requested</span>
+                <span class="MICROFOCUSBEAM"><%-MICROFOCUSBEAM %></span>
+            </li>
+
+            <li>
+                <span class="label">Scheduling restrictions</span>
+                <span class="SCHEDULINGRESTRICTIONS"><%-SCHEDULINGRESTRICTIONS %></span>
+            </li>
+
+            <li>
+                <span class="label">Consider for last-minute beamtime</span>
+                <span class="LASTMINUTEBEAMTIME"><%-LASTMINUTEBEAMTIME %></span>
+            </li>
+
+            <li>
+                <span class="label">Group Dewars</span>
+                <span class="DEWARGROUPING"><%-DEWARGROUPING %></span>
+            </li>
+            <% } %>
+
             <li>
                 <span class="label">Comments</span>
                 <div class="COMMENTS text tw-inline-block tw-w-3/5"><%-COMMENTS%></div>
