@@ -4,7 +4,6 @@ namespace SynchWeb\Shipment\Courier;
 
 use DHL\Client\Web as WebserviceClient;
 use DHL\Datatype\AM\PieceType;
-use DHL\Datatype\AM\Reference;
 use DHL\Datatype\GB\Piece;
 use DHL\Entity\AM\GetQuote;
 use DHL\Entity\GB\BookPURequest;
