@@ -144,6 +144,7 @@ define(['backbone',
                     this.ui.submit.show()
                     this.ui.termsq.hide()
                     this.ui.terms.show()
+                    this.shipment.validation.DELIVERYAGENT_AGENTCODE.required = false
                 } else {
                     this.ui.facc.show()
 
@@ -184,6 +185,9 @@ define(['backbone',
             this.quotes.queryParams.sid = this.shipment.get('SHIPPINGID')
 
             this.shipment.validation = JSON.parse(JSON.stringify(this.shipment.__proto__.validation))
+            if (this.shipment.get('TERMSACCEPTED') === '0') {
+                this.shipment.validation.DELIVERYAGENT_AGENTCODE.required = true;
+            }
             this.shipment.validation.DELIVERYAGENT_SHIPPINGDATE.required = true
             this.shipment.validation.PHYSICALLOCATION.required = true
             this.shipment.validation.READYBYTIME.required = true

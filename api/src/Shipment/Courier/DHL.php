@@ -169,6 +169,8 @@ class DHL
         $shipment->Consignee->Contact->PhoneNumber = $options['receiver']['phone'];
         $shipment->Consignee->Contact->Email = $options['receiver']['email'];
 
+        $shipment->Reference->ReferenceID = $options['shipperid'];
+
         $shipment->ShipmentDetails->WeightUnit = 'K';
         $shipment->ShipmentDetails->GlobalProductCode = $options['service'];
         $shipment->ShipmentDetails->Date = array_key_exists('date', $options) ? $options['date'] : date('Y-m-d');
@@ -190,7 +192,7 @@ class DHL
             $shipment->ShipmentDetails->addPiece($piece);
         }
 
-        $shipment->Shipper->ShipperID = (string)rand(10000000, 9999999);
+        $shipment->Shipper->ShipperID = $options['shipperid'];
         $shipment->Shipper->CompanyName = $options['sender']['company'];
 
         $shipper_address_lines = explode(PHP_EOL, rtrim($options['sender']['address']));
