@@ -73,7 +73,10 @@ $auth->check_auth_required();
 $login = $auth->get_user();
 $user = new User($login, $db, $app);
 
-if ($user->login) {
+global $log_activity_to_ispyb;
+$log_activity = isset($log_activity_to_ispyb) ? $log_activity_to_ispyb : true;
+
+if ($user->login && $log_activity) {
     $chk = $db->pq("SELECT TIMESTAMPDIFF('SECOND', datetime, CURRENT_TIMESTAMP) AS lastupdate, comments FROM adminactivity WHERE username LIKE :1", array($user->login));
     if (sizeof($chk)) {
         if ($chk[0]['LASTUPDATE'] > 20) $db->pq("UPDATE adminactivity SET datetime=CURRENT_TIMESTAMP WHERE username=:1", array($user->login));
