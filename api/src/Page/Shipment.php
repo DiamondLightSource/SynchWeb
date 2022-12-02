@@ -810,11 +810,14 @@ class Shipment extends Page
 
             if (!$this->has_arg('DEWARID')) $this->_error('No dewar specified');
 
-            $dew = $this->db->pq("SELECT d.dewarid, d.barcode, d.storagelocation, s.shippingid
-              FROM dewar d 
-              INNER JOIN shipping s ON s.shippingid = d.shippingid 
-              INNER JOIN proposal p ON p.proposalid = s.proposalid
-              WHERE d.dewarid=:1 and p.proposalid=:2", array($this->arg('DEWARID'), $this->proposalid));
+            $dew = $this->db->pq(
+                "SELECT d.dewarid, d.barcode, d.storagelocation, s.shippingid
+                FROM dewar d 
+                INNER JOIN shipping s ON s.shippingid = d.shippingid 
+                INNER JOIN proposal p ON p.proposalid = s.proposalid
+                WHERE d.dewarid=:1 and p.proposalid=:2",
+                array($this->arg('DEWARID'), $this->proposalid)
+            );
 
             if (!sizeof($dew)) $this->_error('No such dewar');
             else $dew = $dew[0];
@@ -824,22 +827,29 @@ class Shipment extends Page
             // If no location specified (i.e. deleted), then read from dewar transport history.
             // If no dewar transport history fall back to dewar location
             // We still update history based on provided location to record action from user
-            $dewar_location = $this->arg('LOCATION');
+            $dewar_location = $this->has_arg('LOCATION)') ? $this->arg('LOCATION') : "";
 
             if (empty($dewar_location)) {
-              // What was the last history entry for this dewar?
-              // User may have accidentally removed location from form
-              $last_history_results = $this->db->pq("SELECT storageLocation FROM dewartransporthistory WHERE dewarId = :1 ORDER BY DewarTransportHistoryId DESC LIMIT 1", array($dew['DEWARID']));
+                // What was the last history entry for this dewar?
+                // User may have accidentally removed location from form
+                $last_history_results = $this->db->pq(
+                    "SELECT storageLocation
+                    FROM dewartransporthistory
+                    WHERE dewarId = :1
+                    ORDER BY DewarTransportHistoryId DESC
+                    LIMIT 1",
+                    array($dew['DEWARID'])
+                );
 
-              if (sizeof($last_history_results)) {
-                  $last_history = $last_history_results[0];
-                  
-                  $dewar_location = $last_history['STORAGELOCATION'];
-              } else {
-                  // Use the current location of the dewar instead if no history
-                  $dewar_location = $dew['STORAGELOCATION'];
-              }              
+                if (sizeof($last_history_results)) {
+                    $last_history = $last_history_results[0];
+                    $dewar_location = $last_history['STORAGELOCATION'];
+                } else {
+                    // Use the current location of the dewar instead if no history
+                    $dewar_location = $dew['STORAGELOCATION'];
+                }              
             }
+
             // Check if the last history storage location is an EBIC prefix or not
             // Case insensitive search
             if (stripos($dewar_location, 'ebic') !== false) {
@@ -847,33 +857,47 @@ class Shipment extends Page
             }
 
             // Update dewar transport history with provided location.
-            $this->db->pq("INSERT INTO dewartransporthistory (dewartransporthistoryid,dewarid,dewarstatus,storagelocation,arrivaldate) 
-              VALUES (s_dewartransporthistory.nextval,:1,'dispatch-requested',:2,CURRENT_TIMESTAMP) RETURNING dewartransporthistoryid INTO :id", 
-              array($dew['DEWARID'], $this->arg('LOCATION')));
+            $this->db->pq(
+                "INSERT INTO dewartransporthistory (dewartransporthistoryid,dewarid,dewarstatus,storagelocation,arrivaldate) 
+                VALUES (s_dewartransporthistory.nextval,:1,'dispatch-requested',:2,CURRENT_TIMESTAMP)
+                RETURNING dewartransporthistoryid INTO :id",
+                array($dew['DEWARID'], $dewar_location)
+            );
 
             // Also update the dewar status and storage location to keep it in sync with history...
-            $this->db->pq("UPDATE dewar set dewarstatus='dispatch-requested', storagelocation=lower(:2) WHERE dewarid=:1", array($dew['DEWARID'], $this->arg('LOCATION')));
+            $this->db->pq(
+                "UPDATE dewar
+                set dewarstatus='dispatch-requested', storagelocation=lower(:2)
+                WHERE dewarid=:1",
+                array($dew['DEWARID'], $dewar_location)
+            );
 
             # Prepare e-mail response for dispatch request
             $subject_line = '*** Dispatch requested for Dewar '.$dew['BARCODE'].' from '.$dispatch_from_location.' - Pickup Date: '.$this->args['DELIVERYAGENT_SHIPPINGDATE'].' ***';
             $email = new Email('dewar-dispatch', $subject_line);
 
-            $this->args['LCEMAIL'] = $this->_get_email_fn($this->arg('LOCALCONTACT'));
-
-            // LDAP email search does not always provide a match
-            // So look at the ISPyB person record for a matching staff user
-            if (!$this->args['LCEMAIL'] && $this->args['LOCALCONTACT']) {
-              $this->args['LCEMAIL'] = $this->_get_ispyb_email_fn($this->args['LOCALCONTACT']);
+            // If a local contact is given, try to find their email address
+            // First try LDAP, if unsuccessful look at the ISPyB person record for a matching staff user
+            $local_contact = $this->has_arg('LOCALCONTACT') ? $this->args['LOCALCONTACT'] : '';
+            if ($local_contact) {
+                $this->args['LCEMAIL'] = $this->_get_email_fn($local_contact);
+                if (!$this->args['LCEMAIL']) {
+                    $this->args['LCEMAIL'] = $this->_get_ispyb_email_fn($local_contact);
+                }
             }
 
             $data = $this->args;
             if (!array_key_exists('FACILITYCODE', $data)) $data['FACILITYCODE'] = '';
             if (!array_key_exists('AWBNUMBER', $data)) $data['AWBNUMBER'] = '';
             if (!array_key_exists('DELIVERYAGENT_AGENTCODE', $data)) $data['DELIVERYAGENT_AGENTCODE'] = '';
+            if (!array_key_exists('LOCATION', $data)) $data['LOCATION'] = $dewar_location;
+            if (!array_key_exists('LOCALCONTACT', $data)) $data['LOCALCONTACT'] = $local_contact;
+            if (!array_key_exists('LCEMAIL', $data)) $data['LCEMAIL'] = '';
             $email->data = $data;
 
             $recpts = $dispatch_email.', '.$this->arg('EMAILADDRESS');
-            if ($this->args['LCEMAIL']) $recpts .= ', '.$this->args['LCEMAIL'];
+            $local_contact_email = $this->has_arg('LCEMAIL') ? $this->args['LCEMAIL'] : '';
+            if ($local_contact_email) $recpts .= ', '.$local_contact_email;
 
             $email->send($recpts);
 
