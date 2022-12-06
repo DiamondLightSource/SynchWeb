@@ -151,7 +151,7 @@ class DHL
         $shipment->Dutiable->DeclaredCurrency = 'GBP';
 
         $shipment->Consignee->CompanyName = $options['receiver']['company'];
-        foreach (split("\n", $options['receiver']['address']) as $l) {
+        foreach (explode("\n", $options['receiver']['address']) as $l) {
             if ($l) $shipment->Consignee->addAddressLine($l);
         }
         $shipment->Consignee->City = $options['receiver']['city'];
@@ -192,7 +192,7 @@ class DHL
 
         $shipment->Shipper->ShipperID = (string)rand(10000000, 9999999);
         $shipment->Shipper->CompanyName = $options['sender']['company'];
-        foreach (split("\n", $options['sender']['address']) as $l) {
+        foreach (explode("\n", $options['sender']['address']) as $l) {
             if ($l) $shipment->Shipper->addAddressLine($l);
         }
         $shipment->Shipper->City = $options['sender']['city'];
@@ -251,7 +251,7 @@ class DHL
 
         $pickup->Place->LocationType = 'B';
         $pickup->Place->CompanyName = $options['requestor']['company'];
-        $lines = split("\n", $options['requestor']['address']);
+        $lines = explode("\n", $options['requestor']['address']);
         $pickup->Place->Address1 = $lines[0];
         if (sizeof($lines) > 1) {
             if ($lines[1]) $pickup->Place->Address2 = $lines[1];

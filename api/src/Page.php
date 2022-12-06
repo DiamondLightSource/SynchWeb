@@ -35,7 +35,7 @@ class Page
                                       'sort_by' => '\w+',
                                       'order' => 'desc|asc',
                                       'ty' => '\w+',
-                                      's' => '[\w\s-]+',
+                                      's' => '[\w\s\-]+',
                                       'prop' => '\w+\d+',
                                       );
 
@@ -337,11 +337,6 @@ class Page
                 $this->args['t'] = $route->getName();
             }
 
-            /*$extra = $route->getParams();
-            foreach (array('id', 'visit', 't') as $i => $k) {
-                if (array_key_exists($k, $extra)) $this->args[$k] = $extra[$k];
-            }*/
-
             $extra = array();
             foreach ($route->getParams() as $k => $v) {
                 if ($v) $extra[$k] = $v;
@@ -430,8 +425,7 @@ class Page
                 foreach ($request as $r) {
                     $par = array();
                     foreach (array_merge($this->generic_args, $this->_arg_list) as $k => $v) {
-                        if (array_key_exists($k, $r)) {
-
+                        if (property_exists($r, $k) && isset($r->$k)) {
                             if (is_array($r->$k)) {
                                 $tmp = array();
                                 foreach ($r->$k as $val) {
@@ -535,7 +529,7 @@ class Page
         }
         
         function arg($key) {
-            if (!$this->has_arg($key)) new \Exception();
+            if (!$this->has_arg($key)) throw new Exception("Missing propery: ".$key);
             return $this->args[$key];
         }
 
@@ -571,7 +565,6 @@ class Page
                 $lis = preg_split('/\s+/', $v, 2);
                 $output[$lis[0]] = sizeof($lis) > 1 ? ($full ? array_slice($lis,1) : $lis[1]) : '';
             }
-            
             return $output;
         }
         
@@ -629,12 +622,8 @@ class Page
             if (!$b) return array();
             
             $visits = $this->db->pq("SELECT CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as visit, TO_CHAR(s.startdate, 'DD-MM-YYYY HH24:MI') as st, TO_CHAR(s.enddate, 'DD-MM-YYYY HH24:MI') as en,s.beamlinename as bl FROM blsession s INNER JOIN proposal p ON (p.proposalid = s.proposalid) WHERE TIMESTAMPDIFF('DAY', s.startdate, CURRENT_TIMESTAMP) < 1 AND TIMESTAMPDIFF('DAY', CURRENT_TIMESTAMP, s.enddate) < 2 AND s.beamlinename LIKE :1 ORDER BY s.startdate", array($b));
-                
-            //if (!sizeof($visits)) {
             $v = $this->db->paginate("SELECT CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as visit, TO_CHAR(s.startdate, 'DD-MM-YYYY HH24:MI') as st, TO_CHAR(s.enddate, 'DD-MM-YYYY HH24:MI') as en,s.beamlinename as bl FROM blsession s INNER JOIN proposal p ON (p.proposalid = s.proposalid) WHERE p.proposalcode LIKE 'cm' AND s.beamlinename LIKE :1 AND s.enddate <= CURRENT_TIMESTAMP ORDER BY s.startdate DESC", array($b,0,1));
             $visits = array_merge($visits, $v);
-            //}
-            
             return $visits;
         }
         

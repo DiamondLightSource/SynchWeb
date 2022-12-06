@@ -2,14 +2,9 @@
 
 namespace SynchWeb\Page;
 
-// For mpdf < 7.0 we should define our own temp dirs instead of using vendor/mpdf
-// sys_get_temp_dir returns the directory used by php-fpm (handles PrivateTmp)
-define("_MPDF_TEMP_PATH", sys_get_temp_dir() . "/mpdf/temp/");
-define("_MPDF_TTFONTDATAPATH", sys_get_temp_dir() . "/mpdf/ttfontdata/");
-
-use mPDF;
 use Slim\Slim;
 use SynchWeb\Page;
+use Mpdf\Mpdf;
 
 # ------------------------------------------------------------------------
 # PDF Generation
@@ -23,12 +18,11 @@ class PDF extends Page
         private $vars  = array();
         
         public static $arg_list = array('visit' => '\w+\d+\-\d+',
-                              'sid' => '\d+',
                               'p' => '\d',
                               'cid' => '\d+',
                               'did' => '\d+',
                               'sid' => '\d+',
-                              'labels' => '[\w-]+',
+                              'labels' => '[\w\-]+',
                               'month' => '\d\d-\d\d\d\d',
                               );
 
@@ -44,17 +38,18 @@ class PDF extends Page
             // Call parent constructor to register our routes
             parent::__construct($app, $db, $user);
 
-            // Fix for mpdf < 7.0 to ensure temp dir exists
             // Creating the temp folder here means we have the correct permissions
             // Using separate folders for temp and font data so mpdf does not try to delete ttfontdata
-            $mpdf_temp = sys_get_temp_dir() . "/mpdf/temp/";
-            $mpdf_fontdata = sys_get_temp_dir() . "/mpdf/ttfontdata/";
+            global $pdf_tmp_dir;
+            $this->pdf_tmp_dir = $pdf_tmp_dir;
+            $mpdf_temp = $pdf_tmp_dir . "/mpdf/temp/";
+            $mpdf_font_data = $pdf_tmp_dir . "/mpdf/ttfontdata/";
 
             if (!is_dir($mpdf_temp)) {
                 mkdir($mpdf_temp, 0775, true);
             }
-            if (!is_dir($mpdf_fontdata)) {
-                mkdir($mpdf_fontdata, 0775, true);
+            if (!is_dir($mpdf_font_data)) {
+                mkdir($mpdf_font_data, 0775, true);
             }
         }
         # ------------------------------------------------------------------------
@@ -154,7 +149,7 @@ class PDF extends Page
                 LEFT OUTER JOIN containerqueue cq ON c.containerid = cq.containerid
                 WHERE d.shippingid=:1
                 GROUP BY d.dewarid", array($ship['SHIPPINGID']));
-            
+
             $this->_render('shipment_label');
         }
 
@@ -206,16 +201,13 @@ class PDF extends Page
             
             if (!sizeof($rows)) $this->_error('No data', 'No data collections for this visit yet');
             
-            $screen = array();
             $dcs = array();
             foreach ($rows as $dc) {
                 if ($dc['OVERLAP'] == 0) array_push($dcs, 'api.datacollectionid='.$dc['ID']);
-                else array_push($screen, 'datacollectionid='.$dc['ID']);
             }
             
-            $screen = implode(' OR ', $screen);
-            $dcs = implode(' OR ', $dcs);
-            
+            $dcs_clause = implode(' OR ', $dcs);
+
             $aps = sizeof($dcs) ? $this->db->pq("SELECT api.datacollectionid as id, app.autoprocprogramid,app.processingcommandline as type, apss.ntotalobservations as ntobs, apss.ntotaluniqueobservations as nuobs, apss.resolutionlimitlow as rlow, apss.resolutionlimithigh as rhigh, apss.scalingstatisticstype as shell, apss.rmeasalliplusiminus as rmeas, apss.rmerge, apss.completeness, apss.anomalouscompleteness as anomcompleteness, apss.anomalousmultiplicity as anommultiplicity, apss.multiplicity, apss.meanioversigi as isigi, ap.spacegroup as sg, ap.refinedcell_a as cell_a, ap.refinedcell_b as cell_b, ap.refinedcell_c as cell_c, ap.refinedcell_alpha as cell_al, ap.refinedcell_beta as cell_be, ap.refinedcell_gamma as cell_ga 
                 FROM autoprocintegration api 
                 INNER JOIN autoprocscaling_has_int aph ON api.autoprocintegrationid = aph.autoprocintegrationid 
@@ -223,7 +215,7 @@ class PDF extends Page
                 INNER JOIN autoproc ap ON aps.autoprocid = ap.autoprocid 
                 INNER JOIN autoprocscalingstatistics apss ON apss.autoprocscalingid = aph.autoprocscalingid 
                 INNER JOIN autoprocprogram app ON api.autoprocprogramid = app.autoprocprogramid 
-                WHERE $dcs") : array();
+                WHERE $dcs_clause") : array();
             
             $types = array('fast_dp' => 1, '-3da ' => 3, '-2da ' => 2, '-3daii ' => 4);
             $dts = array('cell_a', 'cell_b', 'cell_c', 'cell_al', 'cell_be', 'cell_ga');
@@ -400,7 +392,11 @@ class PDF extends Page
                 # Enable output buffering to capture html
                 ob_start();
 
-                $mpdf = new mPDF('', 'A4'.$orientation);
+                $mpdf = new Mpdf([
+                    'mode' => 'utf-8', 
+                    'format' =>  'A4'.$orientation,
+                    'tempDir' => $this->pdf_tmp_dir
+                ]);
                 $mpdf->WriteHTML(file_get_contents('assets/pdf/styles.css'),1);
                 
                 if (file_exists($f)) {
@@ -414,7 +410,6 @@ class PDF extends Page
 
                 $this->app->contentType('application/pdf');
                 $mpdf->Output();
-                
             
             # Preview mode outputs raw html, add /p/1 to url
             } else {

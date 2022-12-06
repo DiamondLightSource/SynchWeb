@@ -16,8 +16,7 @@ class Proposal extends Page
                               'all' => '\d',
                               'year' => '\d\d\d\d',
                               'month' => '\d+',
-                              'bl' => '[\w-]+',
-                              'ty' => '\w+',
+                              'bl' => '[\w\-]+',
                               'cm' => '\d',
                               'ty' => '\w+',
                               'next' => '\d',
@@ -50,7 +49,7 @@ class Proposal extends Page
                               'PROPOSALID' => '\d+',
                               'STARTDATE' => '\d\d-\d\d-\d\d\d\d \d\d:\d\d',
                               'ENDDATE' => '\d\d-\d\d-\d\d\d\d \d\d:\d\d',
-                              'BEAMLINENAME' => '[\w-]+',
+                              'BEAMLINENAME' => '[\w\-]+',
                               'BEAMLINEOPERATOR' => '(\w|\s|-)+',
                               'SCHEDULED' => '\d',
                               'ARCHIVED' => '\d',
@@ -62,7 +61,7 @@ class Proposal extends Page
                               // visit has person
                               'SHPKEY' => '\d+\-\d+',
                               'SESSIONID' => '\d+',
-                              'ROLE' => '([\w\s-])+',
+                              'ROLE' => '([\w\s\-])+',
                               'REMOTE' => '\d',
 
                               // Updating Used Time when a session is closed
@@ -294,8 +293,6 @@ class Proposal extends Page
                 return;
             }
             
-            // if (!$this->staff && !$this->has_arg('prop')) $this->_error('No proposal specified');
-            
             if ($this->has_arg('all')) {
                 $args = array();
                 $where = 'WHERE 1=1';
@@ -363,12 +360,10 @@ class Proposal extends Page
                 $where .= " AND s.scheduled=1";
             }
             
-            
             if ($visit) {
                 $where .= " AND CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) LIKE :".(sizeof($args)+1);
                 array_push($args, $visit);
             }
-            
             
             if (!$this->staff) {
                 $where .= " AND shp.personid=:".(sizeof($args)+1);
@@ -403,7 +398,6 @@ class Proposal extends Page
                 $dir = $this->has_arg('order') ? ($this->arg('order') == 'asc' ? 'ASC' : 'DESC') : 'ASC';
                 if (array_key_exists($this->arg('sort_by'), $cols)) $order = $cols[$this->arg('sort_by')].' '.$dir;
             }
-
             $rows = $this->db->paginate("
                 SELECT CURRENT_TIMESTAMP BETWEEN s.startdate AND s.enddate        AS active,
                     CURRENT_TIMESTAMP BETWEEN
@@ -459,7 +453,6 @@ class Proposal extends Page
                     WHERE $where GROUP BY dcg.sessionid", $ids);
                 foreach($tdcs as $t) $dcs[$t['SESSIONID']] = $t['C'];
             }
-            
 
             foreach ($rows as &$r) {
                 $dc = array_key_exists($r['SESSIONID'], $dcs) ? $dcs[$r['SESSIONID']] : 0;
@@ -651,7 +644,7 @@ class Proposal extends Page
             $args = array();
 
             if ($this->has_arg('SHPKEY')) {
-                list($sessionid, $personid) = split('-', $this->arg('SHPKEY'));
+                list($sessionid, $personid) = explode('-', $this->arg('SHPKEY'));
                 $where .= " shp.sessionid=:1 AND shp.personid=:2";
                 array_push($args, $sessionid);
                 array_push($args, $personid);
@@ -698,7 +691,7 @@ class Proposal extends Page
         # Update a user on a visit
         function _update_visit_user() {
             if (!$this->user->can('manage_vusers')) $this->_error('No access');
-            list($sessionid, $personid) = split('-', $this->arg('SHPKEY'));
+            list($sessionid, $personid) = explode('-', $this->arg('SHPKEY'));
 
             $chk = $this->db->pq("SELECT personid, sessionid FROM session_has_person WHERE sessionid=:1 AND personid=:2", array($sessionid, $personid));
             if (!sizeof($chk)) $this->_error('The specified user is not registered on that visit');
@@ -717,7 +710,7 @@ class Proposal extends Page
         # Remove user from a visit
         function _remove_visit_user() {
             if (!$this->user->can('manage_vusers')) $this->_error('No access');
-            list($sessionid, $personid) = split('-', $this->arg('SHPKEY'));
+            list($sessionid, $personid) = explode('-', $this->arg('SHPKEY'));
 
             $chk = $this->db->pq("SELECT personid FROM session_has_person WHERE sessionid=:1 AND personid=:2", array($sessionid, $personid));
             if (!sizeof($chk)) $this->_error('The specified user is not registered on that visit');

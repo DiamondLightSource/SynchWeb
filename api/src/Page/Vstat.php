@@ -17,7 +17,7 @@ class Vstat extends Page
             'proposalcode' => '\w+',
             'proposal' => '\w+',
             'scheduled' => '\d',
-            'bl' => '[\w-]+',
+            'bl' => '[\w\-]+',
             'download' => '\d',
             'data' => '\d',
             'history' => '\d',
@@ -290,7 +290,7 @@ class Vstat extends Page
             foreach ($fl as $e) {
                 array_push($data, array('data' => array(
                         array($this->jst($e['ST']), 3, $this->jst($e['ST'])),
-                        array($this->jst($e['EN']), 3, $this->jst($e['ST']))), 'color' => 'red', 'type' => 'mca', 'id' => $e['ID'], 'type' => 'mca', 'pid' => $d['PROTEINID'], 'status' => 'Protein: '.$d['PROTEIN']));
+                        array($this->jst($e['EN']), 3, $this->jst($e['ST']))), 'color' => 'red', 'id' => $e['ID'], 'type' => 'mca', 'pid' => $d['PROTEINID'], 'status' => 'Protein: '.$d['PROTEIN']));
             }
                                     
             foreach ($faultl as $f) {

@@ -54,15 +54,14 @@ class Sample extends Page
                               'CONTAINERID' => '\d+',
                               'LOCATION' => '\d+',
                               'CODE' => '(\w|\s|\-)+|^$', // Change validation to work for dashes as well as numbers
-                              // 'NAME' => '.*',
-                              'ACRONYM' => '([\w-])+',
+                              'ACRONYM' => '([\w\-])+',
                               'SEQUENCE' => '[\s\w\(\)\.>\|;\n]+',
                               'MOLECULARMASS' => '\d+(.\d+)?',
                               'VOLUME' => '\d+(.\d+)?',
                               'DENSITY' => '\d+(.\d+)?',
                               'THEORETICALDENSITY' => '\d+(.\d+)?',
 
-                              'NAME' => '[\w\s-()]+',
+                              'NAME' => '[\w\s\-()]+',
                               'COMMENTS' => '.*',
                               'SPACEGROUP' => '(\w|\s|\-|\/)+|^$', // Any word character (inc spaces bars and slashes) or empty string
                               'CELL_A' => '\d+(.\d+)?',
@@ -104,7 +103,6 @@ class Sample extends Page
                               'EXPERIMENTKIND' => '[\w|\s]+',
                               'CENTRINGMETHOD' => '\w+',
                               'RADIATIONSENSITIVITY' => '\w+',
-                              'ENERGY' => '\w+',
                               'USERPATH' => '(?=.{0,40}$)(\w|-)+\/?(\w|-)+', // Up to two folders as a path, 40 characters maximum
                               'EXPOSURETIME' => '\d+(.\d+)?',
                               'PREFERREDBEAMSIZEX' => '\d+(.\d+)?',
@@ -118,7 +116,7 @@ class Sample extends Page
                               'ENERGY' => '\d+(.\d+)?',
                               'MONOCHROMATOR' => '\w+',
                               'PRESET' => '\d',
-                              'BEAMLINENAME' => '[\w-]+',
+                              'BEAMLINENAME' => '[\w\-]+',
 
                               'queued' => '\d',
                               'UNQUEUE' => '\d',
@@ -1023,7 +1021,6 @@ class Sample extends Page
                 for ($i = 0; $i < 4; $i++) array_push($args, $this->arg('s'));
             }
             
-            
             // Filter by sample status
             if ($this->has_arg('t')) {
                 //$this->db->set_debug(true);
@@ -1081,7 +1078,6 @@ class Sample extends Page
                                   , $cseq $sseq string_agg(cpr.name) as componentnames, string_agg(cpr.density) as componentdensities
                                   ,string_agg(cpr.proteinid) as componentids, string_agg(cpr.acronym) as componentacronyms, string_agg(cpr.global) as componentglobals, string_agg(chc.abundance) as componentamounts, string_agg(ct.symbol) as componenttypesymbols, b.volume, pct.symbol,ROUND(cr.abundance,3) as abundance, TO_CHAR(b.recordtimestamp, 'DD-MM-YYYY') as recordtimestamp, dp.radiationsensitivity, dp.energy, dp.userpath, dp.strategyoption, dp.minimalresolution as minimumresolution
                                     ,count(distinct dc.dataCollectionId) as dcc            
-                
                                   
                                   FROM blsample b
 
@@ -1109,7 +1105,6 @@ class Sample extends Page
                                   LEFT OUTER JOIN screeningstrategy st ON st.screeningoutputid = so.screeningoutputid AND sc.shortcomments LIKE '%EDNA%'
                                   LEFT OUTER JOIN screeningstrategywedge ssw ON ssw.screeningstrategyid = st.screeningstrategyid
                                   
-                                  
                                   LEFT OUTER JOIN autoprocintegration ap ON ap.datacollectionid = dc.datacollectionid
                                   LEFT OUTER JOIN autoprocscaling_has_int aph ON aph.autoprocintegrationid = ap.autoprocintegrationid
                                   LEFT OUTER JOIN autoprocscalingstatistics apss ON apss.autoprocscalingid = aph.autoprocscalingid
@@ -1119,7 +1114,6 @@ class Sample extends Page
 
                                   LEFT OUTER JOIN blsubsample ss ON b.blsubsampleid = ss.blsubsampleid AND ss.source='manual'
                                   LEFT OUTER JOIN blsample ssp ON ss.blsampleid = ssp.blsampleid
-                                  
                                   
                                   LEFT OUTER JOIN robotaction r ON r.blsampleid = b.blsampleid AND r.actiontype = 'LOAD'
                                   
@@ -1147,13 +1141,12 @@ class Sample extends Page
                 }
             }
 
-
             if ($this->has_arg('sid')) {
                 if (sizeof($rows))$this->_output($rows[0]);
                 else $this->_error('No such sample');
-            } else $this->_output(array('total' => $tot,
-                                 'data' => $rows,
-                           ));   
+            } else {
+                $this->_output(array('total' => $tot, 'data' => $rows));   
+            }
         }
 
         function _update_sample_full() {
@@ -1689,7 +1682,7 @@ class Sample extends Page
                 $this->args['LOCATION'] = $defaultContainerLocation['LOCATION'];
             }
 
-            $maxLocation = $this->_get_current_max_dcp_plan_order($this->args['CONTAINERID']);
+            $maxLocation = array_key_exists('CONTAINERID', $this->args) ? $this->_get_current_max_dcp_plan_order($this->args['CONTAINERID']) : array(0);
             $maxLocation = sizeof($maxLocation) ? $maxLocation : -1;
 
             $sfields = array('CODE', 'NAME', 'COMMENTS', 'VOLUME', 'PACKINGFRACTION', 'DIMENSION1', 'DIMENSION2', 'DIMENSION3', 'SHAPE', 'POSITION', 'CONTAINERID', 'LOOPTYPE', 'LOCATION');
@@ -2419,7 +2412,7 @@ class Sample extends Page
         function _get_sample_group_samples() {
             if (!$this->has_arg('prop')) $this->_error('No proposal specified');
 
-            if (!$this->has_arg('BLSAMPLEGROUPID')) $this->error('No sample group specified');
+            if (!$this->has_arg('BLSAMPLEGROUPID')) $this->_error('No sample group specified');
 
             $where = 'bsg.proposalid = :1';
             $args = array($this->proposalid);

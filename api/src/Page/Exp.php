@@ -9,20 +9,19 @@ class Exp extends Page
         
         public static $arg_list = array(
 
-            // Filters
-            'CONTAINERID' => '\d+',
-            'BLSAMPLEID' => '\d+',
+            // Shared parameters
+            'EXPOSURETIME' => '\d+(.\d+)?',  //DiffractionPlan and DCPlan has Detector
+            'BLSAMPLEID' => '\d+', // Filters and DiffractionPlan (=>DataCollectionPlan)
 
+            // Filters
+            'CONTAINERID' => '\d+',           
 
             // Replacement for DiffractionPlan in various tables
             'DATACOLLECTIONPLANID' => '\d+',
 
-
             // DiffractionPlan (=>DataCollectionPlan)
             'DIFFRACTIONPLANID' => '\d+',
-            'BLSAMPLEID' => '\d+',
-            'EXPERIMENTKIND' => '\w+',
-            'EXPOSURETIME' => '\d+(.\d+)?',
+            'EXPERIMENTKIND' => '\w+',            
             'REQUIREDRESOLUTION' => '\d+(.\d+)?',
             'PREFERREDBEAMSIZEX' => '\d+',
             'PREFERREDBEAMSIZEY' => '\d+',
@@ -41,9 +40,9 @@ class Exp extends Page
 
             // Detector
             'DETECTORID' => '\d+',
-            'DETECTORTYPE' => '[\w-\s]+',
-            'DETECTORMANUFACTURER' => '[\w-]+',
-            'DETECTORMODEL' => '[\w-\s]+',
+            'DETECTORTYPE' => '[\w\-\s]+',
+            'DETECTORMANUFACTURER' => '[\w\-]+',
+            'DETECTORMODEL' => '[\w\-\s]+',
             'DETECTORPIXELSIZEHORIZONTAL' => '\d+',
             'DETECTORPIXELSIZEVERTICAL' => '\d+',
             'DETECTORDISTANCEMIN' => '\d+',
@@ -55,14 +54,14 @@ class Exp extends Page
             'DETECTORROLLMIN' => '-?\d+(.\d+)?',
             'DETECTORROLLMAX' => '-?\d+(.\d+)?',
             'SENSORTHICKNESS' => '\d+',
-            'DETECTORSERIALNUMBER' => '[\w-]+',
+            'DETECTORSERIALNUMBER' => '[\w\-]+',
             'NUMBEROFPIXELSX' => '\d+',
             'NUMBEROFPIXELSY' => '\d+',
 
 
             // Scan Param Service
             'SCANPARAMETERSSERVICEID' => '\d+',
-            'NAME' => '[\w|\s|-]+',
+            'NAME' => '[\w|\s|\-]+',
             'DESCRIPTION' => '.*',
 
 
@@ -77,14 +76,13 @@ class Exp extends Page
             
             // DCPlan has Detector
             'DATACOLLECTIONPLANHASDETECTORID' => '\d+',
-            'EXPOSURETIME' => '\d+(.\d+)?',
             'DISTANCE' => '\d+(.\d+)?',
             'ROLL' => '\d+(.\d+)?',
 
 
             // Beamline Setup
             'BEAMLINESETUPID' => '\d+',
-            'BEAMLINENAME' => '[\w-]+',
+            'BEAMLINENAME' => '[\w\-]+',
             'BEAMSIZEXMAX' => '\d+(.\d+)?',
             'BEAMSIZEXMIN' => '\d+(.\d+)?',
             'BEAMSIZEYMAX' => '\d+',
