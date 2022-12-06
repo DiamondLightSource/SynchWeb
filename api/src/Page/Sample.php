@@ -2412,7 +2412,7 @@ class Sample extends Page
         function _get_sample_group_samples() {
             if (!$this->has_arg('prop')) $this->_error('No proposal specified');
 
-            if (!$this->has_arg('BLSAMPLEGROUPID')) $this->error('No sample group specified');
+            if (!$this->has_arg('BLSAMPLEGROUPID')) $this->_error('No sample group specified');
 
             $where = 'bsg.proposalid = :1';
             $args = array($this->proposalid);
