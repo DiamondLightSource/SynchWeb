@@ -245,7 +245,7 @@ class Shipment extends Page
         function _get_extra_args() {
             $extra_args = array();
             foreach($this->extra_arg_list as $arg) {
-                $this->has_arg($arg)) {
+                if ($this->has_arg($arg)) {
                     $extra_args[$arg] = $this->arg($arg);
                 }
             }
