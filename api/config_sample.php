@@ -205,7 +205,7 @@
     $package_description = 'Dry shipper containing frozen crystals';
     $dewar_weight = 18;
 
-    # location used by Mpdf to create pdfs - this needs to have a directory created in it called 'mdpf' with 755 access
+    # location used by Mpdf to create pdfs - this needs to be created and allow apache to create directories in it
     $pdf_tmp_dir = "/tmp";
 
     # DHL API Details
