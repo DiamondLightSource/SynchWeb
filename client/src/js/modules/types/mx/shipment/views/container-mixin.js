@@ -17,7 +17,7 @@ import Sample from 'models/sample'
 import ContainerQueue from 'modules/shipment/models/containerqueue'
 import ScreenComponents from 'modules/imaging/collections/screencomponents'
 import ScreenComponentGroups from 'modules/imaging/collections/screencomponentgroups'
-import { omit } from 'lodash'
+import { omit } from 'lodash-es'
 
 const INITIAL_CONTAINER_TYPE = {
   CONTAINERTYPEID: 0,
@@ -266,8 +266,8 @@ export default {
         this.$store.commit('samples/reset')
 
         // We want the name of the first sample to always remain the same when we clone all samples
-        const baseName = firstSample['NAME'].replace(/([\d]+)$/, '')
-        const digitMatch = firstSample['NAME'].match(/([\d]+)$/)
+        const baseName = firstSample['NAME'].replace(/(\d+)$/, '')
+        const digitMatch = firstSample['NAME'].match(/(\d+)$/)
         const digitValue = digitMatch && digitMatch.length > 0 ? Number(digitMatch[0]) - 1 : 0
 
         this.$store.commit('samples/setSample', { index: sampleIndex, data: {...firstSample, NAME: `${baseName}${digitValue}`} })
@@ -341,6 +341,12 @@ export default {
     async saveSample(location) {
       let sampleIndex = +location
       // Create a new Sample Model, so it uses the BLSAMPLEID to check for post, update etc
+      const validForm = await this.$refs.containerForm.validate()
+
+      if (!validForm) {
+        this.$store.commit('notifications/addNotification', { message: 'Sample data is invalid, please check the form', level: 'error'})
+        return
+      }
       let sampleModel = new Sample(omit(this.samples[sampleIndex], ['STRATEGYOPTION', 'STATUS']))
 
       const result = await this.$store.dispatch('saveModel', { model: sampleModel })
@@ -436,11 +442,11 @@ export default {
     },
     generateSampleNameForPucks(sourceName) {
       const samplesNameDictionary = {}
-      const sourceNameKey = sourceName.replace(/([\d]+)$/, '')
+      const sourceNameKey = sourceName.replace(/(\d+)$/, '')
 
       this.samples.forEach(sample => {
-        const baseName = sample['NAME'].replace(/([\d]+)$/, '')
-        const digitMatch = sample['NAME'].match(/([\d]+)$/)
+        const baseName = sample['NAME'].replace(/(\d+)$/, '')
+        const digitMatch = sample['NAME'].match(/(\d+)$/)
         const digitValue = digitMatch && digitMatch.length > 0 ? Number(digitMatch[0]) : 0
         if (!samplesNameDictionary[baseName]) {
           samplesNameDictionary[baseName] = Number(digitValue)
@@ -477,6 +483,28 @@ export default {
 
       sample.INITIALSAMPLEGROUP = matchingSampleGroup ? matchingSampleGroup['BLSAMPLEGROUPID'] : ''
       return sample
+    },
+    handleSampleFieldChangeWithSampleGroups(args) {
+      const { value, fieldToUpdate, triggerField, triggerValue } = args
+
+      if (fieldToUpdate === 'SCREENINGCOLLECTVALUE' && triggerField === 'SAMPLEGROUP') {
+        const relatedSample = this.samples.find(sample => Number(sample['SAMPLEGROUP']) === Number(triggerValue))
+        if (relatedSample) {
+          this.$store.commit('samples/updateSamplesField', {
+            path: `samples/${value}/${fieldToUpdate}`,
+            value: relatedSample['SCREENINGCOLLECTVALUE']
+          })
+        }
+      } else if (fieldToUpdate === 'SCREENINGCOLLECTVALUE' && triggerField === 'SCREENINGCOLLECTVALUE') {
+        this.samples.forEach((sample, sampleIndex) => {
+          if (Number(sample['SAMPLEGROUP']) === Number(triggerValue)) {
+            this.$store.commit('samples/updateSamplesField', {
+              path: `samples/${sampleIndex}/${fieldToUpdate}`,
+              value
+            })
+          }
+        })
+      }
     }
   },
   computed: {
@@ -526,6 +554,7 @@ export default {
       $containerTypeDetails: () => this.containerTypeDetails,
       $screenComponents: () => this.screenComponents,
       $screenComponentGroups: () => this.screenComponentGroups,
+      $editingRow: () => this.editingSampleLocation,
       $displayTextInDrop: true
     }
   }
