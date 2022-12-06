@@ -11,7 +11,7 @@ define(['backbone'], function(Backbone) {
         },
 
         LOCATION: {
-            required: true,
+            required: false,
             pattern: 'wwsdash'
         },
 
@@ -21,7 +21,7 @@ define(['backbone'], function(Backbone) {
         },
 
         LOCALCONTACT: {
-            required: true,
+            required: false,
             pattern: 'wwsdash'
         },
 
@@ -55,6 +55,15 @@ define(['backbone'], function(Backbone) {
             required: true
         },
 
+        COUNTRY: {
+            required: true,
+            pattern: 'country',
+            fn: function (value, attr, state) {
+                if (value === null) {
+                    return 'That didn\'t work, please select again'
+                }
+            }
+        },
 
 
         DESCRIPTION: {

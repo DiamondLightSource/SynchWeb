@@ -105,7 +105,9 @@ class DHL
 
     function get_tracking_info($options)
     {
-        if (!array_key_exists('AWB', $options)) return;
+        $given_awb = array_key_exists('AWB', $options);
+        $given_lpnumber = array_key_exists('LPNumber', $options);
+        if (!$given_awb && !$given_lpnumber) return;
 
         $request = new KnownTrackingRequest();
         $request->SiteID = $this->_user;
@@ -113,16 +115,19 @@ class DHL
         $request->MessageReference = '12345678901234567890' . (string)time();
         $request->MessageTime = date('c');
         $request->LanguageCode = 'en';
-        $request->AWBNumber = $options['AWB'];
-        $request->LevelOfDetails = array_key_exists('LAST_ONLY', $options) ? 'LAST_CHECK_POINT_ONLY' : 'ALL_CHECK_POINTS';
+        if ($given_awb) $request->AWBNumber = $options['AWB'];
+        if ($given_lpnumber) $request->LPNumber = $options['LPNumber'];
         $request->PiecesEnabled = 'S';
+        $request->LevelOfDetails = array_key_exists('LAST_ONLY', $options) ? 'LAST_CHECK_POINT_ONLY' : 'ALL_CHECK_POINTS';
 
-        if ($this->log) file_put_contents('logs/trackingrequest_' . date('Ymd-Hi') . '_' . str_replace(' ', '_', $options['AWB'] . '.xml'), $request->toXML());
+        $tracking_number = ($given_lpnumber) ? $options['LPNumber'] : $options['AWB'];
+
+        if ($this->log) file_put_contents('./logs/trackingrequest_' . date('Ymd-Hi') . '_' . str_replace(' ', '_', $tracking_number . '.xml'), $request->toXML());
 
         $client = new DHLWebClient($this->env);
         $xml = $client->call($request);
 
-        if ($this->log) file_put_contents('logs/trackingresponse_' . date('Ymd-Hi') . '_' . str_replace(' ', '_', $options['AWB'] . '.xml'), $xml);
+        if ($this->log) file_put_contents('./logs/trackingresponse_' . date('Ymd-Hi') . '_' . str_replace(' ', '_', $tracking_number . '.xml'), $xml);
 
         $xml = simplexml_load_string(str_replace('req:', '', $xml));
         return $xml;
@@ -164,6 +169,8 @@ class DHL
         $shipment->Consignee->Contact->PhoneNumber = $options['receiver']['phone'];
         $shipment->Consignee->Contact->Email = $options['receiver']['email'];
 
+        $shipment->Reference->ReferenceID = $options['shipperid'];
+
         $shipment->ShipmentDetails->WeightUnit = 'K';
         $shipment->ShipmentDetails->GlobalProductCode = $options['service'];
         $shipment->ShipmentDetails->Date = array_key_exists('date', $options) ? $options['date'] : date('Y-m-d');
@@ -185,7 +192,7 @@ class DHL
             $shipment->ShipmentDetails->addPiece($piece);
         }
 
-        $shipment->Shipper->ShipperID = (string)rand(10000000, 9999999);
+        $shipment->Shipper->ShipperID = $options['shipperid'];
         $shipment->Shipper->CompanyName = $options['sender']['company'];
 
         $shipper_address_lines = explode(PHP_EOL, rtrim($options['sender']['address']));
@@ -345,6 +352,7 @@ class DHL
         $quote->BkgDetails->DimensionUnit = 'CM';
         $quote->BkgDetails->WeightUnit = 'KG';
         $quote->BkgDetails->PaymentCountryCode = $this->_country_codes[$options['receiver']['country']];
+        $quote->BkgDetails->PaymentAccountNumber = $options['payment_account_number'];
 
         $quote->From->CountryCode = $this->_country_codes[$options['sender']['country']];
         $quote->From->Postalcode = $options['sender']['postcode'];
