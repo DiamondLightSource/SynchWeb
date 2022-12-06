@@ -274,9 +274,7 @@ class Authentication
         }
 
         // Determine fully-qualified class name of authentication class corresponding to $authentication_type.
-
         $full_class_name = null;
-
         if (key_exists(strtolower($authentication_type), $authentication_types)) {
             $full_class_name = 'SynchWeb\\Authentication\\Type\\' . $authentication_types[$authentication_type];
         } else {
@@ -284,7 +282,6 @@ class Authentication
         }
 
         // Return instance of authentication class.
-
         if (class_exists($full_class_name)) {
             return new $full_class_name();
         } else {

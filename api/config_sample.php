@@ -4,7 +4,6 @@
     # - Many of the parameters in this file will in due course move into the
     #   database
 
-
     # Production / Dev Mode Switch
     # - Dev mode enabled debugging to stdout in addition to httpd error_log
     #   Values: dev | production
@@ -36,6 +35,7 @@
     # Update the ldap(s) prefix, hostname and search settings as required
     $ldap_server = 'ldaps://ldap.example.com';
     $ldap_search = 'ou=people,dc=example,dc=com';
+    $ldap_use_tls = false; # default - i.e. don't use secured LDAP connection
 
     # Upload directory
     # - used for user image uploads
