@@ -386,8 +386,6 @@ class PDF extends Page
 
             $f = 'assets/pdf/'.$file.'.php';
             
-            global $pdf_tmp_dir;
-            
             if (!$this->has_arg('p')) {
                 if ($orientation) $orientation = '-'.$orientation;
                 
