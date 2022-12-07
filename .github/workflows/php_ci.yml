@@ -5,10 +5,10 @@ on:
     branches: 
       - 'master'
   pull_request:
-    branches: 
+    branches:
       - 'master'
-      - 'release/**''
-      - 'pre-release/**''
+      - 'release/**'
+      - 'pre-release/**'
 
 defaults:
   run:
