@@ -11,7 +11,7 @@ trait Config
      */
     private function configExitIfNoMicroscopes()
     {
-        if (count($this->_get_beamlines_from_type('em')) == 0) {
+        if (count($this->_get_beamlines_from_type('em', false)) == 0) {
             $message = 'Electron microscopes are not specified';
             error_log($message);
             $this->_error($message, 500);

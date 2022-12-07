@@ -21,6 +21,7 @@ class MySQL extends DatabaseParent implements DatabaseInterface
 
     function __construct($user, $pass, $db, $port = null)
     {
+        mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT); // throw exceptions.
         list($host, $dbn) = explode('/', $db);
         if (!$port) $port = ini_get("mysqli.default_port");
         $this->conn = new mysqli($host, $user, $pass, $dbn, $port);
@@ -362,7 +363,6 @@ class MySQL extends DatabaseParent implements DatabaseInterface
         if (sizeof($args)) {
             $vtypes = array('NULL' => 'i', 'integer' => 'i', 'double' => 'd', 'string' => 's');
 
-
             $strfs = '';
             foreach ($args as $a) {
                 $t = gettype($a);
@@ -380,28 +380,23 @@ class MySQL extends DatabaseParent implements DatabaseInterface
 
         $data = array();
         if (strpos($query, 'SELECT') !== false) {
-            if (PHP_VERSION_ID <= 50401) {
-                $r53 = new \SynchWeb\Database\Type\Result53();
-                $data = $r53->invoke($stmt);
-            } else {
-                $result = $stmt->get_result();
-                if ($result) {
-                    if ($result->num_rows > 0) {
-                        while ($row = $result->fetch_assoc()) {
-                            $c = array();
-                            // oracle inheritance ;(
-                            foreach ($row as $key => $val) {
-                                if ($val !== null) {
-                                    if (gettype($val) == gettype(0.1)) $val = round($val, 5);
-                                    $val = strval($val);
-                                }
-                                if ($upperCaseKeys) {
-                                    $key = strtoupper($key);
-                                }
-                                $c[$key] = $val;
+            $result = $stmt->get_result();
+            if ($result) {
+                if ($result->num_rows > 0) {
+                    while ($row = $result->fetch_assoc()) {
+                        $c = array();
+                        // oracle inheritance ;(
+                        foreach ($row as $key => $val) {
+                            if ($val !== null) {
+                                if (gettype($val) == gettype(0.1)) $val = round($val, 5);
+                                $val = strval($val);
                             }
-                            array_push($data, $c);
+                            if ($upperCaseKeys) {
+                                $key = strtoupper($key);
+                            }
+                            $c[$key] = $val;
                         }
+                        array_push($data, $c);
                     }
                 }
             }

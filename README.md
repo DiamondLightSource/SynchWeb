@@ -16,7 +16,7 @@ If not using the Podman containter, to build SynchWeb on a machine you will need
 
 - [npm](https://docs.npmjs.com/) 
 - [composer](https://getcomposer.org/)
-- php5
+- appropriate version of PHP on the build machine
 
 If not using the development VMs you will also need an instance of the
 ISPyB database - available
@@ -63,13 +63,21 @@ Main items to change include:
 - database connection parameters (user, password, host, port)
 - authentication type (cas, ldap, dummy/no authentication)
 
-### Build backend end
+### Build backend
 ```sh
 $ cd SynchWeb/api
 $ composer install
 ```
 
 Note, the front and backend are built automatically in the Podman deployment.
+
+### Run backend tests
+Tests are available for the PHP code under `api/tests`.  To run these, go to the `api` directory and use:
+
+```sh
+./vendor/bin/phpunit --verbose tests
+```
+Note, a single test can be run by specifying that instead of the `tests` directory.
 
 ### Developing the client application
 It is possible to run the client code on a local machine and connect to an existing SynchWeb installation on a server.
@@ -89,7 +97,6 @@ The command line options available are described in this table. These override t
 | env.port | Webpack dev server port |
 | env.proxy.target | Full address of the SynchWeb PHP backend server (can include port if required) |
 | env.proxy.secure | Flag to set if connecting to an https address for the SynchWeb backend.  Setting to `false` can also help with self-signed SSL certs (which may be insecure so should not be used in production). |
-
 
 Acknowledgements
 ----------------

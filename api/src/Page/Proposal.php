@@ -1038,8 +1038,9 @@ class Proposal extends Page
             }
             return $sessionNumber;
         }
+
         /** 
-         * Given an acitve auto collect session - add this container to the session.
+         * Given an active auto collect session - add this container to the session.
          * This function needs to find all the existing samples and investigators so we can update UAS
          * 
          * @param integer $sessionId ISPyB SessionID for currently active Auto Collect session
@@ -1102,9 +1103,9 @@ class Proposal extends Page
                     $this->_error('UAS Error - something wrong creating a session for that container ' . $containerId . ', response code was: '. $code);
                 }
             } else {
-                error_log("Something wrong - an Auto Collect session exists but with no containers " . $container['SESSIONID']);
+                error_log("Something wrong - an Auto Collect session exists but with no containers " . $sessionId);
 
-                $this->_error('No valid containers on the existing Auto Collect Session id:', $container['SESSIONID']);
+                $this->_error('No valid containers on the existing Auto Collect Session id:', $sessionId);
             }
             return $result;
         }
