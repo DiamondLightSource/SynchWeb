@@ -63,7 +63,7 @@ Main items to change include:
 - database connection parameters (user, password, host, port)
 - authentication type (cas, ldap, dummy/no authentication)
 
-### Build back end
+### Build backend
 ```sh
 $ cd SynchWeb/api
 $ composer install
