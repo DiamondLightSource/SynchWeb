@@ -21,7 +21,6 @@ Vue.use(PortalVue)
 Vue.config.productionTip = false
 Vue.config.devtools = !config.production
 
-
 const vm = new Vue({
   store,
   router,
