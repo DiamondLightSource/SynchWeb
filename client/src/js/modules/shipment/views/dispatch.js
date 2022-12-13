@@ -106,7 +106,9 @@ define(['marionette', 'views/form',
         },
 
         populateCountries: function() {
-            this.ui.country.html(this.countries.opts())
+            if (this.countries.length > 0) {
+                this.ui.country.html(this.countries.opts())
+            }
         },
 
         initialize: function(options) {
