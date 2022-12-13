@@ -24,6 +24,7 @@ define(['backbone', 'backbone-validation'], function(Backbone) {
     _.extend(Backbone.Validation.messages, {
         required: 'This field is required',
         wwsdash: 'This field must contain only letters, numbers, spaces, underscores, and dashes',
+        wwsddash: 'This field must contain only letters, numbers, spaces, underscores, dots, and dashes',
         wwdash: 'This field must contain only letters, numbers, underscores, and dashes',
         edate: 'Please specify a valid date (european style)',
         word: 'This field must contain only letters and numbers',
