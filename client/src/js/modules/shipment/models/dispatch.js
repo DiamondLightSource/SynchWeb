@@ -22,7 +22,7 @@ define(['backbone'], function(Backbone) {
 
         LOCALCONTACT: {
             required: false,
-            pattern: 'wwsdash'
+            pattern: 'wwsddash'
         },
 
 
