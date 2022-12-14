@@ -78,7 +78,7 @@ define(['marionette', 'views/dialog', 'utils'], function(Marionette, DialogView,
                     var dec = new TextDecoder('utf-8')
                     var text = dec.decode(this.response)
 
-                    if (mimeType.indexOf('text/plain') > -1) text = '<pre>'+text+'</pre>'
+                    if (mimeType.indexOf('text/plain') > -1) text = '<textarea readonly style="height:100%; width:100%">'+text+'</textarea>'
 
                     doc.open()
                     doc.write(sh+text)
