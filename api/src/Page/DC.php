@@ -106,7 +106,8 @@ class DC extends Page
                     $where = '';
                     if ($this->arg('t') == 'sc') $where = ' AND dc.overlap != 0';
                     else if ($this->arg('t') == 'gr') $where = ' AND dc.axisrange = 0';
-                    else if ($this->arg('t') == 'fc') $where = ' AND dc.overlap = 0 AND dc.axisrange > 0';
+                    else if ($this->arg('t') == 'fc') $where = ' AND dc.overlap = 0 AND dc.axisrange > 0 AND dc.numberOfImages > 1';
+
                     
                 } else if ($this->arg('t') == 'edge') {
                     $where2 = '';
