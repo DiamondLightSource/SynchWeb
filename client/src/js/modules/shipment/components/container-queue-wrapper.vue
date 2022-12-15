@@ -1,14 +1,14 @@
 <template>
-    <section>
-        <marionette-view
-            v-if="ready"
-            :key="$route.fullPath"
-            :options="options"
-            :preloaded="true"
-            :mview="mview"
-            :breadcrumbs="bc">
-        </marionette-view>
-    </section>
+  <section>
+    <marionette-view
+      v-if="ready"
+      :key="$route.fullPath"
+      :options="options"
+      :preloaded="true"
+      :mview="mview"
+      :breadcrumbs="bc"
+    />
+  </section>
 </template>
 
 <script>
@@ -26,9 +26,20 @@ import Container from 'models/container'
 import store from 'app/store/store'
 
 export default {
-    name: 'container-queue-wrapper',
+    name: 'ContainerQueueWrapper',
     components: {
         'marionette-view': MarionetteView
+    },
+    beforeRouteEnter: (to, from, next) => {
+      // Lookup the proposal first to make sure we can still add to it
+      store.dispatch('proposal/proposalLookup', { field: 'CONTAINERID', value: to.params.cid })
+      .then((response) => {
+          console.log("Proposal lookup response: " + JSON.stringify(response))
+          next()
+      }, (error) => {
+          store.commit('notifications/addNotification', {title: 'No such container', msg: error.msg, level: 'error'})
+          next('/404')
+      })
     },
     props: {
         'cid': Number,
@@ -92,17 +103,6 @@ export default {
 
             })
         },
-    },
-    beforeRouteEnter: (to, from, next) => {
-      // Lookup the proposal first to make sure we can still add to it
-      store.dispatch('proposal/proposalLookup', { field: 'CONTAINERID', value: to.params.cid })
-      .then((response) => {
-          console.log("Proposal lookup response: " + JSON.stringify(response))
-          next()
-      }, (error) => {
-          store.commit('notifications/addNotification', {title: 'No such container', msg: error.msg, level: 'error'})
-          next('/404')
-      })
     }
 
 }

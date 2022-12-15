@@ -4,7 +4,8 @@
   "description": "",
   "private": true,
   "scripts": {
-    "lint": "eslint --ext .js,.vue src/js",
+    "lint": "eslint --ext .js src/js",
+    "lint-vue": "eslint -c .eslintrc-vue.js --no-eslintrc --ext .vue src/js",
     "test": "vue-cli-service test:unit tests/**/*.spec.js",
     "build": "NODE_ENV=production ./node_modules/.bin/webpack --config webpack.config.js --mode production",
     "build:dev": "NODE_ENV=development ./node_modules/.bin/webpack --config webpack.config.js --mode development",
@@ -29,6 +30,7 @@
     "css-minimizer-webpack-plugin": "^4.1.0",
     "eslint": "^7.32.0",
     "eslint-loader": "^4.0.2",
+    "eslint-plugin-backbone": "^2.1.1",
     "eslint-plugin-vue": "^9.5.1",
     "file-loader": "^6.2.0",
     "html-loader": "^0.5.5",

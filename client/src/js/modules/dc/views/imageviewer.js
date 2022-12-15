@@ -385,21 +385,22 @@ define(['jquery', 'marionette',
         precache: function() {
             clearTimeout(this.cache_thread)
             return
-            
-            var self = this
-            if (!app.mobile() && ((this.ci - this.cistart) < 10)) {
-                var url = app.apiurl+'/image/'+(this.low ? 'diff' : 'di')+'/id/'+this.model.get('ID')+(this.low ? '/f/1' : '')+'/n/'+self.ci
-                var img = new XHRImage()
-                img.onload = function() {
-                    self.ui.loadprog.text('Cached Image '+self.ci)
-                    self.ui.loadprog.show()
-                    if (self.ci < self.model.get('NUMIMG')) {
-                        self.ci++
-                        self.cache_thread = setTimeout(self.precache.bind(self), 500)
-                    }
-                }
-                img.load(url)
-            }
+
+            // Calum Byrom: this was unreachable, but non-trivial code - so commenting out to remove linting error: would rather delete or actually make use of...
+            // var self = this
+            // if (!app.mobile() && ((this.ci - this.cistart) < 10)) {
+            //     var url = app.apiurl+'/image/'+(this.low ? 'diff' : 'di')+'/id/'+this.model.get('ID')+(this.low ? '/f/1' : '')+'/n/'+self.ci
+            //     var img = new XHRImage()
+            //     img.onload = function() {
+            //         self.ui.loadprog.text('Cached Image '+self.ci)
+            //         self.ui.loadprog.show()
+            //         if (self.ci < self.model.get('NUMIMG')) {
+            //             self.ci++
+            //             self.cache_thread = setTimeout(self.precache.bind(self), 500)
+            //         }
+            //     }
+            //     img.load(url)
+            // }
         },
         
         
@@ -528,8 +529,8 @@ define(['jquery', 'marionette',
             }
 
             var y = []
-            for (var i = 0; i < h; i++) {
-                var val = (ydat[i*4] + ydat[i*4+1] + ydat[i*4+2])
+            for (i = 0; i < h; i++) {
+                val = (ydat[i*4] + ydat[i*4+1] + ydat[i*4+2])
                 if (!this.ui.invert.is(':checked')) val = 765-val
                 y.push([val,h-1-i])
             }
@@ -663,8 +664,8 @@ define(['jquery', 'marionette',
             var newp = curp*(this.scalef/(last_scale))
             this.offsetx -= newp-curp
 
-            var curp = -this.offsety + xy[1]
-            var newp = curp*(this.scalef/(last_scale))
+            curp = -this.offsety + xy[1]
+            newp = curp*(this.scalef/(last_scale))
             this.offsety -= newp-curp
                          
             this._clamp_offset()

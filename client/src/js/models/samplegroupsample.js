@@ -6,11 +6,11 @@ define(['backbone'], function(Backbone) {
   return Backbone.Model.extend({
     idAttribute: 'BLSAMPLEGROUPSAMPLEID',
     sampleGroupId: null,
-    urlRoot() {
+    urlRoot: function() {
       return `/sample/groups/${this.sampleGroupId}/samples`
     },
 
-    initialize(attributes) {
+    initialize:  function(attributes) {
       let sampleGroupId = null
       if (attributes.BLSAMPLEGROUPID) {
         sampleGroupId = attributes.BLSAMPLEGROUPID

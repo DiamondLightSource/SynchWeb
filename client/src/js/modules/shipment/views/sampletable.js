@@ -132,7 +132,7 @@ define(['marionette',
                 var number_pad = number_suffix.length > 0 ? number_suffix[0].length : 0
                 number_suffix = number_suffix.length > 0 ? parseInt(number_suffix[0]) : 1
 
-    	        newm.set('NAME', name_base+((number_suffix+1).toString().padStart(number_pad, '0')))
+                newm.set('NAME', name_base+((number_suffix+1).toString().padStart(number_pad, '0')))
                 newm.set('LOCATION', empty[0].get('LOCATION'))
 
                 empty[0].attributes = newm.attributes
@@ -191,7 +191,6 @@ define(['marionette',
         selectProtein: function(e) {
             this.validateField.apply(this,arguments)
             var p = this.proteins.findWhere({ PROTEINID: this.$el.find('select[name=PROTEINID]').combobox('value') })
-            console.log('selectProtein', arguments, p)
             if (p) {
                 this.model.set('SYMBOL', p.get('CONCENTRATIONTYPE'))
                 this.ui.symbol.text(this.model.get('SYMBOL') ? this.model.get('SYMBOL') : '')
@@ -206,9 +205,6 @@ define(['marionette',
             
             // for pasting from spreadsheet
             if (this.model.get('PROTEINID') > -1) this.$el.find('select[name=PROTEINID]').combobox('value', this.model.get('PROTEINID'))
-            //if (this.model.get('NAME')) this.$el.find('input[name=NAME]').val(this.model.get('NAME'))
-            //if (this.model.get('CODE')) this.$el.find('input[name=CODE]').val(this.model.get('CODE'))
-            //if (this.model.get('COMMENTS')) this.$el.find('input[name=COMMENTS]').val(this.model.get('COMMENTS'))
                 
             _.each(['NAME', 'CODE', 'COMMENTS', 'CELL_A', 'CELL_B', 'CELL_C', 'CELL_ALPHA', 'CELL_BETA', 'CELL_GAMMA', 'REQUIREDRESOLUTION', 'ANOM_NO', 'VOLUME', 'PACKINGFRACTION', 'USERPATH'], function(f, i) {
                 if (this.model.get(f)) this.$el.find('input[name='+f+']').val(this.model.get(f))

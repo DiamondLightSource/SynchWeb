@@ -895,27 +895,14 @@ define(['marionette',
                             e.preventDefault()
 
                             let s = null
-
-                            console.log('swipe', direction)
-
                             if (direction === 'left') {
                                 s = self.getNext()
                             }
-
-                            if (direction === 'right') {
+                            else if (direction === 'right') {
                                 s = self.getNext({ prev: true })
                             }
 
-                            if (direction === 'up') {
-
-                            }
-
-                            if (direction === 'down') {
-
-                            }
-
                             if (s) s.set({ isSelected: true })
-
                         },
 
                         threshold: 0

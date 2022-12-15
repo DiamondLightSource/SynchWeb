@@ -15,18 +15,25 @@ https://eslint.vuejs.org/rules/no-v-html.html
 <template>
   <div :class="outerClass">
     <!-- The label which includes an optional subtitle -->
-    <label v-if="label" :for="id" :class="labelClass">
-      <span v-html="label"></span>
+    <label
+      v-if="label"
+      :for="id"
+      :class="labelClass"
+    >
+      <span v-html="label" />
       <slot name="description">
-        <span v-if="description" class="small">{{ description }}</span>
+        <span
+          v-if="description"
+          class="small"
+        >{{ description }}</span>
       </slot>
     </label>
 
     <!-- The form input itself - bound to the v-model passed in -->
     <input
       v-show="editable"
-      ref="inputRef"
       :id="id"
+      ref="inputRef"
       :name="name"
       :type="type"
       :value="value"
@@ -44,21 +51,31 @@ https://eslint.vuejs.org/rules/no-v-html.html
       class="btn-edit"
       @click="onEdit"
       @mouseover="showEditIcon = true"
-      @mouseleave="showEditIcon = false">
+      @mouseleave="showEditIcon = false"
+    >
       {{ inlineText }}
       <span v-show="showEditIcon">
-        <i :class="['fa', 'fa-edit']"></i> Edit
+        <i :class="['fa', 'fa-edit']" /> Edit
       </span>
     </span>
-    <button v-if="inline && editable" class="button tw-px-2 tw-py-1" @mousedown="onSave">OK</button>
+    <button
+      v-if="inline && editable"
+      class="button tw-px-2 tw-py-1"
+      @mousedown="onSave"
+    >
+      OK
+    </button>
 
     <!-- Placeholder for any error message placed after the input -->
     <slot name="error-msg">
-      <span v-show="errorMessage && !quiet" :class="errorClass">{{ errorMessage }}</span>
+      <span
+        v-show="errorMessage && !quiet"
+        :class="errorClass"
+      >{{ errorMessage }}</span>
     </slot>
 
     <!-- Placeholder for any buttons that should be placed after the input -->
-    <slot name="actions"></slot>
+    <slot name="actions" />
   </div>
 </template>
 
@@ -143,14 +160,6 @@ export default {
       showEditIcon: false,
     }
   },
-  watch: {
-    editable: function(value) {
-      if (!value) this.showEditIcon = false
-    },
-    value: function(newVal) {
-      this.$emit('value-changed', newVal)
-    },
-  },
   computed: {
     // If a user passes in an error Message, add the error class to the input
     classObject() {
@@ -158,6 +167,14 @@ export default {
     },
     inlineText() {
       return this.value || this.initialText
+    },
+  },
+  watch: {
+    editable: function(value) {
+      if (!value) this.showEditIcon = false
+    },
+    value: function(newVal) {
+      this.$emit('value-changed', newVal)
     },
   },
   created() {

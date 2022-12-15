@@ -3,10 +3,7 @@
  * Available via the MIT or new BSD license.
  * see: http://github.com/jrburke/requirejs for details
  */
-/*jslint regexp: false, nomen: false, plusplus: false, strict: false */
-/*global require: false, XMLHttpRequest: false, ActiveXObject: false,
- define: false, window: false, process: false, Packages: false,
- java: false, location: false */
+/* eslint no-useless-escape: "off"*/
 
 (function () {
   var progIds = ['Msxml2.XMLHTTP', 'Microsoft.XMLHTTP', 'Msxml2.XMLHTTP.4.0'],
@@ -201,7 +198,9 @@
             progId = progIds[i];
             try {
               xhr = new ActiveXObject(progId);
-            } catch (e) {}
+            } catch (e) {
+                console.error("Error with ActiveXObject: ", e);
+            }
 
             if (xhr) {
               progIds = [progId];  // so faster next time

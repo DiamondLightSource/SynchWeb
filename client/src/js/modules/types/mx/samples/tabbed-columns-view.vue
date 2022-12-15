@@ -1,23 +1,27 @@
 <template>
   <div>
-    <div v-show="currentTab === 'basic'" class="tw-flex tw-w-full tw-items-center">
+    <div
+      v-show="currentTab === 'basic'"
+      class="tw-flex tw-w-full tw-items-center"
+    >
       <extended-validation-provider
-        class-names="tw-px-2 tw-w-32"
         :ref="`sample_${sampleIndex}_anomalous_scatterer`"
+        class-names="tw-px-2 tw-w-32"
         :rules="sample['PROTEINID'] > -1 ? `required_if:sample ${sampleIndex + 1} experiment kind,SAD` : ''"
         :name="`Sample ${sampleIndex + 1} Anomalous Scatterer`"
-        :vid="`sample ${sampleIndex + 1} anomalous scatterer`">
-        <template  v-slot="{ errors, inputChanged }">
+        :vid="`sample ${sampleIndex + 1} anomalous scatterer`"
+      >
+        <template #default="{ errors, inputChanged }">
           <base-input-select
+            v-model="ANOMALOUSSCATTERER"
             :is-disabled="!canEditRow(sample['LOCATION'], currentEditingRow)"
             :options="anomalousOptionsList"
-            inputClass="tw-w-full tw-h-8"
-            optionValueKey="value"
-            optionTextKey="text"
-            :errorMessage="errors[0]"
+            input-class="tw-w-full tw-h-8"
+            option-value-key="value"
+            option-text-key="text"
+            :error-message="errors[0]"
             :quiet="true"
-            :errorClass="errors[0] ? 'tw-text-xxs ferror' : ''"
-            v-model="ANOMALOUSSCATTERER"
+            :error-class="errors[0] ? 'tw-text-xxs ferror' : ''"
             @value-changed="inputChanged"
           />
         </template>
@@ -27,12 +31,13 @@
         :ref="`sample_${sampleIndex}_barcode`"
         class-names="tw-px-2 tw-w-32"
         :name="`Sample ${sampleIndex + 1} Barcode`"
-        :vid="`sample ${sampleIndex + 1} code`">
-        <template  v-slot="{ errors, inputChanged }">
+        :vid="`sample ${sampleIndex + 1} code`"
+      >
+        <template #default="{ errors, inputChanged }">
           <base-input-text
-            :disabled="!canEditRow(sample['LOCATION'], currentEditingRow)"
-            inputClass="tw-w-full tw-h-8"
             v-model="CODE"
+            :disabled="!canEditRow(sample['LOCATION'], currentEditingRow)"
+            input-class="tw-w-full tw-h-8"
             @value-changed="inputChanged"
           />
         </template>
@@ -42,12 +47,13 @@
         :ref="`sample_${sampleIndex}_comment`"
         class-names="tw-px-2 tw-w-1/4"
         :name="`Sample ${sampleIndex + 1} Comment`"
-        :vid="`sample ${sampleIndex + 1} comment`">
-        <template v-slot="{ errors, inputChanged }">
+        :vid="`sample ${sampleIndex + 1} comment`"
+      >
+        <template #default="{ errors, inputChanged }">
           <base-input-text
-            :disabled="!canEditRow(sample['LOCATION'], currentEditingRow)"
-            inputClass="tw-w-full tw-h-8"
             v-model="COMMENTS"
+            :disabled="!canEditRow(sample['LOCATION'], currentEditingRow)"
+            input-class="tw-w-full tw-h-8"
             @value-changed="inputChanged"
           />
         </template>
@@ -58,30 +64,35 @@
         class="tw-px-2 tw-py-1 tw-w-1/4"
         :class="sampleStatusDetails.className"
         :name="`Sample ${sampleIndex + 1} Status`"
-        :vid="`sample ${sampleIndex + 1} status`">
+        :vid="`sample ${sampleIndex + 1} status`"
+      >
         <base-input-text
-          inputClass="tw-w-full tw-h-8"
           v-model="sampleStatusDetails.name"
+          input-class="tw-w-full tw-h-8"
           :disabled="true"
         />
       </validation-provider>
     </div>
 
-    <div v-show="currentTab === 'extraFields'" class="tw-flex tw-w-full tw-items-center">
+    <div
+      v-show="currentTab === 'extraFields'"
+      class="tw-flex tw-w-full tw-items-center"
+    >
       <extended-validation-provider
         :ref="`sample_${sampleIndex}_user_path`"
         class-names="tw-px-2 tw-w-3/12"
         :name="`Sample ${sampleIndex + 1} User Path`"
         :rules="sample['PROTEINID'] > -1 ? { regex: /^(\w+(\/\w+)?)$/ } : ''"
-        :vid="`sample ${sampleIndex + 1} userpath`">
-        <template v-slot="{ errors, inputChanged }">
+        :vid="`sample ${sampleIndex + 1} userpath`"
+      >
+        <template #default="{ errors, inputChanged }">
           <base-input-text
-            :disabled="!canEditRow(sample['LOCATION'], currentEditingRow)"
-            inputClass="tw-w-full tw-h-8"
-            :errorMessage="errors[0]"
-            :quiet="true"
-            :errorClass="errors[0] ? 'tw-text-xxs ferror' : ''"
             v-model="USERPATH"
+            :disabled="!canEditRow(sample['LOCATION'], currentEditingRow)"
+            input-class="tw-w-full tw-h-8"
+            :error-message="errors[0]"
+            :quiet="true"
+            :error-class="errors[0] ? 'tw-text-xxs ferror' : ''"
             @value-changed="inputChanged"
           />
         </template>
@@ -91,21 +102,21 @@
         :ref="`sample_${sampleIndex}_space_group`"
         class-names="tw-px-2 tw-w-3/12"
         :name="`Sample ${sampleIndex + 1} Space Group`"
-        :vid="`sample ${sampleIndex + 1} spacegroup`">
-        <template v-slot="{errors, inputChanged}">
+        :vid="`sample ${sampleIndex + 1} spacegroup`"
+      >
+        <template #default="{errors, inputChanged}">
           <base-input-select
+            v-model="SPACEGROUP"
             :is-disabled="!canEditRow(sample['LOCATION'], currentEditingRow)"
             :options="spaceGroupList"
-            optionValueKey="value"
-            optionTextKey="text"
-            inputClass="tw-w-full tw-h-8"
-            :errorMessage="errors[0]"
+            option-value-key="value"
+            option-text-key="text"
+            input-class="tw-w-full tw-h-8"
+            :error-message="errors[0]"
             :quiet="true"
-            :errorClass="errors[0] ? 'tw-text-xxs ferror' : ''"
-            v-model="SPACEGROUP"
+            :error-class="errors[0] ? 'tw-text-xxs ferror' : ''"
             @value-changed="inputChanged"
           />
-
         </template>
       </extended-validation-provider>
 
@@ -117,18 +128,19 @@
             class-names="tw-pb-1 tw-px-2"
             :rules="sample['PROTEINID'] > -1 ? 'positive_decimal:2' : ''"
             :name="`Sample ${sampleIndex + 1} CELL-A`"
-            :vid="`sample ${sampleIndex + 1} cell-a`">
-            <template v-slot="{errors, inputChanged}">
+            :vid="`sample ${sampleIndex + 1} cell-a`"
+          >
+            <template #default="{errors, inputChanged}">
               <base-input-text
+                v-model="CELL_A"
                 :disabled="!canEditRow(sample['LOCATION'], currentEditingRow)"
-                placeholderText="A"
+                placeholder-text="A"
                 :quiet="true"
                 type="number"
                 :step="0.01"
-                inputClass="tw-w-12 tw-h-8 tabbed-sample-column"
-                :errorMessage="errors[0]"
-                :errorClass="errors[0] ? 'ferror' : ''"
-                v-model="CELL_A"
+                input-class="tw-w-12 tw-h-8 tabbed-sample-column"
+                :error-message="errors[0]"
+                :error-class="errors[0] ? 'ferror' : ''"
                 @value-changed="inputChanged"
               />
             </template>
@@ -139,18 +151,19 @@
             class-names="tw-pb-1 tw-px-2"
             :rules="sample['PROTEINID'] > -1 ? 'positive_decimal:2' : ''"
             :name="`Sample ${sampleIndex + 1} CELL-B`"
-            :vid="`sample ${sampleIndex + 1} cell-b`">
-            <template v-slot="{ errors, inputChanged }">
+            :vid="`sample ${sampleIndex + 1} cell-b`"
+          >
+            <template #default="{ errors, inputChanged }">
               <base-input-text
+                v-model="CELL_B"
                 :disabled="!canEditRow(sample['LOCATION'], currentEditingRow)"
-                placeholderText="B"
+                placeholder-text="B"
                 :quiet="true"
                 type="number"
                 :step="0.01"
-                inputClass="tw-w-12 tw-h-8 tabbed-sample-column"
-                :errorMessage="errors[0]"
-                :errorClass="errors[0] ? 'ferror' : ''"
-                v-model="CELL_B"
+                input-class="tw-w-12 tw-h-8 tabbed-sample-column"
+                :error-message="errors[0]"
+                :error-class="errors[0] ? 'ferror' : ''"
                 @value-changed="inputChanged"
               />
             </template>
@@ -161,18 +174,19 @@
             class-names="tw-pb-1 tw-px-2"
             :rules="sample['PROTEINID'] > -1 ? 'positive_decimal:2' : ''"
             :name="`Sample ${sampleIndex + 1} CELL-C`"
-            :vid="`sample ${sampleIndex + 1} cell-c`">
-            <template v-slot="{errors, inputChanged}">
+            :vid="`sample ${sampleIndex + 1} cell-c`"
+          >
+            <template #default="{errors, inputChanged}">
               <base-input-text
+                v-model="CELL_C"
                 :disabled="!canEditRow(sample['LOCATION'], currentEditingRow)"
-                placeholderText="C"
-                inputClass="tw-w-12 tw-h-8 tabbed-sample-column"
+                placeholder-text="C"
+                input-class="tw-w-12 tw-h-8 tabbed-sample-column"
                 type="number"
                 :step="0.01"
-                :errorMessage="errors[0]"
+                :error-message="errors[0]"
                 :quiet="true"
-                :errorClass="errors[0] ? 'ferror' : ''"
-                v-model="CELL_C"
+                :error-class="errors[0] ? 'ferror' : ''"
                 @value-changed="inputChanged"
               />
             </template>
@@ -186,18 +200,19 @@
             class-names="tw-pb-1 tw-px-2"
             :rules="sample['PROTEINID'] > -1 ? 'positive_decimal:2' : ''"
             :name="`Sample ${sampleIndex + 1} CELL-ALPHA`"
-            :vid="`sample ${sampleIndex + 1} cell-alpha`">
-            <template v-slot="{errors, inputChanged}">
+            :vid="`sample ${sampleIndex + 1} cell-alpha`"
+          >
+            <template #default="{errors, inputChanged}">
               <base-input-text
+                v-model="CELL_ALPHA"
                 :disabled="!canEditRow(sample['LOCATION'], currentEditingRow)"
-                placeholderText="α"
-                inputClass="tw-w-12 tw-h-8 tabbed-sample-column"
+                placeholder-text="α"
+                input-class="tw-w-12 tw-h-8 tabbed-sample-column"
                 :quiet="true"
                 type="number"
                 :step="0.01"
-                :errorMessage="errors[0]"
-                :errorClass="errors[0] ? 'ferror' : ''"
-                v-model="CELL_ALPHA"
+                :error-message="errors[0]"
+                :error-class="errors[0] ? 'ferror' : ''"
                 @value-changed="inputChanged"
               />
             </template>
@@ -208,18 +223,19 @@
             class-names="tw-pb-1 tw-px-2"
             :rules="sample['PROTEINID'] > -1 ? 'positive_decimal:2' : ''"
             :name="`Sample ${sampleIndex + 1} CELL-BETA`"
-            :vid="`sample ${sampleIndex + 1} cell-beta`">
-            <template v-slot="{ errors, inputChanged }">
+            :vid="`sample ${sampleIndex + 1} cell-beta`"
+          >
+            <template #default="{ errors, inputChanged }">
               <base-input-text
+                v-model="CELL_BETA"
                 :disabled="!canEditRow(sample['LOCATION'], currentEditingRow)"
-                placeholderText="β"
-                inputClass="tw-w-12 tw-h-8 tabbed-sample-column"
+                placeholder-text="β"
+                input-class="tw-w-12 tw-h-8 tabbed-sample-column"
                 type="number"
                 :step="0.01"
-                :errorMessage="errors[0]"
-                :errorClass="errors[0] ? 'ferror' : ''"
+                :error-message="errors[0]"
+                :error-class="errors[0] ? 'ferror' : ''"
                 :quiet="true"
-                v-model="CELL_BETA"
                 @value-changed="inputChanged"
               />
             </template>
@@ -230,18 +246,19 @@
             class-names="tw-pb-1 tw-px-2"
             :rules="sample['PROTEINID'] > -1 ? 'positive_decimal:2' : ''"
             :name="`Sample ${sampleIndex + 1} CELL-GAMMA`"
-            :vid="`sample ${sampleIndex + 1} cell-gamma`">
-            <template v-slot="{errors, inputChanged}">
+            :vid="`sample ${sampleIndex + 1} cell-gamma`"
+          >
+            <template #default="{errors, inputChanged}">
               <base-input-text
+                v-model="CELL_GAMMA"
                 :disabled="!canEditRow(sample['LOCATION'], currentEditingRow)"
-                placeholderText="γ"
-                inputClass="tw-w-12 tw-h-8 tabbed-sample-column"
+                placeholder-text="γ"
+                input-class="tw-w-12 tw-h-8 tabbed-sample-column"
                 type="number"
                 :step="0.01"
-                :errorMessage="errors[0]"
-                :errorClass="errors[0] ? 'ferror' : ''"
+                :error-message="errors[0]"
+                :error-class="errors[0] ? 'ferror' : ''"
                 :quiet="true"
-                v-model="CELL_GAMMA"
                 @value-changed="inputChanged"
               />
             </template>
@@ -250,24 +267,28 @@
       </div>
     </div>
 
-    <div v-show="currentTab === 'unattended'" class="tw-w-full tw-flex tw-items-center">
+    <div
+      v-show="currentTab === 'unattended'"
+      class="tw-w-full tw-flex tw-items-center"
+    >
       <extended-validation-provider
         :ref="`sample_${sampleIndex}_centring_method`"
         class-names="tw-px-2 tw-w-24"
         :name="`Sample ${sampleIndex + 1} Centring Method`"
         :rules="sample['PROTEINID'] > -1 && queueForUDC ? 'required' : ''"
-        :vid="`sample ${sampleIndex + 1} centring method`">
-        <template v-slot="{errors, inputChanged }">
+        :vid="`sample ${sampleIndex + 1} centring method`"
+      >
+        <template #default="{errors, inputChanged }">
           <base-input-select
+            v-model="CENTRINGMETHOD"
             :is-disabled="!canEditRow(sample['LOCATION'], currentEditingRow)"
             :options="centringMethodList"
-            optionValueKey="value"
-            optionTextKey="text"
-            inputClass="tw-w-full tw-h-8"
+            option-value-key="value"
+            option-text-key="text"
+            input-class="tw-w-full tw-h-8"
             :quiet="true"
-            :errorMessage="errors[0]"
-            :errorClass="errors[0] ? 'tw-text-xxs ferror' : ''"
-            v-model="CENTRINGMETHOD"
+            :error-message="errors[0]"
+            :error-class="errors[0] ? 'tw-text-xxs ferror' : ''"
             @value-changed="inputChanged"
           />
         </template>
@@ -278,18 +299,19 @@
         class-names="tw-px-2 tw-w-32"
         :name="`Sample ${sampleIndex + 1} Experiment Kind`"
         :vid="`sample ${sampleIndex + 1} experiment kind`"
-        :rules="sample['PROTEINID'] > -1 && queueForUDC ? 'required' : ''">
-        <template v-slot="{errors, inputChanged}">
+        :rules="sample['PROTEINID'] > -1 && queueForUDC ? 'required' : ''"
+      >
+        <template #default="{errors, inputChanged}">
           <base-input-select
+            v-model="EXPERIMENTKIND"
             :is-disabled="!canEditRow(sample['LOCATION'], currentEditingRow)"
             :options="experimentKindList"
-            inputClass="tw-w-full tw-h-8"
-            optionValueKey="value"
-            optionTextKey="text"
+            input-class="tw-w-full tw-h-8"
+            option-value-key="value"
+            option-text-key="text"
             :quiet="true"
-            :errorMessage="errors[0]"
-            :errorClass="errors[0] ? 'tw-text-xxs ferror' : ''"
-            v-model="EXPERIMENTKIND"
+            :error-message="errors[0]"
+            :error-class="errors[0] ? 'tw-text-xxs ferror' : ''"
             @value-changed="inputChanged"
           />
         </template>
@@ -300,17 +322,18 @@
         class-names="tw-px-2 tw-w-20"
         :name="`Sample ${sampleIndex + 1} Energy`"
         :rules="sample['PROTEINID'] > -1 ? `required_if:sample ${sampleIndex + 1} experiment kind,SAD|non_zero_numeric` : ''"
-        :vid="`sample ${sampleIndex + 1} energy`">
-        <template v-slot="{errors, inputChanged }">
+        :vid="`sample ${sampleIndex + 1} energy`"
+      >
+        <template #default="{errors, inputChanged }">
           <base-input-text
+            v-model="ENERGY"
             :disabled="!canEditRow(sample['LOCATION'], currentEditingRow)"
-            inputClass="tw-w-full tw-h-8 tabbed-sample-column"
+            input-class="tw-w-full tw-h-8 tabbed-sample-column"
             type="number"
             :step="1"
             :quiet="true"
-            :errorMessage="errors[0]"
-            :errorClass="errors[0] ? 'tw-text-xxs ferror' : ''"
-            v-model="ENERGY"
+            :error-message="errors[0]"
+            :error-class="errors[0] ? 'tw-text-xxs ferror' : ''"
             @value-changed="inputChanged"
           />
         </template>
@@ -321,18 +344,19 @@
         class-names="tw-px-2 tw-w-24"
         :name="`Sample ${sampleIndex + 1} UDC Anomalous Scatterer`"
         :rules="sample['PROTEINID'] > -1 ? `required_if:sample ${sampleIndex + 1} experiment kind,SAD` : ''"
-        :vid="`sample ${sampleIndex + 1} UDC anomalous scatterer`">
-        <template v-slot="{ errors, inputChanged }">
+        :vid="`sample ${sampleIndex + 1} UDC anomalous scatterer`"
+      >
+        <template #default="{ errors, inputChanged }">
           <base-input-select
+            v-model="ANOMALOUSSCATTERER"
             :is-disabled="!canEditRow(sample['LOCATION'], currentEditingRow)"
             :options="anomalousOptionsList"
-            optionValueKey="value"
-            inputClass="tw-w-full tw-h-8"
-            optionTextKey="text"
+            option-value-key="value"
+            input-class="tw-w-full tw-h-8"
+            option-text-key="text"
             :quiet="true"
-            :errorMessage="errors[0]"
-            :errorClass="errors[0] ? 'tw-text-xxs ferror' : ''"
-            v-model="ANOMALOUSSCATTERER"
+            :error-message="errors[0]"
+            :error-class="errors[0] ? 'tw-text-xxs ferror' : ''"
             @value-changed="inputChanged"
           />
         </template>
@@ -343,18 +367,19 @@
         class-names="tw-px-2 tw-w-24"
         :rules="sample['PROTEINID'] > -1 && queueForUDC ? 'required' : ''"
         :name="`Sample ${sampleIndex + 1} Screening Method`"
-        :vid="`sample ${sampleIndex + 1} screening method`">
-        <template v-slot="{ errors, inputChanged }">
+        :vid="`sample ${sampleIndex + 1} screening method`"
+      >
+        <template #default="{ errors, inputChanged }">
           <base-input-select
+            v-model="SCREENINGMETHOD"
             :is-disabled="!canEditRow(sample['LOCATION'], currentEditingRow)"
             :options="screeningMethodList"
-            optionValueKey="value"
-            optionTextKey="text"
-            inputClass="tw-w-full tw-h-8"
+            option-value-key="value"
+            option-text-key="text"
+            input-class="tw-w-full tw-h-8"
             :quiet="true"
-            :errorMessage="errors[0]"
-            :errorClass="errors[0] ? 'tw-text-xxs ferror' : ''"
-            v-model="SCREENINGMETHOD"
+            :error-message="errors[0]"
+            :error-class="errors[0] ? 'tw-text-xxs ferror' : ''"
             @value-changed="inputChanged"
           />
         </template>
@@ -363,19 +388,20 @@
       <extended-validation-provider
         :ref="`sample_${sampleIndex}_required_resolution`"
         class-names="tw-px-2 tw-w-24"
-        :rules="sample['PROTEINID'] > -1 ?  `required_if:sample ${sampleIndex + 1} screening method,none|positive_decimal:4` : ''"
+        :rules="sample['PROTEINID'] > -1 ? `required_if:sample ${sampleIndex + 1} screening method,none|positive_decimal:4` : ''"
         :name="`Sample ${sampleIndex + 1} Required Resolution`"
-        :vid="`sample ${sampleIndex + 1} required resolution`">
-        <template v-slot="{ errors, inputChanged}">
+        :vid="`sample ${sampleIndex + 1} required resolution`"
+      >
+        <template #default="{ errors, inputChanged}">
           <base-input-text
+            v-model="REQUIREDRESOLUTION"
             :disabled="!canEditRow(sample['LOCATION'], currentEditingRow) || sample['SCREENINGMETHOD'] !== 'none'"
             type="number"
             :step="1"
-            inputClass="tw-w-full tw-h-8 tabbed-sample-column"
-            :errorMessage="errors[0]"
-            :errorClass="errors[0] ? 'tw-text-xxs ferror' : ''"
+            input-class="tw-w-full tw-h-8 tabbed-sample-column"
+            :error-message="errors[0]"
+            :error-class="errors[0] ? 'tw-text-xxs ferror' : ''"
             :quiet="true"
-            v-model="REQUIREDRESOLUTION"
             @value-changed="inputChanged"
           />
         </template>
@@ -385,18 +411,19 @@
         :ref="`sample_${sampleIndex}_minimum_resolution`"
         class="tw-px-2 tw-w-24"
         :name="`Sample ${sampleIndex + 1} Minimum Resolution`"
-        :rules="sample['PROTEINID'] > -1 ?  `required_if:sample ${sampleIndex + 1} screening method,all|positive_decimal:4` : ''"
-        :vid="`sample ${sampleIndex + 1} minimum resolution`">
-        <template v-slot="{ errors, inputChanged }">
+        :rules="sample['PROTEINID'] > -1 ? `required_if:sample ${sampleIndex + 1} screening method,all|positive_decimal:4` : ''"
+        :vid="`sample ${sampleIndex + 1} minimum resolution`"
+      >
+        <template #default="{ errors, inputChanged }">
           <base-input-text
+            v-model="MINIMUMRESOLUTION"
             :disabled="!canEditRow(sample['LOCATION'], currentEditingRow) || sample['SCREENINGMETHOD'] !== 'all'"
             type="number"
             :step="1"
-            inputClass="tw-w-full tw-h-8 tabbed-sample-column"
-            :errorMessage="errors[0]"
-            :errorClass="errors[0] ? 'tw-text-xxs ferror' : ''"
+            input-class="tw-w-full tw-h-8 tabbed-sample-column"
+            :error-message="errors[0]"
+            :error-class="errors[0] ? 'tw-text-xxs ferror' : ''"
             :quiet="true"
-            v-model="MINIMUMRESOLUTION"
             @value-changed="inputChanged"
           />
         </template>
@@ -407,20 +434,20 @@
         class="tw-px-2 tw-w-24"
         :name="`Sample ${sampleIndex + 1} No to Collect`"
         :rules="sample['PROTEINID'] > -1 ? `required_if:sample ${sampleIndex + 1} screening method,best|non_zero_numeric|min_value:1|max_value:5`: ''"
-        :vid="`sample ${sampleIndex + 1} no to collect`">
-        <template v-slot="{ errors, inputChanged}">
+        :vid="`sample ${sampleIndex + 1} no to collect`"
+      >
+        <template #default="{ errors, inputChanged}">
           <base-input-text
+            v-model="SCREENINGCOLLECTVALUE"
             :disabled="!canEditRow(sample['LOCATION'], currentEditingRow) || sample['SCREENINGMETHOD'] !== 'best'"
             type="number"
             :step="1"
-            inputClass="tw-w-full tw-h-8 tabbed-sample-column"
-            :errorMessage="errors[0]"
-            :errorClass="errors[0] ? 'tw-text-xxs ferror' : ''"
+            input-class="tw-w-full tw-h-8 tabbed-sample-column"
+            :error-message="errors[0]"
+            :error-class="errors[0] ? 'tw-text-xxs ferror' : ''"
             :quiet="true"
-            v-model="SCREENINGCOLLECTVALUE"
             @value-changed="inputChanged"
           />
-
         </template>
       </extended-validation-provider>
     </div>
@@ -435,8 +462,7 @@ import MxSampleTableMixin from 'modules/types/mx/samples/sample-table-mixin.js'
 import ExtendedValidationProvider from 'app/components/extended-validation-provider.vue'
 
 export default {
-  name: 'tabbed-columns',
-  mixins: [MxSampleTableMixin],
+  name: 'TabbedColumns',
   components: {
     'extended-validation-provider': ExtendedValidationProvider,
     'base-input-select': BaseSelectInput,
@@ -444,6 +470,7 @@ export default {
     'validation-provider': ValidationProvider,
     'validation-observer': ValidationObserver
   },
+  mixins: [MxSampleTableMixin],
   props: {
     sample: {
       type: Object,

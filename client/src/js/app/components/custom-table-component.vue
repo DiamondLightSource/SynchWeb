@@ -1,16 +1,29 @@
 <template>
   <div class="table-responsive">
-    <table class="table" :style="`width: ${tableWidth}; min-width: ${tableWidth}`" :class="tableClass">
+    <table
+      class="table"
+      :style="`width: ${tableWidth}; min-width: ${tableWidth}`"
+      :class="tableClass"
+    >
       <thead>
         <tr class="tw-bg-table-header-background tw-text-table-header-color tw-font-bold">
-          <slot name="tableHeaders"></slot>
+          <slot name="tableHeaders" />
         </tr>
       </thead>
-      <tbody :style="{ height: tableHeight }" :class="{'no-hover': unsetHover , custom}">
-        <slot name="addNew"></slot>
-        <slot name="slotData" :dataList="dataList"></slot>
-        <slot name="noData" v-if="dataList.length < 1"></slot>
-        <slot name="footer"></slot>
+      <tbody
+        :style="{ height: tableHeight }"
+        :class="{'no-hover': unsetHover , custom}"
+      >
+        <slot name="addNew" />
+        <slot
+          name="slotData"
+          :data-list="dataList"
+        />
+        <slot
+          v-if="dataList.length < 1"
+          name="noData"
+        />
+        <slot name="footer" />
       </tbody>
     </table>
   </div>
@@ -18,7 +31,7 @@
 <script>
 
 export default {
-  name: 'custom-table-component',
+  name: 'CustomTableComponent',
   props: {
     dataList: {
       type: Array,

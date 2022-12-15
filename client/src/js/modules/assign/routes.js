@@ -38,7 +38,7 @@ function lookupVisit(params) {
                 resolve(visitModel)
             },
             error: function() {
-                reject({msg: "The specified visit doesn\'t exist"})
+                reject({msg: "The specified visit doesn't exist"})
             }
         })    
     })

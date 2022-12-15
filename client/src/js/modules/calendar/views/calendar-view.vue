@@ -1,19 +1,49 @@
 <template>
   <div class="content">
-    <filter-pills class="tw-mt-3" v-if="displayFilters" :filter-data="beamlines" value-field="id" text-field="name" :selected="this.selectedBeamline" @filter-selected="updateSelectedFilter" />
+    <filter-pills
+      v-if="displayFilters"
+      class="tw-mt-3"
+      :filter-data="beamlines"
+      value-field="id"
+      text-field="name"
+      :selected="selectedBeamline"
+      @filter-selected="updateSelectedFilter"
+    />
     <h1>Visits for {{ months[currentMonth] }} {{ currentYear }}</h1>
 
     <div class="tw-w-full tw-flex tw-mb-2">
-      <div class="calendar-nav-button" @click="goToPreviousYear"> {{ previousYear}} </div>
-      <div class="calendar-nav-button" @click="goToPreviousMonth">{{ previousMonth}}</div>
-      <div class="calendar-nav-button" @click="goToNextMonth">{{ nextMonth }}</div>
-      <div class="calendar-nav-button" @click="goToNextYear">{{ nextYear }}</div>
+      <div
+        class="calendar-nav-button"
+        @click="goToPreviousYear"
+      >
+        {{ previousYear }}
+      </div>
+      <div
+        class="calendar-nav-button"
+        @click="goToPreviousMonth"
+      >
+        {{ previousMonth }}
+      </div>
+      <div
+        class="calendar-nav-button"
+        @click="goToNextMonth"
+      >
+        {{ nextMonth }}
+      </div>
+      <div
+        class="calendar-nav-button"
+        @click="goToNextYear"
+      >
+        {{ nextYear }}
+      </div>
     </div>
 
     <div class="tw-w-full tw-hidden sm:tw-flex">
       <div
+        v-for="(day, dayIndex) in days"
+        :key="dayIndex"
         class="calendar-day-header"
-        v-for="(day, dayIndex) in days" :key="dayIndex">
+      >
         {{ day }}
       </div>
     </div>
@@ -22,7 +52,8 @@
       <div
         v-for="(weekValues, weekKey) in getDatesForDay(startDayOfMonth)"
         :key="weekKey"
-        class="tw-w-full tw-flex tw-my-1/2">
+        class="tw-w-full tw-flex tw-my-1/2"
+      >
         <div
           v-for="(date, dateIndex) in weekValues"
           :key="dateIndex"
@@ -30,68 +61,89 @@
             'tw-bg-content-cal-background': date && !isToday(date),
             'tw-bg-content-cal-header-background': date && isToday(date)
           }"
-          class="sm:tw-w-1/7  tw-h-32 tw-mx-1/2">
+          class="sm:tw-w-1/7  tw-h-32 tw-mx-1/2"
+        >
           <div
             v-if="date"
             class="tw-hidden sm:tw-block tw-p-2 tw-h-40 tw-overflow-hidden hover:tw-overflow-visible hover:tw-h-auto hover:tw-relative"
             @mouseenter="onHover(`day-${date}-${currentSelectedMonth}-${currentYear}`, true)"
-            @mouseleave="onHover(`day-${date}-${currentSelectedMonth}-${currentYear}`, false)">
+            @mouseleave="onHover(`day-${date}-${currentSelectedMonth}-${currentYear}`, false)"
+          >
             <div :class="['sm:tw-bg-transparent', sortedVisitsByDay[date].length > 0 ? 'tw-bg-content-filter-background' : '']">
-              <p class="tw-p-4 sm:tw-p-1">{{ date }}</p>
+              <p class="tw-p-4 sm:tw-p-1">
+                {{ date }}
+              </p>
             </div>
             <calendar-day-events
-              class="tw-hidden sm:tw-block"
               :ref="`day-${date}-${currentSelectedMonth}-${currentYear}`"
+              class="tw-hidden sm:tw-block"
               :date="date"
-              :isToday="isToday(date)"
+              :is-today="isToday(date)"
               :day="days[dateIndex]"
               :visits-data="sortedVisitsByDay[date]"
               :month="currentSelectedMonth"
-              :year="currentYear"/>
+              :year="currentYear"
+            />
           </div>
         </div>
       </div>
     </div>
 
     <div
-      class="tw-w-full sm:tw-hidden tw-flex tw-flex-row tw-overflow-x-scroll"
       id="mobileDateWrapper"
+      class="tw-w-full sm:tw-hidden tw-flex tw-flex-row tw-overflow-x-scroll"
       @scroll="handleScrollDebounced({
         event: $event,
         targetId: 'mobileDayVisitsWrapper',
         targetDirection: 'ttb',
         sourceDirection: 'rtl'
-      })">
+      })"
+    >
       <div
         v-for="([date, day], index) in Object.entries(dateAndDays)"
-        @click="goToDate(date)"
         :key="index"
         :data-visit="date && sortedVisitsByDay[date].length > 0 ? date : ''"
         :class="[
           date && sortedVisitsByDay[date].length > 0 ? 'tw-bg-content-filter-background' : '',
           'tw-mx-1',
           'tw-cursor-pointer'
-        ]">
-        <p class="tw-p-4 sm:tw-p-1" :class="[isPastDate(date) ? 'tw-text-content-cal-past-date' : '']">{{ day }}</p>
-        <p class="tw-p-4 sm:tw-p-1 tw-text-center" :class="[isPastDate(date) ? 'tw-text-content-cal-past-date' : '']">{{ date }}</p>
+        ]"
+        @click="goToDate(date)"
+      >
+        <p
+          class="tw-p-4 sm:tw-p-1"
+          :class="[isPastDate(date) ? 'tw-text-content-cal-past-date' : '']"
+        >
+          {{ day }}
+        </p>
+        <p
+          class="tw-p-4 sm:tw-p-1 tw-text-center"
+          :class="[isPastDate(date) ? 'tw-text-content-cal-past-date' : '']"
+        >
+          {{ date }}
+        </p>
       </div>
     </div>
     <div
+      id="mobileDayVisitsWrapper"
       class="tw-w-full sm:tw-hidden tw-overflow-y-scroll mobile-calendar-view tw-mt-4"
-      id="mobileDayVisitsWrapper">
-
+    >
       <div
         v-for="([date, day], index) in Object.entries(dateAndDays)"
         :key="index"
-        :data-visit="date && sortedVisitsByDay[date].length > 0 ? date : ''">
+        :data-visit="date && sortedVisitsByDay[date].length > 0 ? date : ''"
+      >
         <div v-if="date && sortedVisitsByDay[date].length">
-          <div class="tw-mb-2">{{ day }} {{ date }} {{ currentSelectedMonth }}</div>
+          <div class="tw-mb-2">
+            {{ day }} {{ date }} {{ currentSelectedMonth }}
+          </div>
           <calendar-day-events
             :date="Number(date)"
             :day="day"
             :visits-data="sortedVisitsByDay[date]"
             :month="currentSelectedMonth"
-            :year="currentYear"/>
+            :year="currentYear"
+          />
         </div>
       </div>
     </div>
@@ -107,7 +159,7 @@ import FilterPills from 'app/components/filter-pills.vue'
 import CalendarDayEvents from 'modules/calendar/views/components/calendar-day-events.vue'
 
 export default {
-  name: 'calendar-view',
+  name: 'CalendarView',
   components: {
     'calendar-day-events': CalendarDayEvents,
     'filter-pills': FilterPills

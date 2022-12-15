@@ -1,19 +1,29 @@
 <template>
   <div class="tw-mt-12 tw-mb-4">
-    <div class="tw-flex tw-justify-end tw-mb-2" v-if="!containerId">
+    <div
+      v-if="!containerId"
+      class="tw-flex tw-justify-end tw-mb-2"
+    >
       <button
         class="button tw-mr-1"
-        @click="$emit('clone-container', 0)">
+        @click="$emit('clone-container', 0)"
+      >
         Clone all from first row
       </button>
       <button
         class="button tw-ml-1"
-        @click="$emit('clear-container')">
+        @click="$emit('clear-container')"
+      >
         Clear all samples
       </button>
     </div>
-    <div class="tw-w-full tw-flex tw-flex-col tw-items-end" v-if="containerId && !isContainerProcessing && !dataCollectionStarted">
-      <p class="tw-w-full tw-mb-2">Select a field and enter a value to bulk populate in all samples</p>
+    <div
+      v-if="containerId && !isContainerProcessing && !dataCollectionStarted"
+      class="tw-w-full tw-flex tw-flex-col tw-items-end"
+    >
+      <p class="tw-w-full tw-mb-2">
+        Select a field and enter a value to bulk populate in all samples
+      </p>
       <div class="tw-flex tw-w-full tw-mb-2">
         <base-input-select
           option-text-key="title"
@@ -36,16 +46,20 @@
         <button
           name="submit"
           type="submit"
+          :class="['button submit tw-mx-2 tw-text-base tw-px-4 tw-py-1 tw-h-8', invalid ? 'tw-border tw-border-red-500 tw-bg-red-500': '']"
           @click.prevent="onUpdateSamples"
-          :class="['button submit tw-mx-2 tw-text-base tw-px-4 tw-py-1 tw-h-8', invalid ? 'tw-border tw-border-red-500 tw-bg-red-500': '']">
+        >
           Update Samples
         </button>
       </div>
-      <p class="tw-w-full tw-mb-2">Click on the button to save changes</p>
+      <p class="tw-w-full tw-mb-2">
+        Click on the button to save changes
+      </p>
     </div>
     <div class="tw-flex tw-justify-end tw-w-full tw-h-auto tw-items-center">
       <a
-        v-for="(tabName, tabNameIndex) in tabNames" :key="tabNameIndex"
+        v-for="(tabName, tabNameIndex) in tabNames"
+        :key="tabNameIndex"
         :class="{
           'tw-border-t': true,
           'tw-border-l': true,
@@ -56,7 +70,8 @@
           'tw-p-2': currentTab !== tabName.key,
           'tw-p-3': currentTab === tabName.key,
         }"
-        @click="switchTabColumn(tabName.key)">
+        @click="switchTabColumn(tabName.key)"
+      >
         {{ tabName.name }}
       </a>
     </div>
@@ -93,8 +108,8 @@
       </div>
     </div>
     <sample-table-row
-      :ref="`sample-row-${sampleIndex}`"
       v-for="(sample, sampleIndex) in samples"
+      :ref="`sample-row-${sampleIndex}`"
       :key="sampleIndex"
       :basic-columns="basicColumns"
       :extra-fields-columns="extraFieldsColumns"
@@ -104,8 +119,8 @@
       :sample-index="sampleIndex"
       :udc-columns="udcColumns"
       :proteins="proteins"
-      :samplesLength="samples.length"
-      :containerId="containerId"
+      :samples-length="samples.length"
+      :container-id="containerId"
       v-on="$listeners"
     />
     <portal to="dialog">
@@ -114,29 +129,30 @@
         size="small"
         :hide-ok-button="true"
         @perform-modal-action="performModalAction"
-        @close-modal-action="closeModalAction">
+        @close-modal-action="closeModalAction"
+      >
         <template>
           <div class="tw-bg-modal-header-background tw-py-1 tw-pl-4 tw-pr-2 tw-rounded-sm tw-flex tw-w-full tw-justify-between tw-items-center tw-relative">
             <p>Sample Groups</p>
             <button
               class="tw-flex tw-items-center tw-border tw-rounded-sm tw-border-content-border tw-bg-white tw-text-content-page-color tw-p-1"
-              @click="closeModalAction">
-              <i class="fa fa-times"></i>
+              @click="closeModalAction"
+            >
+              <i class="fa fa-times" />
             </button>
           </div>
           <div class="tw-py-3 tw-px-4">
-
             <base-input-select
               class="tw-py-5"
               option-text-key="text"
               option-value-key="value"
               :options="shipments"
-              inputClass="tw-w-full tw-h-6"
+              input-class="tw-w-full tw-h-6"
               :value="containerSamplesGroupData['shipmentId']"
-              @input="onSampleGroupDataChange($event, 'shipmentId')"
               label="Shipment:"
-              outerClass="tw-w-full tw-flex"
-              labelClass="tw-w-3/5 tw-font-bold"
+              outer-class="tw-w-full tw-flex"
+              label-class="tw-w-3/5 tw-font-bold"
+              @input="onSampleGroupDataChange($event, 'shipmentId')"
             />
 
             <base-input-select
@@ -144,12 +160,12 @@
               option-text-key="text"
               option-value-key="value"
               :options="dewars"
-              inputClass="tw-w-full tw-h-6"
+              input-class="tw-w-full tw-h-6"
               :value="containerSamplesGroupData['dewarId']"
-              @input="onSampleGroupDataChange($event, 'dewarId')"
               label="Dewars:"
-              outerClass="tw-w-full tw-flex"
-              labelClass="tw-w-3/5 tw-font-bold"
+              outer-class="tw-w-full tw-flex"
+              label-class="tw-w-3/5 tw-font-bold"
+              @input="onSampleGroupDataChange($event, 'dewarId')"
             />
 
             <base-input-select
@@ -157,17 +173,20 @@
               option-text-key="text"
               option-value-key="value"
               :options="containers"
-              inputClass="tw-w-full tw-h-6"
+              input-class="tw-w-full tw-h-6"
               :value="containerSamplesGroupData['containerId']"
-              @input="onSampleGroupDataChange($event, 'containerId')"
               label="Containers:"
-              outerClass="tw-w-full tw-flex"
-              labelClass="tw-w-3/5 tw-font-bold"
+              outer-class="tw-w-full tw-flex"
+              label-class="tw-w-3/5 tw-font-bold"
+              @input="onSampleGroupDataChange($event, 'containerId')"
             />
 
             <div class="tw-w-full tw-flex tw-justify-end tw-py-4">
-              <button class="button" @click="createNewSampleGroup">
-                <span class="fa fa-plus"></span> &nbsp; Create Group
+              <button
+                class="button"
+                @click="createNewSampleGroup"
+              >
+                <span class="fa fa-plus" /> &nbsp; Create Group
               </button>
             </div>
           </div>
@@ -187,7 +206,7 @@ import { sortBy, uniqBy, debounce } from 'lodash'
 import sampleTableMixin from "modules/types/mx/samples/sample-table-mixin";
 
 export default {
-  name: 'mx-puck-samples-table',
+  name: 'MxPuckSamplesTable',
   components: {
     'custom-dialog-box': CustomDialogBox,
     'sample-table-row': SampleTableRow,
@@ -195,6 +214,22 @@ export default {
     'base-input-text': BaseInputText
   },
   mixins: [sampleTableMixin],
+  props: {
+    currentlyEditingRow: {
+      type: Number,
+      default: -1
+    },
+    proteins: {
+      type: Array,
+      default: () => ([])
+    },
+    containerId: {
+      type: [Number, String, undefined]
+    },
+    invalid: {
+      type: Boolean
+    }
+  },
   data() {
     return {
       requiredColumns: [
@@ -231,22 +266,6 @@ export default {
         inputType: 'text'
       },
       updateSamplesFieldWithData: debounce(searchText => this.updateSelectedFieldValue(searchText), 1000)
-    }
-  },
-  props: {
-    currentlyEditingRow: {
-      type: Number,
-      default: -1
-    },
-    proteins: {
-      type: Array,
-      default: () => ([])
-    },
-    containerId: {
-      type: [Number, String, undefined]
-    },
-    invalid: {
-      type: Boolean
     }
   },
   computed: {
@@ -486,6 +505,14 @@ export default {
       return sortBy(uniqBy(list, 'key'), 'key')
     },
   },
+  watch: {
+    currentlyEditingRow(newValue) {
+      this.editingRow = newValue
+    },
+    selectedFieldValue: {
+      handler: 'updateSamplesFieldWithData',
+    }
+  },
   methods: {
     switchTabColumn(name) {
       this.currentTab = name
@@ -543,14 +570,6 @@ export default {
     },
     onUpdateSamples() {
       this.$emit('bulk-update-samples')
-    }
-  },
-  watch: {
-    currentlyEditingRow(newValue) {
-      this.editingRow = newValue
-    },
-    selectedFieldValue: {
-      handler: 'updateSamplesFieldWithData',
     }
   },
 }

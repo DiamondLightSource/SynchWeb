@@ -87,7 +87,7 @@ define(['marionette',
                         try {
                             json = $.parseJSON(xhr.responseText)
                         } catch(err) {
-
+                            console.error("Error parsing response:", err)
                         }
                     }
                     app.alert({ message: json.message })

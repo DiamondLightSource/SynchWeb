@@ -38,7 +38,7 @@ define(['backbone', 'marionette'], function(Backbone, Marionette) {
         events: { 'click': 'select' },
             
         initialize: function(options) {
-            this.model.on('change:isSelected', this.onSelectedChanged.bind(this))
+            this.model.on('change:isSelected', this.onSelectedChanged.bind(this), this)
         },
         
         onSelectedChanged: function() {
@@ -105,12 +105,10 @@ define(['backbone', 'marionette'], function(Backbone, Marionette) {
             if (this.filterablecollection) this.filterablecollection.getFirstPage({reset: true, fetch: true});
             
             if (this.getOption('url')) {
-                    if (this.getOption('urlFragment')) {
-                            var url = window.location.pathname.replace(new RegExp('\\/'+this.getOption('urlFragment')+'(\\/\\w+)?'), '')+(id ? '/'+this.getOption('urlFragment')+'/'+id : '')
-                    } else {
-                            var url = window.location.pathname.replace(/\/\w+$/, '')+(id ? '/'+id : '')
-                    }
-                    window.history.pushState({}, '', url)
+                var url = this.getOption('urlFragment') ?
+                    window.location.pathname.replace(new RegExp('\\/'+this.getOption('urlFragment')+'(\\/\\w+)?'), '')+(id ? '/'+this.getOption('urlFragment')+'/'+id : '') :
+                    window.location.pathname.replace(/\/\w+$/, '')+(id ? '/'+id : '')
+                window.history.pushState({}, '', url)
             }
         },
             

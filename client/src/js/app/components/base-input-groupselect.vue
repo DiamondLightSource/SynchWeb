@@ -14,19 +14,24 @@ Slots include:
 -->
 <template>
   <div :class="outerClass">
-
     <!-- The label which includes an optional subtitle -->
-    <label v-if="label" :for="id">{{label}}
+    <label
+      v-if="label"
+      :for="id"
+    >{{ label }}
       <slot name="description">
-        <span v-if="description" class="small">{{description}}</span>
+        <span
+          v-if="description"
+          class="small"
+        >{{ description }}</span>
       </slot>
     </label>
 
     <!-- The form input itself - bound to the v-model passed in -->
     <select
       v-show="editable"
-      ref="inputRef"
       :id="id"
+      ref="inputRef"
       :name="name"
       :value="localValue"
       :disabled="disabled"
@@ -36,22 +41,53 @@ Slots include:
       @blur="$emit('blur')"
       @focus="$emit('focus')"
     >
-      <option v-show="defaultText" disabled value="!">{{defaultText}}</option>
-      <optgroup v-for="(group, index) in groups" :key="index" :label="group.name">
-        <option v-for="option in group.options" :key="option[optionValueKey]" :value="option[optionValueKey]">{{option[optionTextKey]}}</option>
+      <option
+        v-show="defaultText"
+        disabled
+        value="!"
+      >
+        {{ defaultText }}
+      </option>
+      <optgroup
+        v-for="(group, index) in groups"
+        :key="index"
+        :label="group.name"
+      >
+        <option
+          v-for="option in group.options"
+          :key="option[optionValueKey]"
+          :value="option[optionValueKey]"
+        >
+          {{ option[optionTextKey] }}
+        </option>
       </optgroup>
     </select>
 
-    <span v-if="inline && !editable" class="btn-edit" @click="onEdit" @mouseover="showEditIcon = true" @mouseleave="showEditIcon = false">{{ value }} <span v-show="showEditIcon"><i :class="['fa', 'fa-edit']"></i> Edit</span></span>
-    <button v-if="inline && editable" @mousedown="onSave" class="button">OK</button>
+    <span
+      v-if="inline && !editable"
+      class="btn-edit"
+      @click="onEdit"
+      @mouseover="showEditIcon = true"
+      @mouseleave="showEditIcon = false"
+    >{{ value }} <span v-show="showEditIcon"><i :class="['fa', 'fa-edit']" /> Edit</span></span>
+    <button
+      v-if="inline && editable"
+      class="button"
+      @mousedown="onSave"
+    >
+      OK
+    </button>
 
     <!-- Placeholder for any error message placed after the input -->
     <slot name="error-msg">
-      <span v-show="errorMessage" :class="errorClass">{{ errorMessage }}</span>
+      <span
+        v-show="errorMessage"
+        :class="errorClass"
+      >{{ errorMessage }}</span>
     </slot>
 
     <!-- Placeholder for any buttons that should be placed after the input -->
-    <slot name="actions"></slot>
+    <slot name="actions" />
   </div>
 </template>
 
@@ -131,11 +167,6 @@ export default {
       localValue: this.value
     }
   },
-  watch: {
-    editable: function(value) {
-      if (value == false) this.showEditIcon = false
-    }
-  },
   computed: {
     // If a user passes in an error Message, add the error class to the input
     classObject() {
@@ -143,6 +174,11 @@ export default {
     },
     inlineText() {
       return this.initialText || this.localValue
+    }
+  },
+  watch: {
+    editable: function(value) {
+      if (value == false) this.showEditIcon = false
     }
   },
   watch: {
