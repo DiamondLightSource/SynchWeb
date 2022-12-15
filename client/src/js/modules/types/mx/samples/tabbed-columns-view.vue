@@ -72,7 +72,7 @@
         :ref="`sample_${sampleIndex}_user_path`"
         class-names="tw-px-2 tw-w-3/12"
         :name="`Sample ${sampleIndex + 1} User Path`"
-        :rules="sample['PROTEINID'] > -1 ? { regex: /^(\w+(\/\w+)?)$/ } : ''"
+        :rules="sample['PROTEINID'] > -1 ? { regex: /^((\w|\-)+(\/(\w|\-)+)?)$/ } : ''"
         :vid="`sample ${sampleIndex + 1} userpath`">
         <template v-slot="{ errors, inputChanged }">
           <base-input-text
