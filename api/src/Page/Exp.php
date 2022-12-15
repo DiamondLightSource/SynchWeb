@@ -9,20 +9,19 @@ class Exp extends Page
 
     public static $arg_list = array(
 
-        // Filters
-        'CONTAINERID' => '\d+',
-        'BLSAMPLEID' => '\d+',
+        // Shared parameters
+        'EXPOSURETIME' => '\d+(.\d+)?',  //DiffractionPlan and DCPlan has Detector
+        'BLSAMPLEID' => '\d+', // Filters and DiffractionPlan (=>DataCollectionPlan)
 
+        // Filters
+        'CONTAINERID' => '\d+',           
 
         // Replacement for DiffractionPlan in various tables
         'DATACOLLECTIONPLANID' => '\d+',
 
-
         // DiffractionPlan (=>DataCollectionPlan)
         'DIFFRACTIONPLANID' => '\d+',
-        // 'BLSAMPLEID' => '\d+',
-        'EXPERIMENTKIND' => '\w+',
-        'EXPOSURETIME' => '\d+(.\d+)?',
+        'EXPERIMENTKIND' => '\w+',            
         'REQUIREDRESOLUTION' => '\d+(.\d+)?',
         'PREFERREDBEAMSIZEX' => '\d+',
         'PREFERREDBEAMSIZEY' => '\d+',
@@ -77,7 +76,6 @@ class Exp extends Page
 
         // DCPlan has Detector
         'DATACOLLECTIONPLANHASDETECTORID' => '\d+',
-        // 'EXPOSURETIME' => '\d+(.\d+)?',
         'DISTANCE' => '\d+(.\d+)?',
         'ROLL' => '\d+(.\d+)?',
 

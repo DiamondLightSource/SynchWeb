@@ -2814,7 +2814,7 @@ class Sample extends Page
             $this->_error('No proposal specified');
 
         if (!$this->has_arg('BLSAMPLEGROUPID'))
-            $this->error('No sample group specified');
+            $this->_error('No sample group specified');
 
         $where = 'bsg.proposalid = :1';
         $args = array($this->proposalid);

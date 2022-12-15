@@ -482,7 +482,7 @@ class Imaging extends Page
         if ($this->has_arg('IMAGERID')) {
             $imager = $this->db->pq("SELECT temperature FROM imager WHERE imagerid=:1", array($this->arg('IMAGERID')));
             if (!sizeof($imager))
-                $this->error('No such imager');
+                $this->_error('No such imager');
             $temp = $imager[0]['TEMPERATURE'];
 
         }
@@ -499,8 +499,9 @@ class Imaging extends Page
               INNER JOIN proposal p ON p.proposalid = s.proposalid
               WHERE p.proposalid = :1 AND c.containerid = :2", array($this->proposalid, $this->arg('CONTAINERID')));
 
-        if (!sizeof($cont))
-            $this->error('No such container');
+        if (!sizeof($cont)) {
+            $this->_error('No such container');
+        }
 
 
         $args = array('CONTAINERID' => $this->arg('CONTAINERID'),
@@ -531,8 +532,9 @@ class Imaging extends Page
               INNER JOIN proposal p ON p.proposalid = s.proposalid
               WHERE p.proposalid = :1 AND c.containerid = :2", array($this->proposalid, $this->arg('cid')));
 
-        if (!sizeof($cont))
-            $this->error('No such container');
+        if (!sizeof($cont)) {
+            $this->_error('No such container');
+        }
 
         $last = $this->db->pq("SELECT i.containerid 
               FROM containerinspection i
