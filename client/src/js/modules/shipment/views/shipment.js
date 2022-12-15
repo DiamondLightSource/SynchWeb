@@ -199,13 +199,15 @@ define(['marionette',
             edit.create("ENCLOSEDHARDDRIVE", 'select', { data: {'Yes': 'Yes', 'No': 'No'}})
             edit.create("ENCLOSEDTOOLS", 'select', { data: {'Yes': 'Yes', 'No': 'No'}})
 
-            proposal_code = app.proposal.get('PROPOSALCODE')
-            industrial_codes = ['in', 'sw']
-            industrial_visit = industrial_codes.includes(proposal_code)
-            if (!industrial_visit) {
-                this.$el.find(".remoteormailin").hide()
-            } else {
-                edit.create("REMOTEORMAILIN", 'select', { data: {'Remote': 'Remote', 'Mail-in': 'Mail-in', 'Other': 'Other'}})
+            if (app.proposal) {
+                proposal_code = app.proposal.get('PROPOSALCODE')
+                industrial_codes = ['in', 'sw']
+                industrial_visit = industrial_codes.includes(proposal_code)
+                if (!industrial_visit) {
+                    this.$el.find(".remoteormailin").hide()
+                } else {
+                    edit.create("REMOTEORMAILIN", 'select', { data: {'Remote': 'Remote', 'Mail-in': 'Mail-in', 'Other': 'Other'}})
+                }
             }
 
             edit.create("SESSIONLENGTH", 'text')
