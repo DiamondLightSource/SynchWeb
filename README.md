@@ -127,7 +127,7 @@ The command line options available are described in this table. These override t
 ## Continuous Integration
 Basic CI is included via the GitHub workflows functionality, defined by
 `.github/workflows/ci.yml`.  Currently this will run whenever a branch change or
-pull request is pushed to `master`.  The workflow will run two parallel jobs:
+pull request is pushed to `master`, `pre-release` or `release`.  The workflow will run two parallel jobs:
 
 * Checkout the SynchWeb code - for the PHP build
   1. Install the correct version of PHP
