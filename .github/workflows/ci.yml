@@ -2,9 +2,13 @@ name: Build and Test SynchWeb
 
 on:
   push:
-    branches: [ "master" ]
+    branches: 
+      - 'master'
   pull_request:
-    branches: [ "master" ]
+    branches:
+      - 'master'
+      - 'release/**'
+      - 'pre-release/**'
 
 defaults:
   run:

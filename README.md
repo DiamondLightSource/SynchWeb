@@ -5,9 +5,11 @@ The client includes some newer components written in Vue.js
 Read More: https://diamondlightsource.github.io/SynchWeb/
 
 ## Installation
-Running SynchWeb requires setting up a Linux, Apache, MariaDB and PHP (LAMP) software stack. If running in production you should configure your Apache and PHP to serve secure pages only. The steps below describe how to build the software so it is ready to deploy onto your target server.
+Running SynchWeb requires setting up a Linux, Apache, MariaDB and PHP (LAMP) software stack. If running in production you should configure your Apache and PHP to serve secure pages only. The steps below describe how to build the software so it is ready to deploy onto your target server. 
+The [podman](./podman) folder provides support for creating a containerised 
+production deployment. Full instructions [here](./podman/README.md).
 
-For development, a simple environment can be setup by using scripts provided 
+For development (not production use), a simple environment can be setup by using scripts provided 
 [here](https://github.com/DiamondLightSource/synchweb-devel-env). Support is provided for both 
 containerisation and the use of VMs. VS Code provides a good development environment for working
 with the SynchWeb codebase.  PHP Tools extension provides intellisense, debugging, formatting, 
@@ -15,11 +17,15 @@ linting and support for unit tests. Vetur and Volar extensions provide support f
 the Vue.js code.
 
 ### Requirements
-To build SynchWeb on a machine you will need [npm](https://docs.npmjs.com/) and [composer](https://getcomposer.org/)
+If not using the Podman containter, to build SynchWeb on a machine you will need the following on the build machine:
 
-You will also need an appropriate version of PHP on the build machine.
+- [npm](https://docs.npmjs.com/) 
+- [composer](https://getcomposer.org/)
+- appropriate version of PHP on the build machine
 
-If not using the development VMs you will also need an instance of the ISPyB database - see [here](https://github.com/DiamondLightSource/ispyb-database).
+If not using the development VMs you will also need an instance of the
+ISPyB database - available
+[here](https://github.com/DiamondLightSource/ispyb-database).
 
 ### Check out the code
 ```sh
@@ -64,13 +70,15 @@ Main items to change include:
 - database connection parameters (user, password, host, port)
 - authentication type (cas, ldap, dummy/no authentication)
 
-### Build back end
+### Build backend
 ```sh
 $ cd SynchWeb/api
 $ composer install
 ```
 
-### Run back end tests
+Note, the front and backend are built automatically in the Podman deployment.
+
+### Run backend tests
 Tests are available for the PHP code under `api/tests`.  To run these, go to the `api` directory and use:
 
 ```sh
@@ -99,13 +107,14 @@ $ npm run test
 
 ## Developing the client application
 It is possible to run the client code on a local machine and connect to an existing SynchWeb installation on a server.
-The steps required are to build the front end code and then run a webpack dev server to host the client code.
+The steps required are to build the front end code and then run a webpack dev server to host the client code.  Note, this is possible for both the
+Podman and VM approach detailed [here](https://github.com/DiamondLightSource/synchweb-devel-env).
 ```sh
 $ cd SynchWeb/client
 $ npm run build:dev
-$ npm run serve -- --env.port=8080 --env.proxy.target=http://192.168.33.10
+$ npm run serve -- --env port=8080 --env.proxy.target=http://localhost:8082
 ```
-In this example a browser pointed at localhost:8080 will connect to a SynchWeb back end on 192.168.33.10. Don't ignore the middle '--' otherwise the dev server will not receive the arguments!
+In this example a browser pointed at localhost:9000 will connect to a SynchWeb back end on localhost:8082. Don't ignore the middle '--' otherwise the dev server will not receive the arguments!
 
 The command line options available are described in this table. These override the defaults set in webpack.config.js.
 
@@ -113,7 +122,7 @@ The command line options available are described in this table. These override t
 | ------ | ------ |
 | env.port | Webpack dev server port |
 | env.proxy.target | Full address of the SynchWeb PHP backend server (can include port if required) |
-| env.proxy.secure | Flag to set if connecting to an https address for the SynchWeb backend |
+| env.proxy.secure | Flag to set if connecting to an https address for the SynchWeb backend.  Setting to `false` can also help with self-signed SSL certs (which may be insecure so should not be used in production). |
 
 ## Continuous Integration
 Basic CI is included via the GitHub workflows functionality, defined by
