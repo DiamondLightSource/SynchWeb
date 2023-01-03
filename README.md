@@ -83,7 +83,7 @@ Tests are available for the PHP code under `api/tests`.  To run these, go to the
 
 ```sh
 $ cd SynchWeb/api
-$ ./vendor/bin/phpunit --verbose -c /tests/phpunit.xml
+$ ./vendor/bin/phpunit --verbose -c tests/phpunit.xml
 ```
 Note, a single test can be run by specifying that instead of the `tests` directory.  Tests
 will also produce a coverage report - this can be disabled by specifying `--no-coverage` when

@@ -19,6 +19,7 @@ use SynchWeb\Model\Services\AuthenticationData;
 use SynchWeb\Model\Services\UserData;
 use SynchWeb\Database\DatabaseFactory;
 use SynchWeb\Database\DatabaseConnectionFactory;
+use SynchWeb\Database\DatabaseInstance;
 use SynchWeb\ImagingShared;
 use SynchWeb\Dispatch;
 
@@ -93,10 +94,12 @@ function setupApplication($app, $mode): Slim
 
 function setupDependencyInjectionContainer($app, $isb, $port)
 {
-    $app->container->singleton('db', function ()
+    $app->container->singleton('db', function () use ($app): DatabaseInstance
     {
         $dbFactory = new DatabaseFactory(new DatabaseConnectionFactory());
-        return $dbFactory->get();
+        $db = $dbFactory->get();
+        $db->set_app($app);
+        return $db;
     });
 
     $app->container->singleton('authData', function () use ($app)

@@ -8,16 +8,12 @@ use SqlFormatter;
 
 class MySQL extends DatabaseParent implements DatabaseInterface
 {
-    protected $type = 'mysql';
+    protected string $type = 'mysql';
 
-    var $lastQuery = ''; // provide a way of retrieving the last query run - by storing the data - can then call getLastQuery() - primarily for testing
-    var $lastArgs = array();
-    var $debug = false;
-    var $stat = '';
-    var $stats = False;
-    var $transaction = False;
-    var $errors = 0;
-    var $wsrep_sync = False;
+    private string $lastQuery = ''; // provide a way of retrieving the last query run - by storing the data - can then call getLastQuery() - primarily for testing
+    private array $lastArgs = array();
+    private bool $transaction = False;
+    private int $errors = 0;
 
     const TABLES = array(
         'AdminActivity',
@@ -526,11 +522,6 @@ class MySQL extends DatabaseParent implements DatabaseInterface
         }
 
         return $this->pq($union, $all_args);
-    }
-
-    function set_explain($exp)
-    {
-
     }
 
     function get_result($Statement)

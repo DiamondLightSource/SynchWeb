@@ -12,6 +12,7 @@ use xmlrpcmsg;
 use xmlrpcval;
 
 use SynchWeb\Queue;
+use SynchWeb\Database\DatabaseInstance;
 
 class Page
 {
@@ -51,7 +52,7 @@ class Page
     }
 
 
-    function __construct(Slim $app, $db, $user)
+    function __construct(Slim $app, DatabaseInstance $db, $user)
     {
         $this->_arg_list = array();
         $this->_dispatch = array();

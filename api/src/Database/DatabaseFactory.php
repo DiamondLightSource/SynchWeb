@@ -19,7 +19,7 @@ class DatabaseFactory
 
     private $databaseConnectionFactory;
 
-    public function get()
+    public function get() : DatabaseInstance
     {
         // Global variable is named $dbtype in config.php.
         global $dbtype;

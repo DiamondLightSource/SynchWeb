@@ -3,18 +3,33 @@
 namespace SynchWeb\Database;
 
 use SynchWeb\Utils;
+use Slim\Slim;
 
 class DatabaseParent
 {
-    public $debug = False;
-    public $stats = False;
-    public $stat;
+    // Setting to true produces a text of the database call
+    public bool $debug = False;
+    
+    // Setting to true should produce statistics output in $stat, if possible in the driver
+    public bool $stats = False;
+    public $stat = "";
+    
+    // Setting to true should produce the explain plan in $plan, if possible in the driver
+    public bool $explain = False;
+    public $plan = "";
 
     protected $conn;
+    protected string $type = "Base"; // The sub-class should override this
+
+    private ?Slim $app = NULL;
 
     function type()
     {
         return $this->type;
+    }
+
+    public function set_app(Slim $app) {
+        $this->app = $app;
     }
 
     public function set_stats($st)
@@ -27,6 +42,11 @@ class DatabaseParent
         if ($this->app)
             $this->app->contentType('text/html');
         $this->debug = $debug;
+    }
+
+    function set_explain(bool $explain)
+    {
+        $this->$explain = $explain;
     }
 
     public function error($title, $msg)
@@ -58,4 +78,8 @@ interface DatabaseInterface
 
     // Close connection
     public function close();
+}
+
+abstract class DatabaseInstance extends DatabaseParent implements DatabaseInterface
+{
 }
