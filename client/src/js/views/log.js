@@ -14,6 +14,19 @@ define(['marionette', 'views/dialog', 'utils'], function(Marionette, DialogView,
         load: function() {
             var self = this
 
+            var HTMLTagsToReplace = {
+                '<': '&lt;',
+                '>': '&gt;'
+            };
+            
+            function replaceHTMLTag(tag) {
+                return HTMLTagsToReplace[tag] || tag;
+            }
+            
+            function escapeHTMLTags(str) {
+                return str.replace(/[<>]/g, replaceHTMLTag);
+            }
+
             var xhr = new XMLHttpRequest()
             xhr.open('GET', this.url, true)
             xhr.responseType = 'arraybuffer'
@@ -77,20 +90,6 @@ define(['marionette', 'views/dialog', 'utils'], function(Marionette, DialogView,
                     var doc = self.iframe[0].contentWindow.document
                     var dec = new TextDecoder('utf-8')
                     var text = dec.decode(this.response)
-
-                    
-                    var HTMLTags = {
-                        '<': '&lt;',
-                        '>': '&gt;'
-                    };
-                    
-                    function replaceHTMLTag(tag) {
-                        return HTMLTags[tag] || tag;
-                    }
-                    
-                    function escapeHTMLTags(str) {
-                        return str.replace(/[<>]/g, replaceHTMLTag);
-                    }
 
                     if (mimeType.indexOf('text/plain') > -1) text = '<pre>'+escapeHTMLTags(text)+'</pre>'
 
