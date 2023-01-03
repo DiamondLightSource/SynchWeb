@@ -78,6 +78,9 @@ define(['marionette', 'views/form',
             facc: 'a.facc',
             accountNumber: 'input[NAME=DELIVERYAGENT_AGENTCODE]',
             courier: 'input[name=DELIVERYAGENT_AGENTNAME]',
+            courierDetails: '.courierDetails',
+            facilityCourier: '.facilityCourier',
+            awbNumber: 'input[name=AWBNUMBER]',
             useAnotherCourierAccount: 'input[name=USE_ANOTHER_COURIER_ACCOUNT]',
             dispatchState: '.dispatch-state'
         },
@@ -116,6 +119,7 @@ define(['marionette', 'views/form',
             var d = new Date()
             var today = (d.getDate() < 10 ? '0'+d.getDate() : d.getDate()) + '-' + (d.getMonth() < 9 ? '0'+(d.getMonth()+1) : d.getMonth()+1) + '-' + d.getFullYear()
             this.$el.find('input[name=DELIVERYAGENT_SHIPPINGDATE]').val(today)
+            this.$el.find('.facilityCourier').hide()
 
             if (this.shipping.get('TERMSACCEPTED') == 0) {
                 this.ui.courier.val(this.shipping.get('DELIVERYAGENT_AGENTNAME'))
@@ -233,6 +237,12 @@ define(['marionette', 'views/form',
                 this.ui.courier.attr('disabled', true)
                 this.ui.accountNumber.attr('disabled', true)
             }
+        },
+
+        toggleFacilityCourier: function() {
+            this.ui.facc.hide()
+            this.ui.courierDetails.hide()
+            this.ui.facilityCourier.show()
         }
     })
 
