@@ -2,13 +2,14 @@
 
 namespace SynchWeb\Model\Services;
 
+use SynchWeb\Database\DatabaseParent;
 use SynchWeb\Model\User;
 
 class AuthenticationData
 {
-    private $db;
+    private DatabaseParent $db;
 
-    function __construct($db)
+    function __construct(DatabaseParent $db)
     {
         $this->db = $db;
     }

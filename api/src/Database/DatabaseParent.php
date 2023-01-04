@@ -5,7 +5,27 @@ namespace SynchWeb\Database;
 use SynchWeb\Utils;
 use Slim\Slim;
 
-class DatabaseParent
+interface DatabaseInterface
+{
+    public function __construct($conn);
+
+    // Prepared Query
+    public function pq($query, $args = array());
+
+    // Paginated Query
+    public function paginate($query, $args);
+
+    // Read binary
+    public function read($field);
+
+    // Return last insert id
+    public function id();
+
+    // Close connection
+    public function close();
+}
+
+abstract class DatabaseParent implements DatabaseInterface
 {
     // Setting to true produces a text of the database call
     public bool $debug = False;
@@ -58,28 +78,4 @@ class DatabaseParent
     {
     // $this->close();
     }
-}
-
-interface DatabaseInterface
-{
-    public function __construct($conn);
-
-    // Prepared Query
-    public function pq($query, $args);
-
-    // Paginated Query
-    public function paginate($query, $args);
-
-    // Read binary
-    public function read($field);
-
-    // Return last insert id
-    public function id();
-
-    // Close connection
-    public function close();
-}
-
-abstract class DatabaseInstance extends DatabaseParent implements DatabaseInterface
-{
 }

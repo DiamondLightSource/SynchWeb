@@ -7,12 +7,12 @@ use HTMLPurifier;
 use HTMLPurifier_Config;
 use ReflectionClass;
 use Slim\Slim;
+use SynchWeb\Database\DatabaseParent;
 use xmlrpc_client;
 use xmlrpcmsg;
 use xmlrpcval;
 
 use SynchWeb\Queue;
-use SynchWeb\Database\DatabaseInstance;
 
 class Page
 {
@@ -52,7 +52,7 @@ class Page
     }
 
 
-    function __construct(Slim $app, DatabaseInstance $db, $user)
+    function __construct(Slim $app, DatabaseParent $db, $user)
     {
         $this->_arg_list = array();
         $this->_dispatch = array();

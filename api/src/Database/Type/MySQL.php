@@ -2,12 +2,10 @@
 
 namespace SynchWeb\Database\Type;
 
-use SynchWeb\Database\DatabaseParent;
-use SynchWeb\Database\DatabaseInterface;
 use SqlFormatter;
+use SynchWeb\Database\DatabaseParent;
 
-class MySQL extends DatabaseParent implements DatabaseInterface
-{
+class MySQL extends DatabaseParent {
     protected string $type = 'mysql';
 
     private string $lastQuery = ''; // provide a way of retrieving the last query run - by storing the data - can then call getLastQuery() - primarily for testing
@@ -566,5 +564,5 @@ class MySQL extends DatabaseParent implements DatabaseInterface
     {
         if ($this->conn)
             $this->conn->close();
-    }
+    }   
 }
