@@ -219,7 +219,8 @@ define(['backbone', 'marionette', 'views/dialog',
             mul: 'span.multi',
             met: 'select[name=method]',
             com: 'input[type=comments]',
-            sg: 'select[name=sg]'        },
+            sg: 'select[name=sg]'        
+        },
 
         buttons: {
             Integrate: 'integrate',
