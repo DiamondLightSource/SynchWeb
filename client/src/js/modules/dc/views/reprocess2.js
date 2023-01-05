@@ -219,9 +219,7 @@ define(['backbone', 'marionette', 'views/dialog',
             mul: 'span.multi',
             met: 'select[name=method]',
             com: 'input[type=comments]',
-            sg: 'select[name=sg]',
-            sg_show_all: 'input[name=sg_show_all]'
-        },
+            sg: 'select[name=sg]'        },
 
         buttons: {
             Integrate: 'integrate',
@@ -253,7 +251,7 @@ define(['backbone', 'marionette', 'views/dialog',
             this.ui.cell.slideToggle()
         },
 
-        showAllSpaceGroups: async function() {
+        showSpaceGroups: async function() {
             this.spacegroups = new Spacegroups(null, { state: { pageSize: 9999 } })   
             await this.spacegroups.fetch();
             this.ui.sg.html(this.spacegroups.opts())
