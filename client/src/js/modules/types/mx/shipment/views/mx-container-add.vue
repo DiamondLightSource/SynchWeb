@@ -212,6 +212,7 @@
             @clear-container-row="onClearRow"
             @update-sample-group-input-disabled="updateSampleGroupInputDisabled"
             @update-sample-group-list="getSampleGroups"
+            @update-samples-with-sample-group="handleSampleFieldChangeWithSampleGroups"
           />
         </div>
         <!--

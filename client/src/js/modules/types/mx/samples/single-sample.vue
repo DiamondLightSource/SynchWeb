@@ -50,7 +50,7 @@
       <validation-provider
         tag="div"
         class="tw-py-1"
-        :rules="sample['PROTEINID'] > -1 && !containerId ? 'required|alpha_dash|max:20' : ''"
+        :rules="sample['PROTEINID'] > -1 && (!containerId || editingRow === sample['LOCATION']) ? 'required|alpha_dash|max:20' : ''"
         :name="`Sample ${sampleLocation + 1} Name`"
         :vid="`sample ${sampleLocation + 1} name`"
         v-slot="{ errors }">
@@ -62,7 +62,7 @@
           :quiet="true"
           :errorMessage="errors[0]"
           :errorClass="errors[0] ? 'tw-text-xxs ferror' : ''"
-          v-model="NAME"
+          v-model.trim="NAME"
         />
       </validation-provider>
 
