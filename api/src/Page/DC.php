@@ -133,7 +133,8 @@ class DC extends Page
                 } else if ($this->arg('t') == 'err') {
                     $where = " AND appm.autoprocprogrammessageid IS NOT NULL AND (appm.severity = 'WARNING' OR appm.severity = 'ERROR')";
                     $extj[0] .= "LEFT OUTER JOIN autoprocintegration api ON dc.datacollectionid = api.datacollectionid
-                        LEFT OUTER JOIN autoprocprogram app ON (app.autoprocprogramid = api.autoprocprogramid OR dc.datacollectionid = app.datacollectionid)
+                        LEFT OUTER JOIN processingjob pj ON dc.datacollectionid = pj.datacollectionid
+                        LEFT OUTER JOIN autoprocprogram app ON (app.autoprocprogramid = api.autoprocprogramid OR dc.datacollectionid = pj.datacollectionid)
                         INNER JOIN autoprocprogrammessage appm ON appm.autoprocprogramid = app.autoprocprogramid";
                 }
             }
@@ -510,7 +511,7 @@ class DC extends Page
                     min(dc.xtalsnapshotfullpath2) as x2,
                     min(dc.xtalsnapshotfullpath3) as x3,
                     min(dc.xtalsnapshotfullpath4) as x4,
-                    min(dc.starttime) as sta,
+                    max(dc.starttime) as sta,
                     min(dc.detectordistance) as det,
                     min(dc.xbeam) as xbeam,
                     min(dc.ybeam) as ybeam,
@@ -918,11 +919,16 @@ class DC extends Page
 
                     if ($dc['DCT'] == 'Mesh') $dc['DCT'] = 'Grid Scan';
                     if ($dc['DCT'] == 'OSC') $dc['DCT'] = 'Data Collection';
-                    
 
-                    if ($dc['AXISRANGE'] == 0 && $dc['NI'] > 1) $dc['TYPE'] = 'grid';
+                    if ($dc['DCT'] != 'Serial Fixed' &&
+                        $dc['DCT'] != 'Serial Jet' &&
+                        $dc['AXISRANGE'] == 0 &&
+                        $dc['NI'] > 1
+                    ) {
+                        $dc['TYPE'] = 'grid';
+                    }
                     //$this->profile('dc');
-                    
+
                 // Edge Scans
                 } else if ($dc['TYPE'] == 'edge') {
                     $dc['EPK'] = floatVal($dc['EPK']);

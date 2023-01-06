@@ -181,20 +181,7 @@ const routes = [
             next('/403?url='+to.fullPath)
           } else {
             app.log('ship add view')
-
-            // Get any comments to prefill from the server
-            Backbone.ajax({
-                url: app.appurl+'/assets/js/shipment_comments.json',
-                dataType: 'json',
-                success: function(comments) {
-                  shipmentComments = comments
-                  next()
-                },
-                error: function() {
-                  console.log("Warning no comments found")
-                  next()
-                }
-            })
+            next()
           }
         }
       },
@@ -225,7 +212,7 @@ const routes = [
             })
         }
       },
-      // Create Airway Bill
+      // Create Air Waybill
       // Even though we are not using route params directly we should use the callback style
       // This ensures that the shipment model has been fetched before the props are defined
       {
@@ -233,7 +220,7 @@ const routes = [
         component: MarionetteView,
         props: route => ({
           mview: CreateAWBView,
-          breadcrumbs: [bc, { title: 'Create Airway Bill' }], // Actually swapped round with shippingname
+          breadcrumbs: [bc, { title: 'Create Air Waybill' }], // Actually swapped round with shippingname
           breadcrumb_tags: ['SHIPPINGNAME'], // If we find a model append to the bc
           options: {
             shipment: shipmentModel

@@ -10,7 +10,7 @@
     <validation-provider
       class="tw-px-2 protein-column tw-py-1"
       tag="div"
-      :rules="sample['NAME'] && !containerId ? 'required' : ''"
+      :rules="sample['NAME'] && (!containerId || editingRow === sample['LOCATION']) ? 'required' : ''"
       :name="`Sample ${sampleIndex + 1} Protein`"
       :vid="`sample ${sampleIndex + 1} protein`"
       v-slot="{ errors }">
@@ -40,14 +40,14 @@
     <validation-provider
       tag="div"
       class="name-column tw-py-1 tw-px-2"
-      :rules="sample['PROTEINID'] > -1 && !containerId ? 'required|alpha_dash|max:25|' : ''"
+      :rules="sample['PROTEINID'] > -1 && (!containerId || editingRow === sample['LOCATION']) ? 'required|alpha_dash|max:25|' : ''"
       :name="`Sample ${sampleIndex + 1} Name`"
       :vid="`sample ${sampleIndex + 1} name`"
       v-slot="{ errors }">
       <base-input-text
         v-if="canEditRow(sample['LOCATION'], editingRow) && !isContainerProcessing && !sampleHasDataCollection"
         inputClass="tw-w-full tw-h-8"
-        v-model="NAME"
+        v-model.trim="NAME"
         :errorMessage="errors[0]"
         :quiet="true"
         :errorClass="errors[0] ? 'tw-text-xxs ferror' : ''"
@@ -74,6 +74,7 @@
           @create-new-option="createNewSampleGroup"
           v-model="SAMPLEGROUP"
           @value-changed="inputChanged"
+          @input="handleCollectBestNValue(sampleIndex, 'SCREENINGCOLLECTVALUE', 'SAMPLEGROUP', SAMPLEGROUP)"
         >
         </combo-box>
       </template>
@@ -86,6 +87,7 @@
       :currentTab="currentTab"
       :sampleIndex="sampleIndex"
       :containerId="containerId"
+      v-on="$listeners"
     />
 
     <div class="actions-column tw-py-1 tw-text-right">
@@ -95,9 +97,10 @@
           <a class="button tw-cursor-pointer tw-mx-1" @click="closeSampleEditing"><i class="fa fa-times"></i></a>
         </span>
         <span v-else>
-          <a class="button tw-cursor-pointer tw-mx-1" @click="editRow(sample)"><i class="fa fa-pencil"></i></a>
-          <router-link v-if="sample['BLSAMPLEID']" class="button tw-mx-1" :to="`/samples/sid/${sample['BLSAMPLEID']}`" ><i class="fa fa-search"></i></router-link>
-          <a class="button tw-cursor-pointer tw-mx-1" v-if="sample['BLSAMPLEID']" @click="onAddToSampleGroup"><i class="fa fa-cubes"></i></a>
+          <a class="button tw-py-1 tw-cursor-pointer tw-mx-1" v-if="sample['BLSAMPLEID'] && !isContainerProcessing" @click="moveSampleToAnotherContainer(sampleIndex)"><i class="fa fa-exchange"></i></a>
+          <a class="button tw-py-1 tw-cursor-pointer tw-mx-1" @click="editRow(sample)"><i class="fa fa-pencil"></i></a>
+          <router-link v-if="sample['BLSAMPLEID']" class="button tw-py-1 tw-mx-1" :to="`/samples/sid/${sample['BLSAMPLEID']}`" ><i class="fa fa-search"></i></router-link>
+          <a class="button tw-cursor-pointer tw-py-1 tw-mx-1" v-if="sample['BLSAMPLEID']" @click="onAddToSampleGroup"><i class="fa fa-cubes"></i></a>
         </span>
       </span>
       <span v-else>
@@ -114,7 +117,7 @@ import TabbedColumnsView from 'modules/types/mx/samples/tabbed-columns-view.vue'
 import ComboBox from 'app/components/combo-box.vue'
 import {ValidationObserver, ValidationProvider} from 'vee-validate'
 import MxSampleTableMixin from 'modules/types/mx/samples/sample-table-mixin.js'
-import ExtendedValidationProvider from "app/components/extended-validation-provider.vue";
+import ExtendedValidationProvider from 'app/components/extended-validation-provider.vue'
 
 export default {
   name: 'sample-table-row',
@@ -163,14 +166,12 @@ export default {
     'validation-observer': ValidationObserver
   },
   methods: {
-    editRow(row) {
-      this.sample = row
-      this.sample.CONTAINERID = this.containerId
-      this.editingRow = row.LOCATION
-    },
     onAddToSampleGroup() {
       this.displaySampleGroupModal = true
     },
+    moveSampleToAnotherContainer(sampleIndex) {
+      this.$emit('open-move-container-form', sampleIndex)
+    }
   },
 }
 </script>
