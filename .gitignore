@@ -32,3 +32,6 @@ api/config.php
 api/vendor
 
 
+entrypoint.bash
+php-fpm.conf
+php-fpm.pid
