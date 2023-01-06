@@ -4,7 +4,6 @@ Slots include:
 - description = sub title for the label
 - error-msg = place to show error messages
 - actions = place to show action buttons after the form control
-
 Can be used as inline edit - by default acts as normal input
 Set inline = true to initially show as span with button to change the input
 Component will emit a save event when the value changes
@@ -164,6 +163,7 @@ export default {
     // If created with editable = false then we are in inline-edit mode
     this.editable = !this.inline
   },
+
   methods: {
     updateValue(event) {
       // If we are in inline editing mode, only update model on save
@@ -177,8 +177,10 @@ export default {
     },
     onEdit() {
       // May add focus code here
-      this.$refs.inputRef.focus()
       this.editable = true
+      this.$nextTick( () => {
+        this.$refs.inputRef.focus()
+      })
     },
     onSave() {
       this.editable = false

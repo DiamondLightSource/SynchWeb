@@ -9,8 +9,8 @@ define([
     'utils/table',
     'models/samplegroup',
     'models/samplegroupsample',
-    'models/samplegroupsmember',
-    'collections/samplegroupsmembers',
+    'collections/samplegroupsamples',
+    'collections/samplegroups',
     'modules/types/xpdf/collections/instances',
     ], function(
         Marionette,
@@ -19,8 +19,8 @@ define([
         table,
         SampleGroup,
         SampleGroupSample,
-        SampleGroupsMember,
-        SampleGroupsMembers,
+        SampleGroupSamples,
+        SampleGroups,
         Instances
     ){
     
@@ -61,7 +61,6 @@ define([
             } else {
                 this.$el.text(this.model.get('SAMPLE'))
             }
-
             return this
         }
     })
@@ -75,22 +74,18 @@ define([
 
         saveModel: function(e) {
             e.preventDefault()
-            var self = this
+            const self = this
             this.model.save({}, {
                 success: function() {
-                    // TODO: should be a better way to do this
-                    self.model.collection.fetch().then(() => {
-                        self.model.collection.add(
-                            new SampleGroupSample({
-                                TYPE: 'container',
-                                GROUPORDER: 1,
-                                BLSAMPLEGROUPID: self.model.collection.sampleGroupId,
-                                BLSAMPLEID: ''
-                            })
-
-                        )
+                    const collection = self.model.collection
+                    collection.fetch().then(() => {
+                        collection.add(new SampleGroupSample({
+                           TYPE: 'container',
+                           GROUPORDER: collection.models.length + 1,
+                           BLSAMPLEGROUPID: self.model.id,
+                           BLSAMPLEID: null
+                       }))
                     })
-                    // self.model.parent.add(self.model)
                 },
                 error: function() {
                     app.alert({ message: 'Could not add sample. Check if it has not been added before' })
@@ -125,8 +120,9 @@ define([
         },
 
         initialize() {
+            this.collection = new SampleGroupSamples(null, { state: { pageSize: 9999 }, sampleGroupId: this.model.id })
             this.deferred = []
-            this.deferred.push(this.model.MEMBERS.fetch())
+            this.deferred.push(this.collection.fetch())
         },
 
         onRender: function() {
@@ -140,14 +136,15 @@ define([
         },
 
         doOnRender: function() {
-            this.model.MEMBERS.add(new SampleGroupSample({
+            this.collection.add(new SampleGroupSample({
                 TYPE: 'container',
-                GROUPORDER: 1,
+                GROUPORDER: this.collection.models.length + 1,
                 BLSAMPLEGROUPID: this.model.id,
-                BLSAMPLEID: ''
+                BLSAMPLEID: null
             }))
+
             this.rmembers.show(new TableView({
-                collection: this.model.MEMBERS,
+                collection: this.collection,
                 columns: [
                     { name: 'SAMPLE', label: 'Name', cell: InstanceCell, editable: false, containers: this.getOption('containers') },
                     { name: 'GROUPORDER', label: 'Order', cell: 'string', editable: false },
@@ -189,12 +186,8 @@ define([
             this.deferred = []
             if (!options.collection) {
                 // Get samplegroups
-                this.collection = new SampleGroupsMembers(null, {
-                    state: {
-                        pageSize: 9999
-                    },
-                    blSampleId: options.parent.get('BLSAMPLEID')
-                })
+                this.collection = new SampleGroups(null, { state: { pageSize: 9999 } })
+                this.collection.queryParams.BLSAMPLEID = options.parent.get('BLSAMPLEID')
             }
             this.deferred.push(this.collection.fetch())
 
@@ -214,8 +207,8 @@ define([
             const self = this
             sampleGroup.save({}, {
                 success: (result) => {
-                    const sampleGroupMember = new SampleGroupsMember({ BLSAMPLEGROUPID: result.get('BLSAMPLEGROUPID') })
-                    const members = sampleGroupMember.MEMBERS.add({
+                    const sampleGroupSample = new SampleGroupSample({
+                        BLSAMPLEGROUPID:  result.get('BLSAMPLEGROUPID'),
                         BLSAMPLEID: p.get('BLSAMPLEID'),
                         TYPE: 'sample',
                         GROUPORDER: 1,
@@ -228,10 +221,9 @@ define([
                         DIMENSION3: p.get('DIMENSION3'),
                     })
 
-
-                    members.save({}, {
+                    sampleGroupSample.save({}, {
                         success: () => {
-                            self.collection.add(sampleGroupMember)
+                            self.collection.fetch()
                         }
                     })
                 }
