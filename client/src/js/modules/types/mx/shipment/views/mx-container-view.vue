@@ -104,6 +104,7 @@
 
         <div class="puck tw-w-2/3" title="Click to jump to a position in the puck">
           <valid-container-graphic
+            class="tw-border-l tw-border-gray-500"
             :containerType="containerType"
             :samples="samples"
             :valid-samples="validSamples"
@@ -182,7 +183,6 @@ import SingleSample from 'modules/types/mx/samples/single-sample.vue'
 import MxPuckSamplesTable from 'modules/types/mx/samples/mx-puck-samples-table.vue'
 import TableComponent from 'app/components/table.vue'
 import ValidContainerGraphic from 'modules/types/mx/samples/valid-container-graphic.vue'
-
 
 export default {
   name: 'mx-container-view',
@@ -284,7 +284,6 @@ export default {
     },
     async loadSampleGroupInformation() {
       await this.getSampleGroups()
-      await this.fetchSampleGroupSamples()
 
       this.samplesCollection = new Samples(null, { state: { pageSize: 9999 } })
       this.samplesCollection.queryParams.cid = this.containerId
@@ -328,26 +327,31 @@ export default {
       const result = await this.$store.dispatch('getCollection', collection)
 
       if (result) {
-        this.resetSamples(this.container.CAPACITY)
+        await this.resetSamples(this.container.CAPACITY)
       }
     },
     // Reset Backbone Samples Collection
-    resetSamples(capacity) {
+    async resetSamples(capacity) {
       this.$store.commit('samples/reset', capacity)
+      const samples = this.samplesCollection.toJSON()
 
-      this.samplesCollection.each((s) => {
+      for (let sample of samples) {
         let status = '';
         // Setting the status of the sample based on one of the following values
         const statusList = ['R', 'SC', 'AI', 'GR', 'ES', 'XM', 'XS', 'DC', 'AP']
         statusList.forEach(t => {
-          if (Number(s.get(t)) > 0) status = t
+          if (Number(sample[t]) > 0) status = t
         })
-        s.set({ STATUS: status })
-        const payload = this.populateInitialSampleGroupValue(s.toJSON())
+        sample['STATUS'] = status
+        const payload = await this.populateInitialSampleGroupValue(sample)
         this.$store.commit('samples/setSample', {
-          index: Number(s.get('LOCATION')) - 1,
+          index: Number(sample['LOCATION']) - 1,
           data: { ...payload, VALID: 1 }
         })
+
+      }
+      this.$nextTick(() => {
+        this.$refs.containerForm.reset()
       })
     },
     onContainerCellClicked: function (location) {

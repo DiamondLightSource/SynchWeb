@@ -187,11 +187,12 @@
           <div class="tw-w-1/2">
             <div class="tw-justify-end">
               <valid-container-graphic
+                class="tw-border-l tw-border-gray-500"
                 ref="containerGraphic"
                 :containerType="containerType"
                 :samples="samples"
                 :valid-samples="validSamples"
-                @cell-clicked="onContainerCellClicked"/>
+                @drop-clicked="onContainerCellClicked"/>
             </div>
           </div>
         </form>
@@ -519,7 +520,6 @@ export default {
     this.formatExperimentKindList()
     this.getSampleGroups()
     this.getUsers()
-    this.fetchSampleGroupSamples()
     this.getSpaceGroupsCollection()
     this.getImagingCollections()
     this.getImagingScheduleCollections()
