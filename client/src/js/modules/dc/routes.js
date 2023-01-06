@@ -1,6 +1,5 @@
 import MarionetteApplication from 'app/marionette-application.js'
 import MarionetteView from 'app/views/marionette/marionette-wrapper.vue'
-import Debug from 'app/views/debug.vue'
 
 // Lazy load Vue wrapper components
 // Group these to isolate loading Three.js in dc vendor module
@@ -86,7 +85,7 @@ function lookupVisit(visit) {
 // The DC component handles the prefetching and proposal lookup in a cleaner method than using marionette wrapper directly
 let routes = [
   {
-    path: '/dc(/visit/)?:visit([a-zA-Z]{2}[0-9]+-[0-9]+)?(/dcg/)?:dcg([0-9]+)?(/page/)?:page([0-9]+)?(/s/)?:search([a-zA-z0-9_-]+)?(/ty/)?:ty([a-zA-Z0-9_-]+)?(/id/)?:id([0-9]+)?(/pjid/)?:pjid([0-9]+)?',
+    path: '/dc(/visit/)?:visit([a-zA-Z]{2}[0-9]+-[0-9]+)?(/dcg/)?:dcg([0-9]+)?(/page/)?:page([0-9]+)?(/s/)?:search([a-zA-z0-9_-]+)?(/ty/)?:ty([a-zA-Z0-9_-]+)?(/id/)?:id([0-9]+)?(/pjid/)?:pjid([0-9]+)?(/sgid/)?:sgid([0-9]+)?',
     name: 'dc-list',
     component: DCWrapper,
     props: route => ({
@@ -97,6 +96,7 @@ let routes = [
         ty: route.params.ty || '',
         search: route.params.search || '',
         pjid: +route.params.pjid || null,
+        sgid: +route.params.sgid || null
     }),
   },
   {
@@ -147,7 +147,7 @@ let routes = [
       lookupVisit(to.params.visit).then((response) => {
         console.log("Lookup OK Prop = " + response.get('PROPOSAL'))
         next()
-      }, (error) => {
+      }, () => {
         console.log("Calling next - Error, no proposal found")
         next('/notfound')
       }).finally( () => {
@@ -179,7 +179,7 @@ let routes = [
       lookupVisit(to.params.visit).then((response) => {
         console.log("Lookup OK Prop = " + response.get('PROPOSAL'))
         next()
-      }, (error) => {
+      }, () => {
         console.log("Calling next - Error, no proposal found")
         next('/notfound')
       }).finally( () => {
@@ -212,7 +212,7 @@ let routes = [
       lookupVisit(to.params.visit).then((response) => {
         console.log("Lookup OK Prop = " + response.get('PROPOSAL'))
         next()
-      }, (error) => {
+      }, () => {
         console.log("Calling next - Error, no proposal found")
         next('/notfound')
       }).finally( () => {
@@ -245,10 +245,10 @@ let routes = [
       lookupVisit(to.params.visit).then((response) => {
         console.log("Lookup OK Prop = " + response.get('PROPOSAL'))
         next()
-      }), (error) => {
+      }, () => {
         console.log("Calling next - Error, no proposal found")
         next('/notfound')
-      }
+      })
     }
   },
 ]

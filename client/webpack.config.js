@@ -13,7 +13,7 @@ const config = require('./src/js/config.json')
 
 module.exports = (env, argv) => ({
   entry: {
-      main: './src/js/app/index.js',
+    main: './src/js/app/index.js',
   },
   output: {
     filename: '[name]-bundle.js',
@@ -54,7 +54,7 @@ module.exports = (env, argv) => ({
       marionette: 'backbone.marionette/lib/backbone.marionette.min',
 
       'jquery.touchswipe': 'jquery-touchswipe',
-      'jquery-ui.timepicker': 'jquery-ui-timepicker-addon', // Need to update timepicker css to avoid showing microseconds/milliseconds      
+      'jquery-ui.timepicker': 'jquery-ui-timepicker-addon', // Need to update timepicker css to avoid showing microseconds/milliseconds
       // Jquery-ui-combox is based on an extension from npm
       // The original was based on a collection of extensions: (https://github.com/bseth99/jquery-ui-extensions)
       // Currently using a modified version from npm
@@ -63,17 +63,17 @@ module.exports = (env, argv) => ({
 
       // Jquery.flot provided by NPM package (exact name match)
       // Jquery.flot.resize also from NPM but slightly older version 1.0.0 2012 instead of 2013 (vendor lib)
-      'jquery.flot.resize': 'jquery-flot-resize', 
+      'jquery.flot.resize': 'jquery-flot-resize',
       'jquery.flot.pie': 'flot-pie',
       'jquery.flot.time': 'vendor/flot/jquery.flot.time.min',
       'jquery.flot.selection': 'vendor/flot/jquery.flot.selection',
       'jquery.flot.stack': 'vendor/flot/jquery.flot.stack',
 
-       // Jquery flot tooltip is provided ny NPM with exact name match,
-       // so not aliased here, was: 'vendor/flot/jquery.flot.tooltip',
+      // Jquery flot tooltip is provided ny NPM with exact name match,
+      // so not aliased here, was: 'vendor/flot/jquery.flot.tooltip',
       'jquery.flot.tickrotor': 'vendor/flot/jquery.flot.tickrotor',
       'jquery.flot.axislabels': 'flot-axislabels',
-      
+
       // We can't currently use the magnific-popup from npm e.g.:
       // 'jquery.mp': 'magnific-popup',
       // The vendor library has been modified to append proposal to the request
@@ -96,7 +96,7 @@ module.exports = (env, argv) => ({
 
       // heatmap in npm has dependency on canvas/node-gyp... so use old one for now
       heatmap: 'vendor/hmap',
-      
+
       // gunzip is actually the zlib library
       // https://npm.taobao.org/package/zlibjs
       gzip: 'zlibjs/bin/gunzip.min',
@@ -194,7 +194,7 @@ module.exports = (env, argv) => ({
         test: /\.(sa|sc|c)ss$/,
         use: [
           // Extract the CSS into separate files
-          { 
+          {
             loader: MiniCssExtractPlugin.loader,
             options: {
               hmr: true,
@@ -226,11 +226,11 @@ module.exports = (env, argv) => ({
   plugins: [
     new webpack.HotModuleReplacementPlugin(),
     new webpack.ProvidePlugin({
-       $: "jquery",
-        jQuery: "jquery",
-        _: "underscore",
-        "window.jQuery": "jquery",
-        Highcharts: "highmaps"
+      $: "jquery",
+      jQuery: "jquery",
+      _: "underscore",
+      "window.jQuery": "jquery",
+      Highcharts: "highmaps"
     }),
     // This generates a short (8 char) git hash used for build paths
     // new GitRevisionPlugin({
