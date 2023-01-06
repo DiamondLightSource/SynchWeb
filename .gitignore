@@ -31,7 +31,3 @@ client/.env
 api/config.php
 api/vendor
 
-
-php-fpm.pid
-entrypoint.bash
-php-fpm.conf
