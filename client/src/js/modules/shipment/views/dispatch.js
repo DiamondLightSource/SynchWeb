@@ -250,6 +250,7 @@ define(['marionette', 'views/form',
 
         toggleFacilityCourier: function() {
             this.ui.facc.hide()
+            this.ui.courier.val('DHL - Facility')
             this.ui.courierDetails.hide()
             this.ui.facilityCourier.show()
             this.model.courierDetailsRequired = false
