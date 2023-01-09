@@ -29,9 +29,9 @@
         <% if (DCT == 'SAD' || DCT == 'Data Collection') { %>
             <%if (TOTALABSDOSE) { %>
                 <%if (DCC > 1) { %>
-                <li>Dose:  <%-TOTALABSDOSE * DCC%> MGy</li>
+                <li>Total Dose:  <%-TOTALABSDOSE * DCC%>MGy</li>
                 <% } else { %>
-                <li>Dose:  <%-TOTALABSDOSE%> MGy</li> 
+                <li>Dose:  <%-TOTALABSDOSE%>MGy</li> 
         <% } } }%>
         <li>Transmission: <%-TRANSMISSION%>%</li>
         <li>Beamsize: <%-BSX%>x<%-BSY%>&mu;m</li>
