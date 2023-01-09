@@ -32,6 +32,6 @@ api/config.php
 api/vendor
 api/src/MockUAS.php
 
-
-.idea/
-
+entrypoint.bash
+php-fpm.conf
+php-fpm.pid
