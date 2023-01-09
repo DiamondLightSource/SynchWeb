@@ -4,18 +4,11 @@
 
 define(['backbone',
   'backbone.paginator',
-  'js/models/samplegroup',
+  'models/samplegroup',
 ], function(Backbone, PageableCollection, SampleGroup) {
   return PageableCollection.extend({
-    blSampleId: null,
     model: SampleGroup,
-    url: function() {
-      if (this.blSampleId) {
-        return `/sample/groups/${this.blSampleId}`
-      } else {
-        return '/sample/groups'
-      }
-    },
+    url: '/sample/groups',
 
     mode: 'server',
 

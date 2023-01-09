@@ -11,6 +11,16 @@ define(['backbone', 'backbone.paginator', 'models/samplegroupsample'], function(
     model: SampleGroupSample,
     mode: 'server',
 
+    comparator: function(m) {
+      return parseInt(m.get('GROUPORDER'))
+    },
+
+    initialize(collection, options) {
+      if (options && options.sampleGroupId) {
+        this.sampleGroupId = options.sampleGroupId
+      }
+    },
+
     state: {
       pageSize: 100,
     },
@@ -21,6 +31,19 @@ define(['backbone', 'backbone.paginator', 'models/samplegroupsample'], function(
 
     parseState: function(r) {
       return { totalRecords: r.total }
-    }
+    },
+
+    save(options) {
+      options = _.extend({}, options)
+
+      var col = this
+      var success = options.success;
+      options.success = function(resp) {
+        col.reset(resp, { silent: true })
+        if (success) success(col, resp, options)
+      }
+
+      return Backbone.sync('create', this, options)
+    },
   })
 })
