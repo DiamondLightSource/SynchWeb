@@ -246,7 +246,7 @@ final class UserControllerTest extends TestCase
     public function testGetUsersWithInvalidPersonIdReturnsNoData(): void
     {
         $this->userController->args['PERSONID'] = 88;
-        $this->dataLayerStub->expects($this->exactly(1))->method('getUsers')->with(false, false, '', '', '', '', 88, false, 231312, '', '', '', '', 15, '')->willReturn(array());
+        $this->dataLayerStub->expects($this->exactly(1))->method('getUsers')->with(false, false, '', '', '', '', 88, false, 231312, '', '', '', '', 15, true)->willReturn(array());
         $this->slimStub->shouldReceive('halt')->times(1)->with(400, '{"status":400,"message":"No such user"}')->andThrow(new \Exception);
         $this->expectException(\Exception::class);
 
@@ -257,7 +257,7 @@ final class UserControllerTest extends TestCase
     {
         $response = $this->setUpCommonResponse();
         $this->userController->args['PERSONID'] = 88;
-        $this->dataLayerStub->expects($this->exactly(1))->method('getUsers')->with(false, false, '', '', '', '', 88, false, 231312, '', '', '', '', 15, '')->willReturn(array(9));
+        $this->dataLayerStub->expects($this->exactly(1))->method('getUsers')->with(false, false, '', '', '', '', 88, false, 231312, '', '', '', '', 15, true)->willReturn(array(9));
 
         $this->userController->_get_users();
         $this->assertEquals(9, $response->getBody());

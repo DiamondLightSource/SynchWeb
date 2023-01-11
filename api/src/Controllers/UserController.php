@@ -175,14 +175,14 @@ class UserController extends Page
             $this->argOrEmptyString('sort_by'),
             $this->argOrEmptyString('pid'),
             $this->argOrEmptyString('PERSONID'),
-                $this->user->hasPermission('manage_users'),
+            $this->user->hasPermission('manage_users'),
             $this->user->personId,
             $this->argOrEmptyString('gid'),
             $this->argOrEmptyString('sid'),
             $this->argOrEmptyString('pjid'),
             $this->argOrEmptyString('visit'),
             $this->def_arg('per_page', 15),
-            $this->argOrEmptyString('order')
+            $this->def_arg('order', 'asc') == 'asc'
         );
 
         if ($this->has_arg('PERSONID'))
@@ -202,14 +202,14 @@ class UserController extends Page
                 $this->argOrEmptyString('sort_by'),
                 $this->argOrEmptyString('pid'),
                 $this->argOrEmptyString('PERSONID'),
-                    $this->user->hasPermission('manage_users'),
+                $this->user->hasPermission('manage_users'),
                 $this->user->personId,
                 $this->argOrEmptyString('gid'),
                 $this->argOrEmptyString('sid'),
                 $this->argOrEmptyString('pjid'),
                 $this->argOrEmptyString('visit'),
                 $this->def_arg('per_page', 15),
-                $this->argOrEmptyString('order')
+                $this->def_arg('order', 'asc') == 'asc'
             );
             $this->_output(array('total' => $tot,
                 'data' => $rows,

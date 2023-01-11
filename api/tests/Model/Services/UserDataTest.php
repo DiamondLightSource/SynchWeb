@@ -16,7 +16,7 @@ final class UserDataTest extends TestCase
     use \phpmock\phpunit\PHPMock;
 
     private $db;
-    private $userData;
+    private UserData $userData;
     private $insertId;
 
     protected function setUp($invocationNumber = 1): void
@@ -323,14 +323,14 @@ final class UserDataTest extends TestCase
 
     public function testGetUsersCountWithValidSortByPidPersonIdIsManagerCurrentUserIdPerPageDir(): void
     {
-        $res = $this->userData->getUsers(true, true, 's', 1, 'LOGIN', 5, 6, true, 7, null, null, null, null, 3, 'DESC');
+        $res = $this->userData->getUsers(true, true, 's', 1, 'LOGIN', 5, 6, true, 7, null, null, null, null, 3, false);
         $this->assertEquals("SELECT count(distinct p.personid) as tot FROM Person p LEFT OUTER JOIN ProposalHasPerson prhp ON prhp.personid = p.personid LEFT OUTER JOIN LabContact lc ON lc.personid = p.personid WHERE p.login IS NOT NULL AND (prhp.proposalid=5 OR lc.proposalid=5 OR p.personid=7) AND p.personid=6 AND (lower(p.familyname) LIKE lower(CONCAT(CONCAT('%','s'),'%')) OR lower(p.givenname) LIKE lower(CONCAT(CONCAT('%','s'),'%')) OR lower(p.login) LIKE lower(CONCAT(CONCAT('%','s'),'%')))", $this->db->getLastQuery());
         $this->assertEmpty($res);
     }
 
     public function testGetUsersWithValidSortBypIDPersonIdIsManagerCurrentUserIdPerPageDir(): void
     {
-        $res = $this->userData->getUsers(false, true, 's', 1, 'LOGIN', 5, 6, true, 7, null, null, null, null, 3, 'DESC');
+        $res = $this->userData->getUsers(false, true, 's', 1, 'LOGIN', 5, 6, true, 7, null, null, null, null, 3, false);
         $this->assertEquals("SELECT p.personid, p.givenname, p.familyname, CONCAT(CONCAT(p.givenname, ' '), p.familyname) as fullname, p.login, p.emailaddress, p.phonenumber, l.name as labname, l.address, l.city, '' as postcode, l.country FROM Person p LEFT OUTER JOIN ProposalHasPerson prhp ON prhp.personid = p.personid LEFT OUTER JOIN LabContact lc ON lc.personid = p.personid LEFT OUTER JOIN Laboratory l ON l.laboratoryid = p.laboratoryid WHERE p.login IS NOT NULL AND (prhp.proposalid=5 OR lc.proposalid=5 OR p.personid=7) AND p.personid=6 AND (lower(p.familyname) LIKE lower(CONCAT(CONCAT('%','s'),'%')) OR lower(p.givenname) LIKE lower(CONCAT(CONCAT('%','s'),'%')) OR lower(p.login) LIKE lower(CONCAT(CONCAT('%','s'),'%'))) GROUP BY p.personid ORDER BY p.login DESC LIMIT 0,3", $this->db->getLastQuery());
         $this->assertEmpty($res);
     }

@@ -19,7 +19,7 @@ class DatabaseFactory
 
     private $databaseConnectionFactory;
 
-    public function get() : DatabaseParent
+    public function get()
     {
         // Global variable is named $dbtype in config.php.
         global $dbtype;
@@ -48,5 +48,6 @@ class DatabaseFactory
         else {
             error_log("Database type '$database_type' not configured.");
         }
+        return null;
     }
 }

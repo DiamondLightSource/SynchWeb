@@ -64,7 +64,7 @@ class UserData
         return $whereClause;
     }
 
-    function getUsers($getCount, $isStaffMember, $stringMatch, $page, $sortBy = null, $pid = null, $personId = null, $isManager = false, $currentUserId = null, $gid = null, $sid = null, $pjid = null, $visitName = null, $perPage = 15, $dir = 'ASC')
+    function getUsers($getCount, $isStaffMember, $stringMatch, $page, $sortBy = null, $pid = null, $personId = null, $isManager = false, $currentUserId = null, $gid = null, $sid = null, $pjid = null, $visitName = null, $perPage = 15, $isAscending = true)
     {
         $args = array();
         $where = 'p.login IS NOT NULL';
@@ -163,6 +163,7 @@ class UserData
             $cols = array('LOGIN' => 'p.login', 'GIVENNAME' => 'p.givenname', 'FAMILYNAME' => 'p.familyname');
             if (array_key_exists($sortBy, $cols))
             {
+                $dir = $isAscending ? 'ASC' : 'DESC';
                 $order = $cols[$sortBy] . ' ' . $dir;
             }
         }
