@@ -1,11 +1,12 @@
 define([], function() {
-    
+
     return {
         menu: {
             dc: 'View All Data',
             visits: 'Visits',
             calendar: 'Calendar',
             assign: 'Assign Containers',
+            'samples/groups': 'Sample Group Management',
             shipments: 'Shipments',
             'dewars/registry': 'Registered Dewars',
             'containers/registry': 'Registered Containers',
@@ -16,12 +17,12 @@ define([], function() {
             stats: 'Statistics',
             migrate: 'Migrate',
         },
-        
+
         extra: {
             projects: 'Projects',
             cell: 'Unit Cell Search',
         },
-        
+
         admin: {
             'runs/overview': { title: 'Run Overview', icon: 'fa-bar-chart', permission: 'all_breakdown' },
             'stats/overview/beamlines': { title: 'Reporting', icon: 'fa-line-chart', permission: 'all_prop_stats' },
