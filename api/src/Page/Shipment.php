@@ -2199,10 +2199,14 @@ class Shipment extends Page
             $ct = $this->has_arg('CLOSETIME') ? $this->arg('CLOSETIME') : null;
             $loc = $this->has_arg('PHYSICALLOCATION') ? $this->arg('PHYSICALLOCATION') : null;
             
-            $hard_drive_enclosed = $this->arg('ENCLOSEDHARDDRIVE') ? "Yes" : "No";
-            $tools_enclosed = $this->arg('ENCLOSEDTOOLS') ? "Yes" : "No";
+            if ($this->has_arg('ENCLOSEDHARDDRIVE')){
+                $hard_drive_enclosed = $this->arg('ENCLOSEDHARDDRIVE') ? "Yes" : "No";
+            }
+            if ($this->has_arg('ENCLOSEDTOOLS')){
+                $tools_enclosed = $this->arg('ENCLOSEDTOOLS') ? "Yes" : "No";
+            }
 
-            $dynamic = $this->arg("DYNAMIC");
+            $dynamic = $this->has_arg("DYNAMIC") ? $this->has_arg("DYNAMIC") : null;
 
             $extra_array = array(
                 "ENCLOSEDHARDDRIVE"=> $hard_drive_enclosed,
