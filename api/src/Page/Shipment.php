@@ -2199,9 +2199,12 @@ class Shipment extends Page
             $ct = $this->has_arg('CLOSETIME') ? $this->arg('CLOSETIME') : null;
             $loc = $this->has_arg('PHYSICALLOCATION') ? $this->arg('PHYSICALLOCATION') : null;
             
+            $hard_drive_enclosed = null;
             if ($this->has_arg('ENCLOSEDHARDDRIVE')){
                 $hard_drive_enclosed = $this->arg('ENCLOSEDHARDDRIVE') ? "Yes" : "No";
             }
+
+            $tools_enclosed = null;
             if ($this->has_arg('ENCLOSEDTOOLS')){
                 $tools_enclosed = $this->arg('ENCLOSEDTOOLS') ? "Yes" : "No";
             }
