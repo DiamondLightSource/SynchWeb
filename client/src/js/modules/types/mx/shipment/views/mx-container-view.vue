@@ -474,18 +474,6 @@ export default {
         this.$refs.containerForm.reset()
       }
     },
-    populateInitialSampleGroupValue(sample) {
-      const sampleGroupsWithSample = this.sampleGroupSamples.filter(item => item['BLSAMPLEID'] === sample['BLSAMPLEID'])
-      let matchingSampleGroup = {}
-      if (sample['SAMPLEGROUP']) {
-        matchingSampleGroup = sampleGroupsWithSample.find(item => Number(item['BLSAMPLEGROUPID']) === Number(sample['SAMPLEGROUP']))
-      } else {
-        matchingSampleGroup = sampleGroupsWithSample[0]
-      }
-
-      sample.INITIALSAMPLEGROUP = matchingSampleGroup ? matchingSampleGroup['BLSAMPLEGROUPID'] : ''
-      return sample
-    },
     updateEditingSampleLocation(value) {
       this.editingSampleLocation = value
     },
