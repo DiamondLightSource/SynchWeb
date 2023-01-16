@@ -2200,10 +2200,17 @@ class Shipment extends Page
             $ct = $this->has_arg('CLOSETIME') ? $this->arg('CLOSETIME') : null;
             $loc = $this->has_arg('PHYSICALLOCATION') ? $this->arg('PHYSICALLOCATION') : null;
             
-            $hard_drive_enclosed = $this->arg('ENCLOSEDHARDDRIVE') ? "Yes" : "No";
-            $tools_enclosed = $this->arg('ENCLOSEDTOOLS') ? "Yes" : "No";
+            $hard_drive_enclosed = null;
+            if ($this->has_arg('ENCLOSEDHARDDRIVE')){
+                $hard_drive_enclosed = $this->arg('ENCLOSEDHARDDRIVE') ? "Yes" : "No";
+            }
 
-            $dynamic = $this->arg("DYNAMIC");
+            $tools_enclosed = null;
+            if ($this->has_arg('ENCLOSEDTOOLS')){
+                $tools_enclosed = $this->arg('ENCLOSEDTOOLS') ? "Yes" : "No";
+            }
+
+            $dynamic = $this->has_arg("DYNAMIC") ? $this->has_arg("DYNAMIC") : null;
 
             $extra_array = array(
                 "ENCLOSEDHARDDRIVE"=> $hard_drive_enclosed,
@@ -2215,9 +2222,18 @@ class Shipment extends Page
                 $remote_or_mailin = $this->has_arg('REMOTEORMAILIN') ? $this->arg('REMOTEORMAILIN') : '';
                 $session_length = $this->has_arg('SESSIONLENGTH') ? $this->arg('SESSIONLENGTH'): '';
                 $energy_requirements = $this->has_arg('ENERGY') ? $this->arg('ENERGY'): '';
-                $microfocus_beam = $this->arg('MICROFOCUSBEAM') ? "Yes" : "No";
-                $scheduling_restrictions = $this->arg('SCHEDULINGRESTRICTIONS') ? $this->arg('SCHEDULINGRESTRICTIONS') : "None";
-                $last_minute_beamtime = $this->arg('LASTMINUTEBEAMTIME') ? "Yes" : "No";
+                $microfocus_beam = null;
+                if ($this->has_arg('MICROFOCUSBEAM')){
+                    $microfocus_beam = $this->arg('MICROFOCUSBEAM') ? "Yes" : "No";
+                }
+                $scheduling_restrictions = null;
+                if ($this->has_arg('SCHEDULINGRESTRICTIONS')){
+                    $this->arg('SCHEDULINGRESTRICTIONS') ? $this->arg('SCHEDULINGRESTRICTIONS') : "None";
+                }
+                $last_minute_beamtime = null;
+                if ($this->has_arg('LASTMINUTEBEAMTIME')){
+                    $last_minute_beamtime = $this->arg('LASTMINUTEBEAMTIME') ? "Yes" : "No";
+                }
                 $dewar_grouping = $this->has_arg('DEWARGROUPING') ? $this->arg('DEWARGROUPING') : '';
                 $dynamic_options = array(
                     "REMOTEORMAILIN" => $remote_or_mailin,
