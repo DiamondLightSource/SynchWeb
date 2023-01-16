@@ -2221,9 +2221,18 @@ class Shipment extends Page
                 $remote_or_mailin = $this->has_arg('REMOTEORMAILIN') ? $this->arg('REMOTEORMAILIN') : '';
                 $session_length = $this->has_arg('SESSIONLENGTH') ? $this->arg('SESSIONLENGTH'): '';
                 $energy_requirements = $this->has_arg('ENERGY') ? $this->arg('ENERGY'): '';
-                $microfocus_beam = $this->arg('MICROFOCUSBEAM') ? "Yes" : "No";
-                $scheduling_restrictions = $this->arg('SCHEDULINGRESTRICTIONS') ? $this->arg('SCHEDULINGRESTRICTIONS') : "None";
-                $last_minute_beamtime = $this->arg('LASTMINUTEBEAMTIME') ? "Yes" : "No";
+                $microfocus_beam = null;
+                if ($this->has_arg('MICROFOCUSBEAM')){
+                    $microfocus_beam = $this->arg('MICROFOCUSBEAM') ? "Yes" : "No";
+                }
+                $scheduling_restrictions = null;
+                if ($this->has_arg('SCHEDULINGRESTRICTIONS')){
+                    $this->arg('SCHEDULINGRESTRICTIONS') ? $this->arg('SCHEDULINGRESTRICTIONS') : "None";
+                }
+                $last_minute_beamtime = null;
+                if ($this->has_arg('LASTMINUTEBEAMTIME')){
+                    $last_minute_beamtime = $this->arg('LASTMINUTEBEAMTIME') ? "Yes" : "No";
+                }
                 $dewar_grouping = $this->has_arg('DEWARGROUPING') ? $this->arg('DEWARGROUPING') : '';
                 $dynamic_options = array(
                     "REMOTEORMAILIN" => $remote_or_mailin,
