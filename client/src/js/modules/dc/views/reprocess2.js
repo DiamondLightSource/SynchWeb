@@ -329,12 +329,12 @@ define(['backbone', 'marionette', 'views/dialog',
                         }
                     }))
 
-                })
+                }, this)
 
                 $.when.apply($, reqs).done(function() {
                     app.alert({ message: jobs+' reprocessing job(s) successfully submitted'})
                     _.each(rps, function(rp) {
-                        self.enqueue({ PROCESSINGJOBID: rp.get('PROCESSINGJOBID') })
+                        self._enqueue({ PROCESSINGJOBID: rp.get('PROCESSINGJOBID') })
                     })
                 })
 

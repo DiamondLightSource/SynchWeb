@@ -1,5 +1,5 @@
 /**
- * The menu specification for epsic pages
+ * The menu specification for conexs pages
  */
 
 define([], function() {
@@ -9,6 +9,7 @@ define([], function() {
             dc: 'View All Data',
             visits: 'Visits',
             contacts: 'Lab Contacts',
+            conexs: 'Conexs Submission',
         },
 
         extra: {

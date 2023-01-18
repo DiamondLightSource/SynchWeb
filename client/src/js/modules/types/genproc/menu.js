@@ -1,5 +1,5 @@
 /**
- * The menu specification for i13 pages
+ * The menu specification for general pages
  */
 
 define([], function() {
