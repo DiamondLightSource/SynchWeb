@@ -375,7 +375,6 @@ class Page
             }
         }
 
-
         // End execution, show not authed page template
         if (!$auth)
         {
@@ -435,7 +434,10 @@ class Page
 
         $action = $act ? 'LOGON' : 'LOGOFF';
 
-        if ($this->user)
+        global $log_activity_to_ispyb;
+        $log_activity = isset($log_activity_to_ispyb) ? $log_activity_to_ispyb : true;
+
+        if ($this->user && $log_activity)
         {
             $com = 'ISPyB2: ' . ($com ? $com : $_SERVER['REQUEST_URI']);
             $chk = $this->db->pq("SELECT comments FROM adminactivity WHERE username LIKE :1", array($this->user->loginId));

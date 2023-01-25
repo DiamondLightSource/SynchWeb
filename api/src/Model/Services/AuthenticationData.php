@@ -39,7 +39,7 @@ class AuthenticationData
     function deleteOldOneTimeUseTokens()
     {
         # Remove tokens more than 10 seconds old, they should have been used
-        $this->db->pq("DELETE FROM SW_onceToken WHERE TIMESTAMPDIFF('SECOND', recordTimeStamp, CURRENT_TIMESTAMP) > 10");
+        $this->db->pq("DELETE FROM SW_onceToken WHERE recordTimeStamp < NOW() - INTERVAL 10 SECOND");
     }
 
 
@@ -86,11 +86,16 @@ class AuthenticationData
 
     function updateActivityTimestamp($loginId)
     {
-        $chk = $this->db->pq("SELECT TIMESTAMPDIFF('SECOND', datetime, CURRENT_TIMESTAMP) AS lastupdate, comments FROM adminactivity WHERE username LIKE :1", array($loginId));
-        if (sizeof($chk))
+        global $log_activity_to_ispyb;
+        $log_activity = isset($log_activity_to_ispyb) ? $log_activity_to_ispyb : true;
+        if ($log_activity) 
         {
-            if ($chk[0]['LASTUPDATE'] > 20)
-                $this->db->pq("UPDATE adminactivity SET datetime=CURRENT_TIMESTAMP WHERE username=:1", array($loginId));
+            $chk = $this->db->pq("SELECT TIMESTAMPDIFF('SECOND', datetime, CURRENT_TIMESTAMP) AS lastupdate, comments FROM adminactivity WHERE username LIKE :1", array($loginId));
+            if (sizeof($chk))
+            {
+                if ($chk[0]['LASTUPDATE'] > 20)
+                    $this->db->pq("UPDATE adminactivity SET datetime=CURRENT_TIMESTAMP WHERE username=:1", array($loginId));
+            }
         }
     }
 }

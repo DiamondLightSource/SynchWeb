@@ -17,8 +17,8 @@ class Proposal extends Page
         'year' => '\d\d\d\d',
         'month' => '\d+',
         'bl' => '[\w\-]+',
-        'cm' => '\d',
         'ty' => '\w+',
+        'cm' => '\d',
         'next' => '\d',
         'prev' => '\d',
         'started' => '\d',
@@ -215,11 +215,11 @@ class Proposal extends Page
                 $order = $cols[$this->arg('sort_by')] . ' ' . $dir;
         }
 
-        $rows = $this->db->paginate("SELECT CONCAT(p.proposalcode,p.proposalnumber) as proposal, p.title, TO_CHAR(p.bltimestamp, 'DD-MM-YYYY') as st, p.proposalcode, p.proposalnumber, count(s.sessionid) as vcount, p.proposalid, CONCAT(CONCAT(pe.givenname, ' '), pe.familyname) as fullname, pe.personid, p.state, IF(p.state = 'Open', 1, 0) as active, CONCAT(p.proposalcode,p.proposalnumber) as prop
+        $rows = $this->db->paginate("SELECT CONCAT(p.proposalcode,p.proposalnumber) as proposal, p.title, TO_CHAR(p.bltimestamp, 'DD-MM-YYYY') as st, p.proposalcode, p.proposalnumber, count(s.sessionid) as vcount, p.proposalid, CONCAT(CONCAT(pe.givenname, ' '), pe.familyname) as fullname, pe.personid, p.state, IF(p.state = 'Open', 1, 0) as active, CONCAT(p.proposalcode,p.proposalnumber) as prop, s.beamlinename
                     FROM proposal p 
                     LEFT OUTER JOIN blsession s ON p.proposalid = s.proposalid 
                     LEFT OUTER JOIN person pe ON pe.personid = p.personid
-                    $where 
+                    $where
                     GROUP BY TO_CHAR(p.bltimestamp, 'DD-MM-YYYY'), p.bltimestamp, p.proposalcode, p.proposalnumber, p.title, p.proposalid ORDER BY $order", $args);
 
 
@@ -1354,7 +1354,6 @@ class Proposal extends Page
 
         return array('SAMPLES' => $samples, 'INVESTIGATORS' => $uas_investigators);
     }
-
 
     # ------------------------------------------------------------------------
     # Close visit for auto-collect

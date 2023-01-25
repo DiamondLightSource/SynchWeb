@@ -121,75 +121,27 @@
       :proteins="proteins"
       :samples-length="samples.length"
       :container-id="containerId"
+      v-on:open-move-container-form="openMoveSampleToContainer"
       v-on="$listeners"
     />
     <portal to="dialog">
       <custom-dialog-box
-        v-if="displaySampleGroupModal"
-        size="small"
+        v-if="displayModal"
+        size="default"
         :hide-ok-button="true"
         @perform-modal-action="performModalAction"
         @close-modal-action="closeModalAction"
       >
-        <template>
-          <div class="tw-bg-modal-header-background tw-py-1 tw-pl-4 tw-pr-2 tw-rounded-sm tw-flex tw-w-full tw-justify-between tw-items-center tw-relative">
-            <p>Sample Groups</p>
-            <button
+      <template v-slot:default>
+        <div class="tw-bg-modal-header-background tw-py-1 tw-pl-4 tw-pr-2 tw-rounded-sm tw-flex tw-w-full tw-justify-between tw-items-center tw-relative tw-border tw-border-content-border">
+          <p class="tw-font-bold tw-text-content-page-color">{{ displayedModalTitle }}</p>
+          <button
               class="tw-flex tw-items-center tw-border tw-rounded-sm tw-border-content-border tw-bg-white tw-text-content-page-color tw-p-1"
-              @click="closeModalAction"
-            >
-              <i class="fa fa-times" />
-            </button>
-          </div>
-          <div class="tw-py-3 tw-px-4">
-            <base-input-select
-              class="tw-py-5"
-              option-text-key="text"
-              option-value-key="value"
-              :options="shipments"
-              input-class="tw-w-full tw-h-6"
-              :value="containerSamplesGroupData['shipmentId']"
-              label="Shipment:"
-              outer-class="tw-w-full tw-flex"
-              label-class="tw-w-3/5 tw-font-bold"
-              @input="onSampleGroupDataChange($event, 'shipmentId')"
-            />
-
-            <base-input-select
-              class="tw-py-5"
-              option-text-key="text"
-              option-value-key="value"
-              :options="dewars"
-              input-class="tw-w-full tw-h-6"
-              :value="containerSamplesGroupData['dewarId']"
-              label="Dewars:"
-              outer-class="tw-w-full tw-flex"
-              label-class="tw-w-3/5 tw-font-bold"
-              @input="onSampleGroupDataChange($event, 'dewarId')"
-            />
-
-            <base-input-select
-              class="tw-py-5"
-              option-text-key="text"
-              option-value-key="value"
-              :options="containers"
-              input-class="tw-w-full tw-h-6"
-              :value="containerSamplesGroupData['containerId']"
-              label="Containers:"
-              outer-class="tw-w-full tw-flex"
-              label-class="tw-w-3/5 tw-font-bold"
-              @input="onSampleGroupDataChange($event, 'containerId')"
-            />
-
-            <div class="tw-w-full tw-flex tw-justify-end tw-py-4">
-              <button
-                class="button"
-                @click="createNewSampleGroup"
-              >
-                <span class="fa fa-plus" /> &nbsp; Create Group
-              </button>
-            </div>
-          </div>
+              @click="closeModalAction">
+            <i class="fa fa-times"></i>
+          </button>
+        </div>
+        <move-sample-to-container v-if="currentModal === 'moveSample'" :sample="selectedSample" v-on:close-modal="closeModalAction" v-on="$listeners"/>
         </template>
       </custom-dialog-box>
     </portal>
@@ -202,12 +154,14 @@ import CustomDialogBox from 'js/app/components/custom-dialog-box.vue'
 import { mapGetters } from 'vuex'
 import BaseInputSelect from 'app/components/base-input-select.vue'
 import BaseInputText from 'app/components/base-input-text.vue'
-import { sortBy, uniqBy, debounce } from 'lodash'
+import { sortBy, uniqBy, debounce } from 'lodash-es'
 import sampleTableMixin from "modules/types/mx/samples/sample-table-mixin";
+import MoveSampleToContainer from 'modules/types/mx/samples/move-sample-to-container.vue'
 
 export default {
   name: 'MxPuckSamplesTable',
   components: {
+    'move-sample-to-container': MoveSampleToContainer,
     'custom-dialog-box': CustomDialogBox,
     'sample-table-row': SampleTableRow,
     'base-input-select': BaseInputSelect,
@@ -215,10 +169,6 @@ export default {
   },
   mixins: [sampleTableMixin],
   props: {
-    currentlyEditingRow: {
-      type: Number,
-      default: -1
-    },
     proteins: {
       type: Array,
       default: () => ([])
@@ -255,7 +205,7 @@ export default {
         }
       ],
       currentTab: 'basic',
-      displaySampleGroupModal: false,
+      displayModal: false,
       selectedFieldValue: '',
       selectedEditableColumn: {
         key: '',
@@ -265,19 +215,13 @@ export default {
         data: '',
         inputType: 'text'
       },
-      updateSamplesFieldWithData: debounce(searchText => this.updateSelectedFieldValue(searchText), 1000)
+      updateSamplesFieldWithData: debounce(searchText => this.updateSelectedFieldValue(searchText), 1000),
+      currentModal: '',
+      selectedSample: null,
+      displayedModalTitle: ''
     }
   },
   computed: {
-    tableColumns() {
-      const columnsMap = {
-        basic: this.basicColumns,
-        extraFields: this.extraFieldsColumns,
-        unattended: this.udcColumns
-      }
-
-      return [...this.requiredColumns, ...columnsMap[this.currentTab]]
-    },
     ...mapGetters({ samples: 'samples/samples' }),
     basicColumns() {
       return [
@@ -506,9 +450,6 @@ export default {
     },
   },
   watch: {
-    currentlyEditingRow(newValue) {
-      this.editingRow = newValue
-    },
     selectedFieldValue: {
       handler: 'updateSamplesFieldWithData',
     }
@@ -518,14 +459,14 @@ export default {
       this.currentTab = name
     },
     closeModalAction() {
-      this.displaySampleGroupModal = false
+      this.displayModal = false
       this.editingRow = null
+      this.currentModal = ''
+      this.displayedModalTitle = ''
+      this.$emit('update-editing-row', null)
     },
-    performModalAction() {
-    },
-    createNewSampleGroup() {
-
-    },
+    performModalAction() {},
+    createNewSampleGroup() {},
     async onSampleGroupDataChange(value, property) {
       let changedSampleGroupsData = {}
       switch(property) {
@@ -570,6 +511,14 @@ export default {
     },
     onUpdateSamples() {
       this.$emit('bulk-update-samples')
+    },
+    openMoveSampleToContainer(sampleIndex) {
+      this.selectedSample = this.samples[sampleIndex]
+      this.currentModal = 'moveSample'
+      this.displayedModalTitle = 'Move Sample To Container'
+      this.$nextTick(() => {
+        this.displayModal = true
+      })
     }
   },
 }

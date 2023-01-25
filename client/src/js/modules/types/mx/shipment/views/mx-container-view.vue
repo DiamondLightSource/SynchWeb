@@ -143,6 +143,7 @@
           title="Click to jump to a position in the puck"
         >
           <valid-container-graphic
+            class="tw-border-l tw-border-gray-500"
             :container-type="containerType"
             :samples="samples"
             :valid-samples="validSamples"
@@ -157,6 +158,8 @@
           ref="samples"
           :container-id="containerId"
           :invalid="invalid"
+          :currentlyEditingRow="editingSampleLocation"
+          @update-editing-row="updateEditingSampleLocation"
           @save-sample="onSaveSample"
           @clone-sample="onCloneSample"
           @clear-sample="onClearSample"
@@ -165,6 +168,8 @@
           @clone-container-column="onCloneColumn"
           @clone-container-row="onCloneRow"
           @bulk-update-samples="onUpdateSamples"
+          @update-samples-with-sample-group="handleSampleFieldChangeWithSampleGroups"
+          @save-sample-move="saveSampleMove"
         />
       </div>
 
@@ -236,7 +241,6 @@ import MxPuckSamplesTable from 'modules/types/mx/samples/mx-puck-samples-table.v
 import TableComponent from 'app/components/table.vue'
 import ValidContainerGraphic from 'modules/types/mx/samples/valid-container-graphic.vue'
 
-
 export default {
   name: 'MxContainerView',
   components: {
@@ -259,7 +263,7 @@ export default {
       required: true
     }
   },
-  data: function() {
+  data() {
     return {
       container: {},
       containerId: 0,
@@ -302,17 +306,13 @@ export default {
       dewars: [],
       dewarsCollection: null,
       selectedDewarId: null,
-      selectedShipmentId: null
+      selectedShipmentId: null,
+      editingSampleLocation: null
     }
   },
   computed: {
     containersSamplesGroupData() {
       return this.$store.getters['samples/getContainerSamplesGroupData']
-    },
-  },
-  watch: {
-    containersSamplesGroupData(newValues) {
-      this.updateContainerSampleGroupsData(newValues)
     },
   },
   created: function() {
@@ -341,7 +341,6 @@ export default {
     },
     async loadSampleGroupInformation() {
       await this.getSampleGroups()
-      await this.fetchSampleGroupSamples()
 
       this.samplesCollection = new Samples(null, { state: { pageSize: 9999 } })
       this.samplesCollection.queryParams.cid = this.containerId
@@ -349,7 +348,12 @@ export default {
     },
     // Callback from pagination
     onUpdateHistory(payload) {
-      let collection = new ContainerHistory( null, {state: { pageSize: payload.pageSize, currentPage: payload.currentPage}})
+      let collection = new ContainerHistory(null, {
+        state: {
+          pageSize: payload.pageSize,
+          currentPage: payload.currentPage
+        }
+      })
       this.getHistory(collection)
     },
     // Effectively a patch request to update specific fields
@@ -380,29 +384,34 @@ export default {
       const result = await this.$store.dispatch('getCollection', collection)
 
       if (result) {
-        this.resetSamples(this.container.CAPACITY)
+        await this.resetSamples(this.container.CAPACITY)
       }
     },
     // Reset Backbone Samples Collection
-    resetSamples(capacity) {
+    async resetSamples(capacity) {
       this.$store.commit('samples/reset', capacity)
+      const samples = this.samplesCollection.toJSON()
 
-      this.samplesCollection.each((s) => {
+      for (let sample of samples) {
         let status = '';
         // Setting the status of the sample based on one of the following values
         const statusList = ['R', 'SC', 'AI', 'GR', 'ES', 'XM', 'XS', 'DC', 'AP']
         statusList.forEach(t => {
-          if (Number(s.get(t)) > 0) status = t
+          if (Number(sample[t]) > 0) status = t
         })
-        s.set({ STATUS: status })
-        const payload = this.populateInitialSampleGroupValue(s.toJSON())
+        sample['STATUS'] = status
+        const payload = await this.populateInitialSampleGroupValue(sample)
         this.$store.commit('samples/setSample', {
-          index: Number(s.get('LOCATION')) - 1,
+          index: Number(sample['LOCATION']) - 1,
           data: { ...payload, VALID: 1 }
         })
+
+      }
+      this.$nextTick(() => {
+        this.$refs.containerForm.reset()
       })
     },
-    onContainerCellClicked: function(location) {
+    onContainerCellClicked: function (location) {
       this.sampleLocation = location - 1
     },
     onQueueContainer() {
@@ -533,6 +542,24 @@ export default {
 
       sample.INITIALSAMPLEGROUP = matchingSampleGroup ? matchingSampleGroup['BLSAMPLEGROUPID'] : ''
       return sample
+    },
+    updateEditingSampleLocation(value) {
+      this.editingSampleLocation = value
+    },
+    async saveSampleMove(data) {
+      try {
+        this.$store.commit('loading', true)
+        await this.$store.dispatch('saveDataToApi', {
+          url: `/sample/move/${data['BLSAMPLEID']}`,
+          data,
+          requestType: 'moving sample to another container'
+        })
+
+        await this.loadSampleGroupInformation()
+        this.$refs.containerForm.reset()
+      } finally {
+        this.$store.commit('loading', false)
+      }
     }
   }
 }

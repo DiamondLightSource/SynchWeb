@@ -36,14 +36,14 @@
                 <label>Local Contact
                     <span class="small">Beamline local contact</span>
                 </label>
-                <input type="text" name="LOCALCONTACT" />
+                <input type="text" name="LOCALCONTACT" disabled="disabled"/>
             </li>
 
             <li>
                 <label>Dewar Location
                     <span class="small">Where the dewar currently is</span>
                 </label>
-                <input type="text" name="LOCATION" />
+                <input type="text" name="LOCATION"/>
             </li>
 
 
@@ -65,31 +65,37 @@
             </li>
 
             <li>
-                <label>Phone Number
-                    <span class="small">The person's phone number</span>
-                </label>
+                <label>Phone Number</label>
                 <input type="text" name="PHONENUMBER" />
             </li>
 
             <li>
-                <label>Contact Email
-                    <span class="small">The person's email address</span>
-                </label>
+                <label>Email Address</label>
                 <input type="email" name="EMAILADDRESS" />
             </li>
 
             <li>
-                <label>Laboratory Name
-                    <span class="small">The contact's laboratory name</span>
+                <label>University / Institution / Company
+                    <span class="small">The name of the contact's university, institution or company</span>
                 </label>
                 <input type="text" name="LABNAME" />
             </li>
 
             <li>
-                <label>Laboratory Address
-                    <span class="small">The contact's laboratory address</span>
+                <label>Address
+                    <span class="small">Address for courier</span>
                 </label>
                 <textarea name="ADDRESS"></textarea>
+            </li>
+
+            <li>
+                <label>Laboratory Country
+                    <span class="small">The contact's laboratory country</span>
+                </label>
+                <select name="COUNTRY">
+                    <option value="United Kingdom">United Kingdom</option>
+                    <option value="Other">Other</option>
+                </select>
             </li>
 
              <li>
@@ -108,14 +114,7 @@
 
             
             <li class="head">Courier Details</li>
-            <% if (SHIPPING.DELIVERYAGENT_AGENTCODE) { %>
-            <li>
-                <label>
-                    Use another account
-                    <span class="small">Use another courier account instead</span>
-                </label>
-                <input type="checkbox" name="USE_ANOTHER_COURIER_ACCOUNT" value="0" />
-            </li>
+            <% if (SHIPPING.TERMSACCEPTED == 0) { %>
             <li>
                 <label>Courier
                     <span class="small">Courier Name</span>
@@ -123,22 +122,36 @@
                 <input type="text" name="DELIVERYAGENT_AGENTNAME" />
             </li>
 
-
             <li>
                 <label>Account Number
                     <span class="small">Courier account number</span>
                 </label>
                 <input type="text" name="DELIVERYAGENT_AGENTCODE" />
             </li>
+
+            <% if (SHIPPING.DELIVERYAGENT_AGENTNAME && SHIPPING.DELIVERYAGENT_AGENTCODE) { %>
+            <li>
+                <label>
+                    Use another account
+                    <span class="small">Use another courier account instead</span>
+                </label>
+                <input type="checkbox" name="USE_ANOTHER_COURIER_ACCOUNT" value="0" />
+            </li>
             <% } %>
 
             <li>
-                <label>Airway Bill Number
-                    <span class="small">Airway bill no. if you have generated your own</span>
+                <label>Air Waybill Number
+                    <span class="small">Air waybill no. if you have generated your own</span>
                 </label>
                 <input type="text" name="AWBNUMBER" />
             </li>
-
+            <% } else { %>
+            <li>
+                <label>Courier</label>
+                <span class="small">This dewar will be returned using the facility's courier account</span>
+            </li>
+            <% } %>
+    
 
             <li>
                 <label>Comments

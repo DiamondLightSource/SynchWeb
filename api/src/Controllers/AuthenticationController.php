@@ -151,6 +151,8 @@ class AuthenticationController
         $token = $this->app->request()->get('token');
         if ($token)
         {
+            # Remove tokens more than 10 seconds old, they should have been used
+            $this->dataLayer->deleteOldOneTimeUseTokens();
             $token = $this->dataLayer->getOneTimeUseToken($token);
             if (sizeof($token))
             {
@@ -172,9 +174,7 @@ class AuthenticationController
                 $this->returnError(400, 'Invalid one time authorisation token');
             }
         }
-
-        # Remove tokens more than 10 seconds old, they should have been used
-        $this->dataLayer->deleteOldOneTimeUseTokens();
+                
         return $need_auth;
     }
 

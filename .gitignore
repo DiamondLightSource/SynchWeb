@@ -32,3 +32,8 @@ api/config.php
 api/vendor
 api/tests/.phpunit.result.cache
 api/tests/_coverage
+api/src/MockUAS.php
+
+entrypoint.bash
+php-fpm.conf
+php-fpm.pid

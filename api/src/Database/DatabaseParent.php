@@ -23,6 +23,16 @@ interface DatabaseInterface
 
     // Close connection
     public function close();
+
+    // Start a transaction
+    function start_transaction();
+
+    // End a transaction
+    function end_transaction();
+
+    // Use to wait for any replication synchronisation in the db cluster
+    // For non-cluster databases no-op
+    function wait_rep_sync($state = false);
 }
 
 abstract class DatabaseParent implements DatabaseInterface
