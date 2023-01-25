@@ -28,6 +28,7 @@ class Page
     var $profiles = array();
     var $base;
     var $args = array();
+    var $request = null;
 
     public static $dispatch = array();
     public static $arg_list = array();

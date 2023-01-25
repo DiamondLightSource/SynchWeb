@@ -710,9 +710,9 @@ define(['marionette',
                 this.singlesample.setModel(s)
 
                 if (this.model.get('SCREENID')) {
-                    var g = this.screencomponentgroups.findWhere({ SCREENCOMPONENTGROUPID: s.get('SCREENCOMPONENTGROUPID') })
-                    if (g) this.groupview.setModel(g)
-                        else this.groupview.setModel(null)
+                    var g = this.screencomponentgroups.findWhere({ POSITION: s.get("LOCATION") })
+                    if (g) { this.groupview.setModel(g) }
+                    else { this.groupview.setModel(null) }
                 }
 
                 if (Number(this.model.get('INSPECTIONS')) === 0) return
