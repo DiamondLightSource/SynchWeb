@@ -182,7 +182,9 @@ class UserController extends Page
             $this->argOrEmptyString('pjid'),
             $this->argOrEmptyString('visit'),
             $this->def_arg('per_page', 15),
-            $this->def_arg('order', 'asc') == 'asc'
+            $this->def_arg('order', 'asc') == 'asc',
+            $this->has_arg('all'),
+            $this->has_arg('login')
         );
 
         if ($this->has_arg('PERSONID'))
@@ -209,7 +211,9 @@ class UserController extends Page
                 $this->argOrEmptyString('pjid'),
                 $this->argOrEmptyString('visit'),
                 $this->def_arg('per_page', 15),
-                $this->def_arg('order', 'asc') == 'asc'
+                $this->def_arg('order', 'asc') == 'asc',
+                $this->has_arg('all'),
+                $this->has_arg('login')
             );
             $this->_output(array('total' => $tot,
                 'data' => $rows,

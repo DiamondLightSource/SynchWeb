@@ -64,10 +64,15 @@ class UserData
         return $whereClause;
     }
 
-    function getUsers($getCount, $isStaffMember, $stringMatch, $page, $sortBy = null, $pid = null, $personId = null, $isManager = false, $currentUserId = null, $gid = null, $sid = null, $pjid = null, $visitName = null, $perPage = 15, $isAscending = true)
+    function getUsers($getCount, $isStaffMember, $stringMatch, $page, $sortBy = null, $pid = null, $personId = null, $isManager = false, $currentUserId = null, $gid = null, $sid = null, $pjid = null, $visitName = null, $perPage = 15, $isAscending = true, $isAll=false, $onlyLogins=false)
     {
         $args = array();
-        $where = 'p.login IS NOT NULL';
+
+        // Set initial where clause restrict it to just users within logins unless it is for a all or a person id and only logins not set 
+        if (!$onlyLogins and ($personId || $isAll))
+            $where = '1=1'; 
+        else
+            $where = 'p.login IS NOT NULL';
         $join = '';
         $extc = '';
         $group = 'GROUP BY p.personid';
@@ -78,7 +83,7 @@ class UserData
         }
 
         if ($personId)
-        {
+        {            
             $where .= ' AND p.personid=:' . (sizeof($args) + 1);
             array_push($args, $personId);
         }
