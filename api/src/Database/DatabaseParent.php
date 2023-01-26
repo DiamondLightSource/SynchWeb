@@ -2,56 +2,15 @@
 
 namespace SynchWeb\Database;
 
-class DatabaseParent
-{
-    public $debug = False;
-    public $stats = False;
-    public $stat;
-    private $app;
-
-    function type()
-    {
-        return $this->type;
-    }
-
-    public function set_app($app)
-    {
-        $this->app = $app;
-    }
-
-    public function set_stats($st)
-    {
-        $this->stats = $st;
-    }
-
-    public function set_debug($debug)
-    {
-        if ($this->app) $this->app->contentType('text/html');
-        $this->debug = $debug;
-    }
-
-    public function error($title, $msg)
-    {
-        header('HTTP/1.1 503 Service Unavailable');
-        // header('Content-type:application/json');
-        print json_encode(array('title' => $title, 'msg' => $msg));
-        error_log('Database Error: ' . $msg);
-        exit();
-    }
-
-
-    function __destruct()
-    {
-        // $this->close();
-    }
-}
+use SynchWeb\Utils;
+use Slim\Slim;
 
 interface DatabaseInterface
 {
-    public function __construct($user, $pass, $db, $port);
+    public function __construct($conn);
 
     // Prepared Query
-    public function pq($query, $args);
+    public function pq($query, $args = array());
 
     // Paginated Query
     public function paginate($query, $args);
@@ -64,4 +23,59 @@ interface DatabaseInterface
 
     // Close connection
     public function close();
+}
+
+abstract class DatabaseParent implements DatabaseInterface
+{
+    // Setting to true produces a text of the database call
+    public bool $debug = False;
+    
+    // Setting to true should produce statistics output in $stat, if possible in the driver
+    public bool $stats = False;
+    public $stat = "";
+    
+    // Setting to true should produce the explain plan in $plan, if possible in the driver
+    public bool $explain = False;
+    public $plan = "";
+
+    protected $conn;
+    protected string $type = "Base"; // The sub-class should override this
+
+    private ?Slim $app = NULL;
+
+    function type()
+    {
+        return $this->type;
+    }
+
+    public function set_app(Slim $app) {
+        $this->app = $app;
+    }
+
+    public function set_stats($st)
+    {
+        $this->stats = $st;
+    }
+
+    public function set_debug($debug)
+    {
+        if ($this->app)
+            $this->app->contentType('text/html');
+        $this->debug = $debug;
+    }
+
+    function set_explain(bool $explain)
+    {
+        $this->$explain = $explain;
+    }
+
+    public function error($title, $msg)
+    {
+        Utils::returnError($title, $msg);
+    }
+
+    function __destruct()
+    {
+    // $this->close();
+    }
 }

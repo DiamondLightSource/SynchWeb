@@ -4,6 +4,8 @@ on:
   push:
     branches: 
       - 'master'
+      - 'release/**'
+      - 'pre-release/**'
   pull_request:
     branches:
       - 'master'
