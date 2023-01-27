@@ -109,9 +109,8 @@ define(['marionette', 'views/form',
         updateDynamicSchedule: function() {
             // Added as a fix to allow dynamic sessions
             // An extra option for proposals with no sessions yet that are not automated
-            proposal_code = app.proposal.get('PROPOSALCODE')
             industrial_codes = ['in', 'sw']
-            industrial_visit = industrial_codes.includes(proposal_code)
+            industrial_visit = industrial_codes.includes(app.prop.slice(0,2))
             if (this.ui.dynamic.is(':checked')) {
                 this.ui.first.html('<option value=""> - </option>')
                 this.ui.noexp.prop('checked', false)

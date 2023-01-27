@@ -4,6 +4,7 @@ namespace SynchWeb\Model\Services;
 
 use SynchWeb\Database\DatabaseParent;
 use SynchWeb\Model\User;
+use SynchWeb\Utils;
 
 class AuthenticationData
 {
@@ -86,9 +87,7 @@ class AuthenticationData
 
     function updateActivityTimestamp($loginId)
     {
-        global $log_activity_to_ispyb;
-        $log_activity = isset($log_activity_to_ispyb) ? $log_activity_to_ispyb : true;
-        if ($log_activity) 
+        if (Utils::ShouldLogUserActivityToDB($loginId))
         {
             $chk = $this->db->pq("SELECT TIMESTAMPDIFF('SECOND', datetime, CURRENT_TIMESTAMP) AS lastupdate, comments FROM adminactivity WHERE username LIKE :1", array($loginId));
             if (sizeof($chk))

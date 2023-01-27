@@ -2552,9 +2552,6 @@ class Shipment extends Page
         $ct = $this->has_arg('CLOSETIME') ? $this->arg('CLOSETIME') : null;
         $loc = $this->has_arg('PHYSICALLOCATION') ? $this->arg('PHYSICALLOCATION') : null;
 
-            
-
-            
         $hard_drive_enclosed = null;
         if ($this->has_arg('ENCLOSEDHARDDRIVE')){
             $hard_drive_enclosed = $this->arg('ENCLOSEDHARDDRIVE') ? "Yes" : "No";
@@ -2599,6 +2596,7 @@ class Shipment extends Page
                 "LASTMINUTEBEAMTIME" => $last_minute_beamtime,
                 "DEWARGROUPING" => $dewar_grouping
             );
+
             $extra_array = array_merge($extra_array, $dynamic_options);
         }
         
