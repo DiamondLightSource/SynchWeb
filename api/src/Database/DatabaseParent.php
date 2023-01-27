@@ -37,21 +37,31 @@ interface DatabaseInterface
 
 abstract class DatabaseParent implements DatabaseInterface
 {
-    // Setting to true produces a text of the database call
-    public bool $debug = False;
+    /**
+     *  Setting to true produces a text of the database call
+     * @var bool
+     */
+    public $debug = False;
     
-    // Setting to true should produce statistics output in $stat, if possible in the driver
-    public bool $stats = False;
+    /** Setting to true should produce statistics output in $stat, if possible in the driver
+     * @var bool
+     */
+    public $stats = False;
     public $stat = "";
     
-    // Setting to true should produce the explain plan in $plan, if possible in the driver
-    public bool $explain = False;
+    /**
+     * Setting to true should produce the explain plan in $plan, if possible in the driver
+     * @var bool
+     */
+    public $explain = False;
     public $plan = "";
 
     protected $conn;
-    protected string $type = "Base"; // The sub-class should override this
+    /* @var string */
+    protected $type = "Base"; // The sub-class should override this
 
-    private ?Slim $app = NULL;
+    /* @var ?Slim */
+    private  $app = NULL;
 
     function type()
     {
