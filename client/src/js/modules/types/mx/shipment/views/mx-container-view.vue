@@ -399,8 +399,6 @@ export default {
       try {
         this.displayQueueModal = false
         const validated = await this.$refs.containerForm.validate()
-        console.log(this.QUEUEFORUDC)
-        console.log(validated)
         if(!validated){
           this.containerQueueError = true
           this.$store.commit('notifications/addNotification', {
