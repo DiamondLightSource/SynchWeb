@@ -205,10 +205,7 @@ module.exports = (env, argv) => ({
                 // Extract the CSS into separate files
                 { 
                 loader: MiniCssExtractPlugin.loader,
-                options: {
-                  hmr: true,
-                  reloadAll: true,
-                }
+                options: { }
                 },
                 "css-loader", // translates CSS into CommonJS
                 "postcss-loader",
