@@ -194,6 +194,24 @@ define(['marionette',
             edit.create('PHYSICALLOCATION', 'text')
             edit.create('READYBYTIME', 'time')
             edit.create('CLOSETIME', 'time')
+
+
+            edit.create("ENCLOSEDHARDDRIVE", 'select', { data: {'Yes': 'Yes', 'No': 'No'}})
+            edit.create("ENCLOSEDTOOLS", 'select', { data: {'Yes': 'Yes', 'No': 'No'}})
+            industrial_codes = ['in', 'sw']
+            industrial_visit = industrial_codes.includes(app.prop.slice(0,2))
+            if (!industrial_visit) {
+                this.$el.find(".remoteormailin").hide()
+            } else {
+                edit.create("REMOTEORMAILIN", 'select', { data: {'Remote': 'Remote', 'Mail-in': 'Mail-in', 'Other': 'Other'}})
+            }
+
+            edit.create("SESSIONLENGTH", 'text')
+            edit.create("ENERGY", 'text')
+            edit.create("MICROFOCUSBEAM", 'select', { data: {'Yes': 'Yes', 'No': 'No'}})
+            edit.create("SCHEDULINGRESTRICTIONS", 'text')
+            edit.create("LASTMINUTEBEAMTIME", 'select', { data: {'Yes': 'Yes', 'No': 'No'}})
+            edit.create("DEWARGROUPING", 'select', { data: {'Yes': 'Yes', 'No': 'No', 'Don\'t mind': 'Don\'t mind'}})
             
             var self = this
             this.contacts = new LabContacts(null, { state: { pageSize: 9999 } })

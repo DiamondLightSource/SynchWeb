@@ -16,7 +16,10 @@ final class UserDataTest extends TestCase
     use \phpmock\phpunit\PHPMock;
 
     private $db;
-    private UserData $userData;
+    /**
+     * @var UserData
+     */
+    private $userData;
     private $insertId;
 
     protected function setUp($invocationNumber = 1): void

@@ -16,4 +16,12 @@ class Utils
             exit();
         }
     }
+
+    public static function shouldLogUserActivityToDB($loginId): bool
+    {
+        global $log_activity_to_ispyb;
+        $log_activity = isset($log_activity_to_ispyb) ? $log_activity_to_ispyb : true;
+
+        return $loginId && $log_activity;
+    }
 }

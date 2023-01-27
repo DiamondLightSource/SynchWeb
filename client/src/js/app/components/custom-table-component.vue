@@ -6,7 +6,7 @@
       :class="tableClass"
     >
       <thead>
-        <tr class="tw-bg-table-header-background tw-text-table-header-color tw-font-bold">
+        <tr :class="['tw-text-table-header-color', 'tw-font-bold', tableHeaderClass]">
           <slot name="tableHeaders" />
         </tr>
       </thead>
@@ -51,6 +51,10 @@ export default {
     },
     tableClass: {
       type: String
+    },
+    tableHeaderClass: {
+      type: String,
+      default: 'tw-bg-table-header-background'
     }
   },
   data() {

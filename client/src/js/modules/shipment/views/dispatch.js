@@ -1,6 +1,7 @@
 define(['marionette', 'views/form',
     'collections/visits',
     'collections/labcontacts',
+    'collections/countries',
     'modules/shipment/collections/dewarhistory',
 
     'modules/shipment/models/dispatch',
@@ -11,9 +12,37 @@ define(['marionette', 'views/form',
     'backbone-validation',
     
     ], function(Marionette, FormView,
-        Visits, LabContacts, DewarHistory,
+        Visits, LabContacts, Countries, DewarHistory,
         DispatchModel,
         template, $_, Backbone) {
+
+    /*
+     T&C Dialog
+    */
+     var Terms = Backbone.Model.extend({
+        idAttribute: 'SHIPPINGID',
+        urlRoot: '/shipment/terms',
+    })
+            
+    var TCDialog = DialogView.extend({
+        template: _.template('<%=TERMS%>'),
+        title: 'Terms & Conditions',
+        buttons: {
+            'Accept': 'accept',
+            'Cancel': 'closeDialog',
+        },
+        
+        accept: function() {
+            var self = this
+            this.model.set({ ACCEPTED: 1 })
+            this.model.save(this.model.changedAttributes(), {
+                patch: true,
+                success: function() {
+                    self.closeDialog()
+                }
+            })
+        },
+    })
 
    
     var VVisits = Visits.extend({
@@ -27,7 +56,8 @@ define(['marionette', 'views/form',
         events: {
             'change @ui.lc': 'getlcdetails',    
             'change @ui.exp': 'updateLC',
-            'click @ui.useAnotherCourierAccount': 'toggleCourierAccountEditing'  
+            'click @ui.useAnotherCourierAccount': 'toggleCourierAccountEditing',
+            'click @ui.facc': 'showTerms'
         },
         
         ui: {
@@ -40,12 +70,17 @@ define(['marionette', 'views/form',
             gn: 'input[name=GIVENNAME]',
             fn: 'input[name=FAMILYNAME]',
             addr: 'textarea[name=ADDRESS]',
+            country: 'select[name=COUNTRY]',
             em: 'input[name=EMAILADDRESS]',
             ph: 'input[name=PHONENUMBER]',
             lab: 'input[name=LABNAME]',
 
+            facc: 'a.facc',
             accountNumber: 'input[NAME=DELIVERYAGENT_AGENTCODE]',
             courier: 'input[name=DELIVERYAGENT_AGENTNAME]',
+            courierDetails: '.courierDetails',
+            facilityCourier: '.facilityCourier',
+            awbNumber: 'input[name=AWBNUMBER]',
             useAnotherCourierAccount: 'input[name=USE_ANOTHER_COURIER_ACCOUNT]',
             dispatchState: '.dispatch-state'
         },
@@ -84,19 +119,36 @@ define(['marionette', 'views/form',
             var d = new Date()
             var today = (d.getDate() < 10 ? '0'+d.getDate() : d.getDate()) + '-' + (d.getMonth() < 9 ? '0'+(d.getMonth()+1) : d.getMonth()+1) + '-' + d.getFullYear()
             this.$el.find('input[name=DELIVERYAGENT_SHIPPINGDATE]').val(today)
+            this.$el.find('.facilityCourier').hide()
+            
+            proposal_code = app.proposal.get('PROPOSALCODE')
+            industrial_codes = ['in', 'sw']
+            industrial_visit = industrial_codes.includes(app.prop.slice(0,2))
+            if (industrial_visit) {
+                this.ui.facc.hide()
+            }
 
-            var self = this
-            this.ready.done(function() {
-                self.ui.exp.html(self.visits.opts()).val(self.model.get('VISIT'))
-                self.updateLC()
-            })
-
-            if (this.shipping.get('DELIVERYAGENT_AGENTCODE')) {
+            if (this.shipping.get('TERMSACCEPTED') == 0) {
                 this.ui.courier.val(this.shipping.get('DELIVERYAGENT_AGENTNAME'))
                 this.ui.accountNumber.val(this.shipping.get('DELIVERYAGENT_AGENTCODE'))
-                this.ui.courier.attr('disabled', true)
-                this.ui.accountNumber.attr('disabled', true)
-                this.model.shipmentHasAgentCode = true
+                if (this.shipping.get('DELIVERYAGENT_AGENTNAME') && this.shipping.get('DELIVERYAGENT_AGENTCODE')) {
+                    this.ui.courier.attr('disabled', true)
+                    this.ui.accountNumber.attr('disabled', true)
+                }
+                this.model.courierDetailsRequired = true
+            }
+            $.when.apply($, this.ready).done(this.doOnRender.bind(this))
+        },
+
+        doOnRender: function() {
+            this.ui.exp.html(this.visits.opts()).val(this.model.get('VISIT'))
+            this.updateLC()
+            this.populateCountries()
+        },
+
+        populateCountries: function() {
+            if (this.countries.length > 0) {
+                this.ui.country.html(this.countries.opts())
             }
         },
 
@@ -108,7 +160,8 @@ define(['marionette', 'views/form',
 
             var self = this
             this.visits = new VVisits(null, { state: { pageSize: 9999 } })
-            this.ready = this.visits.fetch()
+            this.ready = []
+            this.ready.push(this.visits.fetch())
 
             this.history = new DewarHistory(null, { queryParams: { did: this.getOption('dewar').get('DEWARID') }})
             this.history.fetch().done(function() {
@@ -131,6 +184,14 @@ define(['marionette', 'views/form',
             })
             // Shipping option should be a backbone model
             this.shipping = options.shipping
+
+            this.terms = new Terms({ SHIPPINGID: this.shipping.get('SHIPPINGID') })
+            this.listenTo(this.terms, 'change:ACCEPTED', this.toggleFacilityCourier)
+            this.ready.push(this.terms.fetch())
+
+            this.countries = new Countries()
+            this.countries.state.pageSize = 9999
+            this.countries.fetch()
         },
 
         updateLC: function() {
@@ -161,9 +222,17 @@ define(['marionette', 'views/form',
                 this.ui.fn.val(lc.get('FAMILYNAME'))
                 this.ui.em.val(lc.get('EMAILADDRESS'))
                 this.ui.ph.val(lc.get('PHONENUMBER'))
-                this.ui.addr.val([lc.get('ADDRESS'),lc.get('CITY'),lc.get('POSTCODE'),lc.get('COUNTRY')].join("\n"))
                 this.ui.lab.val(lc.get('LABNAME'))
+                this.ui.addr.val([lc.get('ADDRESS'), lc.get('CITY'), lc.get('POSTCODE')].join('\n'))
+                this.ui.country.val(lc.get('COUNTRY'))
             }
+        },
+
+        showTerms: function() {
+            var terms = new TCDialog({ model: this.terms })
+            this.listenTo(terms, 'terms:accepted', this.termsAccepted, this)
+            if (!this.terms.get('ACCEPTED')) app.dialog.show(terms)
+            return false
         },
         
         toggleCourierAccountEditing: function(event) {
@@ -177,6 +246,14 @@ define(['marionette', 'views/form',
                 this.ui.courier.attr('disabled', true)
                 this.ui.accountNumber.attr('disabled', true)
             }
+        },
+
+        toggleFacilityCourier: function() {
+            this.ui.facc.hide()
+            this.ui.courier.val('DHL')
+            this.ui.courierDetails.hide()
+            this.ui.facilityCourier.show()
+            this.model.courierDetailsRequired = false
         }
     })
 

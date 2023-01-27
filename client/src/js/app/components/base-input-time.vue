@@ -1,3 +1,4 @@
+
 <!--
 Time picker
 This converts an input text input type into a time picker using jquery-plugin
@@ -59,7 +60,6 @@ Slots include:
         :class="errorClass"
       >{{ errorMessage }}</span>
     </slot>
-
     <!-- Placeholder for any buttons that should be placed after the input -->
     <slot name="actions" />
   </div>

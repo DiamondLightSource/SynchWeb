@@ -6,12 +6,16 @@ use SqlFormatter;
 use SynchWeb\Database\DatabaseParent;
 
 class MySQL extends DatabaseParent {
-    protected string $type = 'mysql';
-
-    private string $lastQuery = ''; // provide a way of retrieving the last query run - by storing the data - can then call getLastQuery() - primarily for testing
-    private array $lastArgs = array();
-    private bool $transaction = False;
-    private int $errors = 0;
+    /** @var string */
+    protected $type = 'mysql';
+    /** @var string */
+    private $lastQuery = ''; // provide a way of retrieving the last query run - by storing the data - can then call getLastQuery() - primarily for testing
+    /** @var array */
+    private $lastArgs = array();
+    /** @var bool */
+    private $transaction = False;
+    /** @var int */
+    private $errors = 0;
 
     const TABLES = array(
         'AdminActivity',

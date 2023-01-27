@@ -1,5 +1,5 @@
 /**
- * The view of all data collections for K11
+ * The view of all data collections and autoprocessing
  * Copied directly from XPDF for easier pattern following
  * See dc-wrapper.vue for mapping file to templates
  */
@@ -26,7 +26,7 @@ define([
         template: template,
         filters: false,
         sampleChanger: false,
-        
+
     })
 
 })
