@@ -352,6 +352,55 @@ define(['marionette',
         }
 
     })
+
+    var ClientFilterViewAvailable = FilterView.extend({
+        filters: [
+            {id: 'point', name: 'Point' },
+            {id: 'region', name: 'Region' },
+        ],
+
+        initialize: function(options) {
+            ClientFilterView.__super__.initialize.call(this, options)
+
+            this.filterablecollection = options.collection.fullCollection// || options.collection
+            this.shadowCollection = this.filterablecollection.clone()
+
+            this.listenTo(this.filterablecollection, 'add', function (model, collection, options) {
+                this.shadowCollection.add(model, options)
+            })
+            this.listenTo(this.filterablecollection, 'remove', function (model, collection, options) {
+                this.shadowCollection.remove(model, options)
+            })
+            this.listenTo(this.filterablecollection, 'sort', function (col) {
+                if (!this.query()) this.shadowCollection.reset(col.models)
+            })
+            this.listenTo(this.filterablecollection, 'reset', function (col, options) {
+                options = _.extend({reindex: true}, options || {})
+                if (options.reindex && options.from == null && options.to == null) {
+                    this.shadowCollection.reset(col.models)
+                    if (this.selected()) this._filter()
+                }
+            })
+        },
+
+        _filter: function() {
+            var id = this.selected()
+            this.trigger('selected:change', id, this.selectedName())
+            if (id) {
+                this.filterablecollection.reset(this.shadowCollection.filter(function(m) {
+                    if (id === 'region') {
+                        return m.get('X2') && m.get('Y2')
+
+                    } else if (id === 'point') {
+                        return m.get('X') && m.get('Y') && !m.get('X2')
+                    }
+                }), {reindex: false})
+            } else {
+                console.log('reset', this.shadowCollection)
+                this.filterablecollection.reset(this.shadowCollection.models, {reindex: false})
+            }
+        }
+    })
     
 
     var ClientFilterView = FilterView.extend({
@@ -451,6 +500,7 @@ define(['marionette',
             asmps: '.asamples',
             qsmps: '.qsamples',
             qfilt: '.qfilt',
+            afilt: '.afilt',
             rimg: '.image',
         },
         
@@ -757,7 +807,14 @@ define(['marionette',
                 url: false,
                 collection: this.qsubsamples,
             })
+
+            this.avtypeselector = new ClientFilterViewAvailable({
+                url: false,
+                collection: this.subsamples,
+            })
+
             this.qfilt.show(this.typeselector)
+            this.afilt.show(this.avtypeselector)
 
             if (this.model.get('CONTAINERQUEUEID')) {
                 this.ui.rpreset.hide()
