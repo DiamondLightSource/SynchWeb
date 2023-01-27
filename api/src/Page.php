@@ -46,6 +46,9 @@ class Page
 
     var $sessionid;
     var $proposalid;
+    var $_arg_list;
+    var $_dispatch;
+    var $last_profile;
 
     function _base()
     {

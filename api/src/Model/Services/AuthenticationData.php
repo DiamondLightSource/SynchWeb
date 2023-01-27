@@ -8,7 +8,10 @@ use SynchWeb\Utils;
 
 class AuthenticationData
 {
-    private DatabaseParent $db;
+    /**
+     * @var DatabaseParent
+     */
+    private $db;
 
     function __construct(DatabaseParent $db)
     {
