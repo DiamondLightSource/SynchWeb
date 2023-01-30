@@ -359,6 +359,8 @@ define(['marionette',
             {id: 'point', name: 'Point' },
             {id: 'region', name: 'Region' },
             {id: 'invalid', name: 'Invalid' },
+            {id: 'auto', name: 'Auto' },
+            {id: 'manual', name: 'Manual' },
         ],
 
         initialize: function(options) {
@@ -394,10 +396,20 @@ define(['marionette',
                         return m.get('_valid') === false
 
                     } else if (id === 'region') {
+                        console.log('m', m)
+                        console.log('m', m.get('X2'))
                         return m.get('X2') && m.get('Y2')
 
                     } else if (id === 'point') {
+                        console.log('m', m)
+                        console.log('m', m.get('X'))
                         return m.get('X') && m.get('Y') && !m.get('X2')
+                    }
+                      else if (id === 'auto') {
+                        return m.get('SOURCE') == 'auto'
+
+                    } else if (id === 'manual') {
+                        return m.get('SOURCE') == 'manual'
                     }
                 }), {reindex: false})
             } else {
