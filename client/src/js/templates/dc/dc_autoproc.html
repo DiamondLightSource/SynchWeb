@@ -102,6 +102,9 @@
                 <th>Resolution</th>
                 <th>Rmeas</th>
                 <th>I/sig(I)</th>
+                <%if (SHELLS.innerShell.RESISIGI != 0.00 && SHELLS.innerShell.RESISIGI != 0.00 && SHELLS.innerShell.RESISIGI != 0.00) { %>
+                <th>I/sig(I) == 2</th>
+                <% }%>
                 <th>CC Half</th>
                 <th>Completeness</th>
                 <th>Multiplicity</th>
@@ -118,6 +121,9 @@
             <td><%-s.RHIGH%> - <%-s.RLOW%></td>
             <td><% print(TYPE == 'Fast DP' ? s.RMERGE : s.RMEAS)%></td>
             <td><%-s.ISIGI%></td>
+            <%if (SHELLS.innerShell.RESISIGI != 0.00 && SHELLS.innerShell.RESISIGI != 0.00 && SHELLS.innerShell.RESISIGI != 0.00) { %>
+            <td><%-s.RESISIGI%></td>
+            <% }%>
             <td><%-s.CCHALF%></td>
             <td><%-s.COMPLETENESS%></td>
             <td><%-s.MULTIPLICITY%></td>
