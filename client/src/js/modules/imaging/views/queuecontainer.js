@@ -357,6 +357,8 @@ define(['marionette',
         filters: [
             {id: 'point', name: 'Point' },
             {id: 'region', name: 'Region' },
+            {id: 'auto', name: 'Auto' },
+            {id: 'manual', name: 'Manual' },
         ],
 
         initialize: function(options) {
@@ -393,6 +395,12 @@ define(['marionette',
 
                     } else if (id === 'point') {
                         return m.get('X') && m.get('Y') && !m.get('X2')
+                    }
+                    else if (id === 'auto') {
+                        return m.get('SOURCE') == 'auto'
+
+                    } else if (id === 'manual') {
+                        return m.get('SOURCE') == 'manual'
                     }
                 }), {reindex: false})
             } else {
