@@ -148,12 +148,12 @@ class AuthenticationController
     private function processOneTimeUseTokens(): bool
     {
         $need_auth = true;
-        $token = $this->app->request()->get('token');
-        if ($token)
+        $tokenId = $this->app->request()->get('token');
+        if ($tokenId)
         {
             # Remove tokens more than 10 seconds old, they should have been used
             $this->dataLayer->deleteOldOneTimeUseTokens();
-            $token = $this->dataLayer->getOneTimeUseToken($token);
+            $token = $this->dataLayer->getOneTimeUseToken($tokenId);
             if (sizeof($token))
             {
                 $token = $token[0];
@@ -166,7 +166,7 @@ class AuthenticationController
                     $_REQUEST['prop'] = $token['PROP'];
                     $this->loginId = $token['LOGIN'];
                     $need_auth = false;
-                    $this->dataLayer->deleteOneTimeUseToken($token);
+                    $this->dataLayer->deleteOneTimeUseToken($tokenId);
                 }
             }
             else
