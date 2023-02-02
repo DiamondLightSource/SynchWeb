@@ -415,9 +415,9 @@ define(['marionette',
         filters: [
             {id: 'point', name: 'Point' },
             {id: 'region', name: 'Region' },
-            {id: 'invalid', name: 'Invalid' },
             {id: 'auto', name: 'Auto' },
             {id: 'manual', name: 'Manual' },
+            {id: 'invalid', name: 'Invalid' },
         ],
 
         initialize: function(options) {
