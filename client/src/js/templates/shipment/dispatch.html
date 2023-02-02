@@ -92,7 +92,10 @@
                 <label>Laboratory Country
                     <span class="small">The contact's laboratory country</span>
                 </label>
-                <select name="COUNTRY"></select>
+                <select name="COUNTRY">
+                    <option value="United Kingdom">United Kingdom</option>
+                    <option value="Other">Other</option>
+                </select>
             </li>
 
              <li>
@@ -110,16 +113,22 @@
             </li>
 
             
-            <li class="head">Courier Details</li>
+            <li class="head">
+                Courier Details
+                <span></span>
+                <a href="#" class="facc button"><i class="fa fa-envelope"></i> Use Facility Account</a>
+            </li>
+
             <% if (SHIPPING.TERMSACCEPTED == 0) { %>
-            <li>
+
+            <li class="courierDetails">
                 <label>Courier
                     <span class="small">Courier Name</span>
                 </label>
                 <input type="text" name="DELIVERYAGENT_AGENTNAME" />
             </li>
 
-            <li>
+            <li class="courierDetails">
                 <label>Account Number
                     <span class="small">Courier account number</span>
                 </label>
@@ -127,7 +136,7 @@
             </li>
 
             <% if (SHIPPING.DELIVERYAGENT_AGENTNAME && SHIPPING.DELIVERYAGENT_AGENTCODE) { %>
-            <li>
+            <li class="courierDetails">
                 <label>
                     Use another account
                     <span class="small">Use another courier account instead</span>
@@ -136,30 +145,29 @@
             </li>
             <% } %>
 
-            <li>
+            <li class="courierDetails">
                 <label>Air Waybill Number
                     <span class="small">Air waybill no. if you have generated your own</span>
                 </label>
                 <input type="text" name="AWBNUMBER" />
             </li>
-            <% } else { %>
-            <li>
+
+            <% } %>
+
+            <li class="facilityCourier">
                 <label>Courier</label>
                 <span class="small">This dewar will be returned using the facility's courier account</span>
             </li>
-            <% } %>
     
 
             <li>
                 <label>Comments
-                    <span class="small">Comment for the shipment</span>
+                    <span class="small">Comments for the shipment</span>
                 </label>
                 <textarea name="COMMENTS"></textarea>
             </li>
 
-
             <button name="submit" value="1" type="submit" class="button submit">Request Dewar Dispatch</button>
-            
             
         </ul>
     </div>

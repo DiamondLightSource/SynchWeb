@@ -22,7 +22,7 @@ define(['backbone'], function(Backbone) {
 
         LOCALCONTACT: {
             required: false,
-            pattern: 'wwsdash'
+            pattern: 'wwsddash'
         },
 
 
@@ -78,14 +78,14 @@ define(['backbone'], function(Backbone) {
         
         DELIVERYAGENT_AGENTNAME: {
             required: function() {
-                return this.shipmentHasAgentCode
+                return this.courierDetailsRequired
             },
             pattern: 'wwsdash'
         },
 
         DELIVERYAGENT_AGENTCODE: {
             required: function() {
-                return this.shipmentHasAgentCode
+                return this.courierDetailsRequired
             }   
         },
 
@@ -96,7 +96,7 @@ define(['backbone'], function(Backbone) {
 
     },
 
-    shipmentHasAgentCode: false, // We want to set this default to false unless 'DELIVERYAGENT_AGENTCODE' has a value in the shipment model
+    courierDetailsRequired: false, // We want to set this default to false unless 'DELIVERYAGENT_AGENTCODE' has a value in the shipment model
   })
        
 })

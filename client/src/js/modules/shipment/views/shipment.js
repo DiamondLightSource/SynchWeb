@@ -198,10 +198,8 @@ define(['marionette',
 
             edit.create("ENCLOSEDHARDDRIVE", 'select', { data: {'Yes': 'Yes', 'No': 'No'}})
             edit.create("ENCLOSEDTOOLS", 'select', { data: {'Yes': 'Yes', 'No': 'No'}})
-
-            proposal_code = app.proposal.get('PROPOSALCODE')
             industrial_codes = ['in', 'sw']
-            industrial_visit = industrial_codes.includes(proposal_code)
+            industrial_visit = industrial_codes.includes(app.prop.slice(0,2))
             if (!industrial_visit) {
                 this.$el.find(".remoteormailin").hide()
             } else {

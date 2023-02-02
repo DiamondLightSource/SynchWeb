@@ -11,6 +11,7 @@ import UserStore from './modules/store.user.js'
 import NotificationStore from './modules/store.notifications.js'
 import SamplesStore from './modules/store.samples.js'
 import ShipmentStore from './modules/store.shipment.js'
+import SampleGroups from './modules/store.sample-groups.js'
 
 // Configuration
 import Options from 'models/options.js'
@@ -30,7 +31,8 @@ const store = new Vuex.Store({
     user: UserStore,
     notifications: NotificationStore,
     samples: SamplesStore,
-    shipment: ShipmentStore
+    shipment: ShipmentStore,
+    sampleGroups: SampleGroups
   },
   state: {
     // Flag we use to check if we have already setup options
@@ -69,9 +71,6 @@ const store = new Vuex.Store({
       state.help = !!helpFlag
       sessionStorage.setItem('ispyb_help', state.help)
     },
-    //
-    // Loading screen
-    //
     loading(state, status) {
       state.isLoading = !!status
     },
@@ -195,7 +194,7 @@ const store = new Vuex.Store({
       })
     },
 
-    // Method that returns a collection promise
+    // Method that returns a Model promise
     getModel(context, model) {
 
       return new Promise((resolve, reject) => {
@@ -232,6 +231,21 @@ const store = new Vuex.Store({
 
           error: function(err) {
             let response = err.responseJSON || {status: 400, message: 'Error saving model'}
+            reject(response)
+          },
+        })
+      })
+    },
+    // Method that deletes a model from the server
+    deleteModel(context, model) {
+      return new Promise((resolve, reject) => {
+        model.destroy({
+          success: function(result) {
+            resolve(result)
+          },
+
+          error: function(err) {
+            let response = err.responseJSON || { status: 400, message: 'Error deleting model'}
             reject(response)
           },
         })
@@ -339,6 +353,9 @@ const store = new Vuex.Store({
         },
       })
     },
+    updateLoadingState({ commit }, payload) {
+      commit('loading', payload)
+    }
   },
   getters: {
     sso: state => state.auth.cas_sso,

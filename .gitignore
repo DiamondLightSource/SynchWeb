@@ -30,7 +30,7 @@ client/.env
 
 api/config.php
 api/vendor
-
+api/src/MockUAS.php
 
 entrypoint.bash
 php-fpm.conf

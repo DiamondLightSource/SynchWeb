@@ -710,9 +710,10 @@ define(['marionette',
                 this.singlesample.setModel(s)
 
                 if (this.model.get('SCREENID')) {
-                    var g = this.screencomponentgroups.findWhere({ SCREENCOMPONENTGROUPID: s.get('SCREENCOMPONENTGROUPID') })
-                    if (g) this.groupview.setModel(g)
-                        else this.groupview.setModel(null)
+                    const selectedWell = (this.type.getWell(parseInt(s.get("LOCATION")))+1).toString();                     
+                    var g = this.screencomponentgroups.findWhere({ POSITION: selectedWell})
+                    if (g) { this.groupview.setModel(g) }
+                    else { this.groupview.setModel(null) }
                 }
 
                 if (Number(this.model.get('INSPECTIONS')) === 0) return
