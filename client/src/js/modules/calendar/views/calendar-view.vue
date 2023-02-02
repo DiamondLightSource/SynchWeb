@@ -167,6 +167,10 @@ export default {
     }
   },
   mounted() {
+    const dateTime = this.todayDate
+    this.currentMonth = dateTime.month - 1
+    this.currentDay = dateTime.day
+    this.currentYear = dateTime.year
     this.fetchBeamlinesByType()
     this.fetchVisitsCalendar()
   },
@@ -223,9 +227,17 @@ export default {
     },
     goToPreviousMonth() {
       this.currentMonth = this.currentMonth - 1
+      if (this.currentMonth == -1) {
+        this.currentMonth = 11
+        this.goToPreviousYear()
+      }
     },
     goToNextMonth() {
       this.currentMonth = this.currentMonth + 1
+      if (this.currentMonth == 12) {
+        this.currentMonth = 0
+        this.goToNextYear()
+      }
     },
     goToNextYear() {
       this.currentYear = this.currentYear + 1
@@ -351,12 +363,22 @@ export default {
       return this.months[this.currentMonth]
     },
     previousMonth() {
-      const [value] = this.months.slice(this.currentMonth - 1)
-      return value
+      var value
+      if (this.currentMonth == 0) {
+        value = this.months.slice(11)
+      } else {
+        value = this.months.slice(this.currentMonth - 1)
+      }
+      return value[0]
     },
     nextMonth() {
-      const [value] = this.months.slice(this.currentMonth + 1)
-      return value
+      var value
+      if (this.currentMonth == 11) {
+        value = this.months.slice(0)
+      } else {
+        value = this.months.slice(this.currentMonth + 1)
+      }
+      return value[0]
     },
     previousYear() {
       return this.currentYear - 1
@@ -408,15 +430,6 @@ export default {
     currentMonth: {
       handler: 'fetchVisitsCalendar'
     }
-  },
-  beforeRouteEnter(to, from, next) {
-    next((vm) => {
-      const zone = vm.$store.getters.getAppOptions.timezone
-      const dateTime = DateTime.local().setZone(zone)
-      vm.currentMonth = dateTime.month - 1
-      vm.currentYear = dateTime.year
-      vm.currentDay = dateTime.day
-    })
   }
 }
 </script>
