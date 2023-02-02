@@ -18,7 +18,6 @@ Slots include:
       type="checkbox"
       :checked="value"
       :disabled="disabled"
-      @input="updateValue"
       @change="updateValue"
       @blur="onBlur"
       @focus="$emit('focus')"
@@ -42,8 +41,8 @@ export default {
   name: "BaseInputCheckbox",
   props: {
     value: { // Passed in automatically if v-model used
-      type: Boolean,
-      required: true,
+      type: [String, Boolean, Number],
+      required: true
     },
     id: {
       type: String,
@@ -84,7 +83,7 @@ export default {
   },
   watch: {
     editable: function(value) {
-      if (value === false) this.showEditIcon = false
+      if (!value) this.showEditIcon = false
     }
   },
   created() {

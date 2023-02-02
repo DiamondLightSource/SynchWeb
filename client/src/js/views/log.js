@@ -7,12 +7,36 @@ define(['marionette', 'views/dialog', 'utils'], function(Marionette, DialogView,
         initialize: function(options) {
             this.url = options.url
             this.load()
-            this.iframe = $('<iframe></iframe>')
-            
+            this.iframe = $(
+                `<iframe style="position: absolute;" onload="this.style.height=(this.contentWindow.document.body.scrollHeight)+'px';this.style.width=(this.contentWindow.document.body.scrollWidth)+'px';"></iframe>`)
+        },
+
+        // Override existing dialogOptions of Dialog View
+        dialogOptions: function() {
+            return _.extend({}, {
+                title: this.getOption('title'),
+                width: '80%',
+                height: '500', // reasonable height that can be adjusted by resizing the window
+                resizable: true,
+                buttons: this.generateButtons(this.getOption('buttons'))
+            }, this.getOption('dOptions'))
         },
         
         load: function() {
             var self = this
+
+            var HTMLTagsToReplace = {
+                '<': '&lt;',
+                '>': '&gt;'
+            };
+            
+            function replaceHTMLTag(tag) {
+                return HTMLTagsToReplace[tag] || tag;
+            }
+            
+            function escapeHTMLTags(str) {
+                return str.replace(/[<>]/g, replaceHTMLTag);
+            }
 
             var xhr = new XMLHttpRequest()
             xhr.open('GET', this.url, true)
@@ -78,7 +102,7 @@ define(['marionette', 'views/dialog', 'utils'], function(Marionette, DialogView,
                     var dec = new TextDecoder('utf-8')
                     var text = dec.decode(this.response)
 
-                    if (mimeType.indexOf('text/plain') > -1) text = '<pre>'+text+'</pre>'
+                    if (mimeType.indexOf('text/plain') > -1) text = '<pre>'+escapeHTMLTags(text)+'</pre>'
 
                     doc.open()
                     doc.write(sh+text)
@@ -89,12 +113,13 @@ define(['marionette', 'views/dialog', 'utils'], function(Marionette, DialogView,
 
             xhr.send()
         },
-        
+
         onRender: function() {
             this.$el.append(this.iframe)
             
             this.$el.find('iframe').css('width', $(window).width()*(app.mobile() ? 0.8 : 0.5))
-            this.$el.find('iframe').css('height', $(window).width()*(app.mobile() ? 0.8 : 0.5))
+            this.$el.find('iframe').css('height', $(window).height()*(app.mobile() ? 0.8 : 0.5))
+
         }
         
     })

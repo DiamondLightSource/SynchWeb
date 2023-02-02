@@ -5,32 +5,41 @@ namespace SynchWeb\Page;
 use SynchWeb\Page;
 use SynchWeb\TemplateParser;
 
-class DC extends Page
-{
-        
+class DC extends Page {
 
-        public static $arg_list = array('id' => '\d+', 'ids' => '\d+', 'visit' => '\w+\d+-\d+', 's' => '[\w\d-\/]+', 't' => '\w+', 'value' => '.*', 'sid' => '\d+', 'aid' => '\d+', 'pjid' => '\d+', 'imp' => '\d', 'pid' => '\d+', 'h' => '\d\d', 'dmy' => '\d\d\d\d\d\d\d\d',
-                              'ssid' => '\d+',
-                              'dcg' => '\d+',
-                              'a' => '\d+(.\d+)?',
-                              'b' => '\d+(.\d+)?',
-                              'c' => '\d+(.\d+)?',
-                              'al' => '\d+(.\d+)?',
-                              'be' => '\d+(.\d+)?',
-                              'ga' => '\d+(.\d+)?',
-                              'sg' => '\w+',
-                              'single' => '\d',
-                              'COMMENTS' => '.*',
-
-                              'dcid' => '\d+',
-                              'DATACOLLECTIONID' => '\d+',
-                              'PERSONID' => '\d+',
-                              'AUTOPROCPROGRAMMESSAGEID' => '\d+',
-                              'PROCESSINGJOBID' => '\d+',
-
-                              'debug' => '\d',
-
-                              );
+    public static $arg_list = array(
+        'id' => '\d+',
+        'ids' => '\d+',
+        'visit' => '\w+\d+-\d+',
+        's' => '[\w\d-\/]+',
+        't' => '\w+',
+        'value' => '.*',
+        'sid' => '\d+',
+        'aid' => '\d+',
+        'pjid' => '\d+',
+        'imp' => '\d',
+        'pid' => '\d+',
+        'h' => '\d\d',
+        'dmy' => '\d\d\d\d\d\d\d\d',
+        'ssid' => '\d+',
+        'dcg' => '\d+',
+        'a' => '\d+(.\d+)?',
+        'b' => '\d+(.\d+)?',
+        'c' => '\d+(.\d+)?',
+        'al' => '\d+(.\d+)?',
+        'be' => '\d+(.\d+)?',
+        'ga' => '\d+(.\d+)?',
+        'sg' => '\w+',
+        'single' => '\d',
+        'COMMENTS' => '.*',
+        'dcid' => '\d+',
+        'DATACOLLECTIONID' => '\d+',
+        'PERSONID' => '\d+',
+        'AUTOPROCPROGRAMMESSAGEID' => '\d+',
+        'PROCESSINGJOBID' => '\d+',
+        'debug' => '\d',
+        'sgid' => '\d+'
+    );
         
 
         public static $dispatch = array(array('(/sing:le)(/:id)', 'get', '_data_collections', array('le' => '\w+', 'id' => '\d+')),
@@ -85,13 +94,21 @@ class DC extends Page
             $where3 = '';
             $where4 = '';
             
-            $sess = array();
+            $sess = array('', '', '', '');
             
             # Extra joins
             $extj = array('','','','');
+            $sample_joins = array(
+                'LEFT OUTER JOIN blsample smp ON dc.blsampleid = smp.blsampleid',
+                'LEFT OUTER JOIN blsample smp ON es.blsampleid = smp.blsampleid',
+                'LEFT OUTER JOIN blsample smp ON r.blsampleid = smp.blsampleid',
+                'LEFT OUTER JOIN blsample smp ON xrf.blsampleid = smp.blsampleid'
+            );
             # Extra columns
             $extc = '';
             $extcg = '';
+
+            $with = '';
             
             //$this->db->set_debug(True);
             # Filter by types
@@ -106,7 +123,8 @@ class DC extends Page
                     $where = '';
                     if ($this->arg('t') == 'sc') $where = ' AND dc.overlap != 0';
                     else if ($this->arg('t') == 'gr') $where = ' AND dc.axisrange = 0';
-                    else if ($this->arg('t') == 'fc') $where = ' AND dc.overlap = 0 AND dc.axisrange > 0';
+                    else if ($this->arg('t') == 'fc') $where = ' AND dc.overlap = 0 AND dc.axisrange > 0 AND dc.numberOfImages > 1';
+
                     
                 } else if ($this->arg('t') == 'edge') {
                     $where2 = '';
@@ -246,15 +264,30 @@ class DC extends Page
                 $where4 .= ' AND xrf.xfefluorescencespectrumid < 0';
 
                 for ($i = 0; $i < 4; $i++) {
-                    $sess[$i] = 'ses.proposalid=:'.($i+1);
+                    $sess[$i] = 'ses.proposalid=:' . ($i + 1);
                     array_push($args, $this->proposalid);
                 }
 
-                $where .= ' AND pjis.processingjobid=:'.(sizeof($args)+1);
+                $where .= ' AND pjis.processingjobid=:' . (sizeof($args) + 1);
                 array_push($args, $this->arg('PROCESSINGJOBID'));
                 $extj[0] .= ' LEFT OUTER JOIN processingjobimagesweep pjis ON pjis.datacollectionid=dc.datacollectionid';
+            } else if ($this->has_arg('sgid')) {
+                $info = $this->db->pq('SELECT blsampleid 
+                    FROM blsamplegroup_has_blsample bshg
+                    LEFT OUTER JOIN blsamplegroup bsg ON bsg.blsamplegroupid = bshg.blsamplegroupid
+                    WHERE bsg.blsamplegroupid=:1 AND bsg.proposalid=:2', array($this->arg('sgid'), $this->proposalid));
 
-            # Proposal
+                $with .= "WITH samples AS (SELECT sample.* FROM blsamplegroup_has_blsample bshg LEFT OUTER JOIN BLSample sample ON sample.blsampleid = bshg.blsampleid WHERE bshg.blsamplegroupid = {$this->arg('sgid')})";
+                $sample_joins[0] = 'JOIN samples smp ON smp.blsampleid = dc.blsampleid';
+                $sample_joins[1] = 'JOIN samples smp ON smp.blsampleid = es.blsampleid';
+                $sample_joins[2] = 'JOIN samples smp ON smp.blsampleid = r.blsampleid';
+                $sample_joins[3] = 'JOIN samples smp ON smp.blsampleid = xrf.blsampleid';
+
+                $sess[0] = '1=1';
+                $sess[1] = '1=1';
+                $sess[2] = '1=1';
+                $sess[3] = '1=1';
+                # Proposal
             } else if ($this->has_arg('prop')) {
                 $info = $this->db->pq('SELECT proposalid FROM proposal p WHERE CONCAT(p.proposalcode, p.proposalnumber) LIKE :1', array($this->arg('prop')));
                 
@@ -264,8 +297,9 @@ class DC extends Page
                 }
             }
             
-            if (!sizeof($info)) $this->_error('The specified visit, sample, or project doesnt exist');
-            
+            if (!sizeof($info) && !$this->has_arg('sgid')) $this->_error('The specified visit, sample or project doesnt exist');
+            else if (!sizeof($info) && $this->has_arg('sgid')) $this->_error('The specified sample group does not exist or have any samples added to it');
+
             
             # Filter by time for visits
             if (($this->has_arg('h') && ($this->has_arg('visit') || $this->has_arg('dmy'))) || $this->has_arg('dmy')) {
@@ -330,11 +364,15 @@ class DC extends Page
                 
                 for ($i = 0; $i < 8; $i++) array_push($args, $s);
             }
-            
+
+            if ($this->has_arg('dcg') || $this->has_arg('PROCESSINGJOBID') || $this->has_arg('sgid')) {
+                $count_field = 'dc.datacollectionid';
+            } else {
+                $count_field = 'distinct dc.datacollectiongroupid';
+            }
 
             # Data collection group
             if ($this->has_arg('dcg') || $this->has_arg('PROCESSINGJOBID')) {
-                $count_field = 'dc.datacollectionid';
                 $fields = "count(distinct dca.datacollectionfileattachmentid) as dcac,
                     count(distinct dcc.datacollectioncommentid) as dccc,
                     1 as dcc,
@@ -389,12 +427,12 @@ class DC extends Page
                     dc.objaperture,
                     dc.magnification,
                     dc.totalexposeddose as totaldose,
+                    CAST(dc.totalabsorbeddose AS DECIMAL(5, 2)) as totalabsdose,
                     d.detectorpixelsizehorizontal,
                     d.detectorpixelsizevertical,
                     d.detectormanufacturer,
                     d.detectormodel,
                     TIMESTAMPDIFF('MINUTE', dc.starttime, CURRENT_TIMESTAMP) as age,
-
                     dc.numberofpasses,
                     dc.c1aperture,
                     dc.c3aperture,
@@ -469,7 +507,6 @@ class DC extends Page
                 }
 
             } else {
-                $count_field = 'distinct dc.datacollectiongroupid';
                 $fields = "count(distinct dca.datacollectionfileattachmentid) as dcac,
                     count(distinct dcc.datacollectioncommentid) as dccc,
                     count(distinct dc.datacollectionid) as dcc,
@@ -524,6 +561,7 @@ class DC extends Page
                     max(dc.objaperture) as objaperture,
                     max(dc.magnification) as magnification,
                     sum(dc.totalabsorbeddose) as totaldose,
+                    CAST(dc.totalabsorbeddose AS DECIMAL(5, 2)) as totalabsdose,
                     max(d.detectormanufacturer) as detectormanufacturer,
                     max(d.detectormodel) as detectormodel,
                     max(d.detectorpixelsizehorizontal) as detectorpixelsizehorizontal,
@@ -555,35 +593,43 @@ class DC extends Page
                 $groupby = "GROUP BY dc.datacollectiongroupid";
             }
 
+            $total_query = "SELECT sum(tot) as t FROM (
+                $with
+                SELECT count($count_field) as tot
+                    FROM datacollection dc
+                    INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
+                    INNER JOIN blsession ses ON ses.sessionid = dcg.sessionid
+                    $sample_joins[0]
+                    $extj[0]
+                    WHERE $sess[0] $where
+            
+                UNION SELECT count(es.energyscanid) as tot
+                    FROM energyscan es
+                    INNER JOIN blsession ses ON ses.sessionid = es.sessionid
+                    $sample_joins[1]
+                    $extj[1]
+                    WHERE $sess[1] $where2
+                            
+                UNION SELECT count(xrf.xfefluorescencespectrumid) as tot
+                    FROM xfefluorescencespectrum xrf
+                    INNER JOIN blsession ses ON ses.sessionid = xrf.sessionid
+                    $sample_joins[3]
+                    $extj[3]
+                    WHERE $sess[3] $where4
+                            
+                UNION SELECT count(r.robotactionid) as tot
+                    FROM robotaction r
+                    INNER JOIN blsession ses ON ses.sessionid = r.blsessionid
+                    $sample_joins[2]
+                    $extj[2]
+                    WHERE $sess[2]  $where3
+            ) inq";
 
-            $tot = $this->db->pq("SELECT sum(tot) as t FROM (SELECT count($count_field) as tot FROM datacollection dc
-                INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
-                INNER JOIN blsession ses ON ses.sessionid = dcg.sessionid
-                LEFT OUTER JOIN blsample smp ON dc.blsampleid = smp.blsampleid
-                $extj[0]
-                WHERE $sess[0] $where
-                
-                UNION SELECT count(es.energyscanid) as tot FROM energyscan es
-                INNER JOIN blsession ses ON ses.sessionid = es.sessionid
-                LEFT OUTER  JOIN blsample smp ON es.blsampleid = smp.blsampleid
-                $extj[1]
-                WHERE $sess[1] $where2
-                                
-                UNION SELECT count(xrf.xfefluorescencespectrumid) as tot from xfefluorescencespectrum xrf
-                INNER JOIN blsession ses ON ses.sessionid = xrf.sessionid
-                LEFT OUTER  JOIN blsample smp ON xrf.blsampleid = smp.blsampleid
-                $extj[3]
-                WHERE $sess[3] $where4
-                                
-                UNION SELECT count(r.robotactionid) as tot FROM robotaction r
-                INNER JOIN blsession ses ON ses.sessionid = r.blsessionid
-                LEFT OUTER  JOIN blsample smp ON r.blsampleid = smp.blsampleid
-                $extj[2]
-                WHERE $sess[2]  $where3) inq", $args);
+            $tot = $this->db->pq($total_query, $args);
             $tot = $tot[0]['T'];
-            
+
             $this->profile('after page count');
-            
+
             $pgs = intval($tot/$pp);
             if ($tot % $pp != 0) $pgs++;
 
@@ -592,11 +638,13 @@ class DC extends Page
             array_push($args, $end);
 
 
-            $q = "SELECT $extcg $fields 
+            $q = "
+                $with
+                SELECT $extcg $fields 
                 FROM datacollection dc
                 INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
                 INNER JOIN blsession ses ON ses.sessionid = dcg.sessionid
-                LEFT OUTER JOIN blsample smp ON dc.blsampleid = smp.blsampleid
+                $sample_joins[0]
                 LEFT OUTER JOIN datacollectioncomment dcc ON dc.datacollectionid = dcc.datacollectionid
                 LEFT OUTER JOIN datacollectionfileattachment dca ON dc.datacollectionid = dca.datacollectionid
                 LEFT OUTER JOIN detector d ON d.detectorid = dc.detectorid
@@ -605,7 +653,7 @@ class DC extends Page
                 WHERE $sess[0] $where
                 $groupby
                       
-                UNION
+                UNION ALL 
                 SELECT
                     $extc
                     1 as dcac,
@@ -663,6 +711,7 @@ class DC extends Page
                     1,
                     1,
                     1,
+                    1,
                     '',
                     '',
                     TIMESTAMPDIFF(MINUTE, es.starttime, CURRENT_TIMESTAMP) as age,
@@ -692,7 +741,7 @@ class DC extends Page
                     ''
                 FROM energyscan es
                 INNER JOIN blsession ses ON ses.sessionid = es.sessionid
-                LEFT OUTER JOIN blsample smp ON es.blsampleid = smp.blsampleid
+                $sample_joins[1]
                 $extj[1]
                 WHERE $sess[1] $where2
                    
@@ -754,6 +803,7 @@ class DC extends Page
                 1,
                 1,
                 1,
+                1,
                 '',
                 '',
                 TIMESTAMPDIFF('MINUTE', xrf.starttime, CURRENT_TIMESTAMP) as age,
@@ -783,7 +833,7 @@ class DC extends Page
                 ''
             FROM xfefluorescencespectrum xrf
             INNER JOIN blsession ses ON ses.sessionid = xrf.sessionid
-            LEFT OUTER  JOIN blsample smp ON xrf.blsampleid = smp.blsampleid     
+            $sample_joins[3]     
             $extj[3]
             WHERE $sess[3] $where4
                    
@@ -845,6 +895,7 @@ class DC extends Page
                 1,
                 1,
                 1,
+                1,
                 '',
                 '',
                 TIMESTAMPDIFF('MINUTE', r.starttimestamp, CURRENT_TIMESTAMP) as age,
@@ -874,7 +925,7 @@ class DC extends Page
                 ''
             FROM robotaction r
             INNER JOIN blsession ses ON ses.sessionid = r.blsessionid
-            LEFT OUTER  JOIN blsample smp ON r.blsampleid = smp.blsampleid
+            $sample_joins[2]
             $extj[2]
             WHERE $sess[2] $where3
                  

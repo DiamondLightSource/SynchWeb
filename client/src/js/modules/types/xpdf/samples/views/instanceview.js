@@ -10,7 +10,7 @@ define(['marionette',
     'modules/types/xpdf/utils/phasecompositor',
     'modules/types/xpdf/samples/views/phasetable',
     'modules/types/xpdf/samples/views/samplecontainerview',
-    'collections/samplegroupsmembers',
+    'collections/samplegroups',
     'modules/types/xpdf/collections/instances',
     'templates/types/xpdf/samples/instance.html',
     ], function(Marionette,
@@ -21,7 +21,7 @@ define(['marionette',
         phaseCompositor,
         PhaseTableView,
         SampleContainersView,
-        SampleGroupsBySample,
+        SampleGroups,
         Instances,
         template) {
 
@@ -51,12 +51,8 @@ define(['marionette',
             this.dcs.fetch()
 
             // Get samplegroups
-            this.groups = new SampleGroupsBySample(null, {
-                state: {
-                    pageSize: 9999
-                },
-                blSampleId: this.model.get('BLSAMPLEID')
-            })
+            this.groups = new SampleGroups(null, { state: { pageSize: 9999 } })
+            this.groups.queryParams.BLSAMPLEID = this.model.get('BLSAMPLEID')
             this.groups.fetch()
 
             // Get sample containers

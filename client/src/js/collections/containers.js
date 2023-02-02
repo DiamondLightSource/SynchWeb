@@ -2,10 +2,17 @@ define(['underscore', 'backbone.paginator', 'models/container', 'utils/kvcollect
     
     return PageableCollection.extend(_.extend({}, KVCollection, {
         dewarID: null,
+        shipmentID: null,
         model: Container,
         mode: 'server',
         url: function() {
-            return '/shipment/containers'+(this.dewarID ? ('/did/' + this.dewarID) : '')
+            let link = '/shipment/containers'
+            if (this.dewarID) {
+                link += `/did/${this.dewarID}`
+            } else if (this.shipmentID) {
+                link += `/sid/${this.shipmentID}`
+            }
+            return link
         },
         
         state: {
