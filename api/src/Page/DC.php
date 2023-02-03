@@ -117,7 +117,6 @@ class DC extends Page
             $where2 = ' AND es.energyscanid < 0';
             $where3 = ' AND r.robotactionid < 0';
             $where4 = ' AND xrf.xfefluorescencespectrumid < 0';
-
             if ($this->arg('t') == 'dc' || $this->arg('t') == 'sc' || $this->arg('t') == 'fc' || $this->arg('t') == 'gr') {
 
                 $where = '';
@@ -126,36 +125,29 @@ class DC extends Page
                 else if ($this->arg('t') == 'gr')
                     $where = ' AND dc.axisrange = 0';
                 else if ($this->arg('t') == 'fc')
-                    $where = ' AND dc.overlap = 0 AND dc.axisrange > 0';
-
-            }
-            else if ($this->arg('t') == 'edge') {
-                $where2 = '';
-
-            }
-            else if ($this->arg('t') == 'mca') {
-                $where4 = '';
-
-            }
-            else if ($this->arg('t') == 'rb') {
-                $where3 = " AND (r.actiontype LIKE 'LOAD' OR r.actiontype LIKE 'UNLOAD' OR r.actiontype LIKE 'DISPOSE')";
-
-            }
-            else if ($this->arg('t') == 'ac') {
-                $where3 = " AND (r.actiontype NOT LIKE 'LOAD' AND r.actiontype NOT LIKE 'UNLOAD' AND r.actiontype NOT LIKE 'DISPOSE')";
-
-            }
-            else if ($this->arg('t') == 'flag') {
-                $where = " AND dc.comments LIKE '%_FLAG_%'";
-                $where2 = " AND es.comments LIKE '%_FLAG_%'";
-                $where4 = " AND xrf.comments LIKE '%_FLAG_%'";
-
-            }
-            else if ($this->arg('t') == 'ap') {
-                $where = ' AND app.processingstatus = 1';
-                $extj[0] .= "INNER JOIN autoprocintegration ap ON dc.datacollectionid = ap.datacollectionid
+                    $where = ' AND dc.overlap = 0 AND dc.axisrange > 0 AND dc.numberOfImages > 1';
+                }
+                else if ($this->arg('t') == 'edge') {
+                    $where2 = '';
+                }
+                else if ($this->arg('t') == 'mca') {
+                    $where4 = '';
+                }
+                else if ($this->arg('t') == 'rb') {
+                    $where3 = " AND (r.actiontype LIKE 'LOAD' OR r.actiontype LIKE 'UNLOAD' OR r.actiontype LIKE 'DISPOSE')";
+                }
+                else if ($this->arg('t') == 'ac') {
+                    $where3 = " AND (r.actiontype NOT LIKE 'LOAD' AND r.actiontype NOT LIKE 'UNLOAD' AND r.actiontype NOT LIKE 'DISPOSE')";
+                }
+                else if ($this->arg('t') == 'flag') {
+                    $where = " AND dc.comments LIKE '%_FLAG_%'";
+                    $where2 = " AND es.comments LIKE '%_FLAG_%'";
+                    $where4 = " AND xrf.comments LIKE '%_FLAG_%'";
+                }
+                else if ($this->arg('t') == 'ap') {
+                    $where = ' AND app.processingstatus = 1';
+                    $extj[0] .= "INNER JOIN autoprocintegration ap ON dc.datacollectionid = ap.datacollectionid
                         INNER JOIN autoprocprogram app ON app.autoprocprogramid = ap.autoprocprogramid";
-
             }
             else if ($this->arg('t') == 'err') {
                 $where = " AND appm.autoprocprogrammessageid IS NOT NULL AND (appm.severity = 'WARNING' OR appm.severity = 'ERROR')";
