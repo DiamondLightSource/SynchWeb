@@ -113,7 +113,7 @@ export default {
       // This is the current logic to determine the plate type
       // Anything other than Box, Puck or PCRStrip
       // TODO - get container types from data base
-      let is_plate = ['box', 'puck', 'pcrstrip', null].indexOf(containerType) == -1 && containerType.indexOf('puck') == -1
+      let is_plate = ['box', 'puck', 'pcrstrip', 'block-4', null].indexOf(containerType) == -1 && containerType.indexOf('puck') == -1
 
       return is_plate
     },
