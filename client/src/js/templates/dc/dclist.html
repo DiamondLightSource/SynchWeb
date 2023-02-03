@@ -15,9 +15,13 @@
         </p>
     <% } %>
 
-    <% if (ARCHIVED == "1") { %>
+    <% if (ARCHIVED == "1" && VISIT.search('in') == -1 && VISIT.search('sw') == -1 ) { %>
         <p class="message notify">
             This visit is archived, data is no longer held on disk. You cannot download processing results, view full sized diffraction images, or reprocess data.
+        </p>
+    <% } else if (ARCHIVED == "1") { %>
+        <p class="message notify">
+            This visit is archived, data has been deleted. You cannot download processing results, view full sized diffraction images, or reprocess data.
         </p>
     <% } %>
 
