@@ -107,10 +107,23 @@
                 ><i class="fa fa-times" /> Unqueue</a>
               </span>
               <span v-else>
-                <a
-                  class="tw-cursor-pointer button queue"
-                  @click="onQueueContainer"
-                ><i class="fa fa-plus" /> Queue</a> this container for Auto Collect
+                <span v-if="containerQueueError">
+                  There was an error submitting the container to the queue. Please fix any errors in the samples table.
+                  <a 
+                    class="tw-cursor-pointer button tryagainqueue" 
+                    @click="onTryAgainQueueContainer" 
+                  ><i class="fa fa-check" /> Try again</a>
+                  <a 
+                    class="tw-cursor-pointer button cancelqueue"
+                    @click="onCancelQueueContainer" 
+                  ><i class="fa fa-times" /> Cancel</a>
+                </span>
+                <span v-else>
+                  <a 
+                    class="tw-cursor-pointer button queue"
+                    @click="onQueueContainer" 
+                  ><i class="fa fa-plus" /> Queue</a> this container for Auto Collect
+                </span>
               </span>
             </li>
 
@@ -296,6 +309,8 @@ export default {
       },
       currentModal: 'queueContainer',
       containerQueueId: null,
+      QUEUEFORUDC: null,
+      containerQueueError: null,
       autoCollectMessage: '',
       sampleLocation: 0,
 
@@ -338,6 +353,7 @@ export default {
       this.container = Object.assign({}, this.containerModel.toJSON())
       this.containerId = this.containerModel.get('CONTAINERID')
       this.containerQueueId = this.containerModel.get('CONTAINERQUEUEID')
+      if (this.containerQueueId) this.QUEUEFORUDC = true
     },
     async loadSampleGroupInformation() {
       await this.getSampleGroups()
@@ -415,8 +431,17 @@ export default {
       this.sampleLocation = location - 1
     },
     onQueueContainer() {
+      this.QUEUEFORUDC = true
       this.currentModal = 'queueContainer'
       this.displayQueueModal = true
+    },
+    onTryAgainQueueContainer() {
+      this.currentModal = 'queueContainer'
+      this.displayQueueModal = true
+    },
+    onCancelQueueContainer() {
+      this.QUEUEFORUDC = false
+      this.containerQueueError = false
     },
     onUnQueueContainer() {
       this.currentModal = 'unQueueContainer'
@@ -436,6 +461,17 @@ export default {
     async queueContainer() {
       try {
         this.displayQueueModal = false
+        const validated = await this.$refs.containerForm.validate()
+        if(!validated){
+          this.containerQueueError = true
+          this.$store.commit('notifications/addNotification', {
+            title: 'Error',
+            message: 'Unable to add container to UDC queue, please check fields in sample table',
+            level: 'error'
+          })
+          return
+        }
+        this.containerQueueError = false
         const response = await this.toggleContainerQueue(true, this.containerId)
         this.$emit('update-container-state', {
           CONTAINERQUEUEID: response.get('CONTAINERQUEUEID'),
@@ -457,6 +493,7 @@ export default {
     },
     async unQueueContainer() {
       try {
+        this.QUEUEFORUDC = false
         this.displayQueueModal = false
         await this.toggleContainerQueue(false, this.containerId)
         this.$emit('update-container-state', { CONTAINERQUEUEID: null })
