@@ -17,11 +17,11 @@
 
     <% if (ARCHIVED == "1" && VISIT.search('in') == -1) { %>
         <p class="message notify">
-            This visit is archived, raw data are no longer held on disk. You can no longer reprocess data or view full sized diffraction images.
+            The raw data from this visit have been archived. You can no longer reprocess data or view full sized diffraction images.
         </p>
     <% } else if (ARCHIVED == "1") { %>
         <p class="message notify">
-            This visit is archived, raw data have been deleted from disk. You can no longer reprocess data or view full sized diffraction images.
+            The raw data from this visit have been deleted. You can no longer reprocess data or view full sized diffraction images.
         </p>
     <% } %>
 
