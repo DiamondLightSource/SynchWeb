@@ -665,6 +665,11 @@ class Page
         return $this->has_arg($key) ? $this->arg($key) : '';
     }
 
+    function argOrNull($key)
+    {
+        return $this->has_arg($key) ? $this->arg($key) : null;
+    }
+
     # ------------------------------------------------------------------------
     # Misc Helpers
 

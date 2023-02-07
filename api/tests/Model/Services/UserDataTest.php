@@ -344,10 +344,16 @@ final class UserDataTest extends TestCase
         $this->assertEquals("DELETE FROM UserGroup_has_Permission WHERE usergroupid=1 and permissionid=2", $this->db->getLastQuery());
     }
 
-    public function testUpdateUser(): void
+    public function testUpdateUserAllFields(): void
     {
-        $this->userData->updateUser(null, 123, 'Bob', 'Tester', '641 5231', 'test@tester.com');
+        $this->userData->updateUser(123, 'Bob', 'Tester', '641 5231', 'test@tester.com');
         $this->assertEquals("UPDATE Person SET FAMILYNAME='Bob', GIVENNAME='Tester', PHONENUMBER='641 5231', EMAILADDRESS='test@tester.com' WHERE personid=123", $this->db->getLastQuery());
+    }
+
+    public function testUpdateUserNumberField(): void
+    {
+        $this->userData->updateUser(123, Null, Null, '641 5231', Null);
+        $this->assertEquals("UPDATE Person SET PHONENUMBER='641 5231' WHERE personid=123", $this->db->getLastQuery());
     }
 
     public function testUpdateLaboratoryNoLabSpecified(): void

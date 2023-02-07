@@ -212,7 +212,7 @@ class MySQL extends DatabaseParent {
 
     function __construct($conn)
     {
-        $this->conn = $conn;
+        parent::__construct($conn);
 
         mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT); // throw exceptions.
 
