@@ -3,7 +3,7 @@ define([], function() {
         menu: {
             dc: 'View All Data',
             visits: 'Visits',
-            calendar: 'Calendar',
+            cal: 'Calendar',
             shipments: 'Shipments',
             contacts: 'Lab Contacts',
             'dewars/registry': 'Registered Dewars',
