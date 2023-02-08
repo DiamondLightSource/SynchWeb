@@ -765,11 +765,9 @@ class Processing extends Page {
                     if ($key == 'ISIGI') {
                         $value = number_format($value, 1);
                     }
-
                     if ($key == 'RESISIGI') {
                         $value = number_format($value, 2);
                     }
-
                     if ($key == 'RMERGE') {
                         $value = number_format($value, 3);
                     }
