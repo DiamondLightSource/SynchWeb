@@ -453,8 +453,6 @@ define(['marionette',
                         return m.get('_valid') === false
 
                     } else if (id === 'region') {
-                        console.log('m', m)
-                        console.log('m', m.get('X2'))
                         return m.get('X2') && m.get('Y2')
 
                     } else if (id === 'point') {
