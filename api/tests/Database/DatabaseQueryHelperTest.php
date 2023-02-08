@@ -4,7 +4,7 @@ namespace SynchWeb\Database;
 
 use PHPUnit\Framework\TestCase;
 use SynchWeb\Database\DatabaseParent;
-use SynchWeb\Database\DatabaseQueryHelper;
+use SynchWeb\Database\DatabaseQueryBuilder;
 
 final class DatabaseHelperTest extends TestCase
 {
@@ -35,7 +35,7 @@ final class DatabaseHelperTest extends TestCase
                 ->method('pq');
         }
 
-        return new DatabaseQueryHelper($db);
+        return new DatabaseQueryBuilder($db);
     }
 
     public function testForASingleSetWithIDDBUpdateIsCorrect()

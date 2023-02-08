@@ -9,19 +9,19 @@ use SynchWeb\Database\DatabaseParent;
  * There is no sql injection checking so make sure everything, apart from bound variables are safe.
  * 
  * Usege: to update the database
- * (new DatabaseQueryHelper($db))
+ * (new DatabaseQueryBuilder($db))
  *     ->patch("FAMILYNAME", $familyName)
  *     ->patch("GIVENNAME", $givenName)
  *     ->where("personid", $personId)
  *     ->update("person");
  * runs $db->pq(UPDATE person SET FAMILYNAME=:1, GIVENNAME=:2 WHERE personid=:3, array($familyName, $givenName, $personid))
  */
-class DatabaseQueryHelper 
+class DatabaseQueryBuilder
 {
     /** @var array values in update statement*/
     private $update_values = [];
     /** @var array bound values*/
-    private $querry_bound_values = [];
+    private $query_bound_values = [];
     /** @var ?string where clause column name */
     private $where_columnName = Null;
     /** @var ?mixed where vlause value */
@@ -41,7 +41,7 @@ class DatabaseQueryHelper
      * 
      * @param string $columnName the db column name
      * @param mixed $value the value to set it to
-     * @return DatabaseQueryHelper this to make a fluent interface
+     * @return DatabaseQueryBuilder this to make a fluent interface
      */
     public function patch($columnName, $value) 
     {
@@ -58,7 +58,7 @@ class DatabaseQueryHelper
      * 
      * @param string $columnName The column name of the identity
      * @param mixed $value The value for the identity, i.e. which return to update
-     * @return DatabaseQueryHelper this to make a fluent interface
+     * @return DatabaseQueryBuilder this to make a fluent interface
      */
     public function whereIdEquals($columnName, $value) {
         $this->where_columnName  = $columnName;
@@ -79,7 +79,7 @@ class DatabaseQueryHelper
 
         $where = $this->where_columnName . "=:" . $this->addBoundVariable($this->where_value);
 
-        return $this->db->pq("UPDATE {$expectedTable} SET {$set} WHERE {$where}", $this->querry_bound_values);
+        return $this->db->pq("UPDATE {$expectedTable} SET {$set} WHERE {$where}", $this->query_bound_values);
     }
 
     private function bindArray($values)
@@ -93,8 +93,8 @@ class DatabaseQueryHelper
 
     private function addBoundVariable($value)
     {
-        array_push($this->querry_bound_values, $value);
-        return sizeof($this->querry_bound_values);
+        array_push($this->query_bound_values, $value);
+        return sizeof($this->query_bound_values);
     }
 
 }

@@ -3,7 +3,7 @@
 namespace SynchWeb\Model\Services;
 
 use SynchWeb\Database\DatabaseParent;
-use SynchWeb\Database\DatabaseQueryHelper;
+use SynchWeb\Database\DatabaseQueryBuilder;
 
 class UserData
 {
@@ -222,7 +222,7 @@ class UserData
 
     function updateUser($personId, $familyName, $givenName, $phoneNumber, $email)
     {
-        (new DatabaseQueryHelper($this->db))
+        (new DatabaseQueryBuilder($this->db))
             ->patch("FAMILYNAME", $familyName)
             ->patch("GIVENNAME", $givenName)
             ->patch("PHONENUMBER", $phoneNumber)
@@ -242,7 +242,7 @@ class UserData
     {
         if ($laboratoryId)
         {
-            (new DatabaseQueryHelper($this->db))
+            (new DatabaseQueryBuilder($this->db))
                 ->patch("name", $labName)
                 ->patch("address", $labAddress)
                 ->patch("city", $city)
