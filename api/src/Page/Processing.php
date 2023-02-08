@@ -676,6 +676,7 @@ class Processing extends Page {
             apss.anomalousmultiplicity as anommultiplicity,
             apss.multiplicity,
             apss.meanioversigi as isigi,
+            apss.resioversigi2 as resisigi,
             ap.spacegroup as sg,
             ap.refinedcell_a as cell_a,
             ap.refinedcell_b as cell_b,
@@ -763,6 +764,9 @@ class Processing extends Page {
 
                     if ($key == 'ISIGI') {
                         $value = number_format($value, 1);
+                    }
+                    if ($key == 'RESISIGI') {
+                        $value = number_format($value, 2);
                     }
                     if ($key == 'RMERGE') {
                         $value = number_format($value, 3);
