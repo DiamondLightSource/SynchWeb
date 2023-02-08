@@ -189,7 +189,7 @@ class Shipment extends Page
 
                               array('/dewars/tracking(/:DEWARID)', 'get', '_get_dewar_tracking'),
 
-                              array('/containers(/:cid)(/did/:did)', 'get', '_get_all_containers'),
+                              array('/containers(/:cid)(/did/:did)(/sid/:sid)', 'get', '_get_all_containers'),
                               array('/containers/', 'post', '_add_container'),
                               array('/containers/:cid', 'patch', '_update_container'),
                               array('/containers/move', 'get', '_move_container'),
@@ -942,6 +942,7 @@ class Shipment extends Page
             $data = $this->args;
             if (!array_key_exists('FACILITYCODE', $data)) $data['FACILITYCODE'] = '';
             if (!array_key_exists('AWBNUMBER', $data)) $data['AWBNUMBER'] = '';
+            if (!array_key_exists('DELIVERYAGENT_AGENTNAME', $data)) $data['DELIVERYAGENT_AGENTNAME'] = '';
             if (!array_key_exists('DELIVERYAGENT_AGENTCODE', $data)) $data['DELIVERYAGENT_AGENTCODE'] = '';
             if (!array_key_exists('LOCATION', $data)) $data['LOCATION'] = $dewar_location;
             if (!array_key_exists('LOCALCONTACT', $data)) $data['LOCALCONTACT'] = $local_contact;
@@ -1474,6 +1475,12 @@ class Shipment extends Page
                 $where .= ' AND d.dewarid=:'.(sizeof($args)+1);
                 array_push($args, $this->arg('did'));
             }
+
+            if ($this->has_arg('sid')) {
+                $where .= ' AND sh.shippingid=:'.(sizeof($args)+1);
+                array_push($args, $this->arg('sid'));
+            }
+
             if ($this->has_arg('cid')) {
                 $where .= ' AND c.containerid=:'.(sizeof($args)+1);
                 array_push($args, $this->arg('cid'));
@@ -2193,10 +2200,17 @@ class Shipment extends Page
             $ct = $this->has_arg('CLOSETIME') ? $this->arg('CLOSETIME') : null;
             $loc = $this->has_arg('PHYSICALLOCATION') ? $this->arg('PHYSICALLOCATION') : null;
             
-            $hard_drive_enclosed = $this->arg('ENCLOSEDHARDDRIVE') ? "Yes" : "No";
-            $tools_enclosed = $this->arg('ENCLOSEDTOOLS') ? "Yes" : "No";
+            $hard_drive_enclosed = null;
+            if ($this->has_arg('ENCLOSEDHARDDRIVE')){
+                $hard_drive_enclosed = $this->arg('ENCLOSEDHARDDRIVE') ? "Yes" : "No";
+            }
 
-            $dynamic = $this->arg("DYNAMIC");
+            $tools_enclosed = null;
+            if ($this->has_arg('ENCLOSEDTOOLS')){
+                $tools_enclosed = $this->arg('ENCLOSEDTOOLS') ? "Yes" : "No";
+            }
+
+            $dynamic = $this->has_arg("DYNAMIC") ? $this->arg("DYNAMIC") : null;
 
             $extra_array = array(
                 "ENCLOSEDHARDDRIVE"=> $hard_drive_enclosed,
@@ -2208,9 +2222,18 @@ class Shipment extends Page
                 $remote_or_mailin = $this->has_arg('REMOTEORMAILIN') ? $this->arg('REMOTEORMAILIN') : '';
                 $session_length = $this->has_arg('SESSIONLENGTH') ? $this->arg('SESSIONLENGTH'): '';
                 $energy_requirements = $this->has_arg('ENERGY') ? $this->arg('ENERGY'): '';
-                $microfocus_beam = $this->arg('MICROFOCUSBEAM') ? "Yes" : "No";
-                $scheduling_restrictions = $this->arg('SCHEDULINGRESTRICTIONS') ? $this->arg('SCHEDULINGRESTRICTIONS') : "None";
-                $last_minute_beamtime = $this->arg('LASTMINUTEBEAMTIME') ? "Yes" : "No";
+                $microfocus_beam = null;
+                if ($this->has_arg('MICROFOCUSBEAM')){
+                    $microfocus_beam = $this->arg('MICROFOCUSBEAM') ? "Yes" : "No";
+                }
+                $scheduling_restrictions = null;
+                if ($this->has_arg('SCHEDULINGRESTRICTIONS')){
+                    $this->arg('SCHEDULINGRESTRICTIONS') ? $this->arg('SCHEDULINGRESTRICTIONS') : "None";
+                }
+                $last_minute_beamtime = null;
+                if ($this->has_arg('LASTMINUTEBEAMTIME')){
+                    $last_minute_beamtime = $this->arg('LASTMINUTEBEAMTIME') ? "Yes" : "No";
+                }
                 $dewar_grouping = $this->has_arg('DEWARGROUPING') ? $this->arg('DEWARGROUPING') : '';
                 $dynamic_options = array(
                     "REMOTEORMAILIN" => $remote_or_mailin,
