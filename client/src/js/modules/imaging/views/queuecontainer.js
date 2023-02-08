@@ -456,8 +456,6 @@ define(['marionette',
                         return m.get('X2') && m.get('Y2')
 
                     } else if (id === 'point') {
-                        console.log('m', m)
-                        console.log('m', m.get('X'))
                         return m.get('X') && m.get('Y') && !m.get('X2')
                     }
                       else if (id === 'auto') {
