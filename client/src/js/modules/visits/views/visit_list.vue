@@ -36,9 +36,9 @@
                             }"> 
                         <td v-for="(value) in headers" :key="value.id"
                             :id="value.key" class="tw-p-1 tw-text-center">
-                                <p v-if="value.key != 'COMMENTS' && value.key != 'ARCHIVED'">{{visit[value.key]}}</p>
-                                <p v-if="value.key == 'COMMENTS' && visit.clicked == false">{{visit.COMMENTS}}</p>
-                                <input v-if="value.key == 'COMMENTS' && visit.clicked == true"
+                                <p v-if="value.key !== 'COMMENTS' && value.key !== 'ARCHIVED'">{{visit[value.key]}}</p>
+                                <p v-if="value.key === 'COMMENTS' && visit.clicked === false">{{visit.COMMENTS}}</p>
+                                <input v-if="value.key === 'COMMENTS' && visit.clicked === true"
                                        title="Comment cannot be seen by User Office"
                                        v-model="visit.edited_comment"
                                        v-on:keyup.enter="onEnter(visit)" />
@@ -192,7 +192,7 @@ export default {
         },
         navigator(event, visit) {
             // navigates to dc visit page unless it is the comment column, then input box is visible
-            if(event.target.parentElement.id == 'COMMENTS' || event.target.id == 'COMMENTS') {
+            if(event.target.parentElement.id === 'COMMENTS' || event.target.id === 'COMMENTS') {
                 visit.clicked = true;
             }
             else {
