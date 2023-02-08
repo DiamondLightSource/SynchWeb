@@ -191,7 +191,7 @@ define(['marionette', 'views/form',
 
             this.countries = new Countries()
             this.countries.state.pageSize = 9999
-            this.countries.fetch()
+            this.ready.push(this.countries.fetch())
         },
 
         updateLC: function() {
