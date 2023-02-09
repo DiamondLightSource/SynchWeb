@@ -181,7 +181,7 @@ export default {
 
             await this.$store.dispatch('updateDataToApi', {
             url: '/proposal/visits/' + visit.VISIT + '?prop=' + visit.PROPOSAL + '&COMMENTS=' + visit.COMMENTS,
-            updateType: 'PATCH',
+            type: 'PATCH',
             requestType: 'updating comment for visit'
             }).then(
                     (response) => {
