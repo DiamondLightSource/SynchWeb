@@ -7,8 +7,6 @@ use Slim\Slim;
 
 interface DatabaseInterface
 {
-    public function __construct($conn);
-
     // Prepared Query
     public function pq($query, $args = array());
 
@@ -62,6 +60,11 @@ abstract class DatabaseParent implements DatabaseInterface
 
     /* @var ?Slim */
     private  $app = NULL;
+
+    public function __construct($conn)
+    {
+        $this->conn = $conn;
+    }
 
     function type()
     {

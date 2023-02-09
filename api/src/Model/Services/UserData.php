@@ -2,11 +2,17 @@
 
 namespace SynchWeb\Model\Services;
 
+use SynchWeb\Database\DatabaseParent;
+use SynchWeb\Database\DatabaseQueryBuilder;
+
 class UserData
 {
+    /**
+     * @var DatabaseParent db the database used to store and retrieve data
+     */
     private $db;
 
-    function __construct($db)
+    function __construct(DatabaseParent $db)
     {
         $this->db = $db;
     }
@@ -214,13 +220,15 @@ class UserData
             WHERE (p.personid=:1 OR php.proposalid=:2 OR lc.proposalid=:3) AND p.personid=:4", array($userId, $proposalId, $proposalId, $personId));
     }
 
-    function updateUser($person, $personId, $familyName, $givenName, $phoneNumber, $email)
+    function updateUser($personId, $familyName, $givenName, $phoneNumber, $email)
     {
-        $familyName = $familyName ? $familyName : $person['FAMILYNAME'];
-        $givenName = $givenName ? $givenName : $person['GIVENNAME'];
-        $phoneNumber = $phoneNumber ? $phoneNumber : $person['PHONENUMBER'];
-        $email = $email ? $email : $person['EMAIL'];
-        $this->db->pq('UPDATE person SET FAMILYNAME=:1, GIVENNAME=:2, PHONENUMBER=:3, EMAILADDRESS=:4 WHERE personid=:5', array($familyName, $givenName, $phoneNumber, $email, $personId));
+        (new DatabaseQueryBuilder($this->db))
+            ->patch("FAMILYNAME", $familyName)
+            ->patch("GIVENNAME", $givenName)
+            ->patch("PHONENUMBER", $phoneNumber)
+            ->patch("EMAILADDRESS", $email)
+            ->whereIdEquals("personid", $personId)
+            ->update("person");
     }
 
     function getLaboratory($laboratoryId)
@@ -234,13 +242,20 @@ class UserData
     {
         if ($laboratoryId)
         {
-            $this->db->pq("UPDATE laboratory SET name=:1, address=:2, city=:3, postcode=:4, country=:5 WHERE laboratoryid=:6",
-                    array($labName, $labAddress, $city, $postcode, $country, $laboratoryId));
+            (new DatabaseQueryBuilder($this->db))
+                ->patch("name", $labName)
+                ->patch("address", $labAddress)
+                ->patch("city", $city)
+                ->patch("postcode", $postcode)
+                ->patch("country", $country)
+                ->whereIdEquals("laboratoryid", $laboratoryId)
+                ->update("laboratory");
         }
         else
         {
             # TODO: the logic here appears dubious - may result in duplicate entries for labs, rather than reusing these?  Perhaps this is ok, though...
             $this->db->pq("INSERT INTO laboratory ('NAME', 'ADDRESS', 'CITY', 'POSTCODE', 'COUNTRY') VALUES (:1, :2, :3, :4, :5)", array($labName, $labAddress, $city, $postcode, $country));
+
             $laboratoryId = $this->db->id();
             $this->db->pq("UPDATE person SET laboratoryid=:1 WHERE personid=:2", array($laboratoryId, $personId));
         }

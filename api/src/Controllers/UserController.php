@@ -258,12 +258,11 @@ class UserController extends Page
         $person = $person[0];
 
         $this->userData->updateUser(
-            $person,
-            $this->argOrEmptyString('PERSONID'),
-            $this->argOrEmptyString('FAMILYNAME'),
-            $this->argOrEmptyString('GIVENNAME'),
-            $this->argOrEmptyString('PHONENUMBER'),
-            $this->argOrEmptyString('EMAILADDRESS')
+            $this->arg('PERSONID'),
+            $this->argOrNull('FAMILYNAME'),
+            $this->argOrNull('GIVENNAME'),
+            $this->argOrNull('PHONENUMBER'),
+            $this->argOrNull('EMAILADDRESS')
         );
 
         $person = $this->userData->getUser($this->user->personId, $this->proposalid, $this->arg('PERSONID'));
@@ -276,12 +275,12 @@ class UserController extends Page
         }
 
         $this->userData->updateLaboratory(
-            $this->def_arg('PERSONID', $person['PERSONID']),
-            $this->def_arg('LABNAME', $laboratory ? $laboratory['NAME'] : null),
-            $this->def_arg('ADDRESS', $laboratory ? $laboratory['ADDRESS'] : null),
-            $this->def_arg('CITY', $laboratory ? $laboratory['CITY'] : null),
-            $this->def_arg('POSTCODE', $laboratory ? $laboratory['POSTCODE'] : null),
-            $this->def_arg('COUNTRY', $laboratory ? $laboratory['COUNTRY'] : null),
+            $this->arg('PERSONID'),
+            $this->argOrNull('LABNAME'),
+            $this->argOrNull('ADDRESS'),
+            $this->argOrNull('CITY'),
+            $this->argOrNull('POSTCODE'),
+            $this->argOrNull('COUNTRY'),
             $person['LABORATORYID']
         );
         $laboratory = $this->userData->getLaboratory($person['LABORATORYID']);
