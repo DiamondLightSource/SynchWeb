@@ -27,7 +27,7 @@
                 </thead>
 
                 <tbody v-for="(visit, rowIndex) in visits" :key="visit.id" >
-                    <tr class="hover:tw-bg-table-row-hover-background"
+                    <tr class="hover:tw-bg-table-row-hover-background pointer"
                         @click="navigator($event, visit)"
                         @focusout="handleFocusOut(visit)"
                     :class="{
@@ -181,7 +181,7 @@ export default {
 
             await this.$store.dispatch('updateDataToApi', {
             url: '/proposal/visits/' + visit.VISIT + '?prop=' + visit.PROPOSAL + '&COMMENTS=' + visit.COMMENTS,
-            updateType: 'PATCH',
+            type: 'PATCH',
             requestType: 'updating comment for visit'
             }).then(
                     (response) => {
@@ -196,7 +196,7 @@ export default {
                 visit.clicked = true;
             }
             else {
-                // window.location.href = 'dc/visit/' + this.proposal + '-' + visit.VIS;
+                window.location.href = 'dc/visit/' + this.proposal + '-' + visit.VIS;
             }
         },
         handleFocusOut(visit) {
@@ -213,4 +213,7 @@ export default {
 </script>
 
 <style scoped>
+.pointer {
+  cursor: pointer;
+}
 </style>
