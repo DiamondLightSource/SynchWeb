@@ -180,7 +180,7 @@ export default {
             visit.clicked = false;
 
             await this.$store.dispatch('updateDataToApi', {
-            url: '/proposal/visits/' + visit.VISIT + '?prop=' + visit.PROPOSAL + '&COMMENTS=' + visit.COMMENTS,
+            url: '/proposal/visitscomm/' + visit.VISIT + '?prop=' + visit.PROPOSAL + '&COMMENTS=' + visit.COMMENTS,
             type: 'PATCH',
             requestType: 'updating comment for visit'
             }).then(
