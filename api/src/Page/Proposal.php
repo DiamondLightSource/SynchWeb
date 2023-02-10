@@ -523,7 +523,6 @@ class Proposal extends Page
         function _update_visit_comment() {
             if (!$this->has_arg('visit')) $this->_error('No visit specified');
             if (!$this->has_arg('prop')) $this->_error('No proposal specified');
-            if (!$this->has_arg('COMMENTS')) $this->_error('No comment specified');
 
             $vis = $this->db->pq("SELECT s.sessionid, st.sessiontypeid, st.typename from blsession s
             INNER JOIN proposal p ON p.proposalid = s.proposalid 
@@ -532,15 +531,11 @@ class Proposal extends Page
         
             if (!sizeof($vis)) $this->_error('No such visit');
             $vis = $vis[0];
-            
-            $fields = array('COMMENTS');
+        
 
-            foreach ($fields as $f) {
-                $fl = in_array($f, array('STARTDATE', 'ENDDATE')) ? "TO_DATE(:1, 'DD-MM-YYYY HH24:MI')" : ':1';
-                if ($this->has_arg($f)) {
-                    $this->db->pq("UPDATE blsession set $f=$fl where sessionid=:2", array($this->arg($f), $vis['SESSIONID']));
-                    $this->_output(array($f => $this->arg($f)));
-                }
+            if ($this->has_arg('COMMENTS')) {
+                $this->db->pq("UPDATE blsession set comments=:1 where sessionid=:2", array($this->arg('COMMENTS'), $vis['SESSIONID']));
+                $this->_output(array('COMMENTS' => $this->arg('COMMENTS')));
             }
 
         }
