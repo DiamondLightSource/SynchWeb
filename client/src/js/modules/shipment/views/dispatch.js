@@ -121,7 +121,6 @@ define(['marionette', 'views/form',
             this.$el.find('input[name=DELIVERYAGENT_SHIPPINGDATE]').val(today)
             this.$el.find('.facilityCourier').hide()
             
-            proposal_code = app.proposal.get('PROPOSALCODE')
             industrial_codes = ['in', 'sw']
             industrial_visit = industrial_codes.includes(app.prop.slice(0,2))
             if (industrial_visit) {
@@ -191,7 +190,7 @@ define(['marionette', 'views/form',
 
             this.countries = new Countries()
             this.countries.state.pageSize = 9999
-            this.countries.fetch()
+            this.ready.push(this.countries.fetch())
         },
 
         updateLC: function() {
