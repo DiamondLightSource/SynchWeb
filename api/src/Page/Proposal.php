@@ -74,6 +74,7 @@ class Proposal extends Page
 
                                         array('/visits(/:visit)', 'get', '_get_visits'),
                                         array('/visits/:visit', 'patch', '_update_visit'),
+                                        array('/visitscomm/:visit', 'patch', '_update_visit_comment'),
                                         array('/visits', 'post', '_add_visit'),
 
                                         array('/visits/users', 'get', '_get_visit_users'),
@@ -515,6 +516,28 @@ class Proposal extends Page
             }
 
             $this->_output(array('total' => sizeof($rows), 'data' => $rows));
+        }
+
+        # ------------------------------------------------------------------------
+        # Update visit comment
+        function _update_visit_comment() {
+            if (!$this->has_arg('visit')) $this->_error('No visit specified');
+            if (!$this->has_arg('prop')) $this->_error('No proposal specified');
+
+            $vis = $this->db->pq("SELECT s.sessionid, st.sessiontypeid, st.typename from blsession s
+            INNER JOIN proposal p ON p.proposalid = s.proposalid 
+            LEFT OUTER JOIN sessiontype st on st.sessionid = s.sessionid
+            WHERE p.proposalid = :1 AND CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) LIKE :2", array($this->proposalid, $this->arg('visit')));
+        
+            if (!sizeof($vis)) $this->_error('No such visit');
+            $vis = $vis[0];
+        
+
+            if ($this->has_arg('COMMENTS')) {
+                $this->db->pq("UPDATE blsession set comments=:1 where sessionid=:2", array($this->arg('COMMENTS'), $vis['SESSIONID']));
+                $this->_output(array('COMMENTS' => $this->arg('COMMENTS')));
+            }
+
         }
 
 
