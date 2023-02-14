@@ -2210,7 +2210,10 @@ class Shipment extends Page
                 $tools_enclosed = $this->arg('ENCLOSEDTOOLS') ? "Yes" : "No";
             }
 
-            $dynamic = $this->has_arg("DYNAMIC") ? "Yes" : "No";
+            $dynamic = null;
+            if ($this->has_arg('DYNAMIC')){
+                $dynamic = $this->arg("DYNAMIC") ? "Yes" : "No";
+            }
 
             $extra_array = array(
                 "ENCLOSEDHARDDRIVE"=> $hard_drive_enclosed,
