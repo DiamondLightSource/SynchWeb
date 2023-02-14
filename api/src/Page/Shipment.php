@@ -83,7 +83,7 @@ class Shipment extends Page
                               //'FIRSTEXPERIMENTID' => '\w+\d+-\d+',
 
                               // Fields for responsive remote questions:
-                              'DYNAMIC' => '1?',
+                              'DYNAMIC' => '1?|Yes|No',
                               'REMOTEORMAILIN' => '.*',
                               'SESSIONLENGTH' => '\w+',
                               'ENERGY' => '.*',
@@ -2210,7 +2210,7 @@ class Shipment extends Page
                 $tools_enclosed = $this->arg('ENCLOSEDTOOLS') ? "Yes" : "No";
             }
 
-            $dynamic = $this->has_arg("DYNAMIC") ? $this->arg("DYNAMIC") : null;
+            $dynamic = $this->has_arg("DYNAMIC") ? "Yes" : "No";
 
             $extra_array = array(
                 "ENCLOSEDHARDDRIVE"=> $hard_drive_enclosed,
