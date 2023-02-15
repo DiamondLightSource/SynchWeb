@@ -94,8 +94,6 @@ define(['jquery', 'marionette',
             this.onResize = _.debounce(this.onResize, 200)
             this.draw = _.debounce(this.draw, 10)
             this.readjust = _.debounce(this.readjust, 200)
-            
-            console.log(this.model)
 
             this.n = options.n || 1
             this.img = new XHRImage()
