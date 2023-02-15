@@ -516,13 +516,24 @@ class Shipment extends Page
 
                 if (sizeof($rows)) $dew['DC'] = $rows;
 
-                $cc = $dewar_complete_email ? $dewar_complete_email : null;
+                $cc = array($dewar_complete_email ? $dewar_complete_email : null);
+
+                $owners = $this->db->pq("SELECT p.emailaddress
+                    FROM Container c
+                    INNER JOIN Person p ON c.ownerId = p.personId
+                    WHERE c.dewarId = :1
+                    GROUP BY p.emailaddress", array($dew['DEWARID']));
+
+                foreach ($owners as $owner) {
+                    if ($owner['EMAILADDRESS'] != '') array_push($cc, $owner['EMAILADDRESS']);
+                }
+
                 // Log the event if debugging
                 if ($this->debug) error_log("Dewar " . $dew['DEWARID'] . " back from beamline...");
 
                 $email = new Email('storage-rack', '*** Visit finished, dewar awaiting instructions ***');
                 $email->data = $dew;
-                $email->send($dew['LCRETEMAIL'], $cc);
+                $email->send($dew['LCRETEMAIL'], implode(', ', $cc));
             }
 
             $this->_output(array('DEWARHISTORYID' => $dhid));
