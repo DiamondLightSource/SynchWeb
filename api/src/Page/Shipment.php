@@ -846,10 +846,105 @@ class Shipment extends Page
         }
 
 
+        function _create_shipment_in_shipping_service($data) {
+            global $facility_company;
+            global $facility_address;
+            global $facility_city;
+            global $facility_postcode;
+            global $facility_country;
+            global $facility_phone;
+            global $facility_contact;
+            global $shipping_service_url;
+            global $dispatch_email;
+            if (!isset($shipping_service_url)){
+                $this->_error("Server could not send request to shipping service.");
+            }
+
+            # Create shipment
+            $shipment_data = array(
+                "consignee_company_name" => $data['LABNAME'],
+                "consignee_country" => $data['COUNTRY'],
+                "consignee_contact_name" =>  $data['GIVENNAME'] . " " .  $data['FAMILYNAME'],
+                "consignee_contact_phone_number" =>  $data['PHONENUMBER'],
+                "consignee_contact_email" =>  $data['EMAILADDRESS'],
+                "shipper_company_name" => $facility_company,
+                "shipper_address_line1" => $facility_address,
+                "shipper_city" => $facility_city,
+                "shipper_country" => $facility_country,
+                "shipper_post_code" => $facility_postcode,
+                "shipper_contact_name" => $facility_contact,
+                "shipper_contact_phone_number" => $facility_phone,
+                "shipper_contact_email" => $dispatch_email,
+                "shipment_reference" =>  $data['VISIT'],
+                "external_id" => (int) $data['DEWARID']
+            );
+
+            # Jankily get split up address. Note that this would all be unneccessary if each was a seperate argument.
+            $address_lines = explode(PHP_EOL, rtrim($data['ADDRESS']));
+            $num_lines = count($address_lines);
+            if ($num_lines < 3) {
+                $this->_error("Address must consist contain at least one line, as well as a city and post code.");
+            } else if ($num_lines > 5) {
+                $this->_error("Address can contain at most 3 lines, (not including city and post code).");
+            }
+            $shipment_data['consignee_post_code'] = $address_lines[$num_lines-1];
+            unset($address_lines[$num_lines-1]);
+            $shipment_data['consignee_city'] = $address_lines[$num_lines-2];
+            unset($address_lines[$num_lines-2]);
+            if (isset($address_lines[0])) $shipment_data['consignee_address_line1'] = $address_lines[0];
+            if (isset($address_lines[1])) $shipment_data['consignee_address_line2'] = $address_lines[1];
+            if (isset($address_lines[2])) $shipment_data['consignee_address_line3'] = $address_lines[2];
+
+            $ch = curl_init($shipping_service_url . '/shipments/');
+            $headers = array(
+                'Accept: application/json',
+                'Content-Type: application/json',
+            );
+            curl_setopt_array(
+                $ch,
+                array(
+                    CURLOPT_POST => TRUE,
+                    CURLOPT_RETURNTRANSFER => TRUE,
+                    CURLOPT_HTTPHEADER => $headers,
+                    CURLOPT_POSTFIELDS => json_encode($shipment_data)
+                )
+            );
+
+            $response = curl_exec($ch);
+            curl_close($ch);
+            return json_decode($response, TRUE);
+        }
+
+
+        function _dispatch_shipment_in_shipping_service($shipment_id) {
+            global $shipping_service_url;
+
+            $ch = curl_init($shipping_service_url . '/shipments/' . $shipment_id . '/dispatch');
+            $headers = array(
+                'Accept: application/json',
+                'Content-Type: application/json',
+            );
+            curl_setopt_array(
+                $ch,
+                array(
+                    CURLOPT_POST => TRUE,
+                    CURLOPT_RETURNTRANSFER => TRUE,
+                    CURLOPT_HTTPHEADER => $headers,
+                    CURLOPT_POSTFIELDS => array()
+                )
+            );
+            $response = curl_exec($ch);
+            return json_decode($response, TRUE);
+        }
+
+
         function _dispatch_dewar() {
             global $facility_country;
+            global $facility_courier_countries;
             global $dispatch_email;
             global $dispatch_email_intl;
+            global $use_shipping_service;
+            global $shipping_service_url;
             // Variable to store where the dewar is (Synchrotron or eBIC building)
             // Could map this to dewar storage locations in ISPyB to make more generic...?
             $dispatch_from_location = 'Synchrotron';
@@ -925,6 +1020,30 @@ class Shipment extends Page
                 array($dew['DEWARID'], $dewar_location)
             );
 
+            $data = $this->args;
+
+            if (isset($use_shipping_service) && $use_shipping_service && in_array($country, $facility_courier_countries)) {
+
+                $shipment_create_response_data = $this->_create_shipment_in_shipping_service($data);
+
+                $status_code = $shipment_create_response_data['status'];
+                if ($status_code >= 500) {
+                    $this->_error("Something went wrong setting up the return shipment in the shipping service.");
+                } else if ($status_code >= 400) {
+                    $this->_error($shipment_create_response_data);
+                }
+
+                $shipment_id = $shipment_create_response_data['shipmentId'];
+
+                $shipment_dispatch_response_data = $this->_dispatch_shipment_in_shipping_service($shipment_id);
+
+                if (!is_string($shipment_dispatch_response_data)) {
+                    $this->_error("Something went wrong setting up the return shipment in the shipping service.");
+                }
+
+                $data['AWBURL'] = $shipping_service_url . '/shipments/' . $shipment_id . '/awb/pdf';
+            }
+
             # Prepare e-mail response for dispatch request
             $subject_line = '*** Dispatch requested for Dewar '.$dew['BARCODE'].' from '.$dispatch_from_location.' - Pickup Date: '.$this->args['DELIVERYAGENT_SHIPPINGDATE'].' ***';
             $email = new Email('dewar-dispatch', $subject_line);
@@ -939,7 +1058,6 @@ class Shipment extends Page
                 }
             }
 
-            $data = $this->args;
             if (!array_key_exists('FACILITYCODE', $data)) $data['FACILITYCODE'] = '';
             if (!array_key_exists('AWBNUMBER', $data)) $data['AWBNUMBER'] = '';
             if (!array_key_exists('DELIVERYAGENT_AGENTNAME', $data)) $data['DELIVERYAGENT_AGENTNAME'] = '';
