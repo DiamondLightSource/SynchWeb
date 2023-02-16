@@ -911,8 +911,9 @@ class Shipment extends Page
             );
 
             $response = curl_exec($ch);
+            $status_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
             curl_close($ch);
-            return json_decode($response, TRUE);
+            return array('status' => $status_code, 'content' => json_decode($response, TRUE));
         }
 
 
@@ -934,7 +935,9 @@ class Shipment extends Page
                 )
             );
             $response = curl_exec($ch);
-            return json_decode($response, TRUE);
+            $status_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            curl_close($ch);
+            return array('status' => $status_code, 'content' => json_decode($response, TRUE));
         }
 
 
@@ -1024,21 +1027,18 @@ class Shipment extends Page
 
             if (isset($use_shipping_service) && $use_shipping_service && in_array($country, $facility_courier_countries)) {
 
-                $shipment_create_response_data = $this->_create_shipment_in_shipping_service($data);
-
-                $status_code = $shipment_create_response_data['status'];
-                if ($status_code >= 500) {
-                    $this->_error("Something went wrong setting up the return shipment in the shipping service.");
-                } else if ($status_code >= 400) {
-                    $this->_error($shipment_create_response_data);
+                $shipment_create_response = $this->_create_shipment_in_shipping_service($data);
+                $shipment_create_status_code = $shipment_create_response['status'];
+                if ($shipment_create_status_code != 201) {
+                    $this->_error($shipment_create_response);
                 }
 
-                $shipment_id = $shipment_create_response_data['shipmentId'];
+                $shipment_id = $shipment_create_response['content']['shipmentId'];
 
                 $shipment_dispatch_response_data = $this->_dispatch_shipment_in_shipping_service($shipment_id);
-
-                if (!is_string($shipment_dispatch_response_data)) {
-                    $this->_error("Something went wrong setting up the return shipment in the shipping service.");
+                $shipment_dispatch_status_code = $shipment_dispatch_response_data['status'];
+                if ($shipment_dispatch_status_code != 201) {
+                    $this->_error($shipment_dispatch_response_data);
                 }
 
                 $data['AWBURL'] = $shipping_service_url . '/shipments/' . $shipment_id . '/awb/pdf';
