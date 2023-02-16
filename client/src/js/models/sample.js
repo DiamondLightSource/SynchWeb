@@ -38,7 +38,7 @@ define(['backbone', 'collections/components',
             if (strategyOption) {
                 const option = JSON.parse(strategyOption)
                 if (option) {
-                    this.set('SCREENINGMETHOD', option.screen)
+                    this.set('SCREENINGMETHOD', option.screen == null ? 'none' : option.screen)
                     this.set('SCREENINGCOLLECTVALUE', option.collect_samples)
                     this.set('SAMPLEGROUP', option.sample_group)
                     this.set('STRATEGYOPTION', null)
