@@ -7,7 +7,7 @@
 
 		<table class="details" style="background: #f4f4f4; margin: 1%">
 			<tbody>
-				<?php if ($data['AWBURL']): ?>
+				<?php if (isset($data['AWBURL'])): ?>
 				<tr>
 					<td style="padding: 1.5%; font-weight: bold">Air Waybill</td>
 					<td><?php echo $data['AWBURL'] ?></td>
