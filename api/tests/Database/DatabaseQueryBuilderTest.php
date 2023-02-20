@@ -13,25 +13,30 @@ final class DatabaseHelperTest extends TestCase
     private function create_database_helper($fields, $expected_sql, $expected_id_value = null)
     {
         $expected_values = [];
-        foreach ($fields as $field) {
+        foreach ($fields as $field)
+        {
             if (!is_null($field[1]))
                 array_push($expected_values, $field[1]);
         }
-        if (!is_null($expected_id_value)) {
+        if (!is_null($expected_id_value))
+        {
             array_push($expected_values, $expected_id_value);
         }
 
 
         $db = $this->getMockForAbstractClass(DatabaseParent::class, [""]);
 
-        if ($expected_sql) {
+        if ($expected_sql)
+        {
             $db->expects($this->once())
                 ->method('pq')
                 ->with(
                     $this->equalTo($expected_sql),
                     $this->equalTo($expected_values)
                 );
-        } else {
+        }
+        else
+        {
             $db->expects($this->never())
                 ->method('pq');
         }
@@ -50,7 +55,8 @@ final class DatabaseHelperTest extends TestCase
         $expected_sql = "UPDATE {$expected_table} SET {$fields[0][0]}=:1 WHERE {$expected_id_name}=:2";
 
         $dbh = $this->create_database_helper($fields, $expected_sql, $expected_id_value);
-        foreach ($fields as $field) {
+        foreach ($fields as $field)
+        {
             $dbh->patch($field[0], $field[1]);
         }
         $dbh->whereIdEquals($expected_id_name, $expected_id_value)
@@ -71,7 +77,8 @@ final class DatabaseHelperTest extends TestCase
         $expected_sql = "UPDATE {$expected_table} SET {$fields[0][0]}=:1, {$fields[1][0]}=:2 WHERE {$expected_id_name}=:3";
 
         $dbh = $this->create_database_helper($fields, $expected_sql, $expected_id_value);
-        foreach ($fields as $field) {
+        foreach ($fields as $field)
+        {
             $dbh->patch($field[0], $field[1]);
         }
         $dbh->whereIdEquals($expected_id_name, $expected_id_value)
@@ -93,7 +100,8 @@ final class DatabaseHelperTest extends TestCase
         $expected_sql = "UPDATE {$expected_table} SET {$fields[0][0]}=:1, {$fields[2][0]}=:2 WHERE {$expected_id_name}=:3";
 
         $dbh = $this->create_database_helper($fields, $expected_sql, $expected_id_value);
-        foreach ($fields as $field) {
+        foreach ($fields as $field)
+        {
             $dbh = $dbh->patch($field[0], $field[1]);
         }
         $dbh->whereIdEquals($expected_id_name, $expected_id_value)
@@ -135,7 +143,8 @@ final class DatabaseHelperTest extends TestCase
         $expected_sql = "INSERT INTO {$expected_table} ( {$fields[0][0]} ) VALUES ( :1 )";
 
         $dbh = $this->create_database_helper($fields, $expected_sql);
-        foreach ($fields as $field) {
+        foreach ($fields as $field)
+        {
             $dbh->patch($field[0], $field[1]);
         }
         $dbh->insert($expected_table);
@@ -153,7 +162,8 @@ final class DatabaseHelperTest extends TestCase
         $expected_sql = "INSERT INTO {$expected_table} ( {$fields[0][0]}, {$fields[1][0]} ) VALUES ( :1, :2 )";
 
         $dbh = $this->create_database_helper($fields, $expected_sql);
-        foreach ($fields as $field) {
+        foreach ($fields as $field)
+        {
             $dbh->patch($field[0], $field[1]);
         }
         $dbh->insert($expected_table);

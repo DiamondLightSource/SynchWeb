@@ -46,7 +46,8 @@ class DatabaseQueryBuilder
      */
     public function patch($columnName, $value)
     {
-        if (is_null($value)) {
+        if (is_null($value))
+        {
             return $this;
         }
         $this->update_values[$columnName] = $value;
@@ -99,34 +100,36 @@ class DatabaseQueryBuilder
             return null;
         $values = $this->bindArrayAsInsertValues($this->update_values);
 
-        $this->db->pq("INSERT INTO {$expectedTable} {$values}", $this->query_bound_values);
+        $this->db->pq("INSERT INTO {$expectedTable} ( {$values["names"]} ) VALUES ( ${values["binds"]} )", $this->query_bound_values);
         return $this->db->id();
     }
 
-    private function bindArrayAsList($values) : string
+    private function bindArrayAsList($values): string
     {
         $bound_list_sql = "";
-        foreach ($values as $fieldname => $fieldvalue) {
+        foreach ($values as $fieldname => $fieldvalue)
+        {
             $bound_list_sql .= ", {$fieldname}=:" . $this->addBoundVariable($fieldvalue);
         }
         return substr($bound_list_sql, 2); // remove first comma
     }
 
-    private function bindArrayAsInsertValues($values) : string
+    private function bindArrayAsInsertValues($values): array
     {
         $value_names = "";
         $value_binds = "";
-        foreach ($values as $fieldname => $fieldvalue) {
+        foreach ($values as $fieldname => $fieldvalue)
+        {
             $value_names .= ", {$fieldname}";
             $value_binds .= ", :" . $this->addBoundVariable($fieldvalue);
         }
         $value_names = substr($value_names, 2);  // remove first comma
         $value_binds = substr($value_binds, 2);  // remove first comma
 
-        return "( {$value_names} ) VALUES ( ${value_binds} )";
+        return array("names" => $value_names, "binds" => $value_binds);
     }
 
-    private function addBoundVariable($value) : int
+    private function addBoundVariable($value): int
     {
         array_push($this->query_bound_values, $value);
         return sizeof($this->query_bound_values);

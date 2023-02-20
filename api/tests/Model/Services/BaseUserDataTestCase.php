@@ -40,7 +40,8 @@ class BaseUserDataTestCase extends TestCase
             ->getMock();
 
         // can only stub this out once
-        if (!$this->insertId) {
+        if (!$this->insertId)
+        {
             $this->insertId = $this->getFunctionMock('SynchWeb\Database\Type', "mysqli_insert_id");
             $this->insertId->expects($class->any())->willReturn(666);
         }
