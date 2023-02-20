@@ -2,6 +2,7 @@
 
 namespace SynchWeb\Page;
 
+use Exception;
 use SynchWeb\Page;
 use SynchWeb\Shipment\Courier\DHL;
 use SynchWeb\Email;
@@ -906,7 +907,8 @@ class Shipment extends Page
                     CURLOPT_POST => TRUE,
                     CURLOPT_RETURNTRANSFER => TRUE,
                     CURLOPT_HTTPHEADER => $headers,
-                    CURLOPT_POSTFIELDS => json_encode($shipment_data)
+                    CURLOPT_POSTFIELDS => json_encode($shipment_data),
+                    CURLOPT_TIMEOUT => 5
                 )
             );
 
@@ -931,7 +933,8 @@ class Shipment extends Page
                     CURLOPT_POST => TRUE,
                     CURLOPT_RETURNTRANSFER => TRUE,
                     CURLOPT_HTTPHEADER => $headers,
-                    CURLOPT_POSTFIELDS => array()
+                    CURLOPT_POSTFIELDS => array(),
+                    CURLOPT_TIMEOUT => 5
                 )
             );
             $response = curl_exec($ch);
@@ -948,6 +951,7 @@ class Shipment extends Page
             global $dispatch_email_intl;
             global $use_shipping_service;
             global $shipping_service_url;
+            global $shipping_service_links_in_emails;
             // Variable to store where the dewar is (Synchrotron or eBIC building)
             // Could map this to dewar storage locations in ISPyB to make more generic...?
             $dispatch_from_location = 'Synchrotron';
@@ -1026,22 +1030,28 @@ class Shipment extends Page
             $data = $this->args;
 
             if (isset($use_shipping_service) && $use_shipping_service && in_array($country, $facility_courier_countries)) {
+                try {
+                    $shipment_create_response = $this->_create_shipment_in_shipping_service($data);
+                    $shipment_create_status_code = $shipment_create_response['status'];
+                    if ($shipment_create_status_code != 201) {
+                        throw new Exception(json_encode($shipment_create_response));
+                    }
 
-                $shipment_create_response = $this->_create_shipment_in_shipping_service($data);
-                $shipment_create_status_code = $shipment_create_response['status'];
-                if ($shipment_create_status_code != 201) {
-                    $this->_error($shipment_create_response);
+                    $shipment_id = $shipment_create_response['content']['shipmentId'];
+
+                    $shipment_dispatch_response_data = $this->_dispatch_shipment_in_shipping_service($shipment_id);
+                    $shipment_dispatch_status_code = $shipment_dispatch_response_data['status'];
+                    if ($shipment_dispatch_status_code != 201) {
+                        throw new Exception(json_encode($shipment_dispatch_response_data));
+                    }
+
+                    if (isset($shipping_service_links_in_emails) && $shipping_service_links_in_emails) {
+                        $data['AWBURL'] = $shipping_service_url . '/shipments/' . $shipment_id . '/awb/pdf';
+                    }
+                } catch (Exception $e) {
+                    error_log($e);
+                    $data['AWBURL'] = "";
                 }
-
-                $shipment_id = $shipment_create_response['content']['shipmentId'];
-
-                $shipment_dispatch_response_data = $this->_dispatch_shipment_in_shipping_service($shipment_id);
-                $shipment_dispatch_status_code = $shipment_dispatch_response_data['status'];
-                if ($shipment_dispatch_status_code != 201) {
-                    $this->_error($shipment_dispatch_response_data);
-                }
-
-                $data['AWBURL'] = $shipping_service_url . '/shipments/' . $shipment_id . '/awb/pdf';
             }
 
             # Prepare e-mail response for dispatch request
