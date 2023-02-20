@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace SynchWeb\Model\Services;
 
@@ -70,13 +72,13 @@ class UserData
         return $whereClause;
     }
 
-    function getUsers($getCount, $isStaffMember, $stringMatch, $page, $sortBy = null, $pid = null, $personId = null, $isManager = false, $currentUserId = null, $gid = null, $sid = null, $pjid = null, $visitName = null, $perPage = 15, $isAscending = true, $isAll=false, $onlyLogins=false)
+    function getUsers($getCount, $isStaffMember, $stringMatch, $page, $sortBy = null, $pid = null, $personId = null, $isManager = false, $currentUserId = null, $gid = null, $sid = null, $pjid = null, $visitName = null, $perPage = 15, $isAscending = true, $isAll = false, $onlyLogins = false)
     {
         $args = array();
 
         // Set initial where clause restrict it to just users within logins unless it is for a all or a person id and only logins not set 
         if (!$onlyLogins and ($personId || $isAll))
-            $where = '1=1'; 
+            $where = '1=1';
         else
             $where = 'p.login IS NOT NULL';
         $join = '';
@@ -89,7 +91,7 @@ class UserData
         }
 
         if ($personId)
-        {            
+        {
             $where .= ' AND p.personid=:' . (sizeof($args) + 1);
             array_push($args, $personId);
         }
@@ -206,8 +208,10 @@ class UserData
 
     function addUser($loginId, $givenName, $familyName, $emailAddress = null)
     {
-        $this->db->pq("INSERT INTO person (login, givenname, familyname, emailaddress) VALUES (:1, :2, :3, :4)",
-                array($loginId, $givenName, $familyName, $emailAddress));
+        $this->db->pq(
+            "INSERT INTO person (login, givenname, familyname, emailaddress) VALUES (:1, :2, :3, :4)",
+            array($loginId, $givenName, $familyName, $emailAddress)
+        );
         return $this->db->id();
     }
 
@@ -240,24 +244,28 @@ class UserData
 
     function updateLaboratory($personId, $labName, $labAddress, $city, $postcode, $country, $laboratoryId = null)
     {
+        $db_values_to_use = (new DatabaseQueryBuilder($this->db))
+            ->patch("name", $labName)
+            ->patch("address", $labAddress)
+            ->patch("city", $city)
+            ->patch("postcode", $postcode)
+            ->patch("country", $country);
+
         if ($laboratoryId)
         {
-            (new DatabaseQueryBuilder($this->db))
-                ->patch("name", $labName)
-                ->patch("address", $labAddress)
-                ->patch("city", $city)
-                ->patch("postcode", $postcode)
-                ->patch("country", $country)
+            $db_values_to_use
                 ->whereIdEquals("laboratoryid", $laboratoryId)
                 ->update("laboratory");
         }
         else
         {
             # TODO: the logic here appears dubious - may result in duplicate entries for labs, rather than reusing these?  Perhaps this is ok, though...
-            $this->db->pq("INSERT INTO laboratory ('NAME', 'ADDRESS', 'CITY', 'POSTCODE', 'COUNTRY') VALUES (:1, :2, :3, :4, :5)", array($labName, $labAddress, $city, $postcode, $country));
+            $laboratoryId = $db_values_to_use->insert("laboratory");
 
-            $laboratoryId = $this->db->id();
-            $this->db->pq("UPDATE person SET laboratoryid=:1 WHERE personid=:2", array($laboratoryId, $personId));
+            $db_values_to_use = (new DatabaseQueryBuilder($this->db))
+                ->patch("laboratoryid", $laboratoryId)
+                ->whereIdEquals("personid", $personId)
+                ->update("person");
         }
     }
 

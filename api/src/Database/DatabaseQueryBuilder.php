@@ -31,7 +31,8 @@ class DatabaseQueryBuilder
      */
     private $db;
 
-    public function __construct(DatabaseParent $db) {
+    public function __construct(DatabaseParent $db)
+    {
         $this->db = $db;
     }
 
@@ -43,14 +44,15 @@ class DatabaseQueryBuilder
      * @param mixed $value the value to set it to
      * @return DatabaseQueryBuilder this to make a fluent interface
      */
-    public function patch($columnName, $value) 
+    public function patch($columnName, $value)
     {
-        if (is_null($value)) {
+        if (is_null($value))
+        {
             return $this;
         }
         $this->update_values[$columnName] = $value;
 
-      return $this;
+        return $this;
     }
 
     /**
@@ -60,7 +62,8 @@ class DatabaseQueryBuilder
      * @param mixed $value The value for the identity, i.e. which return to update
      * @return DatabaseQueryBuilder this to make a fluent interface
      */
-    public function whereIdEquals($columnName, $value) {
+    public function whereIdEquals($columnName, $value)
+    {
         $this->where_columnName  = $columnName;
         $this->where_value = $value;
         return $this;
@@ -71,30 +74,64 @@ class DatabaseQueryBuilder
      * 
      * @param string $expectedTable Table name
      */
-    public function update($expectedTable) {
+    public function update($expectedTable)
+    {
 
-        if (sizeof($this->update_values) < 1) 
+        if (sizeof($this->update_values) < 1)
             return null;
-        $set = $this->bindArray($this->update_values);
+        $set = $this->bindArrayAsList($this->update_values);
 
         $where = $this->where_columnName . "=:" . $this->addBoundVariable($this->where_value);
 
         return $this->db->pq("UPDATE {$expectedTable} SET {$set} WHERE {$where}", $this->query_bound_values);
     }
 
-    private function bindArray($values)
+    /**
+     * Run the insert if any patch parameters have been set 
+     * 
+     * @param string $expectedTable Table name
+     * @return ?int|string The auto increment number as a number unless it is greater than int in which case a string. 
+     *      0 if no auto-increment column
+     */
+    public function insert($expectedTable)
+    {
+
+        if (sizeof($this->update_values) < 1)
+            return null;
+        $values = $this->bindArrayAsInsertValues($this->update_values);
+
+        $this->db->pq("INSERT INTO {$expectedTable} ( {$values["names"]} ) VALUES ( ${values["binds"]} )", $this->query_bound_values);
+        return $this->db->id();
+    }
+
+    private function bindArrayAsList($values): string
     {
         $bound_list_sql = "";
-        foreach ($values as $fieldname => $fieldvalue){
+        foreach ($values as $fieldname => $fieldvalue)
+        {
             $bound_list_sql .= ", {$fieldname}=:" . $this->addBoundVariable($fieldvalue);
         }
         return substr($bound_list_sql, 2); // remove first comma
     }
 
-    private function addBoundVariable($value)
+    private function bindArrayAsInsertValues($values): array
+    {
+        $value_names = "";
+        $value_binds = "";
+        foreach ($values as $fieldname => $fieldvalue)
+        {
+            $value_names .= ", {$fieldname}";
+            $value_binds .= ", :" . $this->addBoundVariable($fieldvalue);
+        }
+        $value_names = substr($value_names, 2);  // remove first comma
+        $value_binds = substr($value_binds, 2);  // remove first comma
+
+        return array("names" => $value_names, "binds" => $value_binds);
+    }
+
+    private function addBoundVariable($value): int
     {
         array_push($this->query_bound_values, $value);
         return sizeof($this->query_bound_values);
     }
-
 }

@@ -30,7 +30,8 @@
   },
   "autoload": {
     "psr-4": {
-      "SynchWeb\\": "src/"
+      "SynchWeb\\": "src/",
+      "Tests\\": "tests/"
     }
   },
   "require-dev": {
