@@ -142,6 +142,7 @@ define(['marionette',
                 columns: [
                     { name: 'TYPE', label: 'Type', cell: table.TemplateCell, editable: false, template: '<%-TYPE%> <%if (!AUTOMATIC) {%><i class="fa fa-refresh" title="Reprocessed"></i><%}%>' },
                     { label: 'Resolution', cell: table.TemplateCell, editable: false, template: '<%-SHELLS.overall.RLOW%> - <%-SHELLS.overall.RHIGH%>', test: 'SHELLS' },
+                    { label: 'Resolution I/sig(I)=2', cell: table.TemplateCell, editable: false, template: '<%-SHELLS.overall.RESISIGI%>', test: 'SHELLS' },
                     { name: 'SG', label: 'Spacegroup', cell: 'string', editable: false },
                     { label: 'Mn<I/sig(i)>', cell: table.TemplateCell, editable: false, template: '<%-SHELLS.overall.ISIGI%>', test: 'SHELLS' },
                     { label: 'Rmeas Inner', cell: table.TemplateCell, editable: false, template: '<%-SHELLS.innerShell.RMEAS%>', test: 'SHELLS' },
