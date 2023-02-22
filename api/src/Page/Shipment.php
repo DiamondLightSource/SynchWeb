@@ -847,7 +847,7 @@ class Shipment extends Page
         }
 
 
-        function _create_shipment_in_shipping_service($data) {
+        function _update_shipment_in_shipping_service($data, $dewar) {
             global $facility_company;
             global $facility_address;
             global $facility_city;
@@ -896,26 +896,71 @@ class Shipment extends Page
             if (isset($address_lines[1])) $shipment_data['consignee_address_line2'] = $address_lines[1];
             if (isset($address_lines[2])) $shipment_data['consignee_address_line3'] = $address_lines[2];
 
-            $ch = curl_init($shipping_service_url . '/shipments/');
-            $headers = array(
-                'Accept: application/json',
-                'Content-Type: application/json',
-            );
-            curl_setopt_array(
-                $ch,
-                array(
-                    CURLOPT_POST => TRUE,
-                    CURLOPT_RETURNTRANSFER => TRUE,
-                    CURLOPT_HTTPHEADER => $headers,
-                    CURLOPT_POSTFIELDS => json_encode($shipment_data),
-                    CURLOPT_TIMEOUT => 5
-                )
-            );
+            $create = ($dewar['DEWARSTATUS'] != 'dispatch-requested');
 
-            $response = curl_exec($ch);
-            $status_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-            curl_close($ch);
-            return array('status' => $status_code, 'content' => json_decode($response, TRUE));
+            if ($create === true) {
+                $ch = curl_init($shipping_service_url . '/shipments/');
+                $headers = array(
+                    'Accept: application/json',
+                    'Content-Type: application/json',
+                );
+                curl_setopt_array(
+                    $ch,
+                    array(
+                        CURLOPT_RETURNTRANSFER => TRUE,
+                        CURLOPT_POST => TRUE,
+                        CURLOPT_HTTPHEADER => $headers,
+                        CURLOPT_POSTFIELDS => json_encode($shipment_data),
+                        CURLOPT_TIMEOUT => 5
+                    )
+                );
+                $response = json_decode(curl_exec($ch), TRUE);
+                $status_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            } else {
+                $url = $shipping_service_url . '/shipments/external_id/' . $dewar['DEWARID'];
+                $ch = curl_init($url);
+                $headers = array(
+                    'Accept: application/json',
+                    'Content-Type: application/json',
+                    'Content-Length: ' . strlen(json_encode($shipment_data))
+                );
+                curl_setopt_array(
+                    $ch,
+                    array(
+                        CURLOPT_RETURNTRANSFER => TRUE,
+                        CURLOPT_CUSTOMREQUEST => "PUT",
+                        CURLOPT_HTTPHEADER => $headers,
+                        CURLOPT_POSTFIELDS => json_encode($shipment_data),
+                        CURLOPT_TIMEOUT => 5
+                    )
+                );
+                curl_exec($ch);
+                $status_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+                curl_close($ch);
+                $ch2 = curl_init($url);
+                $headers = array(
+                    'Accept: application/json',
+                    'Content-Type: application/json',
+                );
+                curl_setopt_array(
+                    $ch2,
+                    array(
+                        CURLOPT_RETURNTRANSFER => TRUE,
+                        CURLOPT_HTTPHEADER => $headers,
+                        CURLOPT_TIMEOUT => 5
+                    )
+                );
+                $response = json_decode(curl_exec($ch2), TRUE);
+                curl_close($ch2);
+            }
+
+            $expected_status_code = ($create) ? 201 : 204;
+
+            if ($status_code != $expected_status_code) {
+                throw new Exception(json_encode(array('status' => $status_code, 'content' => $response)));
+            }
+
+            return $response['shipmentId'];
         }
 
 
@@ -937,10 +982,12 @@ class Shipment extends Page
                     CURLOPT_TIMEOUT => 5
                 )
             );
-            $response = curl_exec($ch);
+            $response = json_decode(curl_exec($ch), TRUE);
             $status_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
             curl_close($ch);
-            return array('status' => $status_code, 'content' => json_decode($response, TRUE));
+            if ($status_code != 201) {
+                throw new Exception(json_encode(array('status' => $status_code, 'content' => $response)));
+            }
         }
 
 
@@ -965,7 +1012,7 @@ class Shipment extends Page
             }
 
             $dew = $this->db->pq(
-                "SELECT d.dewarid, d.barcode, d.storagelocation, s.shippingid
+                "SELECT d.dewarid, d.barcode, d.storagelocation, d.dewarstatus, s.shippingid
                 FROM dewar d 
                 INNER JOIN shipping s ON s.shippingid = d.shippingid 
                 INNER JOIN proposal p ON p.proposalid = s.proposalid
@@ -1031,19 +1078,9 @@ class Shipment extends Page
 
             if (isset($use_shipping_service) && $use_shipping_service && in_array($country, $facility_courier_countries)) {
                 try {
-                    $shipment_create_response = $this->_create_shipment_in_shipping_service($data);
-                    $shipment_create_status_code = $shipment_create_response['status'];
-                    if ($shipment_create_status_code != 201) {
-                        throw new Exception(json_encode($shipment_create_response));
-                    }
+                    $shipment_id = $this->_update_shipment_in_shipping_service($data, $dew);
 
-                    $shipment_id = $shipment_create_response['content']['shipmentId'];
-
-                    $shipment_dispatch_response_data = $this->_dispatch_shipment_in_shipping_service($shipment_id);
-                    $shipment_dispatch_status_code = $shipment_dispatch_response_data['status'];
-                    if ($shipment_dispatch_status_code != 201) {
-                        throw new Exception(json_encode($shipment_dispatch_response_data));
-                    }
+                    $this->_dispatch_shipment_in_shipping_service($shipment_id);
 
                     if (isset($shipping_service_links_in_emails) && $shipping_service_links_in_emails) {
                         $data['AWBURL'] = $shipping_service_url . '/shipments/' . $shipment_id . '/awb/pdf';
