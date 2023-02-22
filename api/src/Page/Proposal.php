@@ -68,29 +68,31 @@ class Proposal extends Page
         'Total Time' => '.*'
     );
 
-    public static $dispatch = array(array('(/:prop)', 'get', '_get_proposals'),
-            array('/', 'post', '_add_proposal'),
-            array('/:prop', 'patch', '_update_proposal'),
+    public static $dispatch = array(
+        array('(/:prop)', 'get', '_get_proposals'),
+        array('/', 'post', '_add_proposal'),
+        array('/:prop', 'patch', '_update_proposal'),
 
-            array('/visits(/:visit)', 'get', '_get_visits'),
-            array('/visits/:visit', 'patch', '_update_visit'),
-            array('/visits', 'post', '_add_visit'),
+        array('/visits(/:visit)', 'get', '_get_visits'),
+        array('/visits/:visit', 'patch', '_update_visit'),
+        array('/visitscomm/:visit', 'patch', '_update_visit_comment'),
+        array('/visits', 'post', '_add_visit'),
 
-            array('/visits/users', 'get', '_get_visit_users'),
-            array('/visits/users', 'post', '_add_visit_user'),
-            array('/visits/users/:SHPKEY', 'patch', '_update_visit_user'),
-            array('/visits/users/:SHPKEY', 'delete', '_remove_visit_user'),
+        array('/visits/users', 'get', '_get_visit_users'),
+        array('/visits/users', 'post', '_add_visit_user'),
+        array('/visits/users/:SHPKEY', 'patch', '_update_visit_user'),
+        array('/visits/users/:SHPKEY', 'delete', '_remove_visit_user'),
 
-            array('/calendar', 'get', '_get_beam_calendar'),
+        array('/calendar', 'get', '_get_beam_calendar'),
 
-            array('/bls/:ty', 'get', '_get_beamlines'),
-            array('/type', 'get', '_get_types'),
-            array('/lookup', 'get', '_lookup'),
-            array('/bl/:prop', 'get', '_get_beamline_from_proposal'),
+        array('/bls/:ty', 'get', '_get_beamlines'),
+        array('/type', 'get', '_get_types'),
+        array('/lookup', 'get', '_lookup'),
+        array('/bl/:prop', 'get', '_get_beamline_from_proposal'),
 
-            array('/auto', 'get', '_auto_visit'),
-            array('/auto', 'delete', '_close_auto_visit'),
-            array('/auto', 'patch', '_update_auto_visit'),
+        array('/auto', 'get', '_auto_visit'),
+        array('/auto', 'delete', '_close_auto_visit'),
+        array('/auto', 'patch', '_update_auto_visit'),
     );
 
 
@@ -257,7 +259,6 @@ class Proposal extends Page
             if (!$ty)
                 $ty = 'gen';
             $r['TYPE'] = $ty;
-
         }
 
         if ($id)
@@ -268,7 +269,8 @@ class Proposal extends Page
                 $this->_error('No such proposal');
         }
         else
-            $this->_output(array('total' => $tot,
+            $this->_output(array(
+                'total' => $tot,
                 'data' => $rows,
             ));
     }
@@ -290,9 +292,11 @@ class Proposal extends Page
         if (!$this->has_arg('PERSONID'))
             $this->_error('No PI specified');
 
-        $this->db->pq("INSERT INTO proposal (personid, proposalcode, proposalnumber, title, state) 
+        $this->db->pq(
+            "INSERT INTO proposal (personid, proposalcode, proposalnumber, title, state) 
                 VALUES (:1, :2, :3, :4, 'Open')",
-                array($this->arg('PERSONID'), $this->arg('PROPOSALCODE'), $this->arg('PROPOSALNUMBER'), $this->arg('TITLE')));
+            array($this->arg('PERSONID'), $this->arg('PROPOSALCODE'), $this->arg('PROPOSALNUMBER'), $this->arg('TITLE'))
+        );
 
         $this->_output(array(
             'PROPOSALID' => $this->db->id(),
@@ -545,7 +549,8 @@ class Proposal extends Page
                     $this->_error('No such visit');
             }
             else
-                $this->_output(array('total' => $tot,
+                $this->_output(array(
+                    'total' => $tot,
                     'data' => $rows,
                 ));
         }
@@ -597,6 +602,30 @@ class Proposal extends Page
         }
 
         $this->_output(array('total' => sizeof($rows), 'data' => $rows));
+    }
+
+
+    # ------------------------------------------------------------------------
+    # Update visit comment
+    function _update_visit_comment()
+    {
+        if (!$this->has_arg('visit')) $this->_error('No visit specified');
+        if (!$this->has_arg('prop')) $this->_error('No proposal specified');
+
+        $vis = $this->db->pq("SELECT s.sessionid, st.sessiontypeid, st.typename from blsession s
+        INNER JOIN proposal p ON p.proposalid = s.proposalid 
+        LEFT OUTER JOIN sessiontype st on st.sessionid = s.sessionid
+        WHERE p.proposalid = :1 AND CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) LIKE :2", array($this->proposalid, $this->arg('visit')));
+
+        if (!sizeof($vis)) $this->_error('No such visit');
+        $vis = $vis[0];
+
+
+        if ($this->has_arg('COMMENTS'))
+        {
+            $this->db->pq("UPDATE blsession set comments=:1 where sessionid=:2", array($this->arg('COMMENTS'), $vis['SESSIONID']));
+            $this->_output(array('COMMENTS' => $this->arg('COMMENTS')));
+        }
     }
 
 
@@ -689,9 +718,11 @@ class Proposal extends Page
         // If a visit number has been specified use that, else use the next value
         $vis = $this->has_arg('VISITNUMBER') ? $this->arg('VISITNUMBER') : $max[0]['MAX_VISIT'] + 1;
 
-        $this->db->pq("INSERT INTO blsession (proposalid, startdate, enddate, beamlinename, beamlineoperator, scheduled, visit_number, externalid, archived, beamlinesetupid, beamcalendarid) 
+        $this->db->pq(
+            "INSERT INTO blsession (proposalid, startdate, enddate, beamlinename, beamlineoperator, scheduled, visit_number, externalid, archived, beamlinesetupid, beamcalendarid) 
                 VALUES (:1, TO_DATE(:2, 'DD-MM-YYYY HH24:MI'), TO_DATE(:3, 'DD-MM-YYYY HH24:MI'), :4, :5, :6, :7, :8, :9, :10, :11)",
-                array($this->arg('PROPOSALID'), $this->arg('STARTDATE'), $this->arg('ENDDATE'), $this->arg('BEAMLINENAME'), $this->arg('BEAMLINEOPERATOR'), $sch, $vis, $extid, $arc, $blsid, $calid));
+            array($this->arg('PROPOSALID'), $this->arg('STARTDATE'), $this->arg('ENDDATE'), $this->arg('BEAMLINENAME'), $this->arg('BEAMLINEOPERATOR'), $sch, $vis, $extid, $arc, $blsid, $calid)
+        );
 
         $id = $this->db->id();
 
@@ -781,7 +812,7 @@ class Proposal extends Page
         $this->_get_start_end($args);
 
         $order = $this->_get_order(
-                array('PERSONID' => 'shp.personid', 'SESSIONID' => 'shp.sessionid'),
+            array('PERSONID' => 'shp.personid', 'SESSIONID' => 'shp.sessionid'),
             'shp.personid DESC'
         );
 
@@ -799,7 +830,6 @@ class Proposal extends Page
                 $this->_output($rows[0]);
             else
                 $this->_error('No such person on that session');
-
         }
         else
             $this->_output(array(
@@ -882,7 +912,7 @@ class Proposal extends Page
         $this->_get_start_end($args);
 
         $order = $this->_get_order(
-                array('BEAMCALENDARID' => 'bc.beamcalendarid'),
+            array('BEAMCALENDARID' => 'bc.beamcalendarid'),
             'bls.beamlinesetupid DESC'
         );
 
@@ -900,7 +930,6 @@ class Proposal extends Page
                 $this->_output($rows[0]);
             else
                 $this->_error('No such beam calendar');
-
         }
         else
             $this->_output(array(
@@ -999,7 +1028,6 @@ class Proposal extends Page
         {
             $this->_error('No such proposal');
         }
-
     }
 
 
@@ -1193,9 +1221,11 @@ class Proposal extends Page
             {
                 // Set the initial end Date as two days from now - this will be updated by propagation from UAS later.
                 // Also the session endDate will be set once the samples are unloaded by calling the close_session endpoint.
-                $this->db->pq("INSERT INTO blsession (proposalid, visit_number, externalid, beamlinename, beamlinesetupid, startDate, endDate) 
+                $this->db->pq(
+                    "INSERT INTO blsession (proposalid, visit_number, externalid, beamlinename, beamlinesetupid, startDate, endDate) 
                         VALUES (:1,:2,UNHEX(:3),:4,1, CURRENT_TIMESTAMP, TIMESTAMPADD(DAY,2,CURRENT_TIMESTAMP))",
-                        array($proposalId, $sess['resp']->sessionNumber, $sess['resp']->id, $this->arg('bl')));
+                    array($proposalId, $sess['resp']->sessionNumber, $sess['resp']->id, $this->arg('bl'))
+                );
 
                 $sessionId = $this->db->id();
 
@@ -1204,7 +1234,6 @@ class Proposal extends Page
                 $this->db->pq("INSERT INTO session_has_person (sessionid, personid, role) VALUES (:1, :2, 'Team Leader')", array($sessionId, $personId));
 
                 $sessionNumber = $sess['resp']->sessionNumber;
-
             }
             else
             {
@@ -1277,7 +1306,8 @@ class Proposal extends Page
                 // Update ISPyB records
                 $this->db->pq("UPDATE container SET sessionid=:1 WHERE containerid=:2", array($sessionId, $containerId));
                 // For debugging - actually just want to return Success!
-                $result = array('SAMPLES' => array_values($sampleInfo['SAMPLES']),
+                $result = array(
+                    'SAMPLES' => array_values($sampleInfo['SAMPLES']),
                     'INVESTIGATORS' => array_values($sampleInfo['INVESTIGATORS']),
                     'CONTAINERS' => $containerList,
                 );
@@ -1413,13 +1443,11 @@ class Proposal extends Page
             else if ($code == 403)
             {
                 $this->_output(array('MESSAGE' => 'Session already closed', 'VISIT' => $cont['VISIT']));
-
             }
             else
             {
                 $this->_error('Something went wrong closing that session, response code was: ' . $code);
             }
-
         }
         else
         {
