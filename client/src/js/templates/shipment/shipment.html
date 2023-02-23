@@ -135,46 +135,57 @@
                 <span class="ENCLOSEDTOOLS"><%-ENCLOSEDTOOLS %></span>
             </li>
             <% } %>
-            
-
-            <% if (DYNAMIC) {%>
-            <% if (REMOTEORMAILIN) {%>
-            <li class="remoteormailin">
-                <span class="label">Remote or mail in</span>
-                <span class="REMOTEORMAILIN"><%-REMOTEORMAILIN %></span>
-            </li>
-            <% } %>
 
             <li>
-                <span class="label">Session length</span>
-                <span class="SESSIONLENGTH"><%-SESSIONLENGTH %></span>
+                <span class="label">Responsive Remote</span>
+                <span class="DYNAMIC"><%-DYNAMIC %></span>
             </li>
 
-            <li>
-                <span class="label">Energy/wavelength requirements</span>
-                <span class="ENERGY"><%-ENERGY %></span>
-            </li>
+                <%
+                DYNAMIC=(typeof DYNAMIC !== 'undefined')? DYNAMIC : 'No';
+                REMOTEORMAILIN=(typeof REMOTEORMAILIN !== 'undefined')? REMOTEORMAILIN : null;
+                SESSIONLENGTH=(typeof SESSIONLENGTH !== 'undefined')? SESSIONLENGTH : null;
+                ENERGY=(typeof ENERGY !== 'undefined')? ENERGY : null;
+                MICROFOCUSBEAM=(typeof MICROFOCUSBEAM !== 'undefined')? MICROFOCUSBEAM : null;
+                SCHEDULINGRESTRICTIONS=(typeof SCHEDULINGRESTRICTIONS !== 'undefined')? SCHEDULINGRESTRICTIONS : null;
+                LASTMINUTEBEAMTIME=(typeof LASTMINUTEBEAMTIME !== 'undefined')? LASTMINUTEBEAMTIME : null;
+                DEWARGROUPING=(typeof DEWARGROUPING !== 'undefined')? DEWARGROUPING : null;
+                %>
 
-            <li>
-                <span class="label">Microfocus beam requested</span>
-                <span class="MICROFOCUSBEAM"><%-MICROFOCUSBEAM %></span>
-            </li>
+                <li class="remoteormailin">
+                    <span class="label">Remote or mail in</span>
+                    <span class="REMOTEORMAILIN"><%-REMOTEORMAILIN %></span>
+                </li>
 
-            <li>
-                <span class="label">Scheduling restrictions</span>
-                <span class="SCHEDULINGRESTRICTIONS"><%-SCHEDULINGRESTRICTIONS %></span>
-            </li>
+                <li class="remoteform">
+                    <span class="label">Session length</span>
+                    <span class="SESSIONLENGTH"><%-SESSIONLENGTH %></span>
+                </li>
 
-            <li>
-                <span class="label">Consider for last-minute beamtime</span>
-                <span class="LASTMINUTEBEAMTIME"><%-LASTMINUTEBEAMTIME %></span>
-            </li>
+                <li class="remoteform">
+                    <span class="label">Energy/wavelength requirements</span>
+                    <span class="ENERGY"><%-ENERGY %></span>
+                </li>
 
-            <li>
-                <span class="label">Group Dewars</span>
-                <span class="DEWARGROUPING"><%-DEWARGROUPING %></span>
-            </li>
-            <% } %>
+                <li class="remoteform">
+                    <span class="label">Microfocus beam requested</span>
+                    <span class="MICROFOCUSBEAM"><%-MICROFOCUSBEAM %></span>
+                </li>
+
+                <li class="remoteform">
+                    <span class="label">Scheduling restrictions</span>
+                    <span class="SCHEDULINGRESTRICTIONS"><%-SCHEDULINGRESTRICTIONS %></span>
+                </li>
+
+                <li class="remoteform">
+                    <span class="label">Consider for last-minute beamtime</span>
+                    <span class="LASTMINUTEBEAMTIME"><%-LASTMINUTEBEAMTIME %></span>
+                </li>
+
+                <li class="remoteform">
+                    <span class="label">Group Dewars</span>
+                    <span class="DEWARGROUPING"><%-DEWARGROUPING %></span>
+                </li>
 
             <li>
                 <span class="label">Comments</span>
