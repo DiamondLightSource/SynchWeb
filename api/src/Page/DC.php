@@ -147,7 +147,7 @@ class DC extends Page {
                     $extj[0] .= "INNER JOIN autoprocintegration ap ON dc.datacollectionid = ap.datacollectionid
                         INNER JOIN autoprocprogram app ON app.autoprocprogramid = ap.autoprocprogramid";
 
-                 } else if ($this->arg('t') == 'ph') {
+                } else if ($this->arg('t') == 'ph') {
                     $where = " AND app.processingstatus = 1 AND app.processingprograms in ('big_ep', 'fast_ep')";
                     $extj[0] .= "INNER JOIN processingjob pj ON dc.datacollectionid = pj.datacollectionid
                         INNER JOIN autoprocprogram app ON app.processingjobid = pj.processingjobid";
