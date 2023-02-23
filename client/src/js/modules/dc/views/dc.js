@@ -137,7 +137,7 @@ define(['marionette',
       
     showDistl: function(e) {
       e.preventDefault()
-      app.dialog.show(new DialogView({ title: 'DISTL Plot', view: new DCDISTLView({ parent: this.model }), autoSize: true }))
+      app.dialog.show(new DialogView({ title: 'Per-image Analysis Plot', view: new DCDISTLView({ parent: this.model }), autoSize: true }))
     },
     
     loadStrategies: function(e) {
