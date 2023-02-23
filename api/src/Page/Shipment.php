@@ -103,7 +103,7 @@ class Shipment extends Page
                               // Container fields
                               'DEWARID' => '\d+',
                               'CAPACITY' => '\d+',
-                              'CONTAINERTYPE' => '\w+',
+                              'CONTAINERTYPE' => '([\w-])+',
                               'NAME' => '([\w-])+',
                               'SCHEDULEID' => '\d+',
                               'SCREENID' => '\d+',
