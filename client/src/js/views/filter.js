@@ -75,6 +75,7 @@ define(['backbone', 'marionette'], function(Backbone, Marionette) {
             {id: 'gr', name: 'Grid Scans'},
             {id: 'fc', name: 'Full Collections'},
             {id: 'ap', name: 'Auto Integrated'},
+            {id: 'ph', name: 'Phasing'},
             {id: 'err', name: 'Processing Errors'},
             {id: 'sc', name: 'Screenings'},
             {id: 'edge', name: 'Edge Scans'},
