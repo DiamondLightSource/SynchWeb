@@ -155,8 +155,9 @@ class Proposal extends Page
                             $bls = array_merge($bls, $this->_get_beamlines_from_type($ty));
                         }
                     }
-
-                    $where .= " AND s.beamlinename in ('".implode("','", $bls)."')";
+                    $where = " LEFT OUTER JOIN session_has_person shp ON shp.sessionid = s.sessionid  ".$where;
+                    $where .= " AND (shp.personid=:".(sizeof($args)+1)." OR s.beamlinename in ('".implode("','", $bls)."'))";
+                    array_push($args, $this->user->personid);
                 }
             } else {
                 $where = " INNER JOIN session_has_person shp ON shp.sessionid = s.sessionid  ".$where;
