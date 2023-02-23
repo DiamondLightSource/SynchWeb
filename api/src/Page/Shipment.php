@@ -2239,7 +2239,7 @@ class Shipment extends Page
                 }
                 $scheduling_restrictions = null;
                 if ($this->has_arg('SCHEDULINGRESTRICTIONS')){
-                    $this->arg('SCHEDULINGRESTRICTIONS') ? $this->arg('SCHEDULINGRESTRICTIONS') : "None";
+                    $scheduling_restrictions = $this->arg('SCHEDULINGRESTRICTIONS') ? $this->arg('SCHEDULINGRESTRICTIONS') : "None";
                 }
                 $last_minute_beamtime = null;
                 if ($this->has_arg('LASTMINUTEBEAMTIME')){
