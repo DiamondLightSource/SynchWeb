@@ -5,8 +5,10 @@ namespace SynchWeb\Page;
 use Exception;
 use SynchWeb\Page;
 use SynchWeb\Shipment\Courier\DHL;
+use SynchWeb\Shipment\ShippingService;
 use SynchWeb\Email;
 use SynchWeb\ImagingShared;
+use SynchWeb\Shipment\ShippingService\ShippingService as ShippingServiceShippingService;
 
 class Shipment extends Page
 {
@@ -233,6 +235,7 @@ class Shipment extends Page
 
         // Keep session open so we can cache data
         var $session_close = False;
+        private $shipping_service;
         
 
         function __construct() {
@@ -240,6 +243,7 @@ class Shipment extends Page
 
             global $dhl_user, $dhl_pass, $dhl_env;
             $this->dhl = new DHL($dhl_user, $dhl_pass, $dhl_env);
+            $this->shipping_service = new ShippingService();
         }
 
         // Get the args that will be passsed into the 'extra' JSON column of the Shipping table
@@ -847,7 +851,7 @@ class Shipment extends Page
         }
 
 
-        function _update_shipment_in_shipping_service($data, $dewar) {
+        function _dispatch_dewar_in_shipping_service($dispatch_info, $dewar) {
             global $facility_company;
             global $facility_address;
             global $facility_city;
@@ -863,11 +867,11 @@ class Shipment extends Page
 
             # Create shipment
             $shipment_data = array(
-                "consignee_company_name" => $data['LABNAME'],
-                "consignee_country" => $data['COUNTRY'],
-                "consignee_contact_name" =>  $data['GIVENNAME'] . " " .  $data['FAMILYNAME'],
-                "consignee_contact_phone_number" =>  $data['PHONENUMBER'],
-                "consignee_contact_email" =>  $data['EMAILADDRESS'],
+                "consignee_company_name" => $dispatch_info['LABNAME'],
+                "consignee_country" => $dispatch_info['COUNTRY'],
+                "consignee_contact_name" =>  $dispatch_info['GIVENNAME'] . " " .  $dispatch_info['FAMILYNAME'],
+                "consignee_contact_phone_number" =>  $dispatch_info['PHONENUMBER'],
+                "consignee_contact_email" =>  $dispatch_info['EMAILADDRESS'],
                 "shipper_company_name" => $facility_company,
                 "shipper_address_line1" => $facility_address,
                 "shipper_city" => $facility_city,
@@ -876,12 +880,12 @@ class Shipment extends Page
                 "shipper_contact_name" => $facility_contact,
                 "shipper_contact_phone_number" => $facility_phone,
                 "shipper_contact_email" => $dispatch_email,
-                "shipment_reference" =>  $data['VISIT'],
-                "external_id" => (int) $data['DEWARID']
+                "shipment_reference" =>  $dispatch_info['VISIT'],
+                "external_id" => (int) $dispatch_info['DEWARID']
             );
 
-            # Jankily get split up address. Note that this would all be unneccessary if each was a seperate argument.
-            $address_lines = explode(PHP_EOL, rtrim($data['ADDRESS']));
+            # Split up address. Necessary as address is a single field in ispyb
+            $address_lines = explode(PHP_EOL, rtrim($dispatch_info['ADDRESS']));
             $num_lines = count($address_lines);
             if ($num_lines < 3) {
                 $this->_error("Address must consist contain at least one line, as well as a city and post code.");
@@ -899,95 +903,17 @@ class Shipment extends Page
             $create = ($dewar['DEWARSTATUS'] != 'dispatch-requested');
 
             if ($create === true) {
-                $ch = curl_init($shipping_service_url . '/shipments/');
-                $headers = array(
-                    'Accept: application/json',
-                    'Content-Type: application/json',
-                );
-                curl_setopt_array(
-                    $ch,
-                    array(
-                        CURLOPT_RETURNTRANSFER => TRUE,
-                        CURLOPT_POST => TRUE,
-                        CURLOPT_HTTPHEADER => $headers,
-                        CURLOPT_POSTFIELDS => json_encode($shipment_data),
-                        CURLOPT_TIMEOUT => 5
-                    )
-                );
-                $response = json_decode(curl_exec($ch), TRUE);
-                $status_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+                $response = $this->shipping_service->create_shipment($shipment_data);
             } else {
-                $url = $shipping_service_url . '/shipments/external_id/' . $dewar['DEWARID'];
-                $ch = curl_init($url);
-                $headers = array(
-                    'Accept: application/json',
-                    'Content-Type: application/json',
-                    'Content-Length: ' . strlen(json_encode($shipment_data))
-                );
-                curl_setopt_array(
-                    $ch,
-                    array(
-                        CURLOPT_RETURNTRANSFER => TRUE,
-                        CURLOPT_CUSTOMREQUEST => "PUT",
-                        CURLOPT_HTTPHEADER => $headers,
-                        CURLOPT_POSTFIELDS => json_encode($shipment_data),
-                        CURLOPT_TIMEOUT => 5
-                    )
-                );
-                curl_exec($ch);
-                $status_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-                curl_close($ch);
-                $ch2 = curl_init($url);
-                $headers = array(
-                    'Accept: application/json',
-                    'Content-Type: application/json',
-                );
-                curl_setopt_array(
-                    $ch2,
-                    array(
-                        CURLOPT_RETURNTRANSFER => TRUE,
-                        CURLOPT_HTTPHEADER => $headers,
-                        CURLOPT_TIMEOUT => 5
-                    )
-                );
-                $response = json_decode(curl_exec($ch2), TRUE);
-                curl_close($ch2);
+                $this->shipping_service->update_shipment($dispatch_info['DEWARID'], $shipment_data);
+                $response = $this->shipping_service->get_shipment($dispatch_info['DEWARID']);
             }
 
-            $expected_status_code = ($create) ? 201 : 204;
+            $shipment_id = $response['shipmentId'];
 
-            if ($status_code != $expected_status_code) {
-                throw new Exception(json_encode(array('status' => $status_code, 'content' => $response)));
-            }
+            $this->shipping_service->dispatch_shipment($shipment_id);
 
-            return $response['shipmentId'];
-        }
-
-
-        function _dispatch_shipment_in_shipping_service($shipment_id) {
-            global $shipping_service_url;
-
-            $ch = curl_init($shipping_service_url . '/shipments/' . $shipment_id . '/dispatch');
-            $headers = array(
-                'Accept: application/json',
-                'Content-Type: application/json',
-            );
-            curl_setopt_array(
-                $ch,
-                array(
-                    CURLOPT_POST => TRUE,
-                    CURLOPT_RETURNTRANSFER => TRUE,
-                    CURLOPT_HTTPHEADER => $headers,
-                    CURLOPT_POSTFIELDS => array(),
-                    CURLOPT_TIMEOUT => 5
-                )
-            );
-            $response = json_decode(curl_exec($ch), TRUE);
-            $status_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-            curl_close($ch);
-            if ($status_code != 201) {
-                throw new Exception(json_encode(array('status' => $status_code, 'content' => $response)));
-            }
+            return $shipment_id;
         }
 
 
@@ -1076,11 +1002,15 @@ class Shipment extends Page
 
             $data = $this->args;
 
-            if (isset($use_shipping_service) && $use_shipping_service && in_array($country, $facility_courier_countries)) {
-                try {
-                    $shipment_id = $this->_update_shipment_in_shipping_service($data, $dew);
+            $terms = $this->db->pq(
+                "SELECT cta.couriertermsacceptedid FROM couriertermsaccepted cta WHERE cta.shippingid=:1",
+                array($dew['SHIPPINGID'])
+            );
+            $terms_accepted = sizeof($terms) ? true : false;
 
-                    $this->_dispatch_shipment_in_shipping_service($shipment_id);
+            if (isset($use_shipping_service) && $use_shipping_service && $terms_accepted && in_array($country, $facility_courier_countries)) {
+                try {
+                    $shipment_id = $this->_dispatch_dewar_in_shipping_service($data, $dew);
 
                     if (isset($shipping_service_links_in_emails) && $shipping_service_links_in_emails) {
                         $data['AWBURL'] = $shipping_service_url . '/shipments/' . $shipment_id . '/awb/pdf';
