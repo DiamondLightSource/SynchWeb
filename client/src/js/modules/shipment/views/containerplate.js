@@ -655,8 +655,13 @@ define(['marionette',
         updateClasses: function() {
             var first = this.autoscores.at(0)
             var opts = ''
+            var defaultClass = "crystal"
             _.each(first.get('CLASSES'), function(prob, cl) {
-                opts += '<option value="'+cl+'">'+cl+'</option>'
+                if (cl == defaultClass) {
+                    opts = '<option value="'+cl+'">'+cl+'</option>' + opts
+                } else {
+                    opts += '<option value="'+cl+'">'+cl+'</option>'
+                }
             }, this)
             this.ui.class.html(opts)
         },
