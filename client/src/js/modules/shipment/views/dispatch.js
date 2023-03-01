@@ -167,7 +167,7 @@ define(['marionette', 'views/form',
                 const history = self.history.at(0)
                 const location = history ? history.get('STORAGELOCATION') : null
                 const historyComment = history ? history.get('COMMENTS') : null
-                const restrictedLocations = ['i03', 'i04', 'i04-1', 'i024']
+                const restrictedLocations = ['i03', 'i04', 'i04-1', 'i24']
 
                 if (location) {
                     self.ui.loc.val(location)
