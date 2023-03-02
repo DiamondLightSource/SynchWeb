@@ -657,7 +657,7 @@ define(['marionette',
             var opts = ''
             var defaultClass = "crystal"
             _.each(first.get('CLASSES'), function(prob, cl) {
-                if (cl == defaultClass) {
+                if (cl === defaultClass) {
                     opts = '<option value="'+cl+'">'+cl+'</option>' + opts
                 } else {
                     opts += '<option value="'+cl+'">'+cl+'</option>'
