@@ -165,22 +165,35 @@ class Exp extends Page
                 array_push($args, $this->arg('BEAMLINENAME'));
             }
 
-            $rows = $this->db->pq("SELECT d.detectorid, d.detectortype, d.detectormanufacturer, d.detectorserialnumber, d.sensorthickness, d.detectormodel, d.detectorpixelsizehorizontal, d.detectorpixelsizevertical, d.detectordistancemin, d.detectordistancemax, d.density, d.composition, concat(d.detectormanufacturer,' ',d.detectormodel, ' (',d.detectortype,')') as description, d.detectormaxresolution, d.detectorminresolution, count(distinct dc.datacollectionid) as dcs, count(distinct bls.beamlinesetupid) as blsetups, count(distinct dphd.detectorid) as dps,count(distinct dp.detectorid) as dps2, CONCAT(IFNULL(GROUP_CONCAT(distinct ses.beamlinename),''),IFNULL(GROUP_CONCAT(distinct bls.beamlinename),'')) as beamlines, d.numberofpixelsx, d.numberofpixelsy, d.detectorrollmin, d.detectorrollmax
+            $tot = $this->db->pq("SELECT count(d.detectorid) as tot
+              FROM detector d
+              WHERE $where", $args);
+            $tot = intval($tot[0]['TOT']);
+
+            $this->_get_start_end($args);
+
+            $order = $this->_get_order(
+                array('DETECTORID' => 'd.detectorid'),
+                'd.detectorid ASC'
+            );
+
+            $rows = $this->db->paginate("SELECT d.detectorid, d.detectortype, d.detectormanufacturer, d.detectorserialnumber, d.sensorthickness, d.detectormodel, d.detectorpixelsizehorizontal, d.detectorpixelsizevertical, d.detectordistancemin, d.detectordistancemax, d.density, d.composition, concat(d.detectormanufacturer,' ',d.detectormodel, ' (',d.detectortype,')') as description, d.detectormaxresolution, d.detectorminresolution, count(distinct dc.datacollectionid) as dcs, count(distinct bls.beamlinesetupid) as blsetups, (SELECT count(distinct dphd.detectorid) FROM DataCollectionPlan_has_Detector dphd WHERE dphd.detectorid = d.detectorid) as dps, CONCAT_WS(',',GROUP_CONCAT(distinct ses.beamlinename),GROUP_CONCAT(distinct bls.beamlinename)) as beamlines, d.numberofpixelsx, d.numberofpixelsy, d.detectorrollmin, d.detectorrollmax
                 FROM detector d
                 LEFT OUTER JOIN datacollection dc ON dc.detectorid = d.detectorid
-                LEFT OUTER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
-                LEFT OUTER JOIN blsession ses ON ses.sessionid = dcg.sessionid
+                LEFT OUTER JOIN blsession ses ON ses.sessionid = dc.sessionid
                 LEFT OUTER JOIN beamlinesetup bls ON bls.detectorid = d.detectorid
-                LEFT OUTER JOIN datacollectionplan_has_detector dphd ON dphd.detectorid = d.detectorid
-                LEFT OUTER JOIN diffractionplan dp ON dp.detectorid = d.detectorid
                 WHERE $where
-                GROUP BY d.detectorid", $args);
+                GROUP BY d.detectorid
+                ORDER BY $order", $args);
 
             if ($this->has_arg('DETECTORID')) {
-                if (sizeof($rows))$this->_output($rows[0]);
+                if (sizeof($rows)) $this->_output($rows[0]);
                 else $this->_error('No such detector');
                 
-            } else $this->_output($rows);
+            } else $this->_output(array(
+                'total' => $tot,
+                'data' => $rows,
+            ));
         }
 
 
