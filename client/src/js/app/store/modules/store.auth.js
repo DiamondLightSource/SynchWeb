@@ -36,12 +36,15 @@ const auth = {
       },
   },
   actions: {
-    checkAuth({state, rootState}, ticket) {
-      console.log("Store checkAuth Ticket: " + ticket)
+    checkAuth({state, rootState, commit }) {
       return new Promise( (resolve) => {
         // If we have a token return
-        if (state.token) resolve(true)
-        else {
+        if (state.token) {
+          resolve(true)
+        } else if (sessionStorage.getItem('token')) {
+          commit('authSuccess', sessionStorage.getItem('token'))
+          resolve(true)
+        } else {
           Backbone.ajax({
               url: rootState.apiUrl+'/authenticate/check',
               type: 'GET',
@@ -51,7 +54,7 @@ const auth = {
                 commit('authSuccess', token)
                 resolve(true)
               },
-              error: function(response) {
+              error: function() {
                 console.log("Store check auth warning - no previous session")
                 resolve(false)
               }
@@ -60,7 +63,7 @@ const auth = {
       })
     },
 
-    validate({state, rootState}, ticket) {
+    validate({state, rootState, commit }, ticket) {
       console.log("Store validate Ticket: " + ticket)
       return new Promise( (resolve) => {
         // If we have a token return
@@ -75,7 +78,7 @@ const auth = {
               commit('authSuccess', token)
               resolve(true)
             },
-            error: function(response) {
+            error: function() {
               console.log("Store validate warning - no previous session")
               resolve(false)
             }
@@ -112,14 +115,14 @@ const auth = {
         Backbone.ajax({
           url: rootState.apiUrl+'/authenticate/logout',
           type: 'GET',
-          success: function(resp) {
+          success: function() {
             console.log("Logout successful")
             commit('logout')
             commit('proposal/setProposal', null, {root: true})
             commit('user/updateUser', {}, {root: true})
             resolve()
           },
-          error: function(req, status, error) {
+          error: function() {
             // Even if an error we can set our local properties to logged out
             console.log("Error returned from logout URL")
             commit('logout')
