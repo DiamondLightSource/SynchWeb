@@ -3,6 +3,9 @@
 
 namespace SynchWeb\Shipment;
 
+/**
+ * This class contacts an external shipping service to book shipments with the courier.
+ */
 class ShippingService
 {
     private $shipping_api_url;
@@ -104,5 +107,10 @@ class ShippingService
             array(),
             201
         );
+    }
+
+    function get_awb_pdf_url($shipment_id)
+    {
+        return $this->shipping_api_url . '/shipments/' . $shipment_id . '/awb/pdf';
     }
 }

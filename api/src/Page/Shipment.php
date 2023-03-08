@@ -10,6 +10,8 @@ use SynchWeb\Email;
 use SynchWeb\ImagingShared;
 use SynchWeb\Shipment\ShippingService\ShippingService as ShippingServiceShippingService;
 
+use SynchWeb\Utils;
+
 class Shipment extends Page
 {
         
@@ -923,7 +925,6 @@ class Shipment extends Page
             global $dispatch_email;
             global $dispatch_email_intl;
             global $use_shipping_service;
-            global $shipping_service_url;
             global $shipping_service_links_in_emails;
             // Variable to store where the dewar is (Synchrotron or eBIC building)
             // Could map this to dewar storage locations in ISPyB to make more generic...?
@@ -992,32 +993,24 @@ class Shipment extends Page
                 array($dew['DEWARID'], $dewar_location)
             );
 
-            // Also update the dewar status and storage location to keep it in sync with history...
-            $this->db->pq(
-                "UPDATE dewar
-                set dewarstatus='dispatch-requested', storagelocation=lower(:2)
-                WHERE dewarid=:1",
-                array($dew['DEWARID'], $dewar_location)
-            );
-
             $data = $this->args;
 
-            $terms = $this->db->pq(
-                "SELECT cta.couriertermsacceptedid FROM couriertermsaccepted cta WHERE cta.shippingid=:1",
-                array($dew['SHIPPINGID'])
-            );
-            $terms_accepted = sizeof($terms) ? true : false;
-
-            if (isset($use_shipping_service) && $use_shipping_service && $terms_accepted && in_array($country, $facility_courier_countries)) {
-                try {
-                    $shipment_id = $this->_dispatch_dewar_in_shipping_service($data, $dew);
-
-                    if (isset($shipping_service_links_in_emails) && $shipping_service_links_in_emails) {
-                        $data['AWBURL'] = $shipping_service_url . '/shipments/' . $shipment_id . '/awb/pdf';
+            if (Utils::getValueOrDefault($use_shipping_service) && in_array($country, $facility_courier_countries)) {
+                $terms = $this->db->pq(
+                    "SELECT cta.couriertermsacceptedid FROM couriertermsaccepted cta WHERE cta.shippingid=:1",
+                    array($dew['SHIPPINGID'])
+                );
+                $terms_accepted = sizeof($terms) ? true : false;
+                if ($terms_accepted) {
+                    try {
+                        $shipment_id = $this->_dispatch_dewar_in_shipping_service($data, $dew);
+                        if (Utils::getValueOrDefault($shipping_service_links_in_emails)) {
+                            $data['AWBURL'] = $this->shipping_service->get_awb_pdf_url($shipment_id);
+                        }
+                    } catch (Exception $e) {
+                        error_log($e);
+                        $data['AWBURL'] = "";
                     }
-                } catch (Exception $e) {
-                    error_log($e);
-                    $data['AWBURL'] = "";
                 }
             }
 
@@ -1057,6 +1050,14 @@ class Shipment extends Page
             if ($local_contact_email) $recpts .= ', '.$local_contact_email;
 
             $email->send($recpts);
+
+            // Also update the dewar status and storage location to keep it in sync with history...
+            $this->db->pq(
+                "UPDATE dewar
+                set dewarstatus='dispatch-requested', storagelocation=lower(:2)
+                WHERE dewarid=:1",
+                array($dew['DEWARID'], $dewar_location)
+            );
 
             $this->_output(1);
         }
