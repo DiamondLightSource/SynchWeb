@@ -88,6 +88,7 @@ define(['jquery', 'marionette',
             this.attachments = new Attachments()
             this.attachments.queryParams.id = this.getOption('ID')
             this.attachments.queryParams.filetype = 'pia'
+            this.attachments.setSorting('DATACOLLECTIONFILEATTACHMENTID', 1)
 
             this.hasSnapshot = false
             this.snapshot = new XHRImage()
