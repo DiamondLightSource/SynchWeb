@@ -148,6 +148,11 @@ class DC extends Page {
                     $extj[0] .= "INNER JOIN autoprocintegration ap ON dc.datacollectionid = ap.datacollectionid
                         INNER JOIN autoprocprogram app ON app.autoprocprogramid = ap.autoprocprogramid";
 
+                } else if ($this->arg('t') == 'ph') {
+                    $where = " AND app.processingstatus = 1 AND app.processingprograms in ('big_ep', 'fast_ep')";
+                    $extj[0] .= "INNER JOIN processingjob pj ON dc.datacollectionid = pj.datacollectionid
+                        INNER JOIN autoprocprogram app ON app.processingjobid = pj.processingjobid";
+
                 } else if ($this->arg('t') == 'err') {
                     $where = " AND appm.autoprocprogrammessageid IS NOT NULL AND (appm.severity = 'WARNING' OR appm.severity = 'ERROR')";
                     $extj[0] .= "LEFT OUTER JOIN autoprocintegration api ON dc.datacollectionid = api.datacollectionid
@@ -1394,7 +1399,7 @@ class DC extends Page {
         # ------------------------------------------------------------------------
         # Grid Scan Info
         function _grid_info() {
-            $info = $this->db->pq("SELECT dc.datacollectiongroupid, dc.datacollectionid, dc.axisstart, p.posx as x, p.posy as y, p.posz as z, g.dx_mm, g.dy_mm, g.steps_x, g.steps_y, g.pixelspermicronx, g.pixelspermicrony, g.snapshot_offsetxpixel, g.snapshot_offsetypixel, g.orientation, g.snaked
+            $info = $this->db->pq("SELECT dc.datacollectiongroupid, dc.datacollectionid, dc.axisstart, p.posx as x, p.posy as y, p.posz as z, g.dx_mm, g.dy_mm, g.steps_x, g.steps_y, g.pixelspermicronx, g.pixelspermicrony, g.snapshot_offsetxpixel, g.snapshot_offsetypixel, g.orientation, g.snaked, DATE_FORMAT(dc.starttime, '%Y%m%d') as startdate
                 FROM gridinfo g
                 INNER JOIN datacollection dc on (dc.datacollectionid = g.datacollectionid) or (dc.datacollectiongroupid = g.datacollectiongroupid)
                 LEFT OUTER JOIN position p ON dc.positionid = p.positionid

@@ -296,7 +296,13 @@ define(['jquery', 'marionette',
                 var w = bw*this.grid.get('STEPS_X')
                 var h = bh*this.grid.get('STEPS_Y')
 
-                if (app.options.get('scale_grid').indexOf(this.getOption('BL')) > -1) {
+                var start_date = this.grid.get('STARTDATE')
+                var scale_grid_end_date = app.options.get('scale_grid_end_date')
+
+                var scale_grid = (app.options.get('scale_grid').indexOf(this.getOption('BL')) > -1 && (start_date < scale_grid_end_date || scale_grid_end_date == null))
+                console.log("scale_grid: "+scale_grid)
+
+                if (scale_grid) {
                     var scalef = this.snapshot.width/1024
 
                     stx *= scalef
