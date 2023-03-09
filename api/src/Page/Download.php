@@ -471,7 +471,7 @@ class Download extends Page
             } elseif (in_array($path_ext, array('jpg', 'jpeg'))) {
                 $response->headers->set("Content-Type", "image/jpeg");
                 $response->setContentDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT, $saved_filename);
-            } elseif (in_array($path_ext, array('log', 'txt', 'error', 'LP', 'json'))) {
+            } elseif (in_array($path_ext, array('log', 'txt', 'error', 'LP', 'json', 'lsa'))) {
                 $response->headers->set("Content-Type", "text/plain");
                 $response->setContentDisposition(ResponseHeaderBag::DISPOSITION_INLINE);
             } else {
