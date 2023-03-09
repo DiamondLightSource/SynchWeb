@@ -4,7 +4,7 @@
 
 <!-- Only allow cloning for valid/approved proteins -->
 <% if (EXTERNAL == 1) { %>
-    <a class="button" href="/proteins/pid/<%-PROTEINID%>/clone">Clone Protein</a>
+    <a class="button" data-testid="clone-protein" href="/proteins/pid/<%-PROTEINID%>/clone">Clone Protein</a>
 <% } %>
 
 <div class="form">

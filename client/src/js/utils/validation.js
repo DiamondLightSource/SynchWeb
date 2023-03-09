@@ -5,6 +5,7 @@ define(['backbone', 'backbone-validation'], function(Backbone) {
         wwsddash: /^(\w|\s|\-|\.)+$/,
         wwsldash: /^(\w|\s|\-|\/)+$/,
         wwsbdash: /^(\w|\s|\-|\(|\))+$/,
+        wwsbddash: /^(\w|\s|\-|\.|\(|\))+$/,
         wwdash: /^(\w|\-)+$/,
         datetime: /^\d\d-\d\d-\d\d\d\d \d\d:\d\d$/,
         edate: /^\d\d-\d\d-\d\d\d\d$/,
