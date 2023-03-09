@@ -224,6 +224,11 @@
     // Non dom service (eu)
     $dhl_service_eu = 'U';
 
+    # Shipping service details
+    $use_shipping_service = null;
+    $shipping_service_url = null;
+    $shipping_service_links_in_emails = null;
+
 
     # VMXi
     $vmxi_user = 'vmxi';

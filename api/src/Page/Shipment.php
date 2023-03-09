@@ -2,10 +2,15 @@
 
 namespace SynchWeb\Page;
 
+use Exception;
 use SynchWeb\Page;
 use SynchWeb\Shipment\Courier\DHL;
+use SynchWeb\Shipment\ShippingService;
 use SynchWeb\Email;
 use SynchWeb\ImagingShared;
+use SynchWeb\Shipment\ShippingService\ShippingService as ShippingServiceShippingService;
+
+use SynchWeb\Utils;
 
 class Shipment extends Page
 {
@@ -232,6 +237,7 @@ class Shipment extends Page
 
         // Keep session open so we can cache data
         var $session_close = False;
+        private $shipping_service;
         
 
         function __construct() {
@@ -239,6 +245,7 @@ class Shipment extends Page
 
             global $dhl_user, $dhl_pass, $dhl_env;
             $this->dhl = new DHL($dhl_user, $dhl_pass, $dhl_env);
+            $this->shipping_service = new ShippingService();
         }
 
         // Get the args that will be passsed into the 'extra' JSON column of the Shipping table
@@ -857,10 +864,79 @@ class Shipment extends Page
         }
 
 
+        function _dispatch_dewar_in_shipping_service($dispatch_info, $dewar) {
+            global $facility_company;
+            global $facility_address;
+            global $facility_city;
+            global $facility_postcode;
+            global $facility_country;
+            global $facility_phone;
+            global $facility_contact;
+            global $shipping_service_url;
+            global $dispatch_email;
+            if (!isset($shipping_service_url)){
+                $this->_error("Server could not send request to shipping service.");
+            }
+
+            # Create shipment
+            $shipment_data = array(
+                "consignee_company_name" => $dispatch_info['LABNAME'],
+                "consignee_country" => $dispatch_info['COUNTRY'],
+                "consignee_contact_name" =>  $dispatch_info['GIVENNAME'] . " " .  $dispatch_info['FAMILYNAME'],
+                "consignee_contact_phone_number" =>  $dispatch_info['PHONENUMBER'],
+                "consignee_contact_email" =>  $dispatch_info['EMAILADDRESS'],
+                "shipper_company_name" => $facility_company,
+                "shipper_address_line1" => $facility_address,
+                "shipper_city" => $facility_city,
+                "shipper_country" => $facility_country,
+                "shipper_post_code" => $facility_postcode,
+                "shipper_contact_name" => $facility_contact,
+                "shipper_contact_phone_number" => $facility_phone,
+                "shipper_contact_email" => $dispatch_email,
+                "shipment_reference" =>  $dispatch_info['VISIT'],
+                "external_id" => (int) $dispatch_info['DEWARID']
+            );
+
+            # Split up address. Necessary as address is a single field in ispyb
+            $address_lines = explode(PHP_EOL, rtrim($dispatch_info['ADDRESS']));
+            $num_lines = count($address_lines);
+            if ($num_lines < 3) {
+                $this->_error("Address must consist contain at least one line, as well as a city and post code.");
+            } else if ($num_lines > 5) {
+                $this->_error("Address can contain at most 3 lines, (not including city and post code).");
+            }
+            $shipment_data['consignee_post_code'] = $address_lines[$num_lines-1];
+            unset($address_lines[$num_lines-1]);
+            $shipment_data['consignee_city'] = $address_lines[$num_lines-2];
+            unset($address_lines[$num_lines-2]);
+            if (isset($address_lines[0])) $shipment_data['consignee_address_line1'] = $address_lines[0];
+            if (isset($address_lines[1])) $shipment_data['consignee_address_line2'] = $address_lines[1];
+            if (isset($address_lines[2])) $shipment_data['consignee_address_line3'] = $address_lines[2];
+
+            $create = ($dewar['DEWARSTATUS'] != 'dispatch-requested');
+
+            if ($create === true) {
+                $response = $this->shipping_service->create_shipment($shipment_data);
+            } else {
+                $this->shipping_service->update_shipment($dispatch_info['DEWARID'], $shipment_data);
+                $response = $this->shipping_service->get_shipment($dispatch_info['DEWARID']);
+            }
+
+            $shipment_id = $response['shipmentId'];
+
+            $this->shipping_service->dispatch_shipment($shipment_id);
+
+            return $shipment_id;
+        }
+
+
         function _dispatch_dewar() {
             global $facility_country;
+            global $facility_courier_countries;
             global $dispatch_email;
             global $dispatch_email_intl;
+            global $use_shipping_service;
+            global $shipping_service_links_in_emails;
             // Variable to store where the dewar is (Synchrotron or eBIC building)
             // Could map this to dewar storage locations in ISPyB to make more generic...?
             $dispatch_from_location = 'Synchrotron';
@@ -874,7 +950,7 @@ class Shipment extends Page
             }
 
             $dew = $this->db->pq(
-                "SELECT d.dewarid, d.barcode, d.storagelocation, s.shippingid
+                "SELECT d.dewarid, d.barcode, d.storagelocation, d.dewarstatus, s.shippingid
                 FROM dewar d 
                 INNER JOIN shipping s ON s.shippingid = d.shippingid 
                 INNER JOIN proposal p ON p.proposalid = s.proposalid
@@ -928,13 +1004,26 @@ class Shipment extends Page
                 array($dew['DEWARID'], $dewar_location)
             );
 
-            // Also update the dewar status and storage location to keep it in sync with history...
-            $this->db->pq(
-                "UPDATE dewar
-                set dewarstatus='dispatch-requested', storagelocation=lower(:2)
-                WHERE dewarid=:1",
-                array($dew['DEWARID'], $dewar_location)
-            );
+            $data = $this->args;
+
+            if (Utils::getValueOrDefault($use_shipping_service) && in_array($country, $facility_courier_countries)) {
+                $terms = $this->db->pq(
+                    "SELECT cta.couriertermsacceptedid FROM couriertermsaccepted cta WHERE cta.shippingid=:1",
+                    array($dew['SHIPPINGID'])
+                );
+                $terms_accepted = sizeof($terms) ? true : false;
+                if ($terms_accepted) {
+                    try {
+                        $shipment_id = $this->_dispatch_dewar_in_shipping_service($data, $dew);
+                        if (Utils::getValueOrDefault($shipping_service_links_in_emails)) {
+                            $data['AWBURL'] = $this->shipping_service->get_awb_pdf_url($shipment_id);
+                        }
+                    } catch (Exception $e) {
+                        error_log($e);
+                        $data['AWBURL'] = "";
+                    }
+                }
+            }
 
             # Prepare e-mail response for dispatch request
             $subject_line = '*** Dispatch requested for Dewar '.$dew['BARCODE'].' from '.$dispatch_from_location.' - Pickup Date: '.$this->args['DELIVERYAGENT_SHIPPINGDATE'].' ***';
@@ -950,7 +1039,6 @@ class Shipment extends Page
                 }
             }
 
-            $data = $this->args;
             if (!array_key_exists('FACILITYCODE', $data)) $data['FACILITYCODE'] = '';
             if (!array_key_exists('AWBNUMBER', $data)) $data['AWBNUMBER'] = '';
             if (!array_key_exists('DELIVERYAGENT_AGENTNAME', $data)) $data['DELIVERYAGENT_AGENTNAME'] = '';
@@ -973,6 +1061,14 @@ class Shipment extends Page
             if ($local_contact_email) $recpts .= ', '.$local_contact_email;
 
             $email->send($recpts);
+
+            // Also update the dewar status and storage location to keep it in sync with history...
+            $this->db->pq(
+                "UPDATE dewar
+                set dewarstatus='dispatch-requested', storagelocation=lower(:2)
+                WHERE dewarid=:1",
+                array($dew['DEWARID'], $dewar_location)
+            );
 
             $this->_output(1);
         }
