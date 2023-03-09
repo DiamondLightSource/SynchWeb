@@ -3,7 +3,8 @@
     <div>
 
         <p class="tw-m-4 tw-p-4 tw-text-lg md:tw-text-2xl 
-                tw-mx-auto tw-border-b tw-border-gray-500">
+                tw-mx-auto tw-border-b tw-border-gray-500"
+                data-testid="visit-page-header">
                 Visit List</p>
 
         <div class="tw-mt-12 tw-mb-4">
@@ -13,14 +14,15 @@
         <div class="tw-overflow-x-scroll tw-scrolling-touch">
 
             <div class="tw-pb-2">
-                <input placeholder='Search'                         
+                <input data-testid="visit-table-search"
+                       placeholder='Search'                         
                        v-on:keyup.enter="fetchData" 
                        v-model = "searchVisit"/>
             </div>
 
-            <table class="tw-w-full tw-mb-2">
+            <table data-testid="visit-table" class="tw-w-full tw-mb-2">
                 <thead>
-                    <td v-for="(value) in headers" :key="value.id"
+                    <td v-for="(value) in headers" :key="value.id" data-testid="visit-table-headers"
                     class="tw-w-1/8 tw-bg-table-header-background tw-text-table-header-color tw-font-bold tw-py-2 tw-text-center">
                     {{value.title}}
                     </td>
@@ -36,13 +38,13 @@
                             }"> 
                         <td v-for="(value) in headers" :key="value.id"
                             :id="value.key" class="tw-p-1 tw-text-center">
-                                <p v-if="value.key !== 'COMMENTS' && value.key !== 'ARCHIVED'">{{visit[value.key]}}</p>
-                                <p v-if="value.key === 'COMMENTS' && visit.clicked === false">{{visit.COMMENTS}}</p>
-                                <input v-if="value.key === 'COMMENTS' && visit.clicked === true"
+                                <p data-testid="visit-table-value" v-if="value.key !== 'COMMENTS' && value.key !== 'ARCHIVED'">{{visit[value.key]}}</p>
+                                <p data-testid="visit-comment-value" v-if="value.key === 'COMMENTS' && visit.clicked === false">{{visit.COMMENTS}}</p>
+                                <input data-testid="visit-comment-input" v-if="value.key === 'COMMENTS' && visit.clicked === true"
                                        title="Comment cannot be seen by User Office"
                                        v-model="visit.edited_comment"
                                        v-on:keyup.enter="onEnter(visit)" />
-                                <i class="fa fa-archive r" title="This visit is archived, file is no longer available on disk" v-if="value.key == 'ARCHIVED' && visit.ARCHIVED == 1"></i>
+                                <i data-testid="visit-table-archived" class="fa fa-archive r" title="This visit is archived, file is no longer available on disk" v-if="value.key == 'ARCHIVED' && visit.ARCHIVED == 1"></i>
                                  
                         </td>
                     </tr>
@@ -51,12 +53,13 @@
 
             </table>
 
-            <div v-if="visits.length == 0" class="tw-bg-table-body-background-odd tw-w-full tw-mb-2 tw-text-center">
+            <div data-testid="no-visits-found" v-if="visits.length == 0" class="tw-bg-table-body-background-odd tw-w-full tw-mb-2 tw-text-center">
                 <p>No Visits Found</p></div>
 
 
             <pagination-panel
-            :initial-page="1"
+            data-testid="visit-pagination"
+            :initial-page=currentPage
             :totalRecords=totalRecords
             :pageLinks="10"
             @page-changed="handlePageChange"
@@ -143,6 +146,7 @@ export default {
     methods: {
         async fetchData() {
             // fetches visit data based on prop
+    
             this.visitCollection = new VisitCollection()
             this.visitCollection.queryParams = { page: this.currentPage, per_page: this.pageSize };
 
@@ -160,8 +164,8 @@ export default {
         handlePageChange(data) {
             try {
 
-            this.currentPage = data.currentPage;
-            this.pageSize = data.pageSize;
+            this.currentPage = data['current-page'];
+            this.pageSize = data['page-size'];
 
             this.fetchData();
 
