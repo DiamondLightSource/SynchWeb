@@ -7,6 +7,21 @@
 
 		<table class="details" style="background: #f4f4f4; margin: 1%">
 			<tbody>
+				<?php if (isset($data['AWBURL'])): ?>
+					<?php if ($data['AWBURL']): ?>
+						<tr>
+							<td style="padding: 1.5%; font-weight: bold">Air Waybill</td>
+							<td><a href="<?php echo $data['AWBURL']; ?>"><?php echo $data['AWBURL']; ?></a></td>
+						</tr>
+					<?php else: ?>
+						<tr>
+							<td style="padding: 1.5%; font-weight: bold">Air Waybill</td>
+							<td>Shipping service could not book the shipment.<br/>
+								Please book a shipment for this Dewar using the details below.</td>
+						</tr>
+					<?php endif; ?>
+				<?php endif; ?>
+
 				<tr>
 					<td style="padding: 1.5%; font-weight: bold">Visit</td>
 					<td><?php echo $data['VISIT'] ?></td>

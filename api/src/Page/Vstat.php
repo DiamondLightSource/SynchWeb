@@ -24,20 +24,22 @@ class Vstat extends Page
     );
 
 
-    public static $dispatch = array(array('/breakdown(/:visit)', 'get', '_visit_breakdown'),
-            array('/hrs(/:visit)', 'get', '_hourlies'),
-            array('/pies(/:visit)', 'get', '_pies'),
-            array('/ehc/:visit', 'get', '_ehc_log'),
-            array('/call/:visit', 'get', '_callouts'),
-            array('/errors(/:visit)', 'get', '_error_log'),
-            array('/overview', 'get', '_overview'),
-            array('/runs', 'get', '_runs'),
-            array('/histogram', 'get', '_parameter_histogram'),
+    public static $dispatch = array(
+        array('/breakdown(/:visit)', 'get', '_visit_breakdown'),
+        array('/hrs(/:visit)', 'get', '_hourlies'),
+        array('/pies(/:visit)', 'get', '_pies'),
+        array('/ehc/:visit', 'get', '_ehc_log'),
+        array('/call/:visit', 'get', '_callouts'),
+        array('/errors(/:visit)', 'get', '_error_log'),
+        array('/overview', 'get', '_overview'),
+        array('/runs', 'get', '_runs'),
+        array('/histogram', 'get', '_parameter_histogram'),
 
-            array('/dewars', 'get', '_dewars_breakdown'),
+        array('/dewars', 'get', '_dewars_breakdown'),
 
     );
 
+    var $dhl;
 
     function __construct()
     {
@@ -53,15 +55,11 @@ class Vstat extends Page
     {
         ini_set('memory_limit', '512M');
 
-        if ($this->has_arg('visit'))
-        {
+        if ($this->has_arg('visit')) {
             $info = $this->_check_visit();
             $where = 'AND s.sessionid=:1';
             $args = array($info['SID']);
-
-        }
-        else if ($this->user->hasPermission('all_breakdown'))
-        {
+        } else if ($this->user->hasPermission('all_breakdown')) {
             if (!$this->has_arg('runid'))
                 $this->_error('No run specified');
             if (!$this->has_arg('bl'))
@@ -77,10 +75,9 @@ class Vstat extends Page
 
             $where = "AND vr.runid=:1 AND s.beamlinename=:2 AND p.proposalcode <> 'cm'";
             $args = array($this->arg('runid'), $this->arg('bl'));
-
-        }
-        else
+        } else {
             $this->_error('No visit specified');
+        }
 
         $dc = $this->db->pq("SELECT IF(dc.chistart IS NULL, 0, dc.chistart) as chistart, dc.kappastart, dc.phistart, dc.wavelength, dc.beamsizeatsamplex, dc.beamsizeatsampley, dc.datacollectionid as id, TO_CHAR(dc.starttime, 'DD-MM-YYYY HH24:MI:SS') as st, TO_CHAR(dc.endtime, 'DD-MM-YYYY HH24:MI:SS') as en, dc.runstatus, CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) as visit, pr.proteinid, pr.acronym as protein, smp.name as sample
                 FROM datacollection dc 
@@ -92,7 +89,7 @@ class Vstat extends Page
                 LEFT OUTER JOIN crystal c ON c.crystalid = smp.crystalid
                 LEFT OUTER JOIN protein pr ON pr.proteinid = c.proteinid
                 WHERE 1=1 $where ORDER BY dc.starttime", $args);
-            
+
         $dcf = $this->db->pq("SELECT COUNT(dc.datacollectionid) as count,
                 COUNT(distinct dc.blsampleid) as samplecount
                 FROM datacollection dc 
@@ -150,8 +147,7 @@ class Vstat extends Page
                 LEFT OUTER JOIN protein pr ON pr.proteinid = c.proteinid
                 WHERE 1=1 $where ORDER BY f.endtime DESC", $args);
 
-        if ($this->has_arg('visit'))
-        {
+        if ($this->has_arg('visit')) {
             $ai = $this->db->pq("SELECT dc.datacollectionid as id, TO_CHAR(dc.endtime, 'DD-MM-YYYY HH24:MI:SS') as st, TO_CHAR(max(sc.bltimestamp), 'DD-MM-YYYY HH24:MI:SS') as en
                     FROM datacollection dc 
                     INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
@@ -197,7 +193,6 @@ class Vstat extends Page
                     (SELECT blsmp.blSampleId FROM blsample blsmp
                     INNER JOIN datacollection dc ON dc.blsampleid = blsmp.blsampleid
                     WHERE dc.sessionId=:2)", $newargs);
-
         } else {
             $ai = array();
             $cent = array();
@@ -220,7 +215,7 @@ class Vstat extends Page
                 INNER JOIN proposal p ON p.proposalid = s.proposalid
                 INNER JOIN v_run vr ON s.startdate BETWEEN vr.startdate AND vr.enddate
                 WHERE f.beamtimelost=1 $where", $args);
-            
+
         $info['DC_FULL'] = sizeof($dcf) ? $dcf[0]['COUNT'] : 0;
         $info['DC_FULL_SAMPLES'] = $dcf[0]['SAMPLECOUNT'] ? $dcf[0]['SAMPLECOUNT'] : 0;
         $info['DC_SCREEN'] = sizeof($dcs) ? $dcs[0]['COUNT'] : 0;
@@ -235,10 +230,10 @@ class Vstat extends Page
         $info['FL_TOT'] = sizeof($fl);
         $info['R_TOT'] = sizeof($robot);
         $info['F_TOT'] = sizeof($faultl);
-        
-        if ($info['DC_TOT'] + $info['E_TOT'] + $info['R_TOT'] == 0) 
+
+        if ($info['DC_TOT'] + $info['E_TOT'] + $info['R_TOT'] == 0)
             $this->_error('No Data');
-        
+
         $data = array();
 
         if ($info['DC_TOT'] + $info['E_TOT'] + $info['R_TOT'] == 0)
@@ -256,10 +251,8 @@ class Vstat extends Page
         foreach ($scattercols as $c)
             array_push($scatters, array('data' => array()));
 
-        foreach ($ctf as $c)
-        {
-            foreach ($scattercols as $i => $f)
-            {
+        foreach ($ctf as $c) {
+            foreach ($scattercols as $i => $f) {
                 $scatters[$i]['label'] = $f;
                 if ($i > 0)
                     $scatters[$i]['yaxis'] = $i + 1;
@@ -270,34 +263,31 @@ class Vstat extends Page
 
         $queued = 0;
         $vis_map = array();
-        foreach ($sched as $s)
-        {
-            if ($s['SCHEDULED'] != '1' || $s['PROPOSALCODE'] == 'lb' || $s['PROPOSALCODE'] == 'nr')
-            {
+        foreach ($sched as $s) {
+            if ($s['SCHEDULED'] != '1' || $s['PROPOSALCODE'] == 'lb' || $s['PROPOSALCODE'] == 'nr') {
                 $vis_map[$s['VISIT']] = $s;
                 $queued++;
                 continue;
             }
             array_push($data, array('data' => array(
-                    array($this->jst($s['ST']), 6, $this->jst($s['ST'])),
-                    array($this->jst($s['EN']), 6, $this->jst($s['ST']))), 'color' => 'purple', 'type' => 'visit', 'status' => $s['VISIT'] . ': ' . $s['TITLE'], 'visit' => $s['VISIT']));
+                array($this->jst($s['ST']), 6, $this->jst($s['ST'])),
+                array($this->jst($s['EN']), 6, $this->jst($s['ST']))
+            ), 'color' => 'purple', 'type' => 'visit', 'status' => $s['VISIT'] . ': ' . $s['TITLE'], 'visit' => $s['VISIT']));
         }
 
         $lastend = null;
         $lastvisit = null;
         $startvisit = null;
-        foreach ($dc as $d)
-        {
+        foreach ($dc as $d) {
 
-            if ($lastvisit && ($d['VISIT'] != $lastvisit))
-            {
-                if (array_key_exists($lastvisit, $vis_map))
-                {
+            if ($lastvisit && ($d['VISIT'] != $lastvisit)) {
+                if (array_key_exists($lastvisit, $vis_map)) {
                     $s = $vis_map[$lastvisit];
                     // print_r(array($startvisit, $lastend, $s));
                     array_push($data, array('data' => array(
-                            array($this->jst($startvisit), 7, $this->jst($startvisit)),
-                            array($this->jst($lastend), 7, $this->jst($startvisit))), 'color' => 'purple', 'type' => 'visit_ns', 'status' => $s['VISIT'] . ': ' . $s['TITLE'], 'visit' => $s['VISIT']));
+                        array($this->jst($startvisit), 7, $this->jst($startvisit)),
+                        array($this->jst($lastend), 7, $this->jst($startvisit))
+                    ), 'color' => 'purple', 'type' => 'visit_ns', 'status' => $s['VISIT'] . ': ' . $s['TITLE'], 'visit' => $s['VISIT']));
                 }
 
                 $startvisit = null;
@@ -306,16 +296,15 @@ class Vstat extends Page
             if (strpos($d['RUNSTATUS'], 'Successful') === false)
                 $info['DC_STOPPED']++;
 
-            if ($d['ST'] && $d['EN'])
-            {
+            if ($d['ST'] && $d['EN']) {
                 array_push($data, array('data' => array(
-                        array($this->jst($d['ST']), 1, $this->jst($d['ST'])),
-                        array($this->jst($d['EN']), 1, $this->jst($d['ST']))), 'color' => 'green', 'id' => intval($d['ID']), 'type' => 'dc', 'visit' => $d['VISIT'], 'pid' => $d['PROTEINID'], 'status' => 'Protein: ' . $d['PROTEIN']));
+                    array($this->jst($d['ST']), 1, $this->jst($d['ST'])),
+                    array($this->jst($d['EN']), 1, $this->jst($d['ST']))
+                ), 'color' => 'green', 'id' => intval($d['ID']), 'type' => 'dc', 'visit' => $d['VISIT'], 'pid' => $d['PROTEINID'], 'status' => 'Protein: ' . $d['PROTEIN']));
 
                 $d['ENERGY'] = $d['WAVELENGTH'] ? (1.98644568e-25 / ($d['WAVELENGTH'] * 1e-10)) / 1.60217646e-19 : '';
 
-                foreach ($linecols as $i => $f)
-                {
+                foreach ($linecols as $i => $f) {
                     $lines[$i]['label'] = $f;
                     if ($i > 0)
                         $lines[$i]['yaxis'] = $i > 2 ? 3 : ($i > 0 ? 2 : 1);
@@ -329,58 +318,58 @@ class Vstat extends Page
             $lastend = $d['EN'] ? $d['EN'] : $d['ST'];
         }
 
-        if (array_key_exists($lastvisit, $vis_map))
-        {
+        if (array_key_exists($lastvisit, $vis_map)) {
             $s = $vis_map[$lastvisit];
             // print_r(array($startvisit, $lastend, $s));
             array_push($data, array('data' => array(
-                    array($this->jst($startvisit), 7, $this->jst($startvisit)),
-                    array($this->jst($lastend), 7, $this->jst($startvisit))), 'color' => 'purple', 'type' => 'visit_ns', 'status' => $s['VISIT'] . ': ' . $s['TITLE'], 'visit' => $s['VISIT']));
+                array($this->jst($startvisit), 7, $this->jst($startvisit)),
+                array($this->jst($lastend), 7, $this->jst($startvisit))
+            ), 'color' => 'purple', 'type' => 'visit_ns', 'status' => $s['VISIT'] . ': ' . $s['TITLE'], 'visit' => $s['VISIT']));
         }
 
         // return;
-        foreach ($robot as $r)
-        {
+        foreach ($robot as $r) {
             array_push($data, array('data' => array(
-                    array($this->jst($r['ST']), 2, $this->jst($r['ST'])),
-                    array($this->jst($r['EN']), 2, $this->jst($r['ST']))), 'color' => $r['STATUS'] != 'SUCCESS' ? 'purple' : 'blue', 'status' => ' ' . $r['ACTIONTYPE'] . ' (' . $r['STATUS'] . ')', 'type' => 'robot'));
+                array($this->jst($r['ST']), 2, $this->jst($r['ST'])),
+                array($this->jst($r['EN']), 2, $this->jst($r['ST']))
+            ), 'color' => $r['STATUS'] != 'SUCCESS' ? 'purple' : 'blue', 'status' => ' ' . $r['ACTIONTYPE'] . ' (' . $r['STATUS'] . ')', 'type' => 'robot'));
         }
 
-        foreach ($edge as $e)
-        {
+        foreach ($edge as $e) {
             array_push($data, array('data' => array(
-                    array($this->jst($e['ST']), 3, $this->jst($e['ST'])),
-                    array($this->jst($e['EN']), 3, $this->jst($e['ST']))), 'color' => 'orange', 'id' => $e['ID'], 'type' => 'ed', 'pid' => $d['PROTEINID'], 'status' => 'Protein: ' . $d['PROTEIN']));
+                array($this->jst($e['ST']), 3, $this->jst($e['ST'])),
+                array($this->jst($e['EN']), 3, $this->jst($e['ST']))
+            ), 'color' => 'orange', 'id' => $e['ID'], 'type' => 'ed', 'pid' => $d['PROTEINID'], 'status' => 'Protein: ' . $d['PROTEIN']));
         }
 
-        foreach ($fl as $e)
-        {
+        foreach ($fl as $e) {
             array_push($data, array('data' => array(
-                    array($this->jst($e['ST']), 3, $this->jst($e['ST'])),
-                    array($this->jst($e['EN']), 3, $this->jst($e['ST']))), 'color' => 'red', 'id' => $e['ID'], 'type' => 'mca', 'pid' => $d['PROTEINID'], 'status' => 'Protein: ' . $d['PROTEIN']));
+                array($this->jst($e['ST']), 3, $this->jst($e['ST'])),
+                array($this->jst($e['EN']), 3, $this->jst($e['ST']))
+            ), 'color' => 'red', 'id' => $e['ID'], 'type' => 'mca', 'pid' => $d['PROTEINID'], 'status' => 'Protein: ' . $d['PROTEIN']));
         }
 
-        foreach ($faultl as $f)
-        {
+        foreach ($faultl as $f) {
             array_push($data, array('data' => array(
-                    array($this->jst($f['ST']), 4, $this->jst($f['ST'])),
-                    array($this->jst($f['EN']), 4, $this->jst($f['ST']))), 'color' => 'grey', 'type' => 'fault', 'status' => ' Fault: ' . $f['TITLE']));
+                array($this->jst($f['ST']), 4, $this->jst($f['ST'])),
+                array($this->jst($f['EN']), 4, $this->jst($f['ST']))
+            ), 'color' => 'grey', 'type' => 'fault', 'status' => ' Fault: ' . $f['TITLE']));
         }
 
-        foreach ($ai as $d)
-        {
+        foreach ($ai as $d) {
             if ($d['ST'] && $d['EN'])
                 array_push($data, array('data' => array(
-                        array($this->jst($d['ST']), 1, $this->jst($d['ST'])),
-                        array($this->jst($d['EN']), 1, $this->jst($d['ST']))), 'color' => '#93db70', 'id' => intval($d['ID']), 'type' => 'ai'));
+                    array($this->jst($d['ST']), 1, $this->jst($d['ST'])),
+                    array($this->jst($d['EN']), 1, $this->jst($d['ST']))
+                ), 'color' => '#93db70', 'id' => intval($d['ID']), 'type' => 'ai'));
         }
 
-        foreach ($cent as $c)
-        {
+        foreach ($cent as $c) {
             if ($c['ST'] && $c['EN'])
                 array_push($data, array('data' => array(
-                        array($this->jst($c['ST']), 1.5, $this->jst($c['ST'])),
-                        array($this->jst($c['EN']), 1.5, $this->jst($c['ST']))), 'color' => 'cyan', 'type' => 'cent'));
+                    array($this->jst($c['ST']), 1.5, $this->jst($c['ST'])),
+                    array($this->jst($c['EN']), 1.5, $this->jst($c['ST']))
+                ), 'color' => 'cyan', 'type' => 'cent'));
         }
 
         // Beam status 
@@ -393,23 +382,21 @@ class Vstat extends Page
         $lastv = 0;
         $ex = 3600 * 1000;
         $bd = False;
-        foreach ($bs as $i => $b)
-        {
+        foreach ($bs as $i => $b) {
             //$v = $b[1] < 5 ? 1 : 0;
             $v = $b[1] != 4;
             $c = $b[0] * 1000;
 
-            if (($v != $lastv) && $v)
-            {
+            if (($v != $lastv) && $v) {
                 $bd = True;
                 $st = $c;
             }
 
-            if ($lastv && ($v != $lastv))
-            {
+            if ($lastv && ($v != $lastv)) {
                 array_push($data, array('data' => array(
-                        array($st + $ex, 5, $st + $ex),
-                        array($c + $ex, 5, $st + $ex)), 'color' => 'black', 'status' => ' Beam Dump', 'type' => 'nobeam'));
+                    array($st + $ex, 5, $st + $ex),
+                    array($c + $ex, 5, $st + $ex)
+                ), 'color' => 'black', 'status' => ' Beam Dump', 'type' => 'nobeam'));
                 $bd = False;
             }
 
@@ -419,8 +406,7 @@ class Vstat extends Page
 
         $first = $info['ST'];
         $last = $info['EN'];
-        if (sizeof($dc))
-        {
+        if (sizeof($dc)) {
             $f = $dc[0];
             $l = end($dc);
             if (strtotime($f['EN'] ? $f['EN'] : $f['ST']) > strtotime($info['EN']))
@@ -428,8 +414,7 @@ class Vstat extends Page
             if (strtotime($l['ST']) < strtotime($info['ST']))
                 $first = $l['ST'];
             $info['LAST'] = $l['ST'];
-        }
-        else
+        } else
             $info['LAST'] = '';
 
         $info['start'] = $this->jst($first);
@@ -444,8 +429,7 @@ class Vstat extends Page
         $args = array($this->proposalid);
         $where = ' WHERE p.proposalid=:1';
 
-        if ($this->has_arg('visit'))
-        {
+        if ($this->has_arg('visit')) {
             $info = $this->_check_visit();
             $where .= ' AND s.sessionid=:' . (sizeof($args) + 1);
             array_push($args, $info['SID']);
@@ -481,54 +465,43 @@ class Vstat extends Page
 
         $fault = $this->db->pq("SELECT SUM(TIMESTAMPDIFF('SECOND', f.beamtimelost_starttime, f.beamtimelost_endtime))/3600 as lost, s.visit_number as visit FROM bf_fault f INNER JOIN blsession s ON f.sessionid = s.sessionid INNER JOIN proposal p ON (p.proposalid = s.proposalid) $where GROUP BY s.visit_number", $args);
 
-        foreach ($robot as $r)
-        {
-            foreach ($dc as &$d)
-            {
+        foreach ($robot as $r) {
+            foreach ($dc as &$d) {
                 if ($r['VISIT'] == $d['VISIT'])
                     $d['R'] = $r['DCTIME'];
             }
         }
 
-        foreach ($edge as $e)
-        {
-            foreach ($dc as &$d)
-            {
+        foreach ($edge as $e) {
+            foreach ($dc as &$d) {
                 if ($e['VISIT'] == $d['VISIT'])
                     $d['EDGE'] = $e['DCTIME'];
             }
         }
 
-        foreach ($ai as $a)
-        {
-            foreach ($dc as &$d)
-            {
+        foreach ($ai as $a) {
+            foreach ($dc as &$d) {
                 if ($a['VISIT'] == $d['VISIT'])
                     $d['AITIME'] = $a['AITIME'] ? $a['AITIME'] : 0;
             }
         }
 
-        foreach ($cent as $a)
-        {
-            foreach ($dc as &$d)
-            {
+        foreach ($cent as $a) {
+            foreach ($dc as &$d) {
                 if ($a['VISIT'] == $d['VISIT'])
                     $d['CENTTIME'] = $a['CENTTIME'] ? $a['CENTTIME'] : 0;
             }
         }
 
-        foreach ($fault as $f)
-        {
-            foreach ($dc as &$d)
-            {
+        foreach ($fault as $f) {
+            foreach ($dc as &$d) {
                 if ($f['VISIT'] == $d['VISIT'])
                     $d['FAULT'] = $f['LOST'] ? $f['LOST'] : 0;
             }
         }
 
         $i = 0;
-        foreach ($dc as &$d)
-        {
+        foreach ($dc as &$d) {
             if (!array_key_exists('R', $d))
                 $d['R'] = 0;
             if (!array_key_exists('EDGE', $d))
@@ -549,20 +522,17 @@ class Vstat extends Page
             $ex = 3600 * 1000;
             $bd = False;
             $total_no_beam = 0;
-            foreach ($bs as $i => $b)
-            {
+            foreach ($bs as $i => $b) {
                 //$v = $b[1] < 5 ? 1 : 0;
                 $v = $b[1] != 4;
                 $c = $b[0] * 1000;
 
-                if (($v != $lastv) && $v)
-                {
+                if (($v != $lastv) && $v) {
                     $bd = True;
                     $st = $c;
                 }
 
-                if ($lastv && ($v != $lastv))
-                {
+                if ($lastv && ($v != $lastv)) {
                     $total_no_beam += ($c - $st) / 1000;
                     $bd = False;
                 }
@@ -584,10 +554,8 @@ class Vstat extends Page
 
         # Averages
         $avgs = array();
-        foreach (array('T', 'SUP', 'DCTIME', 'R', 'REM', 'EDGE', 'AITIME', 'CENTTIME', 'FAULT', 'NOBEAM') as $i => $col)
-        {
-            $arr = array_map(function ($d) use ($col)
-            {
+        foreach (array('T', 'SUP', 'DCTIME', 'R', 'REM', 'EDGE', 'AITIME', 'CENTTIME', 'FAULT', 'NOBEAM') as $i => $col) {
+            $arr = array_map(function ($d) use ($col) {
                 return $d[$col];
             }, $dc);
             $avgs[$col] = sizeof($arr) ? array_sum($arr) / count($arr) : 0;
@@ -609,8 +577,7 @@ class Vstat extends Page
         $args = array($this->proposalid);
         $where = '';
 
-        if ($this->has_arg('visit'))
-        {
+        if ($this->has_arg('visit')) {
             $info = $this->_check_visit();
             $where .= ' AND s.sessionid=:' . (sizeof($args) + 1);
             array_push($args, $info['SID']);
@@ -628,8 +595,7 @@ class Vstat extends Page
                 ) inq GROUP BY dh ORDER BY hour
             ", $args);
         $dch = array();
-        foreach ($dch_tmp as $d)
-        {
+        foreach ($dch_tmp as $d) {
             array_push($dch, array($d['HOUR'], $d['DCS']));
         }
 
@@ -645,8 +611,7 @@ class Vstat extends Page
                 ) inq GROUP BY dh ORDER BY hour
             ", $args);
         $slh = array();
-        foreach ($slh_tmp as $d)
-        {
+        foreach ($slh_tmp as $d) {
             array_push($slh, array($d['HOUR'], $d['SLH']));
         }
 
@@ -665,8 +630,7 @@ class Vstat extends Page
                 GROUP BY dcg.experimenttype", array($info['SID']));
 
         $totals = array();
-        foreach ($dc_tot as $tot)
-        {
+        foreach ($dc_tot as $tot) {
             $totals[$tot['EXPERIMENTTYPE']] = intval($tot["TOTAL"]);
         }
 
@@ -678,10 +642,8 @@ class Vstat extends Page
                 WHERE dcg.sessionid=:1 AND dc.runstatus NOT LIKE '%success%'", array($info['SID']));
 
         $dc_types = array();
-        foreach ($dcs as $dc)
-        {
-            if (!array_key_exists($dc['EXPERIMENTTYPE'], $dc_types))
-            {
+        foreach ($dcs as $dc) {
+            if (!array_key_exists($dc['EXPERIMENTTYPE'], $dc_types)) {
                 $dc_types[$dc['EXPERIMENTTYPE']] = array(
                     'type' => $dc['EXPERIMENTTYPE'],
                     'total' => array_key_exists($dc['EXPERIMENTTYPE'], $totals) ? $totals[$dc['EXPERIMENTTYPE']] : 0,
@@ -692,20 +654,15 @@ class Vstat extends Page
             }
 
 
-            if (preg_match('/aborted/i', $dc['RUNSTATUS']))
-            {
+            if (preg_match('/aborted/i', $dc['RUNSTATUS'])) {
                 $dc_types[$dc['EXPERIMENTTYPE']]['aborted']++;
-            }
-            else
-            {
+            } else {
                 $dc_types[$dc['EXPERIMENTTYPE']]['failed']++;
-                if ($dc['LOGFILE'])
-                {
+                if ($dc['LOGFILE']) {
                     $lines = file($dc['LOGFILE']);
                     $last = rtrim(end($lines));
 
-                    if (!array_key_exists($last, $dc_types[$dc['EXPERIMENTTYPE']]['messages']))
-                    {
+                    if (!array_key_exists($last, $dc_types[$dc['EXPERIMENTTYPE']]['messages'])) {
                         $dc_types[$dc['EXPERIMENTTYPE']]['messages'][$last] = array(
                             'count' => 0,
                             'message' => $last,
@@ -717,8 +674,7 @@ class Vstat extends Page
             }
         }
 
-        foreach ($dc_types as &$ty)
-        {
+        foreach ($dc_types as &$ty) {
             $ty['messages'] = array_values($ty['messages']);
         }
 
@@ -736,8 +692,7 @@ class Vstat extends Page
             $ehc_tmp = array();
 
         $ehcs = array();
-        foreach ($ehc_tmp as $e)
-        {
+        foreach ($ehc_tmp as $e) {
             //if (strpos($e->title, 'shift') !== False) 
             array_push($ehcs, $e);
         }
@@ -753,7 +708,8 @@ class Vstat extends Page
         $st = strtotime($info['ST']);
         $en = strtotime($info['EN']);
 
-        $bls = array('i02' => 'BLI02', 'i03' => 'BLI03', 'i04' => 'BLI04', 'i04-1' => 'BLI04J', 'i24' => 'BLI24', 'i23' => 'BLI23',
+        $bls = array(
+            'i02' => 'BLI02', 'i03' => 'BLI03', 'i04' => 'BLI04', 'i04-1' => 'BLI04J', 'i24' => 'BLI24', 'i23' => 'BLI23',
             'i11-1' => 'BLI11',
             'b21' => 'BLB21',
             'i12' => 'BLI12', 'i13' => 'BLI13', 'i13-1' => 'BLI13J',
@@ -776,8 +732,7 @@ class Vstat extends Page
         $args = array($this->arg('visit'));
         $where = "WHERE CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) LIKE :1";
 
-        if (!$this->staff)
-        {
+        if (!$this->staff) {
             if (!$this->has_arg('prop'))
                 $this->_error('No proposal selected', 'You need to select a proposal before viewing this page');
 
@@ -787,11 +742,9 @@ class Vstat extends Page
 
         $info = $this->db->pq("SELECT CONCAT(p.proposalcode, p.proposalnumber) as prop, s.beamlinename as bl, s.sessionid as sid, TO_CHAR(s.startdate, 'DD-MM-YYYY HH24:MI') as st, TO_CHAR(s.enddate, 'DD-MM-YYYY HH24:MI') as en, TIMESTAMPDIFF('HOUR', s.startdate, s.enddate) as len FROM blsession s INNER JOIN proposal p ON (p.proposalid = s.proposalid) $where", $args);
 
-        if (!sizeof($info))
-        {
+        if (!sizeof($info)) {
             $this->_error('No such visit');
-        }
-        else
+        } else
             return $info[0];
     }
 
@@ -823,16 +776,14 @@ class Vstat extends Page
         $where = " AND p.proposalcode NOT IN ('cm') AND s.beamlinename in ('$bls')";
         $args = array();
 
-        if (!$this->user->hasPermission('all_prop_stats'))
-        {
+        if (!$this->user->hasPermission('all_prop_stats')) {
             if (!$this->has_arg('prop'))
                 $this->_error('No proposal specified');
             $where .= ' AND p.proposalid = :' . (sizeof($args) + 1);
             array_push($args, $this->proposalid);
         }
 
-        if ($this->has_arg('ty'))
-        {
+        if ($this->has_arg('ty')) {
             if ($this->arg('ty') == 'yearly')
                 $where .= " AND TIMESTAMPDIFF('MONTH', s.startdate, CURRENT_TIMESTAMP) <= 12";
             if ($this->arg('ty') == 'monthly')
@@ -841,80 +792,66 @@ class Vstat extends Page
                 $where .= " AND TIMESTAMPDIFF('DAY', s.startdate, CURRENT_TIMESTAMP) <= 7";
         }
 
-        if ($this->has_arg('runid'))
-        {
+        if ($this->has_arg('runid')) {
             $where .= " AND vr.runid=:" . (sizeof($args) + 1);
             array_push($args, $this->arg('runid'));
         }
 
-        if ($this->has_arg('scheduled'))
-        {
+        if ($this->has_arg('scheduled')) {
             $where .= " AND s.scheduled=1";
         }
 
-        if ($this->has_arg('proposalcode'))
-        {
+        if ($this->has_arg('proposalcode')) {
             $where .= " AND p.proposalcode=:" . (sizeof($args) + 1);
             array_push($args, $this->arg('proposalcode'));
         }
 
-        if ($this->has_arg('proposal'))
-        {
+        if ($this->has_arg('proposal')) {
             $where .= " AND CONCAT(p.proposalcode,p.proposalnumber) LIKE :" . (sizeof($args) + 1);
             array_push($args, $this->arg('proposal'));
         }
 
-        if ($this->has_arg('bl'))
-        {
+        if ($this->has_arg('bl')) {
             $where .= " AND s.beamlinename=:" . (sizeof($args) + 1);
             array_push($args, $this->arg('bl'));
         }
 
-        if ($this->has_arg('s'))
-        {
+        if ($this->has_arg('s')) {
             $st = sizeof($args) + 1;
             $where .= " AND ( CONCAT(p.proposalcode, p.proposalnumber) LIKE lower(CONCAT(CONCAT('%',:" . $st . "), '%')) )";
             array_push($args, $this->arg('s'));
         }
 
         $match = 'PROP';
-        if ($this->has_arg('group_by'))
-        {
-            if ($this->arg('group_by') == 'run')
-            {
+        if ($this->has_arg('group_by')) {
+            if ($this->arg('group_by') == 'run') {
                 $group = 'GROUP BY run';
                 $match = 'RUN';
             }
 
-            if ($this->arg('group_by') == 'beamline')
-            {
+            if ($this->arg('group_by') == 'beamline') {
                 $group = 'GROUP BY beamlinename';
                 $match = 'BEAMLINENAME';
             }
 
-            if ($this->arg('group_by') == 'type')
-            {
+            if ($this->arg('group_by') == 'type') {
                 $group = 'GROUP BY typename';
                 $match = 'TYPENAME';
             }
 
-            if ($this->arg('group_by') == 'total')
-            {
+            if ($this->arg('group_by') == 'total') {
                 $group = '';
                 $match = 'TOTAL';
             }
 
-            if ($this->arg('group_by') == 'visit')
-            {
+            if ($this->arg('group_by') == 'visit') {
                 $group = 'GROUP BY visit';
                 $match = 'VISIT';
 
                 $where .= ' AND p.proposalid = :' . (sizeof($args) + 1);
                 array_push($args, $this->proposalid);
             }
-
-        }
-        else
+        } else
             $group = 'GROUP BY prop';
 
 
@@ -963,8 +900,7 @@ class Vstat extends Page
                 ORDER BY runid DESC", $args);
 
 
-        foreach ($dc as &$d)
-        {
+        foreach ($dc as &$d) {
             foreach (array('DCH', 'MDCH', 'DC', 'SCH', 'MSCH', 'SC', 'MSLH', 'SLH', 'SL', 'MX') as $k)
                 if (!array_key_exists($k, $d))
                     $d[$k] = 0;
@@ -984,12 +920,10 @@ class Vstat extends Page
                     $d[$t] = round(floatval($d[$t]), 1);
         }
 
-        if ($this->has_arg('download'))
-        {
+        if ($this->has_arg('download')) {
             $data = array();
             array_push($data, array_keys($dc[0]));
-            foreach ($dc as $d)
-            {
+            foreach ($dc as $d) {
                 array_push($data, array_values($d));
             }
             $group = $this->has_arg('group_by') ? $this->arg('group_by') : 'prop';
@@ -998,9 +932,7 @@ class Vstat extends Page
             $prop = $this->has_arg('proposal') ? ('_' . $this->arg('proposal')) : '';
 
             $this->_write_csv($data, 'groupby_' . $group . $bl . $prop . $run);
-
-        }
-        else
+        } else
             $this->_output($dc);
     }
 
@@ -1021,10 +953,8 @@ class Vstat extends Page
 
         $k = 'energy';
         $t = $types[$k];
-        if ($this->has_arg('ty'))
-        {
-            if (array_key_exists($this->arg('ty'), $types))
-            {
+        if ($this->has_arg('ty')) {
+            if (array_key_exists($this->arg('ty'), $types)) {
                 $k = $this->arg('ty');
                 $t = $types[$k];
             }
@@ -1033,14 +963,12 @@ class Vstat extends Page
         $where = '';
         $args = array();
 
-        if ($this->has_arg('bl'))
-        {
+        if ($this->has_arg('bl')) {
             $where .= ' AND s.beamlinename=:' . (sizeof($args) + 1);
             array_push($args, $this->arg('bl'));
         }
 
-        if ($this->has_arg('runid'))
-        {
+        if ($this->has_arg('runid')) {
             $where .= ' AND vr.runid=:' . (sizeof($args) + 1);
             array_push($args, $this->arg('runid'));
         }
@@ -1064,19 +992,16 @@ class Vstat extends Page
             $bls[$h['BEAMLINENAME']] = 1;
 
         $data = array();
-        foreach ($bls as $bl => $y)
-        {
+        foreach ($bls as $bl => $y) {
             $ha = array();
-            foreach ($hist as &$h)
-            {
+            foreach ($hist as &$h) {
                 if ($h['BEAMLINENAME'] != $bl)
                     continue;
                 $ha[$h['X']] = floatval($h['Y']);
             }
 
             $gram = array();
-            for ($bin = $t['st']; $bin <= $t['en']; $bin += $t['bin_size'])
-            {
+            for ($bin = $t['st']; $bin <= $t['en']; $bin += $t['bin_size']) {
                 $gram[$bin] = array_key_exists($bin, $ha) ? $ha[$bin] : 0;
             }
 
@@ -1107,8 +1032,7 @@ class Vstat extends Page
     {
         header('Content-Type:application/csv');
         header("Content-Disposition:attachment;filename=$filename.csv");
-        foreach ($data as $d)
-        {
+        foreach ($data as $d) {
             print implode(',', $d) . "\n";
         }
     }
@@ -1126,43 +1050,36 @@ class Vstat extends Page
         $having = '';
         $args = array();
 
-        if (!$this->user->hasPermission('all_prop_stats'))
-        {
+        if (!$this->user->hasPermission('all_prop_stats')) {
             if (!$this->has_arg('prop'))
                 $this->_error('No proposal specified');
             $where .= ' AND p.proposalid = :' . (sizeof($args) + 1);
             array_push($args, $this->proposalid);
         }
 
-        if ($this->has_arg('data'))
-        {
+        if ($this->has_arg('data')) {
             $having = 'HAVING count(dc.datacollectionid) > 0';
         }
 
-        if ($this->has_arg('history'))
-        {
+        if ($this->has_arg('history')) {
             $having = 'HAVING count(th.dewartransporthistoryid) > 1';
         }
 
-        if ($this->has_arg('scheduled'))
-        {
+        if ($this->has_arg('scheduled')) {
             $where .= " AND ses.scheduled=1";
         }
 
-        if ($this->has_arg('proposalcode'))
-        {
+        if ($this->has_arg('proposalcode')) {
             $where .= " AND p.proposalcode=:" . (sizeof($args) + 1);
             array_push($args, $this->arg('proposalcode'));
         }
 
-        if ($this->has_arg('proposal'))
-        {
+        if ($this->has_arg('proposal')) {
             $where .= " AND CONCAT(p.proposalcode,p.proposalnumber) LIKE :" . (sizeof($args) + 1);
             array_push($args, $this->arg('proposal'));
         }
 
-        if ($this->has_arg('bl'))
-        {
+        if ($this->has_arg('bl')) {
             $where .= " AND ses.beamlinename=:" . (sizeof($args) + 1);
             array_push($args, $this->arg('bl'));
         }
@@ -1170,29 +1087,24 @@ class Vstat extends Page
 
         $match = 'PROP';
         $group = 'GROUP BY prop';
-        if ($this->has_arg('group_by'))
-        {
+        if ($this->has_arg('group_by')) {
 
-            if ($this->arg('group_by') == 'year')
-            {
+            if ($this->arg('group_by') == 'year') {
                 $group = 'GROUP BY year';
                 $match = 'YEAR';
             }
 
-            if ($this->arg('group_by') == 'beamline')
-            {
+            if ($this->arg('group_by') == 'beamline') {
                 $group = 'GROUP BY beamlinename';
                 $match = 'BEAMLINENAME';
             }
 
-            if ($this->arg('group_by') == 'country')
-            {
+            if ($this->arg('group_by') == 'country') {
                 $group = 'GROUP BY country';
                 $match = 'COUNTRY';
             }
 
-            if ($this->arg('group_by') == 'total')
-            {
+            if ($this->arg('group_by') == 'total') {
                 $group = '';
                 $match = 'TOTAL';
             }
@@ -1246,8 +1158,7 @@ class Vstat extends Page
                 $group
                 ORDER BY year DESC, country", $args);
 
-        foreach ($dewars as &$d)
-        {
+        foreach ($dewars as &$d) {
 
             $d['CODE'] = $this->dhl->get_code($d['COUNTRY']);
             if ($d['COUNTRY'] && !$d['CODE'])
@@ -1259,6 +1170,5 @@ class Vstat extends Page
 
 
         $this->_output($dewars);
-
     }
 }

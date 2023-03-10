@@ -49,28 +49,25 @@ function setupApplication($app, $mode): Slim
         'mode' => $mode == 'production' ? 'production' : 'development'
     ));
 
-    $app->configureMode('production', function () use ($app)
-    {
+    $app->configureMode('production', function () use ($app) {
         $app->config(array(
             'log.enable' => true,
             'debug' => false
         ));
     });
 
-    $app->configureMode('development', function () use ($app)
-    {
+    $app->configureMode('development', function () use ($app) {
         $app->config(array(
             'log.enable' => false,
             'debug' => true
         ));
     });
 
-    $app->get('/options', function () use ($app)
-    {
+    $app->get('/options', function () use ($app) {
         global $motd, $authentication_type, $cas_url, $cas_sso, $package_description,
-        $facility_courier_countries, $facility_courier_countries_nde,
-        $dhl_enable, $dhl_link, $scale_grid, $preset_proposal, $timezone,
-        $valid_components, $enabled_container_types;
+            $facility_courier_countries, $facility_courier_countries_nde,
+            $dhl_enable, $dhl_link, $scale_grid, $scale_grid_end_date, $preset_proposal, $timezone,
+            $valid_components, $enabled_container_types;
         $app->contentType('application/json');
         $app->response()->body(json_encode(array(
             'motd' => $motd,
@@ -83,6 +80,7 @@ function setupApplication($app, $mode): Slim
             'dhl_enable' => $dhl_enable,
             'dhl_link' => $dhl_link,
             'scale_grid' => $scale_grid,
+            'scale_grid_end_date' => $scale_grid_end_date,
             'preset_proposal' => $preset_proposal,
             'timezone' => $timezone,
             'valid_components' => $valid_components,
@@ -94,46 +92,38 @@ function setupApplication($app, $mode): Slim
 
 function setupDependencyInjectionContainer($app, $isb, $port)
 {
-    $app->container->singleton('db', function () use ($app): DatabaseParent
-    {
+    $app->container->singleton('db', function () use ($app): DatabaseParent {
         $dbFactory = new DatabaseFactory(new DatabaseConnectionFactory());
         $db = $dbFactory->get();
         $db->set_app($app);
         return $db;
     });
 
-    $app->container->singleton('authData', function () use ($app)
-    {
+    $app->container->singleton('authData', function () use ($app) {
         return new AuthenticationData($app->container['db']);
     });
 
-    $app->container->singleton('auth', function () use ($app)
-    {
+    $app->container->singleton('auth', function () use ($app) {
         return new AuthenticationController($app, $app->container['authData']);
     });
 
-    $app->container->singleton('user', function () use ($app)
-    {
+    $app->container->singleton('user', function () use ($app) {
         return $app->container['auth']->getUser();
     });
 
-    $app->container->singleton('userData', function () use ($app)
-    {
+    $app->container->singleton('userData', function () use ($app) {
         return new UserData($app->container['db']);
     });
 
-    $app->container->singleton('userController', function () use ($app)
-    {
+    $app->container->singleton('userController', function () use ($app) {
         return new UserController($app, $app->container['db'], $app->container['user'], $app->container['userData']);
     });
 
-    $app->container->singleton('imagingShared', function () use ($app)
-    {
+    $app->container->singleton('imagingShared', function () use ($app) {
         return new ImagingShared($app->container['db']);
     });
 
-    $app->container->singleton('dispatch', function () use ($app)
-    {
+    $app->container->singleton('dispatch', function () use ($app) {
         return new Dispatch($app, $app->container['db'], $app->container['user']);
     });
 }

@@ -24,4 +24,9 @@ class Utils
 
         return $loginId && $log_activity;
     }
+
+    public static function getValueOrDefault($value, $default = false)
+    {
+        return (isset($value)) ? $value : $default;
+    }
 }
