@@ -68,8 +68,8 @@ export default {
     containerComponent: function() {
       if (!this.geometry) return null
       if (this.geometry.columns > 0) return 'plate-view'
-      if (this.geometry.capacity > 4) return 'puck-view'
-      if (this.geometry.capacity > 0) return 'block-view'
+      if (this.geometry.capacity == 4) return 'block-view'
+      if (this.geometry.capacity > 0) return 'puck-view'
       // We have an unknown type, or incorrect data..
       return null
     },
