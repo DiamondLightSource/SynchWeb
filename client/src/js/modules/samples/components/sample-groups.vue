@@ -167,7 +167,7 @@ export default {
         const uniqueContainer = {}
 
         this.groups = result.map(group => {
-          const containerList = group['CONTAINERIDS'].split(',')
+          const containerList = group['CONTAINERIDS']? group['CONTAINERIDS'].split(',') : []
           containerList.forEach(container => {
             uniqueContainer[container] = container
           })
@@ -175,7 +175,7 @@ export default {
           return {
             ...group,
             CONTAINERIDS: containerList,
-            CONTAINERS: group['CONTAINERS'].replace(/,/g, ', ')
+            CONTAINERS: group['CONTAINERS']? group['CONTAINERS'].replace(/,/g, ', '): group['CONTAINERS']
           }
         })
 

@@ -1404,38 +1404,38 @@ class Sample extends Page
         }
 
         foreach (array(
-                'CENTRINGMETHOD',
-                'EXPERIMENTKIND',
-                'RADIATIONSENSITIVITY',
-                'SCREENCOMPONENTGROUPID',
-                'BLSUBSAMPLEID',
-                'COMPONENTIDS',
-                'COMPONENTAMOUNTS',
-                'REQUIREDRESOLUTION',
-                'CELL_A',
-                'CELL_B',
-                'CELL_C',
-                'CELL_ALPHA',
-                'CELL_BETA',
-                'CELL_GAMMA',
-                'VOLUME',
-                'ABUNDANCE',
-                'PACKINGFRACTION',
-                'DIMENSION1',
-                'DIMENSION2',
-                'DIMENSION3',
-                'SHAPE',
-                'THEORETICALDENSITY',
-                'LOOPTYPE',
-                'ENERGY',
-                'USERPATH',
-                'SCREENINGMETHOD',
-                'SCREENINGCOLLECTVALUE',
-                'SAMPLEGROUP',
-                'STRATEGYOPTION',
-                'MINIMUMRESOLUTION',
-                'INITIALSAMPLEGROUP'
-            ) as $f) {
+            'CENTRINGMETHOD',
+            'EXPERIMENTKIND',
+            'RADIATIONSENSITIVITY',
+            'SCREENCOMPONENTGROUPID',
+            'BLSUBSAMPLEID',
+            'COMPONENTIDS',
+            'COMPONENTAMOUNTS',
+            'REQUIREDRESOLUTION',
+            'CELL_A',
+            'CELL_B',
+            'CELL_C',
+            'CELL_ALPHA',
+            'CELL_BETA',
+            'CELL_GAMMA',
+            'VOLUME',
+            'ABUNDANCE',
+            'PACKINGFRACTION',
+            'DIMENSION1',
+            'DIMENSION2',
+            'DIMENSION3',
+            'SHAPE',
+            'THEORETICALDENSITY',
+            'LOOPTYPE',
+            'ENERGY',
+            'USERPATH',
+            'SCREENINGMETHOD',
+            'SCREENINGCOLLECTVALUE',
+            'SAMPLEGROUP',
+            'STRATEGYOPTION',
+            'MINIMUMRESOLUTION',
+            'INITIALSAMPLEGROUP'
+        ) as $f) {
             if ($s)
                 $a[$f] = array_key_exists($f, $s) ? $s[$f] : null;
             else
@@ -2560,8 +2560,8 @@ class Sample extends Page
             $from_table = 'FROM blsamplegroup bsg';
             $joins = '
                 LEFT JOIN blsamplegroup_has_blsample bshg ON bshg.blsamplegroupid = bsg.blsamplegroupid
-                INNER JOIN blsample bs on bshg.blsampleid = bs.blsampleid
-                INNER JOIN container c on bs.containerid = c.containerid
+                LEFT JOIN blsample bs on bshg.blsampleid = bs.blsampleid
+                LEFT JOIN container c on bs.containerid = c.containerid
             ';
             $group_by .= 'GROUP BY bsg.blsamplegroupid';
 
