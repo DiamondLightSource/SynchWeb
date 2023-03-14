@@ -83,14 +83,26 @@ class Vstat extends Page
                 LEFT OUTER JOIN protein pr ON pr.proteinid = c.proteinid
                 WHERE 1=1 $where ORDER BY dc.starttime", $args);
             
-            $dcf = $this->db->pq("SELECT COUNT(dc.datacollectionid) as count 
+            $dcf = $this->db->pq("SELECT COUNT(dc.datacollectionid) as count,
+                COUNT(distinct dc.blsampleid) as samplecount
                 FROM datacollection dc 
                 INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
                 INNER JOIN blsession s ON s.sessionid = dcg.sessionid
                 INNER JOIN proposal p ON p.proposalid = s.proposalid
                 INNER JOIN v_run vr ON s.startdate BETWEEN vr.startdate AND vr.enddate
                 WHERE dc.overlap = 0 AND dc.axisrange > 0 $where", $args);
-            $dcs = $this->db->pq("SELECT COUNT(dc.datacollectionid) as count 
+
+            $grid = $this->db->pq("SELECT COUNT(dc.datacollectionid) as count,
+                COUNT(distinct dc.blsampleid) as samplecount
+                FROM datacollection dc
+                INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
+                INNER JOIN blsession s ON s.sessionid = dcg.sessionid
+                INNER JOIN proposal p ON p.proposalid = s.proposalid
+                INNER JOIN v_run vr ON s.startdate BETWEEN vr.startdate AND vr.enddate
+                WHERE dc.overlap = 0 AND dc.axisrange = 0 $where", $args);
+
+            $dcs = $this->db->pq("SELECT COUNT(dc.datacollectionid) as count,
+                COUNT(distinct dc.blsampleid) as samplecount
                 FROM datacollection dc 
                 INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
                 INNER JOIN blsession s ON s.sessionid = dcg.sessionid
@@ -163,10 +175,23 @@ class Vstat extends Page
                     INNER JOIN v_run vr ON s.startdate BETWEEN vr.startdate AND vr.enddate
                     WHERE 1=1 $where ORDER BY m.createdtimestamp", $args);
 
+                $newargs = array($info['SID'], $info['SID']);
+                $missed = $this->db->pq("SELECT COUNT(smp.name) as samplecount,
+                    GROUP_CONCAT(smp.name SEPARATOR ', ') as missed
+                    FROM blsample smp
+                    INNER JOIN robotaction r ON r.blsampleid = smp.blsampleid
+                    INNER JOIN blsession s ON s.sessionid = r.blsessionid
+                    WHERE 1=1 $where
+                    AND smp.blsampleid not in
+                        (SELECT blsmp.blSampleId FROM blsample blsmp
+                        INNER JOIN datacollection dc ON dc.blsampleid = blsmp.blsampleid
+                        WHERE dc.sessionId=:2)", $newargs);
+
             } else {
                 $ai = array();
                 $cent = array();
                 $ctf = array();
+                $missed = array();
 
                 $sched = $this->db->pq("SELECT CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as visit, TO_CHAR(s.enddate, 'DD-MM-YYYY HH24:MI:SS') as en, TO_CHAR(s.startdate, 'DD-MM-YYYY HH24:MI:SS') as st, p.title, s.scheduled, p.proposalcode
                     FROM blsession s
@@ -186,9 +211,14 @@ class Vstat extends Page
                 WHERE f.beamtimelost=1 $where", $args);
             
             $info['DC_FULL'] = sizeof($dcf) ? $dcf[0]['COUNT'] : 0;
+            $info['DC_FULL_SAMPLES'] = $dcf[0]['SAMPLECOUNT'] ? $dcf[0]['SAMPLECOUNT'] : 0;
             $info['DC_SCREEN'] = sizeof($dcs) ? $dcs[0]['COUNT'] : 0;
+            $info['DC_SCREEN_SAMPLES'] = $dcs[0]['SAMPLECOUNT'] ? $dcs[0]['SAMPLECOUNT'] : 0;
             $info['DC_TOT'] = sizeof($dc);
-            $info['DC_GRID'] = $info['DC_TOT'] - $info['DC_SCREEN'] - $info['DC_FULL'];
+            $info['DC_GRID'] = sizeof($grid) ? $grid[0]['COUNT'] : 0;
+            $info['DC_GRID_SAMPLES'] = $grid[0]['SAMPLECOUNT'] ? $grid[0]['SAMPLECOUNT'] : 0;
+            $info['DC_MISSED'] = sizeof($missed) ? $missed[0]['MISSED'] : '';
+            $info['DC_MISSED_SAMPLES'] = sizeof($missed) ? $missed[0]['SAMPLECOUNT'] : 0;
             $info['DC_STOPPED'] = 0;
             $info['E_TOT'] = sizeof($edge);
             $info['FL_TOT'] = sizeof($fl);

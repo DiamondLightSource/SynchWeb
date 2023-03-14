@@ -148,6 +148,11 @@ class DC extends Page {
                     $extj[0] .= "INNER JOIN autoprocintegration ap ON dc.datacollectionid = ap.datacollectionid
                         INNER JOIN autoprocprogram app ON app.autoprocprogramid = ap.autoprocprogramid";
 
+                } else if ($this->arg('t') == 'ph') {
+                    $where = " AND app.processingstatus = 1 AND app.processingprograms in ('big_ep', 'fast_ep')";
+                    $extj[0] .= "INNER JOIN processingjob pj ON dc.datacollectionid = pj.datacollectionid
+                        INNER JOIN autoprocprogram app ON app.processingjobid = pj.processingjobid";
+
                 } else if ($this->arg('t') == 'err') {
                     $where = " AND appm.autoprocprogrammessageid IS NOT NULL AND (appm.severity = 'WARNING' OR appm.severity = 'ERROR')";
                     $extj[0] .= "LEFT OUTER JOIN autoprocintegration api ON dc.datacollectionid = api.datacollectionid
