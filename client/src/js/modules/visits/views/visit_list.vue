@@ -44,8 +44,9 @@
                                        title="Comment cannot be seen by User Office"
                                        v-model="visit.edited_comment"
                                        v-on:keyup.enter="onEnter(visit)" />
-                                <i data-testid="visit-table-archived" class="fa fa-archive r" title="This visit is archived, file is no longer available on disk" v-if="value.key == 'ARCHIVED' && visit.ARCHIVED == 1"></i>
-                                 
+                                <div data-testid="visit-table-archived" v-if="value.key == 'ARCHIVED' && visit.ARCHIVED == 1">
+                                    <i class="fa fa-archive r" :title="'The raw data from this visit has been '+ isArchived + '. You can no longer reprocess data or view full sized diffraction images.'"></i>
+                                </div>
                         </td>
                     </tr>
                 
@@ -96,6 +97,7 @@ export default {
             pageSize: 15,
             currentPage: 1,
             proposal: app.prop,
+            isArchived: app.prop.includes("in") ? "deleted" : "archived",
             visitCollection: [],
             visits: [],
             searchVisit : '',
