@@ -2357,8 +2357,8 @@ class Sample extends Page
                 $from_table = 'FROM blsamplegroup bsg';
                 $joins = '
                     LEFT JOIN blsamplegroup_has_blsample bshg ON bshg.blsamplegroupid = bsg.blsamplegroupid
-                    INNER JOIN blsample bs on bshg.blsampleid = bs.blsampleid
-                    INNER JOIN container c on bs.containerid = c.containerid
+                    LEFT JOIN blsample bs on bshg.blsampleid = bs.blsampleid
+                    LEFT JOIN container c on bs.containerid = c.containerid
                 ';
                 $group_by .= 'GROUP BY bsg.blsamplegroupid';
 
