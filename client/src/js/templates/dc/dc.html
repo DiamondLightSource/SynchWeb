@@ -16,38 +16,38 @@
     </div>
     
     <ul class="clearfix">
-        <li>Flux: <%-parseFloat(FLUX).toExponential(2)%></li>
-        <li>&<%-ROTATIONAXIS%>; Start: <%-AXISSTART%>&deg;</li>
-        <li>&<%-ROTATIONAXIS%>; Osc: <%-AXISRANGE%>&deg;</li>
-        <li>&<%-ROTATIONAXIS%>; Overlap: <%-OVERLAP%>&deg;</li>
-        <li>No. Images: <%-NUMIMG%></li>
-        <% if (SI != 1 ) { %> <li>First Image: <%-SI%></li><% } %>
-        <% if ((KAPPA && KAPPA !=0) || (PHI && PHI != 0) || (CHISTART && CHISTART !=0)) { %><li><% if (KAPPA != null) { %>&kappa;: <%-KAPPA%>&deg;<% } %> <% if (PHI != null) { %>&phi;: <%-PHI%>&deg;<% } %> <% if (CHISTART != null) { %>&chi;: <%-CHISTART%>&deg;<% } %></li><% } %>
-        <li>Resolution: <%-RESOLUTION%>&#197;</li>
-        <li>Wavelength: <%-WAVELENGTH%>&#197;</li>
-        <li>Exposure: <%-EXPOSURETIME%>s</li>
+        <li data-testid="dc-flux">Flux: <%-parseFloat(FLUX).toExponential(2)%></li>
+        <li data-testid="dc-axis-start">&<%-ROTATIONAXIS%>; Start: <%-AXISSTART%>&deg;</li>
+        <li data-testid="dc-axis-osc">&<%-ROTATIONAXIS%>; Osc: <%-AXISRANGE%>&deg;</li>
+        <li data-testid="dc-axis-overlap">&<%-ROTATIONAXIS%>; Overlap: <%-OVERLAP%>&deg;</li>
+        <li data-testid="dc-no-of-images">No. Images: <%-NUMIMG%></li>
+        <% if (SI != 1 ) { %> <li data-testid="dc-first-image">First Image: <%-SI%></li><% } %>
+        <% if ((KAPPA && KAPPA !=0) || (PHI && PHI != 0) || (CHISTART && CHISTART !=0)) { %><li data-testid="dc-kappa-phi-chi"><% if (KAPPA != null) { %>&kappa;: <%-KAPPA%>&deg;<% } %> <% if (PHI != null) { %>&phi;: <%-PHI%>&deg;<% } %> <% if (CHISTART != null) { %>&chi;: <%-CHISTART%>&deg;<% } %></li><% } %>
+        <li data-testid="dc-resolution">Resolution: <%-RESOLUTION%>&#197;</li>
+        <li data-testid="dc-wavelength">Wavelength: <%-WAVELENGTH%>&#197;</li>
+        <li data-testid="dc-exposure-time">Exposure: <%-EXPOSURETIME%>s</li>
         <% if (DCT == 'SAD' || DCT == 'Data Collection') { %>
             <%if (TOTALABSDOSE) { %>
                 <%if (DCC > 1) { %>
-                <li>Total Dose:  <%-TOTALABSDOSE * DCC%>MGy</li>
+                <li data-testid="dc-dose">Total Dose:  <%-TOTALABSDOSE * DCC%>MGy</li>
                 <% } else { %>
-                <li>Dose:  <%-TOTALABSDOSE%>MGy</li> 
+                <li data-testid="dc-dose">Dose:  <%-TOTALABSDOSE%>MGy</li>
         <% } } }%>
-        <li>Transmission: <%-TRANSMISSION%>%</li>
-        <li>Beamsize: <%-BSX%>x<%-BSY%>&mu;m</li>
-        <li>Type: <% if (DCT) print(DCT) %></li>
-        <li class="comment" title="Click to edit the comment for this data collection">Comment: <span class="COMMENTS"><%-COMMENTS%></span></li>
-        <% if (!STATE) { %><li>Status: <span class="b">Stopped</span></li><% } %>
+        <li data-testid="dc-transmission">Transmission: <%-TRANSMISSION%>%</li>
+        <li data-testid="dc-beam-size">Beamsize: <%-BSX%>x<%-BSY%>&mu;m</li>
+        <li data-testid="dc-type">Type: <% if (DCT) print(DCT) %></li>
+        <li data-testid="dc-comment" class="comment" title="Click to edit the comment for this data collection">Comment: <span class="COMMENTS"><%-COMMENTS%></span></li>
+        <% if (!STATE) { %><li data-testid="dc-status">Status: <span class="b">Stopped</span></li><% } %>
     </ul>
 
     <div class="holder">
     <% if (AXISRANGE > 0 && OVERLAP != 0) { %>
-        <h1 title="Click to show EDNA/mosflm/xia2 strategies" class="strat">Strategies<span><i class="fa fa-spinner fa-spin"></i></span></h1>
+        <h1 title="Click to show EDNA/mosflm/xia2 strategies" class="strat" data-testid="dc-strategies">Strategies<span><i class="fa fa-spinner fa-spin"></i></span></h1>
         <div class="strategies"></div>
     <% } else if (AXISRANGE > 0 || DCT == "Serial Fixed" || DCT == "Serial Jet") { %>
-        <h1 title="Click to show autoprocessing results such as Fast_DP and XIA2" class="ap">Auto Processing<span><i class="fa fa-spinner fa-spin"></i></span></h1>
+        <h1 title="Click to show autoprocessing results such as Fast_DP and XIA2" class="ap" data-testid="dc-autoprocessing">Auto Processing<span><i class="fa fa-spinner fa-spin"></i></span></h1>
         <div class="autoproc"></div>
-        <h1 title="Click to show downstream processing results such as Dimple and Fast_EP" class="dp">Downstream Processing<span><i class="fa fa-spinner fa-spin"></i></span></h1>
+        <h1 title="Click to show downstream processing results such as Dimple and Fast_EP" class="dp" data-testid="dc-downstream-processing">Downstream Processing<span><i class="fa fa-spinner fa-spin"></i></span></h1>
         <div class="downstream"></div>
     <% } %>
     </div>
