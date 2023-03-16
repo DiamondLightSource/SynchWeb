@@ -45,7 +45,7 @@
                                        v-model="visit.edited_comment"
                                        v-on:keyup.enter="onEnter(visit)" />
                                 <div data-testid="visit-table-archived" v-if="value.key == 'ARCHIVED' && visit.ARCHIVED == 1">
-                                    <i class="fa fa-archive r" :title="'The raw data from this visit has been '+ isArchived + '. You can no longer reprocess data or view full sized diffraction images.'"></i>
+                                    <i class="fa fa-archive r" :title="'The raw data from this visit have been '+ isArchived + '. You can no longer reprocess data or view full sized diffraction images.'"></i>
                                 </div>
                         </td>
                     </tr>
