@@ -1,7 +1,7 @@
 <template>
   <div class="content">
     <filter-pills class="tw-mt-3" v-if="displayFilters" :filter-data="beamlines" value-field="id" text-field="name" :selected="this.selectedBeamline" @filter-selected="updateSelectedFilter" />
-    <h1>Visits for {{ months[currentMonth] }} {{ currentYear }}</h1>
+    <h1 data-testid="status-calendar-header">Visits for {{ months[currentMonth] }} {{ currentYear }}</h1>
 
     <div class="tw-w-full tw-flex tw-mb-2">
       <div class="calendar-nav-button" @click="goToPreviousYear"> {{ previousYear}} </div>

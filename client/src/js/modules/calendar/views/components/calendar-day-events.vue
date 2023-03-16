@@ -3,7 +3,7 @@
     <div class="tw-ml-2 tw-py-2 tw-border-b tw-border-content-cal-hl1-background" v-for="(visitHour, visitHourIndex) in visitDataKeys" :key="visitHourIndex">
       <p>{{ visitHour }}</p>
       <div v-for="(session, sessionIndex) in visitsByTime[visitHour]" :key="sessionIndex" class="tw-ml-1" :class="[Number(session['ACTIVE']) === 1 ? 'tw-bg-content-active' : '']">
-        <p class="tw-ml-1">{{ session['BEAMLINENAME'] }}: <router-link  :to="`/dc/visit/${session['VISIT']}`" class="tw-no-underline tw-text-content-page-color">{{ session['VISIT'] }}</router-link> <span> ({{ session['LEN'] }})</span></p>
+        <p class="tw-ml-1">{{ session['BEAMLINENAME'] }}: <router-link  :to="`/dc/visit/${session['VISIT']}`" class="tw-no-underline tw-text-content-page-color" data-testid="status-session-link">{{ session['VISIT'] }}</router-link> <span> ({{ session['LEN'] }})</span></p>
         <p class="tw-ml-2">- {{ session['BEAMLINEOPERATOR'] }}</p>
         <p class="tw-ml-1" v-if="session['SESSIONTYPE']">[{{ session['SESSIONTYPE'] }}]</p>
       </div>
