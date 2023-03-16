@@ -9,7 +9,7 @@ Running SynchWeb requires setting up a Linux, Apache, MariaDB and PHP (LAMP) sof
 The [podman](./podman) folder provides support for creating a containerised 
 production deployment. Full instructions [here](./podman/README.md).
 
-For development, a simple environment can be setup by using scripts provided 
+For development (not production use), a simple environment can be setup by using scripts provided 
 [here](https://github.com/DiamondLightSource/synchweb-devel-env). Support is provided for both 
 containerisation and the use of VMs. VS Code provides a good development environment for working
 with the SynchWeb codebase.  PHP Tools extension provides intellisense, debugging, formatting, 
@@ -24,7 +24,9 @@ If not using the Podman containter, to build SynchWeb on a machine you will need
 - [composer](https://getcomposer.org/)
 - appropriate version of PHP on the build machine
 
-If not using the development VMs you will also need an instance of the ISPyB database - see [here](https://github.com/DiamondLightSource/ispyb-database).
+If not using the development VMs you will also need an instance of the
+ISPyB database - available
+[here](https://github.com/DiamondLightSource/ispyb-database).
 
 ### Check out the code
 ```sh
@@ -82,7 +84,7 @@ Tests are available for the PHP code under `api/tests`.  To run these, go to the
 
 ```sh
 $ cd SynchWeb/api
-$ ./vendor/bin/phpunit --verbose -c /tests/phpunit.xml
+$ ./vendor/bin/phpunit --verbose -c tests/phpunit.xml
 ```
 Note, a single test can be run by specifying that instead of the `tests` directory.  Tests
 will also produce a coverage report - this can be disabled by specifying `--no-coverage` when
@@ -126,7 +128,7 @@ The command line options available are described in this table. These override t
 ## Continuous Integration
 Basic CI is included via the GitHub workflows functionality, defined by
 `.github/workflows/ci.yml`.  Currently this will run whenever a branch change or
-pull request is pushed to `master`.  The workflow will run two parallel jobs:
+pull request is pushed to `master`, `pre-release` or `release`.  The workflow will run two parallel jobs:
 
 * Checkout the SynchWeb code - for the PHP build
   1. Install the correct version of PHP

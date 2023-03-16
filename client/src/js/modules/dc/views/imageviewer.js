@@ -94,8 +94,6 @@ define(['jquery', 'marionette',
             this.onResize = _.debounce(this.onResize, 200)
             this.draw = _.debounce(this.draw, 10)
             this.readjust = _.debounce(this.readjust, 200)
-            
-            // console.log(this.model)
 
             this.n = options.n || 1
             this.img = new XHRImage()
@@ -719,14 +717,26 @@ define(['jquery', 'marionette',
         _xy_to_dist: function(x, y) {
             return Math.sqrt(Math.pow(Math.abs(x*this.ps/this.imscale-this.model.get('XBEAM')),2)+Math.pow(Math.abs(y*this.ps/this.imscale-this.model.get('YBEAM')),2))
         },
-          
+        
+        _xy_to_res: function(x, y) {
+            if (this.model.get('DETECTORMODEL') === "Pilatus 12M") {
+                x_mm = this.ps * x / this.imscale - this.model.get('XBEAM')
+                y_mm = this.ps * y / this.imscale - this.model.get('YBEAM')
+                r_det = 250
+                theta = Math.acos(r_det * Math.cos(y_mm / r_det) / Math.sqrt(r_det * r_det + x_mm * x_mm))
+                wavelength = this.model.get('WAVELENGTH')
+                res = wavelength / (2 * Math.sin(theta / 2))
+                return res
+            }
+            return this._dist_to_res(this._xy_to_dist(x,y))
+        },
           
         // Set cursor position and resolution
         _cursor: function(x, y) {
             var posx = (x/this.scalef)-(this.offsetx/this.scalef)
             var posy = (y/this.scalef)-(this.offsety/this.scalef)
           
-            var res = this._dist_to_res(this._xy_to_dist(posx,posy))
+            var res = this._xy_to_res(posx, posy)
     
             this.ui.resc.text(res.toFixed(2))
         },

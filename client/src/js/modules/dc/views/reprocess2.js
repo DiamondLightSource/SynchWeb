@@ -8,13 +8,15 @@ define(['backbone', 'marionette', 'views/dialog',
     'models/reprocessingimagesweep',
     'collections/reprocessingimagesweeps',
     'utils/kvcollection',
-    'templates/dc/reprocess.html', 'templates/dc/reprocess_dc.html'], function(Backbone, Marionette, DialogView,
+    'templates/dc/reprocess.html', 'templates/dc/reprocess_dc.html', 'collections/spacegroups'
+], function(Backbone, Marionette, DialogView,
         DataCollections, DataCollection, DCDistlView,
-        Reprocessing, 
+        Reprocessing,
         ReprocessingParameter, ReprocessingParameters,
         ReprocessingImageSweep, ReprocessingImageSweeps,
         KVCollection, 
-        template, dctemplate) {
+        template, dctemplate, Spacegroups
+        ) {
     
 
     var IDDataCollection = DataCollection.extend({
@@ -44,7 +46,7 @@ define(['backbone', 'marionette', 'views/dialog',
             ind: 'div.ind',
             method: 'select[name=method]',
             res: 'input[name=res]',
-            sg: 'input[name=SG]',
+            sg: 'select[name=SG]'
         },
 
         events: {
@@ -65,7 +67,7 @@ define(['backbone', 'marionette', 'views/dialog',
             'change @ui.al': 'updateCell',
             'change @ui.be': 'updateCell',
             'change @ui.ga': 'updateCell',
-            'change @ui.sg': 'updateCell',
+            'change @ui.sg': 'updateSG',
 
             'change @ui.method': 'updateMethod',
             'change @ui.res': 'updateRes',
@@ -79,6 +81,11 @@ define(['backbone', 'marionette', 'views/dialog',
         updateMethod: function() {
             this.model.set('METHOD', this.ui.method.val())
         },
+
+        updateSG: function() {
+            this.model.set('SG', this.ui.sg.val())
+        },
+
 
         updateCell: function(e) {
             var attr = $(e.target).attr('name')
@@ -181,7 +188,8 @@ define(['backbone', 'marionette', 'views/dialog',
         childView: DCDistlViewLarge,
         childViewOptions: function() {
             return {
-                pipelines: this.getOption('pipelines')
+                pipelines: this.getOption('pipelines'),
+                spacegroups: this.getOption('spacegroups')
             }
         }
     })
@@ -191,6 +199,7 @@ define(['backbone', 'marionette', 'views/dialog',
         keyAttribute: 'NAME',
         valueAttribute: 'VALUE',
     }, KVCollection))
+
 
     return ReprocessView = DialogView.extend({
         template: template,
@@ -210,6 +219,7 @@ define(['backbone', 'marionette', 'views/dialog',
             mul: 'span.multi',
             met: 'select[name=method]',
             com: 'input[type=comments]',
+            sg: 'select[name=sg]'        
         },
 
         buttons: {
@@ -220,7 +230,7 @@ define(['backbone', 'marionette', 'views/dialog',
         events: {
             'click a.sgm': 'toggleCell',
             'click a.opt': 'toggleOpts',
-            'click @ui.ind': 'toggleIndividual',
+            'click @ui.ind': 'toggleIndividual'
         },
 
         templateHelpers: function() {
@@ -240,6 +250,12 @@ define(['backbone', 'marionette', 'views/dialog',
         toggleCell: function(e) {
             e.preventDefault()
             this.ui.cell.slideToggle()
+        },
+
+        showSpaceGroups: async function() {
+            this.spacegroups = new Spacegroups(null, { state: { pageSize: 9999 } })   
+            await this.spacegroups.fetch();
+            this.ui.sg.html(this.spacegroups.opts())
         },
 
         toggleOpts: function(e) {
@@ -329,12 +345,12 @@ define(['backbone', 'marionette', 'views/dialog',
                         }
                     }))
 
-                })
+                }, this)
 
                 $.when.apply($, reqs).done(function() {
                     app.alert({ message: jobs+' reprocessing job(s) successfully submitted'})
                     _.each(rps, function(rp) {
-                        self.enqueue({ PROCESSINGJOBID: rp.get('PROCESSINGJOBID') })
+                        self._enqueue({ PROCESSINGJOBID: rp.get('PROCESSINGJOBID') })
                     })
                 })
 
@@ -380,7 +396,7 @@ define(['backbone', 'marionette', 'views/dialog',
                             PARAMETERVALUE: cell.join(',')
                         }))
 
-                        var sg = self.$el.find('input[name=sg]').val().replace(/\s/g, '')
+                        var sg = self.$el.find('select[name=sg]').val().replace(/\s/g, '')
                         if (sg) reprocessingparams.add(new ReprocessingParameter({ 
                             PROCESSINGJOBID: reprocessing.get('PROCESSINGJOBID'),
                             PARAMETERKEY: 'spacegroup', 
@@ -457,12 +473,17 @@ define(['backbone', 'marionette', 'views/dialog',
 
             this.ui.met.html(this.pipelines.opts())
 
-            this.distlview = new DCDistlsView({ collection: this.collection, pipelines: this.pipelines })
+            // asynchronously load space groups into the select menu
+            this.showSpaceGroups()
+
+            this.distlview = new DCDistlsView({ collection: this.collection, pipelines: this.pipelines, spacegroups: this.spacegroups })
             this.dcr.show(this.distlview)
             // this.listenTo(this.distlview, 'childview:set:cell', this.setCell, this)
             this.listenTo(this.distlview, 'childview:clone:dc', this.cloneDC, this)
 
             if (app.type == 'sm') this.$el.find('input[name=sm]').prop('checked', true)
+
+
         },
 
         cloneDC: function(e, model) {
@@ -477,7 +498,7 @@ define(['backbone', 'marionette', 'views/dialog',
                 this.$el.find('input[name='+f+']').val(ap.get('CELL')['CELL_'+k.toUpperCase()])
             }, this)
 
-            this.$el.find('input[name=sg]').val(ap.get('SG'))
+            this.$el.find('select[name=sg]').val(ap.get('SG'))
         },
 
     })

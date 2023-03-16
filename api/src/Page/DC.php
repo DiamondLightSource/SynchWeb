@@ -8,8 +8,20 @@ use SynchWeb\TemplateParser;
 class DC extends Page
 {
 
-
-    public static $arg_list = array('id' => '\d+', 'ids' => '\d+', 'visit' => '\w+\d+-\d+', 's' => '[\w\d\-\/]+', 't' => '\w+', 'value' => '.*', 'sid' => '\d+', 'aid' => '\d+', 'pjid' => '\d+', 'imp' => '\d', 'pid' => '\d+', 'h' => '\d\d', 'dmy' => '\d\d\d\d\d\d\d\d',
+    public static $arg_list = array(
+        'id' => '\d+',
+        'ids' => '\d+',
+        'visit' => '\w+\d+-\d+',
+        's' => '[\w\d\-\/]+',
+        't' => '\w+',
+        'value' => '.*',
+        'sid' => '\d+',
+        'aid' => '\d+',
+        'pjid' => '\d+',
+        'imp' => '\d',
+        'pid' => '\d+',
+        'h' => '\d\d',
+        'dmy' => '\d\d\d\d\d\d\d\d',
         'ssid' => '\d+',
         'dcg' => '\d+',
         'a' => '\d+(.\d+)?',
@@ -21,39 +33,35 @@ class DC extends Page
         'sg' => '\w+',
         'single' => '\d',
         'COMMENTS' => '.*',
-
         'dcid' => '\d+',
         'DATACOLLECTIONID' => '\d+',
         'PERSONID' => '\d+',
         'AUTOPROCPROGRAMMESSAGEID' => '\d+',
         'PROCESSINGJOBID' => '\d+',
-
         'debug' => '\d',
-
+        'sgid' => '\d+'
     );
 
+    public static $dispatch = array(
+        array('(/sing:le)(/:id)', 'get', '_data_collections', array('le' => '\w+', 'id' => '\d+')),
+        array('/chi', 'post', '_chk_image'),
+        array('/imq/:id', 'get', '_image_qi'),
+        array('/grid/:id', 'get', '_grid_info'),
+        array('/grid/xrc/:id', 'get', '_grid_xrc'),
+        array('/grid/map', 'get', '_grid_map'),
+        array('/ed/:id', 'get', '_edge', array('id' => '\d+'), 'edge'),
+        array('/mca/:id', 'get', '_mca', array('id' => '\d+'), 'mca'),
+        array('/strat/:id', 'get', '_dc_strategies'),
+        array('/rd/aid/:aid/:id', 'get', '_rd'),
+        array('/single/t/:t/:id', 'patch', '_set_comment'),
+        array('/sym', 'get', '_get_symmetry'),
+        array('/xfm(/:id)', 'get', '_fluo_map'),
 
-    public static $dispatch = array(array('(/sing:le)(/:id)', 'get', '_data_collections', array('le' => '\w+', 'id' => '\d+')),
-            array('/chi', 'post', '_chk_image'),
-            array('/imq/:id', 'get', '_image_qi'),
-            array('/grid/:id', 'get', '_grid_info'),
-            array('/grid/xrc/:id', 'get', '_grid_xrc'),
-            array('/grid/map', 'get', '_grid_map'),
-            array('/ed/:id', 'get', '_edge', array('id' => '\d+'), 'edge'),
-            array('/mca/:id', 'get', '_mca', array('id' => '\d+'), 'mca'),
-            array('/strat/:id', 'get', '_dc_strategies'),
-            array('/rd/aid/:aid/:id', 'get', '_rd'),
-            array('/single/t/:t/:id', 'patch', '_set_comment'),
-            array('/sym', 'get', '_get_symmetry'),
-            array('/xfm(/:id)', 'get', '_fluo_map'),
+        array('/comments(/:dcid)', 'get', '_get_comments'),
+        array('/comments', 'post', '_add_comment'),
 
-            array('/comments(/:dcid)', 'get', '_get_comments'),
-            array('/comments', 'post', '_add_comment'),
-
-            array('/dat/:id', 'get', '_plot'),
+        array('/dat/:id', 'get', '_plot'),
     );
-
-
 
     # ------------------------------------------------------------------------
     # Data Collection AJAX Requests
@@ -87,13 +95,21 @@ class DC extends Page
         $where3 = '';
         $where4 = '';
 
-        $sess = array();
+        $sess = array('', '', '', '');
 
         # Extra joins
         $extj = array('', '', '', '');
+        $sample_joins = array(
+            'LEFT OUTER JOIN blsample smp ON dc.blsampleid = smp.blsampleid',
+            'LEFT OUTER JOIN blsample smp ON es.blsampleid = smp.blsampleid',
+            'LEFT OUTER JOIN blsample smp ON r.blsampleid = smp.blsampleid',
+            'LEFT OUTER JOIN blsample smp ON xrf.blsampleid = smp.blsampleid'
+        );
         # Extra columns
         $extc = '';
         $extcg = '';
+
+        $with = '';
 
         //$this->db->set_debug(True);
         # Filter by types
@@ -102,7 +118,6 @@ class DC extends Page
             $where2 = ' AND es.energyscanid < 0';
             $where3 = ' AND r.robotactionid < 0';
             $where4 = ' AND xrf.xfefluorescencespectrumid < 0';
-
             if ($this->arg('t') == 'dc' || $this->arg('t') == 'sc' || $this->arg('t') == 'fc' || $this->arg('t') == 'gr') {
 
                 $where = '';
@@ -111,41 +126,32 @@ class DC extends Page
                 else if ($this->arg('t') == 'gr')
                     $where = ' AND dc.axisrange = 0';
                 else if ($this->arg('t') == 'fc')
-                    $where = ' AND dc.overlap = 0 AND dc.axisrange > 0';
-
-            }
-            else if ($this->arg('t') == 'edge') {
+                    $where = ' AND dc.overlap = 0 AND dc.axisrange > 0 AND dc.numberOfImages > 1';
+            } else if ($this->arg('t') == 'edge') {
                 $where2 = '';
-
-            }
-            else if ($this->arg('t') == 'mca') {
+            } else if ($this->arg('t') == 'mca') {
                 $where4 = '';
-
-            }
-            else if ($this->arg('t') == 'rb') {
+            } else if ($this->arg('t') == 'rb') {
                 $where3 = " AND (r.actiontype LIKE 'LOAD' OR r.actiontype LIKE 'UNLOAD' OR r.actiontype LIKE 'DISPOSE')";
-
-            }
-            else if ($this->arg('t') == 'ac') {
+            } else if ($this->arg('t') == 'ac') {
                 $where3 = " AND (r.actiontype NOT LIKE 'LOAD' AND r.actiontype NOT LIKE 'UNLOAD' AND r.actiontype NOT LIKE 'DISPOSE')";
-
-            }
-            else if ($this->arg('t') == 'flag') {
+            } else if ($this->arg('t') == 'flag') {
                 $where = " AND dc.comments LIKE '%_FLAG_%'";
                 $where2 = " AND es.comments LIKE '%_FLAG_%'";
                 $where4 = " AND xrf.comments LIKE '%_FLAG_%'";
-
-            }
-            else if ($this->arg('t') == 'ap') {
+            } else if ($this->arg('t') == 'ap') {
                 $where = ' AND app.processingstatus = 1';
                 $extj[0] .= "INNER JOIN autoprocintegration ap ON dc.datacollectionid = ap.datacollectionid
                         INNER JOIN autoprocprogram app ON app.autoprocprogramid = ap.autoprocprogramid";
-
-            }
-            else if ($this->arg('t') == 'err') {
+            } else if ($this->arg('t') == 'ph') {
+                $where = " AND app.processingstatus = 1 AND app.processingprograms in ('big_ep', 'fast_ep')";
+                $extj[0] .= "INNER JOIN processingjob pj ON dc.datacollectionid = pj.datacollectionid
+                        INNER JOIN autoprocprogram app ON app.processingjobid = pj.processingjobid";
+            } else if ($this->arg('t') == 'err') {
                 $where = " AND appm.autoprocprogrammessageid IS NOT NULL AND (appm.severity = 'WARNING' OR appm.severity = 'ERROR')";
                 $extj[0] .= "LEFT OUTER JOIN autoprocintegration api ON dc.datacollectionid = api.datacollectionid
-                        LEFT OUTER JOIN autoprocprogram app ON (app.autoprocprogramid = api.autoprocprogramid OR dc.datacollectionid = app.datacollectionid)
+                        LEFT OUTER JOIN processingjob pj ON dc.datacollectionid = pj.datacollectionid
+                        LEFT OUTER JOIN autoprocprogram app ON (app.autoprocprogramid = api.autoprocprogramid OR dc.datacollectionid = pj.datacollectionid)
                         INNER JOIN autoprocprogrammessage appm ON appm.autoprocprogramid = app.autoprocprogramid";
             }
         }
@@ -170,17 +176,15 @@ class DC extends Page
 
             if (!sizeof($info)) {
                 $this->_error('No such visit');
-            }
-            else
+            } else
                 $info = $info[0];
 
             $sess = array('dcg.sessionid=:1', 'es.sessionid=:2', 'r.blsessionid=:3', 'xrf.sessionid=:4');
             for ($i = 0; $i < 4; $i++)
                 array_push($args, $info['SESSIONID']);
 
-        # Subsamples
-        }
-        else if ($this->has_arg('ssid') && $this->has_arg('prop')) {
+            # Subsamples
+        } else if ($this->has_arg('ssid') && $this->has_arg('prop')) {
             $info = $this->db->pq("SELECT ss.blsubsampleid FROM blsubsample ss INNER JOIN blsample s ON s.blsampleid = ss.blsampleid INNER JOIN crystal cr ON cr.crystalid = s.crystalid INNER JOIN protein pr ON pr.proteinid = cr.proteinid INNER JOIN proposal p ON p.proposalid = pr.proposalid WHERE ss.blsubsampleid=:1 AND CONCAT(p.proposalcode, p.proposalnumber) LIKE :2", array($this->arg('ssid'), $this->arg('prop')));
 
             $tables2 = array('dc', 'es', 'r', 'xrf');
@@ -196,9 +200,8 @@ class DC extends Page
             for ($i = 0; $i < 3; $i++)
                 array_push($args, $this->arg('ssid'));
 
-        # Samples
-        }
-        else if ($this->has_arg('sid') && $this->has_arg('prop')) {
+            # Samples
+        } else if ($this->has_arg('sid') && $this->has_arg('prop')) {
             $info = $this->db->pq("SELECT s.blsampleid FROM blsample s INNER JOIN crystal cr ON cr.crystalid = s.crystalid INNER JOIN protein pr ON pr.proteinid = cr.proteinid INNER JOIN proposal p ON p.proposalid = pr.proposalid WHERE s.blsampleid=:1 AND CONCAT(p.proposalcode, p.proposalnumber) LIKE :2", array($this->arg('sid'), $this->arg('prop')));
 
             $tables2 = array('dc', 'es', 'r', 'xrf');
@@ -207,15 +210,15 @@ class DC extends Page
             for ($i = 0; $i < 4; $i++)
                 array_push($args, $this->arg('sid'));
 
-        # Projects
-        }
-        else if ($this->has_arg('pjid')) {
+            # Projects
+        } else if ($this->has_arg('pjid')) {
             $info = $this->db->pq('SELECT p.title FROM project p LEFT OUTER JOIN project_has_person php ON php.projectid = p.projectid WHERE p.projectid=:1 AND (p.personid=:2 or php.personid=:3)', array($this->arg('pjid'), $this->user->personId, $this->user->personId));
 
-            $tables = array(array('project_has_dcgroup', 'dc', 'datacollectiongroupid'),
-                    array('project_has_energyscan', 'es', 'energyscanid'),
-                    array('project_has_session', 'r', 'blsessionid', 'sessionid'),
-                    array('project_has_xfefspectrum', 'xrf', 'xfefluorescencespectrumid'),
+            $tables = array(
+                array('project_has_dcgroup', 'dc', 'datacollectiongroupid'),
+                array('project_has_energyscan', 'es', 'energyscanid'),
+                array('project_has_session', 'r', 'blsessionid', 'sessionid'),
+                array('project_has_xfefspectrum', 'xrf', 'xfefluorescencespectrumid'),
             );
 
             $extc = "CONCAT(CONCAT(CONCAT(prop.proposalcode,prop.proposalnumber), '-'), ses.visit_number) as vis, CONCAT(prop.proposalcode, prop.proposalnumber) as prop, ";
@@ -246,9 +249,8 @@ class DC extends Page
                 array_push($args, $this->arg('pjid'));
 
 
-        # Proteins
-        }
-        else if ($this->has_arg('pid')) {
+            # Proteins
+        } else if ($this->has_arg('pid')) {
             $info = $this->db->pq("SELECT proteinid FROM protein p WHERE p.proteinid=:1", array($this->arg('pid')));
 
             foreach (array('dc', 'es', 'r', 'xrf') as $i => $t) {
@@ -257,9 +259,8 @@ class DC extends Page
                 array_push($args, $this->arg('pid'));
             }
 
-        # Processing job
-        }
-        else if ($this->has_arg('PROCESSINGJOBID')) {
+            # Processing job
+        } else if ($this->has_arg('PROCESSINGJOBID')) {
             $info = $this->db->pq('SELECT processingjobid 
                     FROM processingjob pj
                     INNER JOIN datacollection dc ON pj.datacollectionid = dc.datacollectionid
@@ -279,10 +280,25 @@ class DC extends Page
             $where .= ' AND pjis.processingjobid=:' . (sizeof($args) + 1);
             array_push($args, $this->arg('PROCESSINGJOBID'));
             $extj[0] .= ' LEFT OUTER JOIN processingjobimagesweep pjis ON pjis.datacollectionid=dc.datacollectionid';
+        } else if ($this->has_arg('sgid')) {
+            $info = $this->db->pq('SELECT blsampleid 
+                FROM blsamplegroup_has_blsample bshg
+                LEFT OUTER JOIN blsamplegroup bsg ON bsg.blsamplegroupid = bshg.blsamplegroupid
+                WHERE bsg.blsamplegroupid=:1 AND bsg.proposalid=:2', array($this->arg('sgid'), $this->proposalid));
 
-        # Proposal
-        }
-        else if ($this->has_arg('prop')) {
+            $with .= "WITH samples AS (SELECT sample.* FROM blsamplegroup_has_blsample bshg LEFT OUTER JOIN BLSample sample ON sample.blsampleid = bshg.blsampleid WHERE bshg.blsamplegroupid = {$this->arg('sgid')})";
+            $sample_joins[0] = 'JOIN samples smp ON smp.blsampleid = dc.blsampleid';
+            $sample_joins[1] = 'JOIN samples smp ON smp.blsampleid = es.blsampleid';
+            $sample_joins[2] = 'JOIN samples smp ON smp.blsampleid = r.blsampleid';
+            $sample_joins[3] = 'JOIN samples smp ON smp.blsampleid = xrf.blsampleid';
+
+            $sess[0] = '1=1';
+            $sess[1] = '1=1';
+            $sess[2] = '1=1';
+            $sess[3] = '1=1';
+
+            # Proposal
+        } else if ($this->has_arg('prop')) {
             $info = $this->db->pq('SELECT proposalid FROM proposal p WHERE CONCAT(p.proposalcode, p.proposalnumber) LIKE :1', array($this->arg('prop')));
 
             for ($i = 0; $i < 4; $i++) {
@@ -291,9 +307,13 @@ class DC extends Page
             }
         }
 
-        if (!sizeof($info))
-            $this->_error('The specified visit, sample, or project doesnt exist');
-
+        if (!sizeof($info)) {
+            if ($this->has_arg('sgid')) {
+                $this->_error('The specified sample group does not exist or have any samples added to it');
+            } else {
+                $this->_error('The specified visit, sample or project doesnt exist');
+            }
+        }
 
         # Filter by time for visits
         if (($this->has_arg('h') && ($this->has_arg('visit') || $this->has_arg('dmy'))) || $this->has_arg('dmy')) {
@@ -304,8 +324,7 @@ class DC extends Page
 
             if ($this->has_arg('dmy')) {
                 $my = $this->arg('dmy');
-            }
-            else {
+            } else {
                 $my = $info['DMY'];
                 if ($this->arg('h') < $info['SH']) {
                     $sd = mktime(0, 0, 0, substr($my, 2, 2), substr($my, 0, 2), substr($my, 4, 4)) + (3600 * 24);
@@ -317,8 +336,7 @@ class DC extends Page
             if ($this->has_arg('h')) {
                 $st = $this->arg('h') . ':00:00 ';
                 $en = $this->arg('h') . ':59:59 ';
-            }
-            else {
+            } else {
                 $st = '00:00:00';
                 $en = '23:59:59 ';
             }
@@ -328,7 +346,6 @@ class DC extends Page
                 array_push($args, $en . $my);
             }
         }
-
 
         # If not staff check they have access to data collection
         if (!$this->has_arg('visit') && !$this->staff) {
@@ -363,10 +380,15 @@ class DC extends Page
                 array_push($args, $s);
         }
 
+        # Set Count field
+        if ($this->has_arg('dcg') || $this->has_arg('PROCESSINGJOBID') || $this->has_arg('sgid')) {
+            $count_field = 'dc.datacollectionid';
+        } else {
+            $count_field = 'distinct dc.datacollectiongroupid';
+        }
 
         # Data collection group
         if ($this->has_arg('dcg') || $this->has_arg('PROCESSINGJOBID')) {
-            $count_field = 'dc.datacollectionid';
             $fields = "count(distinct dca.datacollectionfileattachmentid) as dcac,
                     count(distinct dcc.datacollectioncommentid) as dccc,
                     1 as dcc,
@@ -421,12 +443,12 @@ class DC extends Page
                     dc.objaperture,
                     dc.magnification,
                     dc.totalexposeddose as totaldose,
+                    CAST(dc.totalabsorbeddose AS DECIMAL(5, 2)) as totalabsdose,
                     d.detectorpixelsizehorizontal,
                     d.detectorpixelsizevertical,
                     d.detectormanufacturer,
                     d.detectormodel,
                     TIMESTAMPDIFF('MINUTE', dc.starttime, CURRENT_TIMESTAMP) as age,
-
                     dc.numberofpasses,
                     dc.c1aperture,
                     dc.c3aperture,
@@ -499,10 +521,7 @@ class DC extends Page
                 $where .= ' AND dc.datacollectiongroupid=:' . (sizeof($args) + 1);
                 array_push($args, $this->arg('dcg'));
             }
-
-        }
-        else {
-            $count_field = 'distinct dc.datacollectiongroupid';
+        } else {
             $fields = "count(distinct dca.datacollectionfileattachmentid) as dcac,
                     count(distinct dcc.datacollectioncommentid) as dccc,
                     count(distinct dc.datacollectionid) as dcc,
@@ -544,7 +563,7 @@ class DC extends Page
                     min(dc.xtalsnapshotfullpath2) as x2,
                     min(dc.xtalsnapshotfullpath3) as x3,
                     min(dc.xtalsnapshotfullpath4) as x4,
-                    min(dc.starttime) as sta,
+                    max(dc.starttime) as sta,
                     min(dc.detectordistance) as det,
                     min(dc.xbeam) as xbeam,
                     min(dc.ybeam) as ybeam,
@@ -557,6 +576,7 @@ class DC extends Page
                     max(dc.objaperture) as objaperture,
                     max(dc.magnification) as magnification,
                     sum(dc.totalabsorbeddose) as totaldose,
+                    CAST(dc.totalabsorbeddose AS DECIMAL(5, 2)) as totalabsdose,
                     max(d.detectormanufacturer) as detectormanufacturer,
                     max(d.detectormodel) as detectormodel,
                     max(d.detectorpixelsizehorizontal) as detectorpixelsizehorizontal,
@@ -588,31 +608,39 @@ class DC extends Page
             $groupby = "GROUP BY dc.datacollectiongroupid";
         }
 
+        $total_query = "SELECT sum(tot) as t FROM (
+                $with
+                SELECT count($count_field) as tot
+                    FROM datacollection dc
+                    INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
+                    INNER JOIN blsession ses ON ses.sessionid = dcg.sessionid
+                    $sample_joins[0]
+                    $extj[0]
+                    WHERE $sess[0] $where
+            
+                UNION SELECT count(es.energyscanid) as tot
+                    FROM energyscan es
+                    INNER JOIN blsession ses ON ses.sessionid = es.sessionid
+                    $sample_joins[1]
+                    $extj[1]
+                    WHERE $sess[1] $where2
+                            
+                UNION SELECT count(xrf.xfefluorescencespectrumid) as tot
+                    FROM xfefluorescencespectrum xrf
+                    INNER JOIN blsession ses ON ses.sessionid = xrf.sessionid
+                    $sample_joins[3]
+                    $extj[3]
+                    WHERE $sess[3] $where4
+                            
+                UNION SELECT count(r.robotactionid) as tot
+                    FROM robotaction r
+                    INNER JOIN blsession ses ON ses.sessionid = r.blsessionid
+                    $sample_joins[2]
+                    $extj[2]
+                    WHERE $sess[2]  $where3
+            ) inq";
 
-        $tot = $this->db->pq("SELECT sum(tot) as t FROM (SELECT count($count_field) as tot FROM datacollection dc
-                INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
-                INNER JOIN blsession ses ON ses.sessionid = dcg.sessionid
-                LEFT OUTER JOIN blsample smp ON dc.blsampleid = smp.blsampleid
-                $extj[0]
-                WHERE $sess[0] $where
-                
-                UNION SELECT count(es.energyscanid) as tot FROM energyscan es
-                INNER JOIN blsession ses ON ses.sessionid = es.sessionid
-                LEFT OUTER  JOIN blsample smp ON es.blsampleid = smp.blsampleid
-                $extj[1]
-                WHERE $sess[1] $where2
-                                
-                UNION SELECT count(xrf.xfefluorescencespectrumid) as tot from xfefluorescencespectrum xrf
-                INNER JOIN blsession ses ON ses.sessionid = xrf.sessionid
-                LEFT OUTER  JOIN blsample smp ON xrf.blsampleid = smp.blsampleid
-                $extj[3]
-                WHERE $sess[3] $where4
-                                
-                UNION SELECT count(r.robotactionid) as tot FROM robotaction r
-                INNER JOIN blsession ses ON ses.sessionid = r.blsessionid
-                LEFT OUTER  JOIN blsample smp ON r.blsampleid = smp.blsampleid
-                $extj[2]
-                WHERE $sess[2]  $where3) inq", $args);
+        $tot = $this->db->pq($total_query, $args);
         $tot = $tot[0]['T'];
 
         $this->profile('after page count');
@@ -626,11 +654,13 @@ class DC extends Page
         array_push($args, $end);
 
 
-        $q = "SELECT $extcg $fields 
+        $q = "
+                $with
+                SELECT $extcg $fields 
                 FROM datacollection dc
                 INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
                 INNER JOIN blsession ses ON ses.sessionid = dcg.sessionid
-                LEFT OUTER JOIN blsample smp ON dc.blsampleid = smp.blsampleid
+                $sample_joins[0]
                 LEFT OUTER JOIN datacollectioncomment dcc ON dc.datacollectionid = dcc.datacollectionid
                 LEFT OUTER JOIN datacollectionfileattachment dca ON dc.datacollectionid = dca.datacollectionid
                 LEFT OUTER JOIN detector d ON d.detectorid = dc.detectorid
@@ -639,7 +669,7 @@ class DC extends Page
                 WHERE $sess[0] $where
                 $groupby
                       
-                UNION
+                UNION ALL 
                 SELECT
                     $extc
                     1 as dcac,
@@ -697,6 +727,7 @@ class DC extends Page
                     1,
                     1,
                     1,
+                    1,
                     '',
                     '',
                     TIMESTAMPDIFF(MINUTE, es.starttime, CURRENT_TIMESTAMP) as age,
@@ -726,7 +757,7 @@ class DC extends Page
                     ''
                 FROM energyscan es
                 INNER JOIN blsession ses ON ses.sessionid = es.sessionid
-                LEFT OUTER JOIN blsample smp ON es.blsampleid = smp.blsampleid
+                $sample_joins[1]
                 $extj[1]
                 WHERE $sess[1] $where2
                    
@@ -788,6 +819,7 @@ class DC extends Page
                 1,
                 1,
                 1,
+                1,
                 '',
                 '',
                 TIMESTAMPDIFF('MINUTE', xrf.starttime, CURRENT_TIMESTAMP) as age,
@@ -817,7 +849,7 @@ class DC extends Page
                 ''
             FROM xfefluorescencespectrum xrf
             INNER JOIN blsession ses ON ses.sessionid = xrf.sessionid
-            LEFT OUTER  JOIN blsample smp ON xrf.blsampleid = smp.blsampleid     
+            $sample_joins[3]     
             $extj[3]
             WHERE $sess[3] $where4
                    
@@ -879,6 +911,7 @@ class DC extends Page
                 1,
                 1,
                 1,
+                1,
                 '',
                 '',
                 TIMESTAMPDIFF('MINUTE', r.starttimestamp, CURRENT_TIMESTAMP) as age,
@@ -908,7 +941,7 @@ class DC extends Page
                 ''
             FROM robotaction r
             INNER JOIN blsession ses ON ses.sessionid = r.blsessionid
-            LEFT OUTER  JOIN blsample smp ON r.blsampleid = smp.blsampleid
+            $sample_joins[2]
             $extj[2]
             WHERE $sess[2] $where3
                  
@@ -929,7 +962,6 @@ class DC extends Page
             foreach (array('X1', 'X2', 'X3', 'X4') as $x) {
                 $dc[$x] = file_exists($dc[$x]) ? 1 : 0;
             }
-
 
             // Data collections
             if ($dc['TYPE'] == 'data') {
@@ -956,15 +988,13 @@ class DC extends Page
                     $dc['DCT'] = 'Grid Scan';
                 if ($dc['DCT'] == 'OSC')
                     $dc['DCT'] = 'Data Collection';
-
-
-                if ($dc['AXISRANGE'] == 0 && $dc['NI'] > 1)
+                if ($dc['DCT'] != 'Serial Fixed' && $dc['DCT'] != 'Serial Jet' && $dc['AXISRANGE'] == 0 && $dc['NI'] > 1) {
                     $dc['TYPE'] = 'grid';
-            //$this->profile('dc');
+                }
+                //$this->profile('dc');
 
-            // Edge Scans
-            }
-            else if ($dc['TYPE'] == 'edge') {
+                // Edge Scans
+            } else if ($dc['TYPE'] == 'edge') {
                 $dc['EPK'] = floatVal($dc['EPK']);
                 $dc['EIN'] = floatVal($dc['EIN']);
 
@@ -976,16 +1006,14 @@ class DC extends Page
                 $nf = array(2 => array('EXPOSURETIME', 'AXISSTART', 'RESOLUTION', 'TRANSMISSION'));
                 $this->profile('edge');
 
-            // MCA Scans
-            }
-            else if ($dc['TYPE'] == 'mca') {
+                // MCA Scans
+            } else if ($dc['TYPE'] == 'mca') {
                 $nf = array(2 => array('EXPOSURETIME', 'WAVELENGTH', 'TRANSMISSION'));
                 $dc['DIRFULL'] = $dc['DIR'];
                 $dc['DIR'] = preg_replace('/.*\/\d\d\d\d\/\w\w\d+-\d+\//', '', $dc['DIR']);
 
-            // Robot loads
-            }
-            else if ($dc['TYPE'] == 'load') {
+                // Robot loads
+            } else if ($dc['TYPE'] == 'load') {
                 $nf = array();
                 if ($dc['IMP'] == 'ANNEAL' || $dc['IMP'] == 'WASH')
                     $dc['TYPE'] = 'action';
@@ -999,7 +1027,6 @@ class DC extends Page
                     $dc[$c] = number_format($dc[$c], $nff);
                 }
             }
-
         }
 
         $this->profile('processing');
@@ -1159,7 +1186,6 @@ class DC extends Page
                     }
                 }
             }
-
         }
 
 
@@ -1182,8 +1208,7 @@ class DC extends Page
                         $els = $el_to_en[$l[0]];
                         if (($els[sizeof($els) - 1] * 1000) < ($info['ENERGY'] - 1000))
                             $elements[$l[0]] = array(array_map('floatval', $els), floatval($l[1]), floatval($l[2]));
-                    }
-                    else
+                    } else
                         array_push($el_no_match, $l[0]);
                 }
             }
@@ -1239,8 +1264,7 @@ class DC extends Page
 
             if ($is_align) {
                 array_push($output[$r['PROGRAMVERSION']]['STRATS'], $r);
-            }
-            else {
+            } else {
 
                 $t = $r['PROGRAMVERSION'];
 
@@ -1270,14 +1294,13 @@ class DC extends Page
                 $r['COM'] = str_replace('Mosflm ', '', $r['COM']);
 
                 $r['VPATH'] = join('/', array_slice(explode('/', $r['IMD']), 0, 6));
-                list(, , $r['BL']) = explode('/', $r['IMD']);
+                list(,, $r['BL']) = explode('/', $r['IMD']);
 
                 # we dont actually use this in the display view maybe Deprecate?
                 # detector diameter in mm
                 if ($r['DETECTORPIXELSIZEHORIZONTAL'] && $r['NUMBEROFPIXELSX']) {
                     $diam = $r['DETECTORPIXELSIZEHORIZONTAL'] * $r['NUMBEROFPIXELSX'] * 1000;
-                }
-                else {
+                } else {
                     // drop back to pilatus 6m diameter
                     $diam = 415;
                 }
@@ -1308,11 +1331,9 @@ class DC extends Page
                 $maxt = 100;
             }
             return array(number_format($maxt, 1), number_format($maxe, 3));
-        }
-        else {
+        } else {
             return array($t, $e);
         }
-
     }
 
     # ------------------------------------------------------------------------        
@@ -1325,8 +1346,7 @@ class DC extends Page
             $d = 2 * asin($b);
             $f = 2 * tan($d);
             $result = number_format($diam / $f, 2);
-        }
-        catch (\Exception $e) {
+        } catch (\Exception $e) {
             error_log('Error converting resolution to distance, lambda=' . $lambda . ' r=' . $r . ' Exception: ' . $e->getMessage());
         }
         return $result;
@@ -1336,14 +1356,16 @@ class DC extends Page
     # Work out which aperture is selected
     function _get_ap($com)
     {
-        $aps = array('Aperture: Large' => 'LARGE_APERTURE',
+        $aps = array(
+            'Aperture: Large' => 'LARGE_APERTURE',
             'Aperture: Medium' => 'MEDIUM_APERTURE',
             'Aperture: Small' => 'SMALL_APERTURE',
             'Aperture: 10' => 'In_10',
             'Aperture: 20' => 'In_20',
             'Aperture: 30' => 'In_30',
             'Aperture: 50' => 'In_50',
-            'Aperture: 70' => 'In_70');
+            'Aperture: 70' => 'In_70'
+        );
 
         $app = '';
         foreach ($aps as $k => $v) {
@@ -1419,7 +1441,7 @@ class DC extends Page
     # Grid Scan Info
     function _grid_info()
     {
-        $info = $this->db->pq("SELECT dc.datacollectiongroupid, dc.datacollectionid, dc.axisstart, p.posx as x, p.posy as y, p.posz as z, g.dx_mm, g.dy_mm, g.steps_x, g.steps_y, g.pixelspermicronx, g.pixelspermicrony, g.snapshot_offsetxpixel, g.snapshot_offsetypixel, g.orientation, g.snaked
+        $info = $this->db->pq("SELECT dc.datacollectiongroupid, dc.datacollectionid, dc.axisstart, p.posx as x, p.posy as y, p.posz as z, g.dx_mm, g.dy_mm, g.steps_x, g.steps_y, g.pixelspermicronx, g.pixelspermicrony, g.snapshot_offsetxpixel, g.snapshot_offsetypixel, g.orientation, g.snaked, DATE_FORMAT(dc.starttime, '%Y%m%d') as startdate
                 FROM gridinfo g
                 INNER JOIN datacollection dc on (dc.datacollectionid = g.datacollectionid) or (dc.datacollectiongroupid = g.datacollectiongroupid)
                 LEFT OUTER JOIN position p ON dc.positionid = p.positionid
@@ -1520,7 +1542,8 @@ class DC extends Page
         if (!$this->arg('id'))
             $this->_error('No data collection id specified');
 
-        $types = array('data' => array('datacollection', 'datacollectionid'),
+        $types = array(
+            'data' => array('datacollection', 'datacollectionid'),
             'edge' => array('energyscan', 'energyscanid'),
             'mca' => array('xfefluorescencespectrum', 'xfefluorescencespectrumid'),
         );
@@ -1588,12 +1611,10 @@ class DC extends Page
                         array_push($rows, array(intval($f[0]), floatval($f[2])));
                     }
                 }
-
             }
         }
 
         $this->_output($rows);
-
     }
 
 
@@ -1608,9 +1629,13 @@ class DC extends Page
         $matrices = array();
         foreach ($ret as $l) {
             $parts = array_map('floatval', explode(' ', $l));
-            array_push($matrices, array(array_slice($parts, 0, 4),
-                array_slice($parts, 4, 4),
-                array_slice($parts, 8, 4))
+            array_push(
+                $matrices,
+                array(
+                    array_slice($parts, 0, 4),
+                    array_slice($parts, 4, 4),
+                    array_slice($parts, 8, 4)
+                )
             );
         }
 
@@ -1671,8 +1696,7 @@ class DC extends Page
                 $this->_output($comments[0]);
             else
                 $this->_error('No such comment');
-        }
-        else
+        } else
             $this->_output(array('total' => $tot, 'data' => $comments));
     }
 
@@ -1686,11 +1710,14 @@ class DC extends Page
         if (!$this->has_arg('COMMENTS'))
             $this->_error('No comment specified');
 
-        $this->db->pq("INSERT INTO datacollectioncomment (datacollectioncommentid, datacollectionid, personid, comments, createtime) 
+        $this->db->pq(
+            "INSERT INTO datacollectioncomment (datacollectioncommentid, datacollectionid, personid, comments, createtime) 
                 VALUES (s_datacollectioncomment.nextval, :1, :2, :3, CURRENT_TIMESTAMP) RETURNING datacollectioncommentid INTO :id",
-            array($this->arg('DATACOLLECTIONID'), $this->arg('PERSONID'), $this->arg('COMMENTS')));
+            array($this->arg('DATACOLLECTIONID'), $this->arg('PERSONID'), $this->arg('COMMENTS'))
+        );
 
-        $this->_output(array('DATACOLLECTIONCOMMENTID' => $this->db->id(),
+        $this->_output(array(
+            'DATACOLLECTIONCOMMENTID' => $this->db->id(),
             'GIVENNAME' => $this->user->givenName,
             'FAMILYNAME' => $this->user->familyName,
             'CREATETIME' => date('d-m-Y H:i:s')
@@ -1718,8 +1745,7 @@ class DC extends Page
         if (sizeof($info) == 0) {
             $this->_error('No data for that collection id');
             return;
-        }
-        else
+        } else
             $info = $info[0];
 
         $info['VISIT'] = $this->arg('prop') . '-' . $info['VISIT_NUMBER'];

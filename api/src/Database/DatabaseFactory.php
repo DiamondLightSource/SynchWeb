@@ -48,5 +48,6 @@ class DatabaseFactory
         else {
             error_log("Database type '$database_type' not configured.");
         }
+        return null;
     }
 }

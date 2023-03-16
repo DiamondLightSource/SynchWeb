@@ -17,7 +17,8 @@ class PDF extends Page
 {
     private $vars = array();
 
-    public static $arg_list = array('visit' => '\w+\d+\-\d+',
+    public static $arg_list = array(
+        'visit' => '\w+\d+\-\d+',
         'p' => '\d',
         'cid' => '\d+',
         'did' => '\d+',
@@ -26,12 +27,13 @@ class PDF extends Page
         'month' => '\d\d-\d\d\d\d',
     );
 
-    public static $dispatch = array(array('/sid/:sid/prop/:prop', 'get', '_shipment_label'),
-            array('/container(/sid/:sid)(/cid/:cid)(/did/:did)/prop/:prop', 'get', '_container_report'),
-            array('/report/visit/:visit', 'get', '_visit_report'),
-            array('/sheets', 'get', '_generate_sheets'),
-            array('/awb/sid/:sid', 'get', '_get_awb'),
-            array('/manifest', 'get', '_get_manifest'),
+    public static $dispatch = array(
+        array('/sid/:sid/prop/:prop', 'get', '_shipment_label'),
+        array('/container(/sid/:sid)(/cid/:cid)(/did/:did)/prop/:prop', 'get', '_container_report'),
+        array('/report/visit/:visit', 'get', '_visit_report'),
+        array('/sheets', 'get', '_generate_sheets'),
+        array('/awb/sid/:sid', 'get', '_get_awb'),
+        array('/manifest', 'get', '_get_manifest'),
     );
 
     function __construct(Slim $app, $db, $user)
@@ -53,6 +55,7 @@ class PDF extends Page
             mkdir($mpdf_font_data, 0775, true);
         }
     }
+
     # ------------------------------------------------------------------------
     # Shipment Labels
     function _get_manifest()
@@ -85,8 +88,7 @@ class PDF extends Page
                 GROUP BY s.shippingid", array($start, $end));
 
         $totals = array('WEIGHT' => 0, 'PIECES' => 0, 'SHIPMENTS' => 0);
-        foreach ($shipments as &$s)
-        {
+        foreach ($shipments as &$s) {
             $totals['WEIGHT'] += $s['WEIGHT'];
             $totals['PIECES'] += $s['DEWARCOUNT'];
             $totals['SHIPMENTS']++;
@@ -127,28 +129,29 @@ class PDF extends Page
                 INNER JOIN laboratory l2 ON l2.laboratoryid = pe2.laboratoryid 
                 INNER JOIN proposal p ON p.proposalid = s.proposalid  
                 WHERE s.shippingid=:1", array($this->arg('sid')));
+
         if (!sizeof($ship))
             $this->_error('No such shipment', 'The specified shipment doesnt exist');
         else
             $ship = $ship[0];
 
-        $addr = array($ship['ADDRESS']);
+        $addr = array(rtrim($ship['ADDRESS']));
         if ($ship['CITY'])
-            array_push($addr, $ship['CITY'] . "\n");
+            array_push($addr, PHP_EOL . $ship['CITY']);
         if ($ship['POSTCODE'])
-            array_push($addr, $ship['POSTCODE'] . "\n");
+            array_push($addr, PHP_EOL . $ship['POSTCODE']);
         if ($ship['COUNTRY'])
-            array_push($addr, $ship['COUNTRY'] . "\n");
-        $ship['ADDRESS'] = str_replace("\n", '<br/>', implode('', $addr));
+            array_push($addr, PHP_EOL . $ship['COUNTRY'] . PHP_EOL);
+        $ship['ADDRESS'] = str_replace(PHP_EOL, '<br/>',  implode('', $addr));
 
-        $addr = array($ship['ADDRESS2']);
+        $addr = array(rtrim($ship['ADDRESS2']));
         if ($ship['CITY2'])
-            array_push($addr, $ship['CITY2'] . "\n");
+            array_push($addr, PHP_EOL . $ship['CITY2']);
         if ($ship['POSTCODE2'])
-            array_push($addr, $ship['POSTCODE2'] . "\n");
+            array_push($addr, PHP_EOL . $ship['POSTCODE2']);
         if ($ship['COUNTRY2'])
-            array_push($addr, $ship['COUNTRY2'] . "\n");
-        $ship['ADDRESS2'] = str_replace("\n", '<br/>', implode('', $addr));
+            array_push($addr, PHP_EOL . $ship['COUNTRY2'] . PHP_EOL);
+        $ship['ADDRESS2'] = str_replace(PHP_EOL, '<br/>',  implode('', $addr));
 
         global $facility_fao, $facility_company, $facility_address, $facility_city, $facility_postcode, $facility_country, $facility_phone;
         $addr = array($facility_fao, $facility_company, str_replace("\n", '<br />', $facility_address), $facility_city, $facility_postcode, $facility_country, $facility_phone);
@@ -183,12 +186,10 @@ class PDF extends Page
         if (!sizeof($ship))
             $this->_error('No such shipment');
 
-        if ($ship[0]['DELIVERYAGENT_LABEL'])
-        {
+        if ($ship[0]['DELIVERYAGENT_LABEL']) {
             $this->app->contentType('application/pdf');
             echo base64_decode($ship[0]['DELIVERYAGENT_LABEL']);
-        }
-        else
+        } else
             $this->_error('No airway bill for this shipment');
     }
 
@@ -225,16 +226,17 @@ class PDF extends Page
                 LEFT OUTER JOIN crystal c ON sa.crystalid = c.crystalid 
                 LEFT OUTER JOIN protein p ON c.proteinid = p.proteinid 
                 WHERE dcg.sessionid=:1 ORDER BY dc.starttime", array($info['SID']));
-            
+
         if (!sizeof($rows)) {
             $this->_error('No data', 'No data collections for this visit yet');
         }
-        
+
         $dcs = array();
         foreach ($rows as $dc) {
-            if ($dc['OVERLAP'] == 0) array_push($dcs, 'api.datacollectionid='.$dc['ID']);
+            if ($dc['OVERLAP'] == 0)
+                array_push($dcs, 'api.datacollectionid=' . $dc['ID']);
         }
-        
+
         $dcs_clause = implode(' OR ', $dcs);
 
         $aps = sizeof($dcs) ? $this->db->pq("SELECT api.datacollectionid as id, app.autoprocprogramid,app.processingcommandline as type, apss.ntotalobservations as ntobs, apss.ntotaluniqueobservations as nuobs, apss.resolutionlimitlow as rlow, apss.resolutionlimithigh as rhigh, apss.scalingstatisticstype as shell, apss.rmeasalliplusiminus as rmeas, apss.rmerge, apss.completeness, apss.anomalouscompleteness as anomcompleteness, apss.anomalousmultiplicity as anommultiplicity, apss.multiplicity, apss.meanioversigi as isigi, ap.spacegroup as sg, ap.refinedcell_a as cell_a, ap.refinedcell_b as cell_b, ap.refinedcell_c as cell_c, ap.refinedcell_alpha as cell_al, ap.refinedcell_beta as cell_be, ap.refinedcell_gamma as cell_ga 
@@ -245,25 +247,21 @@ class PDF extends Page
                 INNER JOIN autoprocscalingstatistics apss ON apss.autoprocscalingid = aph.autoprocscalingid 
                 INNER JOIN autoprocprogram app ON api.autoprocprogramid = app.autoprocprogramid 
                 WHERE $dcs_clause") : array();
-            
+
         $types = array('fast_dp' => 1, '-3da ' => 3, '-2da ' => 2, '-3daii ' => 4);
         $dts = array('cell_a', 'cell_b', 'cell_c', 'cell_al', 'cell_be', 'cell_ga');
         $dts2 = array('rlow', 'rhigh');
-            
+
         $ap = array();
-        foreach ($aps as &$a) 
-        {
-            foreach ($types as $id => $name) 
-            {
-                if (strpos($a['TYPE'], $id)) 
-                {
+        foreach ($aps as &$a) {
+            foreach ($types as $id => $name) {
+                if (strpos($a['TYPE'], $id)) {
                     $a['TYPE'] = $name;
                     break;
                 }
             }
 
-            foreach ($dts as $d)
-            {
+            foreach ($dts as $d) {
                 $a[strtoupper($d)] = number_format($a[strtoupper($d)], 2);
             }
 
@@ -278,11 +276,9 @@ class PDF extends Page
 
             $ap[$a['ID']][$a['TYPE']][$a['SHELL']] = $a;
         }
-        
-        foreach ($rows as &$dc)
-        {
-            if (array_key_exists($dc['ID'], $ap))
-            {
+
+        foreach ($rows as &$dc) {
+            if (array_key_exists($dc['ID'], $ap)) {
                 $a = $ap[$dc['ID']][max(array_keys($ap[$dc['ID']]))];
 
                 $o = $a['overall'];
@@ -290,10 +286,7 @@ class PDF extends Page
                 $dc['CELL'] = $o['CELL_A'] . ', ' . $o['CELL_B'] . ', ' . $o['CELL_C'] . '<br/>' . $o['CELL_AL'] . ', ' . $o['CELL_BE'] . ', ' . $o['CELL_GA'];
 
                 $dc['AP'] = array($o, $a['innerShell'], $a['outerShell']);
-
-            }
-            else
-            {
+            } else {
                 $dc['SG'] = '';
                 $dc['CELL'] = '';
                 $dc['AP'] = array();
@@ -323,16 +316,13 @@ class PDF extends Page
                 LEFT OUTER JOIN protein p ON c.proteinid = p.proteinid 
                 WHERE xrf.sessionid=:1 ORDER BY xrf.starttime", array($info['SID']));
 
-        foreach ($rows as &$r)
-        {
+        foreach ($rows as &$r) {
             $results = str_replace('.mca', '.results.dat', preg_replace('/(data\/\d\d\d\d\/\w\w\d+-\d+)/', '\1/processed/pymca', $r['DIR']));
 
             $elements = array();
-            if (file_exists($results))
-            {
+            if (file_exists($results)) {
                 $dat = explode("\n", file_get_contents($results));
-                foreach ($dat as $i => $d)
-                {
+                foreach ($dat as $i => $d) {
                     $l = explode(' ', $d);
                     if ($i < 5)
                         array_push($elements, $l[0]);
@@ -359,20 +349,17 @@ class PDF extends Page
         if (!$this->has_arg('prop'))
             $this->_error('No proposal specified', 'No proposal was specified');
 
-        if ($this->has_arg('cid'))
-        {
+        if ($this->has_arg('cid')) {
             $where = 'c.containerid=:2';
             $args = $this->arg('cid');
         }
 
-        if ($this->has_arg('did'))
-        {
+        if ($this->has_arg('did')) {
             $where = 'd.dewarid=:2';
             $args = $this->arg('did');
         }
 
-        if ($this->has_arg('sid'))
-        {
+        if ($this->has_arg('sid')) {
             $where = 's.shippingid=:2';
             $args = $this->arg('sid');
         }
@@ -386,8 +373,7 @@ class PDF extends Page
                 WHERE p.proposalid=:1 AND $where", array($this->proposalid, $args));
 
 
-        foreach ($containers as &$c)
-        {
+        foreach ($containers as &$c) {
             $c['SAMPLES'] = $this->db->pq("SELECT sp.code, sp.comments, sp.name, TO_NUMBER(sp.location) as location, pr.acronym, cr.spacegroup 
                     FROM blsample sp 
                     INNER JOIN crystal cr ON sp.crystalid = cr.crystalid 
@@ -405,8 +391,7 @@ class PDF extends Page
             for ($i = 1; $i < $c['CAPACITY'] + 1; $i++)
                 array_push($tot, $i);
 
-            foreach (array_diff($tot, $used) as $i => $d)
-            {
+            foreach (array_diff($tot, $used) as $i => $d) {
                 array_splice($c['SAMPLES'], $d - 1, 0, array(array('COMMENTS' => '', 'NAME' => '', 'LOCATION' => $d, 'ACRONYM' => '', 'SPACEGROUP' => '', 'CODE' => '')));
             }
         }
@@ -422,8 +407,7 @@ class PDF extends Page
     {
         $this->labels = array('i03', 'mx-storage-i03', 'i03-rack', 'mx-storage-i02', 'mx-storage-i04', 'mx-storage-i04-1', 'mx-storage-i24', 'mx-storage-in-in', 'mx-storage-in-out');
 
-        if ($this->has_arg('labels'))
-        {
+        if ($this->has_arg('labels')) {
             if (is_array($this->arg('labels')))
                 $this->labels = $this->arg('labels');
             else
@@ -431,10 +415,7 @@ class PDF extends Page
         }
 
         $this->_render('sheets', 'L');
-
-
     }
-
 
     # ------------------------------------------------------------------------
     # Render html template to PDF file
@@ -444,10 +425,7 @@ class PDF extends Page
 
         $f = 'assets/pdf/' . $file . '.php';
 
-        global $pdf_tmp_dir;
-
-        if (!$this->has_arg('p'))
-        {
+        if (!$this->has_arg('p')) {
             if ($orientation)
                 $orientation = '-' . $orientation;
 
@@ -456,14 +434,13 @@ class PDF extends Page
 
 
             $mpdf = new Mpdf([
-                'mode' => 'utf-8', 
-                'format' =>  'A4'.$orientation,
+                'mode' => 'utf-8',
+                'format' => 'A4' . $orientation,
                 'tempDir' => $this->pdf_tmp_dir
             ]);
             $mpdf->WriteHTML(file_get_contents('assets/pdf/styles.css'), 1);
 
-            if (file_exists($f))
-            {
+            if (file_exists($f)) {
                 extract($this->vars);
                 include($f);
             }
@@ -476,13 +453,10 @@ class PDF extends Page
             $mpdf->Output();
 
             # Preview mode outputs raw html, add /p/1 to url
-        }
-        else
-        {
+        } else {
             print "<html>\n     <head>\n        <link href=\"/api/assets/pdf/styles.css\" type=\"text/css\" rel=\"stylesheet\" >\n    </head>\n    <body>\n\n";
 
-            if (file_exists($f))
-            {
+            if (file_exists($f)) {
                 extract($this->vars);
                 include($f);
             }

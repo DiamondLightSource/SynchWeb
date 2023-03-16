@@ -38,7 +38,7 @@ module.exports = {
         'content-header': ['Droid Sans'],
         'icon': ['FontAwesome'],
         'fixed': ["Courier"],
-        },
+      },
       // Add a tiny font size for breadcrumbs etc.
       fontSize: {
         'xxs': '0.65rem',
@@ -53,7 +53,7 @@ module.exports = {
         //   '4xl': '2.25rem',
         //   '5xl': '3rem',
         //   '6xl': '4rem',
-        },
+      },
       width: {
         '1/7': '14.2857143%',
         '2/7': '28.5714286%',
@@ -165,7 +165,27 @@ module.exports = {
         'screened': '#fdfd96',
         'grid-scanned': '#fdfd96',
         'loaded-by-robot': '#ff6961',
-        'dark-amber': '#d9bf98'
+        'dark-amber': '#d9bf98',
+
+// Sample Groups Color Theme
+        'sample-group-added-light': '#f4e7Ba',
+        'sample-group-added-dark': '#e6daae',
+// Data Collections messages color
+        'info-color': {
+          default: '#00ff00',
+          lighter: '#ccffcc',
+          darker: '#003300'
+        },
+        'alert-color': {
+          default: '#ffa500',
+          lighter: '#ffb733',
+          darker: '#332100'
+        },
+        'warning-color': {
+          default: '#ff0000',
+          lighter: '#ff4d4d',
+          darker: '#330000'
+        },
       },
       zIndex: {
         '75': 75,
