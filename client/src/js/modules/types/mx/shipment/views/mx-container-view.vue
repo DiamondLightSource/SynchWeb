@@ -1,6 +1,6 @@
 <template>
   <div class="content">
-    <h1>Container {{container.NAME}}</h1>
+    <h1 data-testid="container-header">Container {{container.NAME}}</h1>
 
     <p class="help">This page shows the contents of the selected container. Samples can be added and edited by clicking the pencil icon, and removed by clicking the x</p>
 
