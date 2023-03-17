@@ -5,7 +5,7 @@
     class="tw-fixed tw-w-full tw-h-full tw-bg-transparent tw-top-0 tw-z-50 tw-left-0 tw-table tw-bottom-0"
   >
     <div class="tw-table-cell">
-      <div class="tw-flex tw-flex-col tw-justify-center tw-h-full">
+      <div class="tw-flex tw-flex-col tw-justify-center tw-min-h-screen">
         <div
           :class="{
             [widthClass]: true,

@@ -3,8 +3,10 @@ define(['marionette',
     'modules/dc/collections/downstreams', 
     'modules/dc/collections/dimplepeaks', 
     'modules/dc/views/dimplepeaktable', 
-    'templates/dc/mapmodelview.html'], function(Marionette, Uglymol, zlib,
-        DownStreams, DIMPLEPeaks, DIMPLEPeakTable,  template) {
+    'templates/dc/mapmodelview.html',
+    "./uglymolhelper"
+    ], function(Marionette, Uglymol, zlib,
+        DownStreams, DIMPLEPeaks, DIMPLEPeakTable,  template, defaultViewerOptions) {
 
     return Marionette.LayoutView.extend({
         template: template,
@@ -145,7 +147,8 @@ define(['marionette',
 
         onDomRefresh: function() {
             this.$el.find('.peaks').hide()
-            this.viewer = new Uglymol.Viewer({viewer: 'viewer', hud: 'hud', help: 'help'})
+
+            this.viewer = new Uglymol.Viewer(defaultViewerOptions)
             this.viewer.xhr_headers = { Authorization: 'Bearer ' + app.token }
             this.loadDownStream()
         },

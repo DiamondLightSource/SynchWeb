@@ -32,10 +32,12 @@
                 :class="[{ferror: errors.length}, 'tw-shadow tw-border tw-rounded tw-w-64 tw-py-2 tw-px-3 tw-text-gray-700 tw-leading-tight focus:tw-outline-none focus:tw-shadow-outline']"
                 type="text"
                 :name="name"
+                data-testid="username"
               >
               <p
                 v-if="errors.length"
                 class="tw-mt-2 md:tw-ml-2 tw-px-2 tw-border-l-2 tw-border-red-500 tw-text-red-800"
+                data-testid="username-error"
               >
                 {{ errors[0] }}
               </p>
@@ -56,10 +58,12 @@
                 :class="[{ferror: errors.length}, 'tw-shadow tw-border tw-rounded tw-w-64 tw-py-2 tw-px-3 tw-text-gray-700 tw-leading-tight focus:tw-outline-none focus:tw-shadow-outline']"
                 type="password"
                 :name="name"
+                data-testid="password"
               >
               <p
                 v-if="errors.length"
                 class="tw-mt-2 md:tw-ml-2 tw-px-2 tw-border-l-2 tw-border-red-500 tw-text-red-800"
+                data-testid="password-error"
               >
                 {{ errors[0] }}
               </p>
@@ -72,6 +76,7 @@
               :disabled="invalid"
               class="tw-px-8 tw-py-2 tw-w-64 tw-border tw-border-gray-400 button submit"
               @click.prevent="onSubmit"
+              data-testid="submit"
             >
               Login
             </button>
@@ -169,7 +174,7 @@ export default {
         singleSignOn: function() {
             // If we are using SSO we need to check auth and redirect if required
             // window.location.href='https://'+this.sso_url+'/cas/login?service='+encodeURIComponent(url)
-            if (this.sso && location.href.indexOf('?ticket=') == -1) {
+            if (this.sso && location.href.indexOf('?ticket=') === -1) {
                 let url = this.redirectUrl
                 console.log("Login should be Redirecting to CAS: " + url)
 

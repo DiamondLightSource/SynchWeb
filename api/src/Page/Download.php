@@ -12,7 +12,8 @@ use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 class Download extends Page
 {
 
-    public static $arg_list = array('id' => '\d+',
+    public static $arg_list = array(
+        'id' => '\d+',
         'run' => '\d+',
         'visit' => '\w+\d+-\d+',
         'u' => '\w+\d+',
@@ -39,16 +40,16 @@ class Download extends Page
 
 
     public static $dispatch = array(
-            array('/plots', 'get', '_auto_processing_plots'),
-            array('/csv/visit/:visit', 'get', '_csv_report'),
-            array('/sign', 'post', '_sign_url'),
-            array('/data/visit/:visit', 'get', '_download_visit'),
-            array('/attachments', 'get', '_get_attachments'),
-            array('/attachment/id/:id/aid/:aid', 'get', '_get_attachment'),
-            array('/dc/id/:id', 'get', '_download'),
+        array('/plots', 'get', '_auto_processing_plots'),
+        array('/csv/visit/:visit', 'get', '_csv_report'),
+        array('/sign', 'post', '_sign_url'),
+        array('/data/visit/:visit', 'get', '_download_visit'),
+        array('/attachments', 'get', '_get_attachments'),
+        array('/attachment/id/:id/aid/:aid', 'get', '_get_attachment'),
+        array('/dc/id/:id', 'get', '_download'),
 
-            array('/ap/attachments(/:AUTOPROCPROGRAMATTACHMENTID)(/dl/:download)', 'get', '_get_autoproc_attachments'),
-            array('/ap/archive/:AUTOPROCPROGRAMID', 'get', '_get_autoproc_archive'),
+        array('/ap/attachments(/:AUTOPROCPROGRAMATTACHMENTID)(/dl/:download)', 'get', '_get_autoproc_attachments'),
+        array('/ap/archive/:AUTOPROCPROGRAMID', 'get', '_get_autoproc_archive'),
     );
 
 
@@ -83,8 +84,7 @@ class Download extends Page
                 $this->arg('visit') . '_download.zip'
             );
             $response->send();
-        }
-        else
+        } else
             $this->_error('There doesnt seem to be a data archive available for this visit');
     }
 
@@ -145,8 +145,7 @@ class Download extends Page
                     // If we are looking for a specific plot (by attachment id) then OK...
                     if ($this->has_arg('aid')) {
                         $r['PLOTLY'] = true;
-                    }
-                    else {
+                    } else {
                         // ..if not, we should remove this from the list of returned plots
                         // Autoprocessing results use the same bespoke format for charts
                         // and we don't want to include plotly in those aggregated results
@@ -229,12 +228,10 @@ class Download extends Page
             else {
                 if ($this->has_arg('download')) {
                     $this->_get_file($rows[0]['AUTOPROCPROGRAMID'], $rows[0]);
-                }
-                else
+                } else
                     $this->_output($rows[0]);
             }
-        }
-        else
+        } else
             $this->_output($rows);
     }
 
@@ -274,8 +271,7 @@ class Download extends Page
 
             $response->send();
             exit();
-        }
-        else {
+        } else {
             $this->_error("No such file, the specified file " . $filename . " doesn't exist");
         }
     }
@@ -378,9 +374,7 @@ class Download extends Page
                 $this->_output($rows[0]);
             else
                 $this->_error('No such attachment');
-
-        }
-        else
+        } else
             $this->_output($rows);
     }
 
@@ -403,8 +397,7 @@ class Download extends Page
             $this->set_mime_content($response, $filename);
             $response->headers->set("Content-Length", filesize($filename));
             $response->send();
-        }
-        else {
+        } else {
             error_log("Download file " . $filename . " not found");
             $this->_error('Attachment not found on filesystem', 404);
         }
@@ -421,21 +414,21 @@ class Download extends Page
 
         $aps = $this->db->union(
             array(
-            "SELECT app.autoprocprogramid, app.processingprograms, app.processingstatus
+                "SELECT app.autoprocprogramid, app.processingprograms, app.processingstatus
                     FROM autoprocintegration api 
                     INNER JOIN autoprocprogram app ON api.autoprocprogramid = app.autoprocprogramid 
                     INNER JOIN datacollection dc ON dc.datacollectionid = api.datacollectionid
                     INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
                     INNER JOIN blsession s ON s.sessionid = dcg.sessionid
                     WHERE s.proposalid=:1 AND app.autoprocprogramid=:2",
-            "SELECT app.autoprocprogramid, app.processingprograms, app.processingstatus
+                "SELECT app.autoprocprogramid, app.processingprograms, app.processingstatus
                     FROM autoprocprogram app
                     INNER JOIN processingjob pj on pj.processingjobid = app.processingjobid
                     INNER JOIN datacollection dc ON dc.datacollectionid = pj.datacollectionid
                     INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
                     INNER JOIN blsession s ON s.sessionid = dcg.sessionid
                     WHERE s.proposalid=:1 AND app.autoprocprogramid=:2",
-        ),
+            ),
             array($this->proposalid, $this->arg('AUTOPROCPROGRAMID'))
         );
 
@@ -470,7 +463,6 @@ class Download extends Page
         $response->deleteFileAfterSend(true);
         $response->send();
         exit();
-
     }
 
 
@@ -494,24 +486,19 @@ class Download extends Page
         if (in_array($path_ext, array('html', 'htm'))) {
             $response->headers->set("Content-Type", "text/html");
             $response->setContentDisposition(ResponseHeaderBag::DISPOSITION_INLINE);
-        }
-        elseif ($path_ext == 'pdf') {
+        } elseif ($path_ext == 'pdf') {
             $response->headers->set("Content-Type", "application/pdf");
             $response->setContentDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT, $saved_filename);
-        }
-        elseif ($path_ext == 'png') {
+        } elseif ($path_ext == 'png') {
             $response->headers->set("Content-Type", "image/png");
             $response->setContentDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT, $saved_filename);
-        }
-        elseif (in_array($path_ext, array('jpg', 'jpeg'))) {
+        } elseif (in_array($path_ext, array('jpg', 'jpeg'))) {
             $response->headers->set("Content-Type", "image/jpeg");
             $response->setContentDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT, $saved_filename);
-        }
-        elseif (in_array($path_ext, array('log', 'txt', 'error', 'LP', 'json'))) {
+        } elseif (in_array($path_ext, array('log', 'txt', 'error', 'LP', 'json', 'lsa'))) {
             $response->headers->set("Content-Type", "text/plain");
             $response->setContentDisposition(ResponseHeaderBag::DISPOSITION_INLINE);
-        }
-        else {
+        } else {
             $response->headers->set("Content-Type", "application/octet-stream");
             $response->setContentDisposition(
                 ResponseHeaderBag::DISPOSITION_ATTACHMENT,
@@ -519,6 +506,7 @@ class Download extends Page
             );
         }
     }
+
 
     # ------------------------------------------------------------------------
     # Download Data
@@ -539,8 +527,7 @@ class Download extends Page
         if (sizeof($info) == 0) {
             $this->_error('No data for that collection id');
             return;
-        }
-        else
+        } else
             $info = $info[0];
 
         $info['VISIT'] = $this->arg('prop') . '-' . $info['VISIT_NUMBER'];
@@ -555,8 +542,7 @@ class Download extends Page
                 $this->arg('id') . '_download.zip'
             );
             $response->send();
-        }
-        else {
+        } else {
             error_log("Download file " . $data . " not found");
             $this->_error('File not found on filesystem', 404);
         }

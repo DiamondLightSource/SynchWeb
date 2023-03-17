@@ -7,7 +7,8 @@ use SynchWeb\ImagingShared;
 
 class Imaging extends Page
 {
-    public static $arg_list = array('cid' => '\d+',
+    public static $arg_list = array(
+        'cid' => '\d+',
         'iid' => '\d+',
         'imid' => '\d+',
         'itid' => '\d+',
@@ -53,55 +54,58 @@ class Imaging extends Page
     );
 
 
-    public static $dispatch = array(array('/inspection(/:iid)', 'get', '_get_inspections'),
-            array('/inspection/locations/:barcode', 'get', '_get_locations'),
-            array('/inspection', 'post', '_add_inspection'),
+    public static $dispatch = array(
+        array('/inspection(/:iid)', 'get', '_get_inspections'),
+        array('/inspection/locations/:barcode', 'get', '_get_locations'),
+        array('/inspection', 'post', '_add_inspection'),
 
-            array('/inspection/images(/:imid)(/iid/:iid)', 'get', '_get_inspection_images'),
-            array('/inspection/images', 'post', '_add_inspection_image'),
-            array('/inspection/images/:imid', 'patch', '_update_inspection_image'),
+        array('/inspection/images(/:imid)(/iid/:iid)', 'get', '_get_inspection_images'),
+        array('/inspection/images', 'post', '_add_inspection_image'),
+        array('/inspection/images/:imid', 'patch', '_update_inspection_image'),
 
-            array('/inspection/images/scores', 'get', '_get_image_scores'),
-            array('/inspection/images/scores/auto', 'get', '_get_auto_scores'),
-            array('/inspection/images/scores/auto/schemas', 'get', '_get_auto_score_schemas'),
+        array('/inspection/images/scores', 'get', '_get_image_scores'),
+        array('/inspection/images/scores/auto', 'get', '_get_auto_scores'),
+        array('/inspection/images/scores/auto/schemas', 'get', '_get_auto_score_schemas'),
 
-            array('/inspection/image/:imid', 'get', '_get_image'),
+        array('/inspection/image/:imid', 'get', '_get_image'),
 
-            array('/inspection/types(/:itid)', 'get', '_get_inspection_types'),
+        array('/inspection/types(/:itid)', 'get', '_get_inspection_types'),
 
-            array('/inspection/adhoc', 'get', '_add_adhoc_inspection'),
-
-
-            array('/imager(/:igid)', 'get', '_get_imagers'),
+        array('/inspection/adhoc', 'get', '_add_adhoc_inspection'),
 
 
-            array('/schedule(/:shid)', 'get', '_get_schedules'),
-            array('/schedule/:shid', 'patch', '_update_schedule'),
-            array('/schedule', 'post', '_add_schedule'),
+        array('/imager(/:igid)', 'get', '_get_imagers'),
 
 
-            array('/schedule/components(/:shcid)(/shid/:shid)', 'get', '_get_schedule_components'),
-            array('/schedule/components', 'post', '_add_schedule_component'),
-            array('/schedule/components/:shcid', 'put', '_update_schedule_component'),
+        array('/schedule(/:shid)', 'get', '_get_schedules'),
+        array('/schedule/:shid', 'patch', '_update_schedule'),
+        array('/schedule', 'post', '_add_schedule'),
+
+
+        array('/schedule/components(/:shcid)(/shid/:shid)', 'get', '_get_schedule_components'),
+        array('/schedule/components', 'post', '_add_schedule_component'),
+        array('/schedule/components/:shcid', 'put', '_update_schedule_component'),
 
 
 
-            array('/screen(/:scid)', 'get', '_get_screens'),
-            array('/screen', 'post', '_add_screen'),
-            array('/screen/:scid', 'patch', '_update_screen'),
+        array('/screen(/:scid)', 'get', '_get_screens'),
+        array('/screen', 'post', '_add_screen'),
+        array('/screen/:scid', 'patch', '_update_screen'),
 
-            array('/screen/groups(/:scgid)', 'get', '_get_screen_componentgroups'),
-            array('/screen/groups', 'post', '_add_screen_componentgroup'),
-            array('/screen/groups', 'put', '_add_screen_componentgroups'),
-            array('/screen/groups/:scgid', 'patch', '_update_screen_componentgroup'),
+        array('/screen/groups(/:scgid)', 'get', '_get_screen_componentgroups'),
+        array('/screen/groups', 'post', '_add_screen_componentgroup'),
+        array('/screen/groups', 'put', '_add_screen_componentgroups'),
+        array('/screen/groups/:scgid', 'patch', '_update_screen_componentgroup'),
 
-            array('/screen/components(/:sccid)', 'get', '_get_screen_components'),
-            array('/screen/components', 'post', '_add_screen_component'),
-            array('/screen/components', 'put', '_add_screen_components'),
-            array('/screen/components/:sccid', 'patch', '_update_screen_component'),
-            array('/screen/components/:sccid', 'put', '_update_screen_component_full'),
-            array('/screen/components/:sccid', 'delete', '_delete_screen_component'),
+        array('/screen/components(/:sccid)', 'get', '_get_screen_components'),
+        array('/screen/components', 'post', '_add_screen_component'),
+        array('/screen/components', 'put', '_add_screen_components'),
+        array('/screen/components/:sccid', 'patch', '_update_screen_component'),
+        array('/screen/components/:sccid', 'put', '_update_screen_component_full'),
+        array('/screen/components/:sccid', 'delete', '_delete_screen_component'),
     );
+
+    var $shared;
 
     # Initialise shared functions
     function __construct()
@@ -150,8 +154,7 @@ class Imaging extends Page
                 $this->_output($imagers[0]);
             else
                 $this->_error('No such imager');
-        }
-        else
+        } else
             $this->_output($imagers);
     }
 
@@ -180,9 +183,7 @@ class Imaging extends Page
                 $this->_output($schedules[0]);
             else
                 $this->_error('No such schedule');
-
-        }
-        else
+        } else
             $this->_output($schedules);
     }
 
@@ -260,9 +261,7 @@ class Imaging extends Page
                 $this->_output($components[0]);
             else
                 $this->_error('No such component');
-
-        }
-        else
+        } else
             $this->_output($components);
     }
 
@@ -304,8 +303,10 @@ class Imaging extends Page
         if (!sizeof($sc))
             $this->_error('No such schedule component');
 
-        $this->db->pq("UPDATE schedulecomponent SET offset_hours=:1, inspectiontypeid=:2 WHERE schedulecomponentid=:3",
-            array($this->arg('OFFSET_HOURS'), $this->arg('INSPECTIONTYPEID'), $this->arg('shcid')));
+        $this->db->pq(
+            "UPDATE schedulecomponent SET offset_hours=:1, inspectiontypeid=:2 WHERE schedulecomponentid=:3",
+            array($this->arg('OFFSET_HOURS'), $this->arg('INSPECTIONTYPEID'), $this->arg('shcid'))
+        );
 
         $this->_output(array(
             'OFFSET_HOURS' => $this->arg('OFFSET_HOURS'),
@@ -333,8 +334,7 @@ class Imaging extends Page
                 $this->_output($types[0]);
             else
                 $this->_error('No such inspection type');
-        }
-        else
+        } else
             $this->_output($types);
     }
 
@@ -348,16 +348,17 @@ class Imaging extends Page
         $join = '';
         $extc = '';
 
-        if (!$this->has_arg('cid') &&
-        !$this->has_arg('iid') &&
-        (!$this->staff || !$this->has_arg('all')))
+        if (
+            !$this->has_arg('cid') &&
+            !$this->has_arg('iid') &&
+            (!$this->staff || !$this->has_arg('all'))
+        )
             $this->_error('No container / inspection specified');
 
         if (($this->has_arg('all') && $this->staff) || in_array($_SERVER["REMOTE_ADDR"], $img)) {
             $where = '1=1';
             $args = array();
-        }
-        else {
+        } else {
             $where = 'p.proposalid = :1';
             $args = array($this->proposalid);
         }
@@ -370,8 +371,7 @@ class Imaging extends Page
         if ($this->has_arg('iid')) {
             $where .= ' AND i.containerinspectionid=:' . (sizeof($args) + 1);
             array_push($args, $this->arg('iid'));
-        }
-        else {
+        } else {
             if (!$this->has_arg('allStates'))
                 $where .= " AND i.state='Completed'";
         }
@@ -462,9 +462,7 @@ class Imaging extends Page
                 $this->_error('No such inspection');
             else
                 $this->_output($inspections[0]);
-
-        }
-        else
+        } else
             $this->_output(array('total' => intval($tot[0]['TOT']), 'data' => $inspections));
     }
 
@@ -482,11 +480,9 @@ class Imaging extends Page
         if ($this->has_arg('IMAGERID')) {
             $imager = $this->db->pq("SELECT temperature FROM imager WHERE imagerid=:1", array($this->arg('IMAGERID')));
             if (!sizeof($imager))
-                $this->error('No such imager');
+                $this->_error('No such imager');
             $temp = $imager[0]['TEMPERATURE'];
-
-        }
-        else {
+        } else {
             $temp = $this->arg('TEMPERATURE');
         }
 
@@ -499,11 +495,13 @@ class Imaging extends Page
               INNER JOIN proposal p ON p.proposalid = s.proposalid
               WHERE p.proposalid = :1 AND c.containerid = :2", array($this->proposalid, $this->arg('CONTAINERID')));
 
-        if (!sizeof($cont))
-            $this->error('No such container');
+        if (!sizeof($cont)) {
+            $this->_error('No such container');
+        }
 
 
-        $args = array('CONTAINERID' => $this->arg('CONTAINERID'),
+        $args = array(
+            'CONTAINERID' => $this->arg('CONTAINERID'),
             'INSPECTIONTYPEID' => $this->arg('INSPECTIONTYPEID'),
             'IMAGERID' => $this->has_arg('IMAGERID') ? $this->arg('IMAGERID') : null,
             'TEMPERATURE' => $temp,
@@ -531,18 +529,22 @@ class Imaging extends Page
               INNER JOIN proposal p ON p.proposalid = s.proposalid
               WHERE p.proposalid = :1 AND c.containerid = :2", array($this->proposalid, $this->arg('cid')));
 
-        if (!sizeof($cont))
-            $this->error('No such container');
+        if (!sizeof($cont)) {
+            $this->_error('No such container');
+        }
 
-        $last = $this->db->pq("SELECT i.containerid 
+        $last = $this->db->pq(
+            "SELECT i.containerid 
               FROM containerinspection i
               WHERE i.state != 'Completed' AND i.schedulecomponentid IS NULL AND i.manual!=1 AND i.containerid=:1",
-            array($this->arg('cid')));
+            array($this->arg('cid'))
+        );
 
         if (sizeof($last))
             $this->_error('Container already schedule for adhoc inspection');
 
-        $args = array('CONTAINERID' => $this->arg('cid'),
+        $args = array(
+            'CONTAINERID' => $this->arg('cid'),
             'INSPECTIONTYPEID' => $this->arg('INSPECTIONTYPEID'),
             'MANUAL' => 0,
             'PRIORITY' => 99,
@@ -597,8 +599,7 @@ class Imaging extends Page
                 $this->_output($images[0]);
             else
                 $this->_error('No such image');
-        }
-        else
+        } else
             $this->_output($images);
     }
 
@@ -680,7 +681,6 @@ class Imaging extends Page
                 $this->_output(array($f => $this->arg($f)));
             }
         }
-
     }
 
 
@@ -719,7 +719,8 @@ class Imaging extends Page
         if (!$this->has_arg('CONTAINERINSPECTIONID'))
             $this->_error('No container inspection specified');
 
-        $rows = $this->db->pq("SELECT  distinct sass.blsampleimageautoscoreschemaid, sass.schemaname
+        $rows = $this->db->pq(
+            "SELECT  distinct sass.blsampleimageautoscoreschemaid, sass.schemaname
                 FROM containerinspection ci
                 INNER JOIN blsampleimage si ON si.containerinspectionid = ci.containerinspectionid
                 INNER JOIN blsampleimage_has_autoscoreclass as shasc ON si.blsampleimageid = shasc.blsampleimageid
@@ -729,7 +730,8 @@ class Imaging extends Page
                 INNER JOIN dewar d ON d.dewarid = c.dewarid
                 INNER JOIN shipping s ON s.shippingid = d.shippingid
                 WHERE ci.containerinspectionid = :1 AND s.proposalid = :2",
-            array($this->arg("CONTAINERINSPECTIONID"), $this->proposalid));
+            array($this->arg("CONTAINERINSPECTIONID"), $this->proposalid)
+        );
 
         $this->_output($rows);
     }
@@ -741,7 +743,8 @@ class Imaging extends Page
         if (!$this->has_arg('BLSAMPLEIMAGEAUTOSCORESCHEMAID'))
             $this->_error('No schema specified');
 
-        $rows = $this->db->pq("SELECT si.blsampleimageid, sasc.blsampleimageautoscoreclassid, sasc.scoreclass, shasc.probability
+        $rows = $this->db->pq(
+            "SELECT si.blsampleimageid, sasc.blsampleimageautoscoreclassid, sasc.scoreclass, shasc.probability
                 FROM containerinspection ci
                 INNER JOIN blsampleimage si ON si.containerinspectionid = ci.containerinspectionid
                 INNER JOIN blsampleimage_has_autoscoreclass as shasc ON si.blsampleimageid = shasc.blsampleimageid
@@ -751,7 +754,8 @@ class Imaging extends Page
                 INNER JOIN dewar d ON d.dewarid = c.dewarid
                 INNER JOIN shipping s ON s.shippingid = d.shippingid
                 WHERE ci.containerinspectionid = :1 AND s.proposalid = :2 AND sass.blsampleimageautoscoreschemaid = :3",
-            array($this->arg("CONTAINERINSPECTIONID"), $this->proposalid, $this->arg('BLSAMPLEIMAGEAUTOSCORESCHEMAID')));
+            array($this->arg("CONTAINERINSPECTIONID"), $this->proposalid, $this->arg('BLSAMPLEIMAGEAUTOSCORESCHEMAID'))
+        );
 
         $inspection = array();
         foreach ($rows as $r) {
@@ -806,9 +810,7 @@ class Imaging extends Page
                 $this->app->contentType($head);
                 $this->app->response()->header('Content-Length', filesize($file));
                 readfile($file);
-
-            }
-            else
+            } else
                 $this->_error('No such image');
         }
     }
@@ -837,9 +839,7 @@ class Imaging extends Page
                 $this->_output($screens[0]);
             else
                 $this->_error('No such screen');
-
-        }
-        else
+        } else
             $this->_output($screens);
     }
 
@@ -906,9 +906,7 @@ class Imaging extends Page
                 $this->_output($sgs[0]);
             else
                 $this->_error('No such screen component group');
-
-        }
-        else
+        } else
             $this->_output($sgs);
     }
 
@@ -971,11 +969,13 @@ class Imaging extends Page
         if (!$this->has_arg('scgid'))
             $this->_error('No screen component group specified');
 
-        $sc = $this->db->pq("SELECT s.screenid
+        $sc = $this->db->pq(
+            "SELECT s.screenid
               FROM screen s
               INNER JOIN screencomponentgroup sg ON sg.screenid = s.screenid
               WHERE s.proposalid = :1 and sg.screencomponentgroupid = :2",
-            array($this->proposalid, $this->arg('scgid')));
+            array($this->proposalid, $this->arg('scgid'))
+        );
 
         if (!sizeof($sc))
             $this->_error('No such screen component group');
@@ -1025,9 +1025,7 @@ class Imaging extends Page
                 $this->_output($sgs[0]);
             else
                 $this->_error('No such screen component');
-
-        }
-        else
+        } else
             $this->_output($sgs);
     }
 
@@ -1079,11 +1077,13 @@ class Imaging extends Page
         if (!$this->has_arg('COMPONENTID'))
             $this->_error('No component specified');
 
-        $sc = $this->db->pq("SELECT s.screenid
+        $sc = $this->db->pq(
+            "SELECT s.screenid
               FROM screen s
               INNER JOIN screencomponentgroup sg ON sg.screenid = s.screenid
               WHERE s.proposalid = :1 and sg.screencomponentgroupid = :2",
-            array($this->proposalid, $this->arg('SCREENCOMPONENTGROUPID')));
+            array($this->proposalid, $this->arg('SCREENCOMPONENTGROUPID'))
+        );
 
         if (!sizeof($sc))
             $this->_error('No such screen component group');
@@ -1103,12 +1103,14 @@ class Imaging extends Page
         if (!$this->has_arg('sccid'))
             $this->_error('No screen component specified');
 
-        $sc = $this->db->pq("SELECT s.screenid
+        $sc = $this->db->pq(
+            "SELECT s.screenid
               FROM screen s
               INNER JOIN screencomponentgroup sg ON sg.screenid = s.screenid
               INNER JOIN screencomponent sc ON sc.screencomponentgroupid = sg.screencomponentgroupid
               WHERE s.proposalid = :1 and sc.screencomponentid = :2",
-            array($this->proposalid, $this->arg('sccid')));
+            array($this->proposalid, $this->arg('sccid'))
+        );
 
         if (!sizeof($sc))
             $this->_error('No such screen component');
@@ -1126,12 +1128,14 @@ class Imaging extends Page
         if (!$this->has_arg('sccid'))
             $this->_error('No screen component specified');
 
-        $sc = $this->db->pq("SELECT s.screenid
+        $sc = $this->db->pq(
+            "SELECT s.screenid
               FROM screen s
               INNER JOIN screencomponentgroup sg ON sg.screenid = s.screenid
               INNER JOIN screencomponent sc ON sc.screencomponentgroupid = sg.screencomponentgroupid
               WHERE s.proposalid = :1 and sc.screencomponentid = :2",
-            array($this->proposalid, $this->arg('sccid')));
+            array($this->proposalid, $this->arg('sccid'))
+        );
 
         if (!sizeof($sc))
             $this->_error('No such screen component');
@@ -1145,7 +1149,6 @@ class Imaging extends Page
             'CONCENTRATION' => $conc,
             'PH' => $ph,
         ));
-
     }
 
 
@@ -1154,12 +1157,14 @@ class Imaging extends Page
         if (!$this->has_arg('sccid'))
             $this->_error('No screen component specified');
 
-        $sc = $this->db->pq("SELECT s.screenid
+        $sc = $this->db->pq(
+            "SELECT s.screenid
               FROM screen s
               INNER JOIN screencomponentgroup sg ON sg.screenid = s.screenid
               INNER JOIN screencomponent sc ON sc.screencomponentgroupid = sg.screencomponentgroupid
               WHERE s.proposalid = :1 and sc.screencomponentid = :2",
-            array($this->proposalid, $this->arg('sccid')));
+            array($this->proposalid, $this->arg('sccid'))
+        );
 
         if (!sizeof($sc))
             $this->_error('No such screen component');

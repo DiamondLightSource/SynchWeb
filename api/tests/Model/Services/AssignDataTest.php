@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace SynchWeb\Model\Services;
 
@@ -33,8 +35,7 @@ final class AssignDataTest extends TestCase
             ->getMock();
 
         // can only stub this out once
-        if (!$this->insertId)
-        {
+        if (!$this->insertId) {
             $this->insertId = $this->getFunctionMock('SynchWeb\Database\Type', "mysqli_insert_id");
             $this->insertId->expects($this->any())->willReturn(666);
         }
@@ -60,7 +61,7 @@ final class AssignDataTest extends TestCase
     {
         $container = array('CONTAINERID' => 'testContainerId', 'BEAMLINENAME' => 'testBeamLineName', 'DEWARID' => 'testDewarId', 'CODE' => 'testCode');
         $this->assignData->unassignContainer($container);
-        $this->assertEquals("INSERT INTO ContainerHistory (containerid, status, location, beamlinename) VALUES ('testContainerId','at facility','','testBeamLineName')", $this->db->getLastQuery());
+        $this->assertEquals("INSERT INTO ContainerHistory (containerid, status, location, beamlinename) VALUES ('testContainerId','at facility','','')", $this->db->getLastQuery());
     }
 
     public function testUpdateContainerAndHistoryCreatesCorrectSql(): void

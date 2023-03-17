@@ -7,11 +7,13 @@ use HTMLPurifier;
 use HTMLPurifier_Config;
 use ReflectionClass;
 use Slim\Slim;
+use SynchWeb\Database\DatabaseParent;
 use xmlrpc_client;
 use xmlrpcmsg;
 use xmlrpcval;
 
 use SynchWeb\Queue;
+use SynchWeb\Utils;
 
 class Page
 {
@@ -27,6 +29,7 @@ class Page
     var $profiles = array();
     var $base;
     var $args = array();
+    var $request = null;
 
     public static $dispatch = array();
     public static $arg_list = array();
@@ -43,6 +46,9 @@ class Page
 
     var $sessionid;
     var $proposalid;
+    var $_arg_list;
+    var $_dispatch;
+    var $last_profile;
 
     function _base()
     {
@@ -51,7 +57,7 @@ class Page
     }
 
 
-    function __construct(Slim $app, $db, $user)
+    function __construct(Slim $app, DatabaseParent $db, $user)
     {
         $this->_arg_list = array();
         $this->_dispatch = array();
@@ -366,7 +372,6 @@ class Page
             }
         }
 
-
         // End execution, show not authed page template
         if (!$auth)
         {
@@ -426,7 +431,7 @@ class Page
 
         $action = $act ? 'LOGON' : 'LOGOFF';
 
-        if ($this->user)
+        if (Utils::ShouldLogUserActivityToDB($this->user))
         {
             $com = 'ISPyB2: ' . ($com ? $com : $_SERVER['REQUEST_URI']);
             $chk = $this->db->pq("SELECT comments FROM adminactivity WHERE username LIKE :1", array($this->user->loginId));
@@ -650,6 +655,11 @@ class Page
     function argOrEmptyString($key)
     {
         return $this->has_arg($key) ? $this->arg($key) : '';
+    }
+
+    function argOrNull($key)
+    {
+        return $this->has_arg($key) ? $this->arg($key) : null;
     }
 
     # ------------------------------------------------------------------------

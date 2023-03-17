@@ -2,22 +2,20 @@
 
 namespace SynchWeb\Database\Type;
 
-use SynchWeb\Database\DatabaseParent;
-use SynchWeb\Database\DatabaseInterface;
 use SqlFormatter;
+use SynchWeb\Database\DatabaseParent;
 
-class MySQL extends DatabaseParent implements DatabaseInterface
-{
+class MySQL extends DatabaseParent {
+    /** @var string */
     protected $type = 'mysql';
-
-    var $lastQuery = ''; // provide a way of retrieving the last query run - by storing the data - can then call getLastQuery() - primarily for testing
-    var $lastArgs = array();
-    var $debug = false;
-    var $stat = '';
-    var $stats = False;
-    var $transaction = False;
-    var $errors = 0;
-    var $wsrep_sync = False;
+    /** @var string */
+    private $lastQuery = ''; // provide a way of retrieving the last query run - by storing the data - can then call getLastQuery() - primarily for testing
+    /** @var array */
+    private $lastArgs = array();
+    /** @var bool */
+    private $transaction = False;
+    /** @var int */
+    private $errors = 0;
 
     const TABLES = array(
         'AdminActivity',
@@ -214,7 +212,7 @@ class MySQL extends DatabaseParent implements DatabaseInterface
 
     function __construct($conn)
     {
-        $this->conn = $conn;
+        parent::__construct($conn);
 
         mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT); // throw exceptions.
 
@@ -528,30 +526,7 @@ class MySQL extends DatabaseParent implements DatabaseInterface
         return $this->pq($union, $all_args);
     }
 
-    function set_explain($exp)
-    {
-
-    }
-
-    function get_result($Statement)
-    {
-        $RESULT = array();
-        $Statement->store_result();
-        for ($i = 0; $i < $Statement->num_rows; $i++)
-        {
-            $Metadata = $Statement->result_metadata();
-            $PARAMS = array();
-            while ($Field = $Metadata->fetch_field())
-            {
-                $PARAMS[] = & $RESULT[$i][$Field->name];
-            }
-            call_user_func_array(array($Statement, 'bind_result'), $PARAMS);
-            $Statement->fetch();
-        }
-        return $RESULT;
-    }
-
-    function refs($arr)
+    private function refs($arr)
     {
         $refs = array();
         foreach ($arr as $key => $value)
@@ -575,5 +550,5 @@ class MySQL extends DatabaseParent implements DatabaseInterface
     {
         if ($this->conn)
             $this->conn->close();
-    }
+    }   
 }

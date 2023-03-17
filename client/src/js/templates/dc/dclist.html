@@ -15,9 +15,13 @@
         </p>
     <% } %>
 
-    <% if (ARCHIVED == "1") { %>
+    <% if (ARCHIVED == "1" && VISIT.search('in') == -1) { %>
         <p class="message notify">
-            This visit is archived, data is no longer held on disk. You cannot download processing results, view full sized diffraction images, or reprocess data.
+            The raw data from this visit have been archived. You can no longer reprocess data or view full sized diffraction images.
+        </p>
+    <% } else if (ARCHIVED == "1") { %>
+        <p class="message notify">
+            The raw data from this visit have been deleted. You can no longer reprocess data or view full sized diffraction images.
         </p>
     <% } %>
 

@@ -36,7 +36,7 @@ class AssignData
 
     function unassignContainer($container)
     {
-        $this->updateContainerAndHistory($container['CONTAINERID'], 'at facility', $container['BEAMLINENAME'], '');
+        $this->updateContainerAndHistory($container['CONTAINERID'], 'at facility', '', '');
     }
 
     function updateContainerAndHistory($containerId, $status, $beamlineName, $location)

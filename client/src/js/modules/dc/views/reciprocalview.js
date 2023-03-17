@@ -1,8 +1,9 @@
 define(['marionette', 
     'collections/attachments',
     'uglymol', 'gzip',  
-    'templates/dc/mapmodelview.html'], function(Marionette, Attachments, Uglymol, zlib,
-        template) {
+    'templates/dc/mapmodelview.html',
+    "./uglymolhelper"], function(Marionette, Attachments, Uglymol, zlib,
+        template, defaultViewerOptions) {
 
     return Marionette.LayoutView.extend({
         template: template,
@@ -58,7 +59,7 @@ define(['marionette',
         onDomRefresh: function() {
             this.$el.find('.peaks').hide()
             this.ui.res.hide()
-            this.viewer = new Uglymol.ReciprocalViewer({viewer: 'viewer', hud: 'hud', help: 'help'})
+            this.viewer = new Uglymol.ReciprocalViewer(defaultViewerOptions)
             this.ready.done(this.loadData.bind(this))
         },
 

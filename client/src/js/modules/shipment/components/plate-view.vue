@@ -8,8 +8,15 @@ TODO - move the score colour methods to a utility class
 -->
 <template>
   <div>
-    <div
-      id="plate"
+    <div v-if="displayHelpMessage" class="tw-w-full">
+      <p class="tw-text-xs tw-mb-3">Click on label button to select drops for that label.</p>
+      <p class="tw-text-xs tw-mb-3">Selecting individual drop will change label selection behaviour to select matching drop in that label.</p>
+
+      <p class="tw-text-sm tw-mb-3"> Selecting {{ getSelectedDropPosition(currentSelectedDropIndex) }} Drops </p>
+      <base-button @perform-button-action="toggleSelectionState" class="button tw-mb-2">{{ nextFilterState }}</base-button>
+    </div>
+    <div 
+      :id="plateId" 
       class="tw-w-full"
     />
   </div>
@@ -21,8 +28,12 @@ import { scaleLinear as d3ScaleLinear} from 'd3-scale'
 import { scaleThreshold as d3ScaleThreshold} from 'd3-scale'
 import { scaleOrdinal as d3ScaleOrdinal} from 'd3-scale'
 import { interpolateViridis as d3InterpolateViridis} from 'd3-scale-chromatic'
+import BaseButton from 'app/components/base-button.vue'
 export default {
   name: 'PlateView',
+  components: {
+    'base-button': BaseButton
+  },
   props: {
     container: {
       type: Object,
@@ -53,13 +64,25 @@ export default {
     scoreThreshold: {
       type: Number
     },
-    labelAsButtons: {
-      type: Boolean,
-      default: true
-    },
     strokeColor: {
       type: String,
       default: 'black'
+    },
+    plateId: {
+      type: String,
+      default: 'plate'
+    },
+    selectedSamples: {
+      type: Array,
+      default: () => ([])
+    },
+    addedColorAttribute: {
+      type: String,
+      default: ''
+    },
+    threshold: {
+      type: Number,
+      default: 0.5
     }
   },
   data() {
@@ -75,7 +98,8 @@ export default {
       plateSvg: null,
       plateMargin: { top: 40, left: 40, bottom: 20, right: 20 },
       rowLetters: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
-      nextFilterState: ''
+      nextFilterState: 'Select All Drops',
+      allDropsSelected: false
     }
   },
   computed: {
@@ -157,6 +181,15 @@ export default {
     },
     rowDomain() {
       return Array.from({ length: this.rowLetters.length }, (v, i) => i)
+    },
+    displayHelpMessage() {
+      return this.$displayHelpMessage
+    },
+    labelAsButtons() {
+      return this.$labelAsButtons
+    },
+    displayTextInDrop() {
+      return this.$displayTextInDrop
     }
   },
   watch: {
@@ -164,12 +197,12 @@ export default {
       this.updateSelectedDrops()
     },
     scoreThreshold() {
-      d3SelectAll("#plate > *").remove()
+      d3SelectAll(`#${this.plateId} > *`).remove()
       this.drawContainer()
     },
     samples() {
       this.allDropsSelected = false
-      d3SelectAll("#plate > *").remove()
+      d3SelectAll(`#${this.plateId} > *`).remove()
       this.drawContainer()
       this.updateSelectedDrops()
       this.currentSelectedDropIndex = -1
@@ -194,7 +227,7 @@ export default {
       const viewBoxHeight =
           (numRows * (this.cell.height + 2 * this.cell.margin)) + this.plateMargin.top + this.plateMargin.bottom
       const viewBox = [0, 0, viewBoxWidth, viewBoxHeight]
-      this.plateSvg = d3Select('#plate')
+      this.plateSvg = d3Select(`#${this.plateId}`)
         .append('svg')
         .attr('viewBox', viewBox.join(','))
         .attr('preserveAspectRatio', 'xMinYMin meet')
@@ -240,7 +273,6 @@ export default {
         .attr('height', this.cell.height + 2 * this.cell.padding)
         .style('stroke', 'black')
         .style('fill', 'none')
-        .style('fill-opacity', '0.2')
       selection
         .append('g')
         .attr('class', 'drops')
@@ -264,10 +296,11 @@ export default {
               const classList = [...event.target.classList.values()]
               const wellDropClass = classList.find(classItem => classItem.includes('well-drop'))
               const [wellDrop] = wellDropClass.match(/\d+$/)
-              return self.handleDropSelection(event.target, {...data, wellDrop }, null)
+              return self.handleDropSelection(event.target, {...data, wellDrop, index: data.dropIndex }, null)
             })
 
-          d3Select(this).selectAll('text')
+          if (self.displayTextInDrop) {
+            d3Select(this).selectAll('text')
               .data(d)
               .enter()
               .append('text')
@@ -280,8 +313,7 @@ export default {
               .style('font-size', '10px')
               .style('fill', 'darkgray')
               .style("pointer-events","none") // Required to capture mouse events on non-fill shapes
-
-
+          }
         })
     },
     updateLabels: function () {
@@ -331,9 +363,9 @@ export default {
      * 4. When the column or row is clicked again with all the drop index for that row or column selected, we select all the drops for that row or column
      */
     handleDropSelection(target, data, type) {
-      const { wellDrop: index, LOCATION } = data
+      const { wellDrop, index, LOCATION } = data
       if (!type) {
-        this.$emit('drop-clicked', { location: LOCATION, index })
+        this.$emit('drop-clicked', { location: LOCATION, index: wellDrop })
       }
 
       const isFullSelection = target.classList.contains(`all-${type}-selection`)
@@ -351,8 +383,7 @@ export default {
       }
       else if (type && this.currentSelectedDropIndex < 1 && isFullSelection) {
         selections = d3SelectAll(`.plate-${type}-${index} .drop`)
-      }
-      else {
+      } else {
         selections = d3SelectAll(`.drop-index-${index}`)
         this.currentSelectedDropIndex = Number(target.attributes['well-drop-index'].value)
       }
@@ -444,9 +475,7 @@ export default {
           .append('g')
           .attr(
             'transform',
-            `translate(${0}, ${
-                this.plateMargin.top + this.plateMargin.top / 2
-            })`
+            `translate(${0}, ${this.plateMargin.top + this.plateMargin.top / 2})`
           )
           .selectAll('text')
           .data(this.preparedData)
@@ -507,9 +536,7 @@ export default {
           .append('g')
           .attr(
             'transform',
-            `translate(${0}, ${
-                this.plateMargin.top
-            })`
+            `translate(${0}, ${this.plateMargin.top})`
           )
           .selectAll('rect')
           .data(this.preparedData)
@@ -537,14 +564,28 @@ export default {
             .style('font-size', '16px')
             .style('cursor', 'pointer')
             .style('fill', 'black')
-            .text(() => this.letterScale(index))
+            .text(() => self.letterScale(index))
         d3Select(this).on('click', (event) => self.handleDropSelection(event.target, {index: index +1 }, 'row'))
       })
     },
     scoreColors: function(d) {
       let scale
-      let score = (this.colorAttribute && d[this.colorAttribute]) ? d[this.colorAttribute] : null
-      switch(this.colorScale) {
+      let score
+      let colorScale = this.colorScale
+      const selectedSample = this.selectedSamples.find(sample => Number(sample['LOCATION']) === Number(d.LOCATION))
+
+      if (selectedSample && selectedSample[this.colorAttribute]) {
+        score = selectedSample[this.colorAttribute]
+      } else if (selectedSample && this.addedColorAttribute && selectedSample[this.addedColorAttribute]) {
+        colorScale = 'threshold'
+        score = selectedSample[this.addedColorAttribute]
+      } else if (!selectedSample && d[this.colorAttribute]) {
+        score = d[this.colorAttribute]
+      } else {
+        score = null
+      }
+
+      switch(colorScale) {
         case 'rgb':
           scale = this.rgbScale()
           break
@@ -564,7 +605,7 @@ export default {
     quantScale: function(threshold) {
       return  d3ScaleThreshold()
           .domain([0,threshold, 1])
-          .range(["lightgray", "lightgray", "green"])
+          .range(["lightgray", "lightblue", "lightblue"])
     },
     rgbScale: function() {
       // Option 1: give 2 color names
@@ -572,7 +613,12 @@ export default {
           .domain([0,1])
           .range(["red", "green"])
     },
-  }
+  },
+  inject: [
+    '$displayHelpMessage',
+    '$labelAsButtons',
+    '$displayTextInDrop'
+  ]
 }
 </script>
 <style>

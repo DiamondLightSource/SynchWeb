@@ -29,12 +29,14 @@ describe('Sidebar', () => {
     })
 
     it('isLoggedIn initially false (via mock)', () => {
+
+        // This is an example testing the isLoggedIn function in the component which is calling into the store and uses the mocked getter above for the store
         const wrapper = shallowMount(Sidebar,
             {
                 localVue
             }
         );
-        expect(wrapper.vm.isLoggedIn).to.equal(false); // NB, this is not testing anything more than the mocked getter above - but demonstrates how to do this
+        expect(wrapper.vm.isLoggedIn).to.equal(false); 
     })
 
     it('isProposalClosed returns true if proposal is Closed', () => {

@@ -13,6 +13,7 @@
     <router-link
       to="/proposals"
       class="navbar-item"
+      data-testid="proposal-link"
     >
       Proposals
     </router-link>
@@ -159,7 +160,7 @@ export default {
             return this.$store.getters['proposal/currentProposal']
         },
         isProposalClosed: function() {
-            return this.$store.getters['proposal/currentProposalState'] == 'Closed'
+            return this.$store.getters['proposal/currentProposalState'] ===  'Closed'
         },
         isLoggedIn: function() {
             return this.$store.getters['auth/isLoggedIn']

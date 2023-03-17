@@ -2,9 +2,15 @@ name: Build and Test SynchWeb
 
 on:
   push:
-    branches: [ "master" ]
+    branches: 
+      - 'master'
+      - 'release/**'
+      - 'pre-release/**'
   pull_request:
-    branches: [ "master" ]
+    branches:
+      - 'master'
+      - 'release/**'
+      - 'pre-release/**'
 
 defaults:
   run:
@@ -24,7 +30,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: 7.3
-          tools: psalm
+          tools: psalm:4
 
       - name: Validate composer.json and composer.lock
         run: composer validate
@@ -51,6 +57,7 @@ jobs:
           php_extensions: xdebug mysqli
           args: --coverage-text
           php_version: 7.3
+          version: 9
 
       # Note, lint errors are being escaped here - so this will report, but not cause the build to fail
       - name: Run Psalm

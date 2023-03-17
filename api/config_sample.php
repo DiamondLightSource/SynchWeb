@@ -4,7 +4,6 @@
     # - Many of the parameters in this file will in due course move into the
     #   database
 
-
     # Production / Dev Mode Switch
     # - Dev mode enabled debugging to stdout in addition to httpd error_log
     #   Values: dev | production
@@ -14,17 +13,14 @@
     $isb  = array('user' => 'user', 'pass' => 'pass', 'db' => 'localhost/ispyb');
     $dbtype = 'mysql';
 
-
     # Encoded JWT key, used to sign and check validaty of jwt tokens
     # - Create one of these using /api/authenticate/key
     #   This can be changed to invalidate all currently active tokens
     $jwt_key = '';
 
-
     # Auth type
     # Can be cas, ldap
     $authentication_type = 'cas';
-
 
     # CAS url (if using cas, assume https)
     $cas_url = 'cas.server.ac.uk';
@@ -35,11 +31,11 @@
     # CAS CA Cert (for SSO)
     $cacert = '/etc/certs/ca-bundle.crt';
 
-
     # ldap server, used for lookup and authentication (if using)
     # Update the ldap(s) prefix, hostname and search settings as required
     $ldap_server = 'ldaps://ldap.example.com';
     $ldap_search = 'ou=people,dc=example,dc=com';
+    $ldap_use_tls = false; # default - i.e. don't use secured LDAP connection
 
     # Upload directory
     # - used for user image uploads
@@ -136,7 +132,7 @@
     # - The feedback form uses this address
     $email_admin = 'webmaster@server.ac.uk';
 
-    # Recepients for dewar Dispatch / Transfers Emails when users request dispatch or tranfser from the shipping page
+    # Recipients for dewar Dispatch / Transfers Emails when users request dispatch or tranfser from the shipping page
     $dispatch_email = 'ehc@server.ac.uk, goods@server.ac.uk';
     $transfer_email = 'ehc@server.ac.uk';
 
@@ -205,7 +201,7 @@
     $package_description = 'Dry shipper containing frozen crystals';
     $dewar_weight = 18;
 
-    # location used by Mpdf to create pdfs - this needs to have a directory created in it called 'mdpf' with 755 access
+    # location used by Mpdf to create pdfs - this needs to be created and allow apache to create directories in it
     $pdf_tmp_dir = "/tmp";
 
     # DHL API Details
@@ -225,6 +221,11 @@
     $dhl_service = 'N';
     // Non dom service (eu)
     $dhl_service_eu = 'U';
+
+    # Shipping service details
+    $use_shipping_service = null;
+    $shipping_service_url = null;
+    $shipping_service_links_in_emails = null;
 
 
     # VMXi

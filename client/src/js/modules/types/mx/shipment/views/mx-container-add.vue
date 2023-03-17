@@ -257,11 +257,12 @@
           <div class="tw-w-1/2">
             <div class="tw-justify-end">
               <valid-container-graphic
+                class="tw-border-l tw-border-gray-500"
                 ref="containerGraphic"
                 :container-type="containerType"
                 :samples="samples"
                 :valid-samples="validSamples"
-                @cell-clicked="onContainerCellClicked"
+                @drop-clicked="onContainerCellClicked"
               />
             </div>
           </div>
@@ -283,6 +284,7 @@
             @clear-container-row="onClearRow"
             @update-sample-group-input-disabled="updateSampleGroupInputDisabled"
             @update-sample-group-list="getSampleGroups"
+            @update-samples-with-sample-group="handleSampleFieldChangeWithSampleGroups"
           />
         </div>
         <!--
@@ -613,7 +615,6 @@ export default {
     this.formatExperimentKindList()
     this.getSampleGroups()
     this.getUsers()
-    this.fetchSampleGroupSamples()
     this.getSpaceGroupsCollection()
     this.getImagingCollections()
     this.getImagingScheduleCollections()
