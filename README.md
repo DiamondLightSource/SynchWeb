@@ -14,7 +14,8 @@ For development (not production use), a simple environment can be setup by using
 containerisation and the use of VMs. VS Code provides a good development environment for working
 with the SynchWeb codebase.  PHP Tools extension provides intellisense, debugging, formatting, 
 linting and support for unit tests. Vetur and Volar extensions provide support for working with 
-the Vue.js code.
+the Vue.js code. They are not intended for production use but include scripts to automatically
+ build and deploy the software on a local VM or in a Podman container.
 
 ### Requirements
 If not using the Podman containter, to build SynchWeb on a machine you will need the following on the build machine:

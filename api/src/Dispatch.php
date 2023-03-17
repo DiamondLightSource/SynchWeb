@@ -52,6 +52,11 @@ class Dispatch
             $app->container['userController'];
         });
 
+        $app->group('/assign', function () use ($app)
+        {
+            $app->container['assignController'];
+        });
+
         $this->app->notFound(function () use ($app)
         {
             $app->halt(404, json_encode(array('status' => 404, 'message' => 'not found')));
