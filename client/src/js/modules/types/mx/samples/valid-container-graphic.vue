@@ -28,13 +28,11 @@
 <script>
 import PlateView from 'modules/shipment/components/plate-view.vue'
 import PuckView from 'modules/shipment/components/puck-view.vue'
-import BlockView from 'modules/shipment/components/block-view.vue'
 export default {
   name:"valid-container-graphic",
   components: {
     'plate-view': PlateView,
     'puck-view': PuckView,
-    'block-view': BlockView,
   },
   props: {
     containerType: {
@@ -68,7 +66,6 @@ export default {
     containerComponent: function() {
       if (!this.geometry) return null
       if (this.geometry.columns > 0) return 'plate-view'
-      if (this.geometry.capacity == 4) return 'block-view'
       if (this.geometry.capacity > 0) return 'puck-view'
       // We have an unknown type, or incorrect data..
       return null
