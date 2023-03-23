@@ -121,7 +121,7 @@ class DC extends Page {
                 if ($this->arg('t') == 'dc' || $this->arg('t') == 'sc' || $this->arg('t') == 'fc' || $this->arg('t') == 'gr') {
                     
                     $where = '';
-                    if ($this->arg('t') == 'sc') $where = ' AND dc.overlap != 0';
+                    if ($this->arg('t') == 'sc') $where = ' AND (dc.overlap != 0 OR dcg.experimentType = "Screening")';
                     else if ($this->arg('t') == 'gr') $where = ' AND dc.axisrange = 0';
                     else if ($this->arg('t') == 'fc') $where = ' AND dc.overlap = 0 AND dc.axisrange > 0 AND dc.numberOfImages > 1';
 
