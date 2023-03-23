@@ -22,24 +22,24 @@ module.exports = (env, argv) => ({
     static: __dirname,
     host: (env && env.host) || 'localhost',
     port: (env && env.port) || 9000,
-    https: true,
+    server: 'http',
     historyApiFallback: {
-      index: '/dist/'+gitHash+'/index.html',
+      index: '/dist/' + gitHash + '/index.html',
       // Allow parsing urls with dots in parameters (e.g. unit cell search)
       disableDotRule: true
     },
     proxy: [{
-        context: ['/api'],
-        // Change this target to where SynchWeb server is running
-        target: (env && env.proxy && env.proxy.target) || 'http://127.0.0.1',
-        // Intercept the request and add auth header
-        onProxyReq: function(proxyReq, req) {
-          if (req.headers.authorization) {
-            proxyReq.setHeader('Authorization', req.headers.authorization);
-          }
-        },
-        secure: env && env.proxy && env.proxy.secure && JSON.parse(env.proxy.secure)
+      context: ['/api'],
+      // Change this target to where SynchWeb server is running
+      target: (env && env.proxy && env.proxy.target) || 'http://127.0.0.1',
+      // Intercept the request and add auth header
+      onProxyReq: function (proxyReq, req) {
+        if (req.headers.authorization) {
+          proxyReq.setHeader('Authorization', req.headers.authorization);
+        }
       },
+      secure: env && env.proxy && env.proxy.secure && JSON.parse(env.proxy.secure)
+    },
     ],
     hot: true
   },
@@ -50,7 +50,7 @@ module.exports = (env, argv) => ({
   },
   resolve: {
     fallback: {
-        util: require.resolve("util/")
+      util: require.resolve("util/")
     },
     alias: {
       marionette: 'backbone.marionette/lib/backbone.marionette.min',
@@ -127,105 +127,105 @@ module.exports = (env, argv) => ({
   },
   module: {
     rules: [
-        // uncomment to include linting as automatic part of building webpack bundle
-        // {
-        //     enforce: 'pre',
-        //     test: /\.(js|vue)$/,
-        //     loader: 'eslint-loader',
-        //     exclude: /node_modules/
-        // },
-        {
-            test: /\.vue$/,
-            use: [
-                {
-                loader: 'vue-loader',
-                }
-            ]
-        },
-        {
-            test: /\.html$/,
-            use: [
-            {
-                loader: 'underscore-template-loader',
-                options: {
-                engine: 'underscore',
-                }
+      // uncomment to include linting as automatic part of building webpack bundle
+      // {
+      //     enforce: 'pre',
+      //     test: /\.(js|vue)$/,
+      //     loader: 'eslint-loader',
+      //     exclude: /node_modules/
+      // },
+      {
+        test: /\.vue$/,
+        use: [
+          {
+            loader: 'vue-loader',
+          }
+        ]
+      },
+      {
+        test: /\.html$/,
+        use: [
+          {
+            loader: 'underscore-template-loader',
+            options: {
+              engine: 'underscore',
             }
-            ],
-            exclude: [
-            path.resolve(__dirname, 'src/js/templates/vue')
-            ]
-        },
-        {
-            test: /\.xml$/,
-            use: [
-                {
-                loader: 'raw-loader',
-                }
-            ]
-        },
-        // Font loader - url should be relative to entry main.scss file
-        {
-            test: /\.(woff|woff2|eot|ttf|otf)$/,
-            use: {
-                loader: 'file-loader',
-                options: {
-                name: '[name].[ext]',
-                outputPath: '../../assets/fonts', // output path is relative to main module outputPath
-                publicPath: '/assets/fonts'
-                }
-            }
-        },
-        // SVG could be images or fonts so use more explicit test here...
-        {
-            test: /font-awesome[\\\/].+\.(svg)$/,
-            use: {
-                loader: 'file-loader',
-                options: {
-                name: '[name].[ext]',
-                outputPath: '../../assets/fonts',
-                publicPath: '/assets/fonts'
-                }
-            }
-        },
-        {
-            test: /templates[\\\/]vue[\\\/].+\.html$/,
-            use: ['html-loader']
-        },
-        // We need to help Caman load properly
-        // Caman adds to the window object within a browser
-        // The import loader ensures it it recognised as browser env not NodeJS
-        {
-            test: /caman\.min\.js$/,
-            use: "imports-loader?exports=>undefined,require=>false,this=>window"
-        },
-        {
-            test: /\.(sa|sc|c)ss$/,
-            use: [
-                // Extract the CSS into separate files
-                { 
-                loader: MiniCssExtractPlugin.loader,
-                options: { }
-                },
-                "css-loader", // translates CSS into CommonJS
-                "postcss-loader",
-            ]
-        },
-        {
-            test: /\.(png|gif)$/,
-            use: [
-                {
-                loader: 'url-loader',
-                options: {
-                    limit: 4096, // Anything less than this limit is inlined
-                    name: '[path][name].[ext]',
-                    outputPath: '../../assets',
-                    publicPath: '/assets',
-                    context: 'src',
-                }
-                }
-            ]
+          }
+        ],
+        exclude: [
+          path.resolve(__dirname, 'src/js/templates/vue')
+        ]
+      },
+      {
+        test: /\.xml$/,
+        use: [
+          {
+            loader: 'raw-loader',
+          }
+        ]
+      },
+      // Font loader - url should be relative to entry main.scss file
+      {
+        test: /\.(woff|woff2|eot|ttf|otf)$/,
+        use: {
+          loader: 'file-loader',
+          options: {
+            name: '[name].[ext]',
+            outputPath: '../../assets/fonts', // output path is relative to main module outputPath
+            publicPath: '/assets/fonts'
+          }
         }
+      },
+      // SVG could be images or fonts so use more explicit test here...
+      {
+        test: /font-awesome[\\\/].+\.(svg)$/,
+        use: {
+          loader: 'file-loader',
+          options: {
+            name: '[name].[ext]',
+            outputPath: '../../assets/fonts',
+            publicPath: '/assets/fonts'
+          }
+        }
+      },
+      {
+        test: /templates[\\\/]vue[\\\/].+\.html$/,
+        use: ['html-loader']
+      },
+      // We need to help Caman load properly
+      // Caman adds to the window object within a browser
+      // The import loader ensures it it recognised as browser env not NodeJS
+      {
+        test: /caman\.min\.js$/,
+        use: "imports-loader?exports=>undefined,require=>false,this=>window"
+      },
+      {
+        test: /\.(sa|sc|c)ss$/,
+        use: [
+          // Extract the CSS into separate files
+          {
+            loader: MiniCssExtractPlugin.loader,
+            options: {}
+          },
+          "css-loader", // translates CSS into CommonJS
+          "postcss-loader",
+        ]
+      },
+      {
+        test: /\.(png|gif)$/,
+        use: [
+          {
+            loader: 'url-loader',
+            options: {
+              limit: 4096, // Anything less than this limit is inlined
+              name: '[path][name].[ext]',
+              outputPath: '../../assets',
+              publicPath: '/assets',
+              context: 'src',
+            }
+          }
+        ]
+      }
     ]
   },
 
@@ -266,29 +266,29 @@ module.exports = (env, argv) => ({
     // Anything matching in the from path is copied so images/file.png => assets/images/file.png
     // Also copy jquery to assets dir, so we can use it for Dialog popup with log files (see js/views/log.js)
     // Also copy config.json to assets dir, app uses the assets/js/config.json to tell if client needs updating
-    new CopyPlugin({ 
-        patterns: [
-            { 
-                context: path.resolve(__dirname, 'src'),
-                from: 'images/**',
-                to: path.resolve(__dirname, 'assets') 
-            },
-            { 
-                context: path.resolve(__dirname, 'src'),
-                from: 'js/config.json',
-                to: path.resolve(__dirname, 'assets/js/') 
-            },
-            { 
-                context: path.resolve(__dirname, 'src'),
-                from: 'js/vendor/jquery/jquery-1.9.1.min.js',
-                to: path.resolve(__dirname, 'assets/js/') 
-            },
-            { 
-                context: path.resolve(__dirname, 'src'),
-                from: 'files/**',
-                to: path.resolve(__dirname, 'assets') 
-            }
-        ]
+    new CopyPlugin({
+      patterns: [
+        {
+          context: path.resolve(__dirname, 'src'),
+          from: 'images/**',
+          to: path.resolve(__dirname, 'assets')
+        },
+        {
+          context: path.resolve(__dirname, 'src'),
+          from: 'js/config.json',
+          to: path.resolve(__dirname, 'assets/js/')
+        },
+        {
+          context: path.resolve(__dirname, 'src'),
+          from: 'js/vendor/jquery/jquery-1.9.1.min.js',
+          to: path.resolve(__dirname, 'assets/js/')
+        },
+        {
+          context: path.resolve(__dirname, 'src'),
+          from: 'files/**',
+          to: path.resolve(__dirname, 'assets')
+        }
+      ]
     }),
     new VueLoaderPlugin(),
     new MiniCssExtractPlugin({
