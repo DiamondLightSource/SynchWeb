@@ -8,6 +8,10 @@ use SynchWeb\TemplateParser;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
+use Symfony\Component\HttpFoundation\StreamedResponse;
+use ZipStream\Option\Archive;
+use ZipStream\ZipStream;
+
 
 class Download extends Page
 {
@@ -443,24 +447,27 @@ class Download extends Page
         }
 
         $clean_program = preg_replace('/[^A-Za-z0-9\-]/', '', $ap['PROCESSINGPROGRAMS']);
-        $tar = '/tmp/' . $this->arg('AUTOPROCPROGRAMID') . '_' . $clean_program . '.tar';
-        $gz = $tar . '.gz';
 
-        $a = new \PharData($tar);
-        foreach ($files as $file) {
-            $filename = $file['FILEPATH'] . '/' . $file['FILENAME'];
-            $a->addFile($filename, basename($filename));
-        }
-        $a->compress(\Phar::GZ);
-        unlink($tar);
+        $response = new StreamedResponse(function() use($files, $clean_program)
+        {
+            # enable output of HTTP headers
+            $options = new Archive();
+            $options->setSendHttpHeaders(true);
+            $options->setContentType('application/octet-stream');
+            $options->setFlushOutput(true);
+            $options->setZeroHeader(true);
+            $options->setEnableZip64(true);
 
-        $response = new BinaryFileResponse($gz);
-        $response->headers->set("Content-Type", "application/octet-stream");
-        $response->setContentDisposition(
-            ResponseHeaderBag::DISPOSITION_ATTACHMENT,
-            $this->arg('AUTOPROCPROGRAMID') . '_' . $clean_program . '.tar.gz'
-        );
-        $response->deleteFileAfterSend(true);
+            # create a new zipstream object
+            $zip = new ZipStream($this->arg('AUTOPROCPROGRAMID') . '_' . $clean_program . '.zip', $options);
+            foreach ($files as $file) {
+                $filename = $file['FILEPATH'] . '/' . $file['FILENAME'];
+                $zip->addFileFromPath(basename($filename), $filename);
+            }
+
+            $zip->finish();
+        });
+
         $response->send();
         exit();
     }
