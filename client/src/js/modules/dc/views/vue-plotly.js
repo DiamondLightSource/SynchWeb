@@ -5,7 +5,6 @@ define(['vue',
 
     return VueWrapper.extend({
         vueView: Vue.extend({
-            template: '<section class="content"><plotlychart v-bind:data="plot.data" v-bind:layout="plot.layout"></plotlychart></section>',
             components: {
                 'plotlychart': PlotlyChart.default
             },
@@ -14,6 +13,7 @@ define(['vue',
                     plot: this.$getOption('data'),
                 }
             },
+            template: '<section class="content"><plotlychart v-bind:data="plot.data" v-bind:layout="plot.layout"></plotlychart></section>',
         })
     })
 })

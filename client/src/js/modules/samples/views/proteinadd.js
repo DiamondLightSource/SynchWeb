@@ -95,7 +95,9 @@ define(['marionette', 'views/form',
             if (xhr.responseText) {
                 try { 
                     json = $.parseJSON(xhr.responseText)
-                } catch(err) {}
+                } catch(err) {
+                    console.error("Error parsing response: ", err)
+                }
             }
 
             if (json.message) app.alert({ message: json.message })

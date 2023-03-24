@@ -1,15 +1,16 @@
 <template>
-    <section>
-        <component :is="componentType"
-            v-if="ready"
-            :key="$route.fullPath"
-            :options="options"
-            :fetchOnLoad="fetchOnLoad"
-            :pre-loaded="true"
-            :mview="mview"
-            :breadcrumbs="bc"
-        />
-    </section>
+  <section>
+    <component
+      :is="componentType"
+      v-if="ready"
+      :key="$route.fullPath"
+      :options="options"
+      :fetch-on-load="fetchOnLoad"
+      :pre-loaded="true"
+      :mview="mview"
+      :breadcrumbs="bc"
+    />
+  </section>
 </template>
 
 <script>
@@ -27,10 +28,27 @@ import Dewar from 'models/dewar'
 import store from 'app/store/store'
 
 export default {
-    name: 'container-add-wrapper',
+    name: 'ContainerAddWrapper',
     components: {
         'marionette-view': MarionetteView,
         'mx-container-add': MxContainerAdd
+    },
+    beforeRouteEnter: (to, from, next) => {
+      // Lookup the proposal first to make sure we can still add to it
+      store.dispatch('proposal/proposalLookup', { field: 'DEWARID', value: to.params.did })
+      .then((response) => {
+          // Make sure we can still add items to this proposal
+          if (app.proposal && app.proposal.get('ACTIVE') != 1) {
+            store.commit('notifications/addNotification', { title: 'Proposal Not Active', message: 'This proposal is not active so new containers cannot be added'} )
+            next('/403?url='+to.fullPath)
+          } else {
+            next()
+          }
+      }, (error) => {
+          console.log("Error " + error.msg)
+          store.commit('notifications/addNotification', {title: 'No such container', msg: error.msg, level: 'error'})
+          next('/404')
+      })
     },
     props: {
         'did': Number,
@@ -99,23 +117,6 @@ export default {
                 this.ready = true
             }
         },
-    },
-    beforeRouteEnter: (to, from, next) => {
-      // Lookup the proposal first to make sure we can still add to it
-      store.dispatch('proposal/proposalLookup', { field: 'DEWARID', value: to.params.did })
-      .then((response) => {
-          // Make sure we can still add items to this proposal
-          if (app.proposal && app.proposal.get('ACTIVE') != 1) {
-            store.commit('notifications/addNotification', { title: 'Proposal Not Active', message: 'This proposal is not active so new containers cannot be added'} )
-            next('/403?url='+to.fullPath)
-          } else {
-            next()
-          }
-      }, (error) => {
-          console.log("Error " + error.msg)
-          store.commit('notifications/addNotification', {title: 'No such container', msg: error.msg, level: 'error'})
-          next('/404')
-      })
     }
 
 }

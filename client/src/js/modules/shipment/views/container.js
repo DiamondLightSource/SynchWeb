@@ -149,7 +149,6 @@ define(['marionette',
 
             // Enable editing of the container owner
             // The template restricts this to staff only
-            var self = this
             this.users.fetch().done(function() {
                 edit.create('OWNERID', 'select', { data: self.users.kv() })
             })

@@ -1,14 +1,14 @@
 <template>
-    <section>
-        <marionette-view 
-            v-if="ready" 
-            :key="$route.fullPath" 
-            :options="options" 
-            :fetchOnLoad="true" 
-            :mview="mview" 
-            :breadcrumbs="bc">
-        </marionette-view>
-    </section>
+  <section>
+    <marionette-view 
+      v-if="ready" 
+      :key="$route.fullPath" 
+      :options="options" 
+      :fetch-on-load="true" 
+      :mview="mview" 
+      :breadcrumbs="bc"
+    />
+  </section>
 </template>
 
 <script>
@@ -26,7 +26,7 @@ import { CrystalAddMap } from 'modules/samples/components/samples-map'
 import { mapGetters } from 'vuex'
 
 export default {
-    name: 'crystal-add-wrapper',
+    name: 'CrystalAddWrapper',
     components: {
         'marionette-view': MarionetteView
     },

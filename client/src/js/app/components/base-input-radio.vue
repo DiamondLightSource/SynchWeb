@@ -11,16 +11,23 @@ To reset the state of the radio buttons pass a value of '' to the v-model parame
 -->
 <template>
   <div :class="outerClass">
-    <div v-for="option in options" :key="option.id">
+    <div
+      v-for="option in options"
+      :key="option.id"
+    >
       <input
-        v-model="selected"
         :id="option.id"
+        v-model="selected"
         :name="option.id"
         type="radio"
         :value="option.value"
         @change="updateValue"
       >
-      <label v-show="option.label" class="secondary" :for="option.id">{{option.label}}</label>
+      <label
+        v-show="option.label"
+        class="secondary"
+        :for="option.id"
+      >{{ option.label }}</label>
     </div>
   </div>
 </template>

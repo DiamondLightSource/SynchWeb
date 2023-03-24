@@ -16,7 +16,7 @@ define(['marionette',
         className: 'content',
 
         templateHelpers: function() {
-	        var validOnly = app.options.get('valid_components')
+            var validOnly = app.options.get('valid_components')
             return {
                 proposal: app.prop,
                 // Proteins can only be migrated if we are not using approved samples from user office
@@ -199,7 +199,7 @@ define(['marionette',
         },
 
 
-	// Registered Dewars can now belong to multiple proposals so dewar functions are not required
+    // Registered Dewars can now belong to multiple proposals so dewar functions are not required
         onRender: function() {
             this.listenTo(this.labcontacts, 'sync', this.updateLabContacts)
             this.updateLabContacts()
@@ -222,19 +222,19 @@ define(['marionette',
             ]
 
 
-	    var validOnly = app.options.get('valid_components')
-	    
+        var validOnly = app.options.get('valid_components')
+        
             if (!validOnly) {
-		this.rprots.show(new TableView({ 
-                	collection: this.proteins, 
-               		columns: columns, 
-                	tableClass: 'proteins', 
-                	filter: 's', 
-                	loading: true, 
-                	noSearchUrl: false,
-                	backgrid: { emptyText: 'No proteins found' } 
-            	}))
-	    }
+        this.rprots.show(new TableView({ 
+                    collection: this.proteins, 
+                       columns: columns, 
+                    tableClass: 'proteins', 
+                    filter: 's', 
+                    loading: true, 
+                    noSearchUrl: false,
+                    backgrid: { emptyText: 'No proteins found' } 
+                }))
+        }
 
 
             var columns = [
