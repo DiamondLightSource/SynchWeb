@@ -1703,6 +1703,12 @@ class Sample extends Page
             
             if (!sizeof($prot)) $this->_error('No such protein');
             
+            if ($this->has_arg('ACRONYM')) {
+                $chk = $this->db->pq("SELECT pr.proteinid FROM protein pr
+                  WHERE pr.proposalid = :1 AND pr.acronym = :2", array($this->proposalid, $this->arg('ACRONYM')));
+                if (sizeof($chk)) $this->_error('That protein acronym already exists in this proposal');
+            }
+
             foreach(array('NAME', 'SEQUENCE', 'ACRONYM', 'MOLECULARMASS', 'CONCENTRATIONTYPEID', 'COMPONENTTYPEID', 'GLOBAL', 'DENSITY') as $f) {
                 if ($this->has_arg($f)) {
                     $this->db->pq('UPDATE protein SET '.$f.'=:1 WHERE proteinid=:2', array($this->arg($f), $this->arg('pid')));

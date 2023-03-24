@@ -86,7 +86,7 @@ define(['marionette',
             var edit = new Editable({ model: this.model, el: this.$el })
             // If this is protein is not from user office, allow changing name
             if (this.model.get('EXTERNAL') == 0) edit.create('NAME', 'text')
-            edit.create('ACRONYM', 'text')
+            edit.create('ACRONYM', 'text', {alert: true})
             edit.create('SEQUENCE', 'markdown')
             edit.create('MOLECULARMASS', 'text')
             if (app.staff) edit.create('GLOBAL', 'select', { data: { 1: 'Yes', 0: 'No' } })
