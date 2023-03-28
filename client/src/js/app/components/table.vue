@@ -1,9 +1,19 @@
 <!--
 Table component
-Pass in headers array with key and title properties, example:
-headers: [{key: 'NAME', title: 'Name'}, {key: 'ID', title: 'Id'}]
-data: [{NAME: 'Alice', ID: 1}, {NAME: 'Bob', ID: 2}]
+
+Pass in headers array with key, title (and optional format) properties, example:
+headers: [
+  {key: 'NAME', title: 'Name'},
+  {key: 'ID', title: 'Id'},
+  {key: 'READY', title: 'Ready', format: function(x) { return x ? 'Yes': 'No'}},
+]
 "title" is column title, "key" is attribte that provides the data
+"format" is an optional formatting function
+
+data: [{NAME: 'Alice', ID: 1}, {NAME: 'Bob', ID: 2}]
+data can also be an array of Backbone models or any other object that supports
+.get(key)
+
 Slots:
 - content = override row with <td> items e.g. for form inputs. "row" data are provided to the slot
 - actions = place to store buttons in last column. Specify a title for the actions column to show them.
@@ -16,37 +26,66 @@ TODO - move relevant styles to this component style section
   <div class="content">
     <div class="table">
       <table class="vue-table">
-
         <thead>
           <th
-            v-for="(header,index) in headers" :key="index"
+            v-for="(header,index) in headers"
+            :key="index"
             class=""
-            @click="$emit('sort-by', header.key)">{{header.title}}</th>
-          <th v-if="actions">{{actions}}</th>
+            @click="$emit('sort-by', header.key)"
+          >
+            {{ header.title }}
+          </th>
+          <th v-if="actions">
+            {{ actions }}
+          </th>
         </thead>
 
         <!-- Change row[header.key] to row.get(header.key) if using Backbone models -->
-        <tbody v-if="data && data.length > 0">
+        <tbody v-if="data && data.length > 0 || addRow">
           <tr
-            v-for="(row, index) in data"
-            :key="index"
-            v-on:click="$emit('row-clicked', row)">
-
+            v-for="(row, rowIndex) in data"
+            :key="rowIndex"
+            @click="$emit('row-clicked', row)"
+          >
             <!-- Default row layout override with the content slot if you need items like form inputs-->
-            <slot name="content" v-bind:row="row">
-              <td v-for="(header, index) in headers" :key="index">{{row[header.key]}}</td>
+            <slot
+              name="content"
+              :row="row"
+            >
+              <td
+                v-for="(header, headerIndex) in headers"
+                :key="headerIndex"
+              >
+                {{ getRowData(row, header) }}
+              </td>
             </slot>
 
-            <td v-if="actions"><slot name="actions" v-bind:row="row"></slot></td>
+            <td v-if="actions">
+              <slot
+                name="actions"
+                :row="row"
+              />
+            </td>
+          </tr>
+          <!-- Optional row to continuously add new items to an otherwise readonly table -->
+          <tr v-if="addRow">
+            <slot
+              name="addRow"
+              :row="row"
+            />
           </tr>
         </tbody>
 
         <tbody v-else>
           <tr>
-            <td :colspan="headers.length" class="renderable">{{noDataText}}</td>
+            <td
+              :colspan="headers.length"
+              class="renderable"
+            >
+              {{ noDataText }}
+            </td>
           </tr>
         </tbody>
-
       </table>
     </div>
   </div>
@@ -72,6 +111,19 @@ export default {
     'actions': {
       type: String,
       default: ''
+    },
+    'addRow': {
+      type: String,
+      default: ''
+    }
+  },
+  methods: {
+    getRowData: function(row, header) {
+      const item = typeof row.get == 'undefined' ? row[header.key] : row.get(header.key)
+      return typeof header.format == 'function' ? header.format(item) : item
+    },
+    sortHeader(header) {
+      this.$emit('sort-by', header.key)
     }
   }
 }

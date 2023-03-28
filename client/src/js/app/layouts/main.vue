@@ -1,16 +1,19 @@
 <template>
   <div class="tw-bg-content-background">
     <!-- Notifications appear at top of viewable screen space -->
-    <notification-dialog/>
+    <notification-dialog />
     <!-- Header menus and breadcrumbs (full width) -->
-    <header-menu :staff_menus="adminMenu"/>
+    <header-menu :staff_menus="adminMenu" />
     <!-- Mobile search panel in same place as original -->
     <search-mobile />
-    <breadcrumbs-panel :bc="bc"/>
+    <breadcrumbs-panel :bc="bc" />
 
     <!-- Popout menu for mobile screens -->
     <div class="tw-mx-auto">
-        <sidebar-menu :proposalMenu="proposalMenu" :extrasMenu="extraMenu"/>
+      <sidebar-menu
+        :proposal-menu="proposalMenu"
+        :extras-menu="extraMenu"
+      />
     </div>
 
     <!--
@@ -18,26 +21,37 @@
       Sets the main width of the content area on screen
     -->
     <div class="tw-w-full tw-px-2 lg:tw-w-10/12 lg:tw-mx-auto">
-        <navbar-menu :proposalMenu="proposalMenu" :extrasMenu="extraMenu"/>
-        <motd-display :message="motd"/>
-        <notification-persist-panel></notification-persist-panel>
-        <div v-if="isLoading" ><div class="loading">&nbsp;</div></div>
-
-        <!-- Main content section -->
-        <div id="content-wrapper" class="tw-w-full tw-mx-auto">
-          <!-- Using the full route as key forces refresh when sharing the same component -->
-          <router-view :key="$route.fullPath"></router-view>
+      <navbar-menu
+        :proposal-menu="proposalMenu"
+        :extras-menu="extraMenu"
+      />
+      <motd-display :message="motd" />
+      <notification-persist-panel />
+      <div v-if="isLoading">
+        <div class="loading">
+&nbsp;
         </div>
+      </div>
+
+      <!-- Main content section -->
+      <div
+        id="content-wrapper"
+        class="tw-w-full tw-mx-auto"
+      >
+        <!-- Using the full route as key forces refresh when sharing the same component -->
+        <router-view :key="$route.fullPath" />
+      </div>
     </div>
 
     <!--
       Wrapping dialog box region in a component. In future we can redesign this
       For now it just registers the region and works with existing marionette views
     -->
-    <dialog-box></dialog-box>
+    <dialog-box />
 
     <!-- Show logos, links etc. -->
     <footer-panel />
+    <portal-target name="dialog" />
   </div>
 </template>
 
@@ -54,6 +68,7 @@ import NotificationPersist from 'app/components/notification-persist.vue'
 import EventBus from 'app/components/utils/event-bus.js'
 import Dialog from 'app/components/dialogbox.vue'
 import SearchMobile from 'app/components/search-mobile.vue'
+import Backbone from 'backbone'
 
 import { mapState } from 'vuex'
 
@@ -76,6 +91,7 @@ export default {
         admin_menu: [],
         proposal_menu: [],
         bc: [{title: 'Home', link: '/'}],
+        bl: ''
       }
     },
     computed: {
@@ -128,10 +144,11 @@ export default {
             menu.push(item)
           })
         } else {
+          let self = this
           // proposal and extra menus are simpler
           Object.keys(legacyMenu).forEach(function(key) {
             var item = {link: key, name: legacyMenu[key]}
-            menu.push(item)
+              menu.push(item)
           })
         }
 

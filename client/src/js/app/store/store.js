@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
+import Backbone from 'backbone'
 
 // VueX modules
 // TODO - adopt vue-enterprise-boiler plate design
@@ -8,6 +9,9 @@ import MenuStore from './modules/store.menus.js'
 import ProposalStore from './modules/store.proposal.js'
 import UserStore from './modules/store.user.js'
 import NotificationStore from './modules/store.notifications.js'
+import SamplesStore from './modules/store.samples.js'
+import ShipmentStore from './modules/store.shipment.js'
+import SampleGroups from './modules/store.sample-groups.js'
 
 // Configuration
 import Options from 'models/options.js'
@@ -26,6 +30,9 @@ const store = new Vuex.Store({
     proposal: ProposalStore,
     user: UserStore,
     notifications: NotificationStore,
+    samples: SamplesStore,
+    shipment: ShipmentStore,
+    sampleGroups: SampleGroups
   },
   state: {
     // Flag we use to check if we have already setup options
@@ -38,7 +45,8 @@ const store = new Vuex.Store({
     motd: '',
     help: false, // Global help flag used to denote if we should display inline help on pages
     skipHomePage: config.skipHome || false,
-    models: {}
+    models: {},
+    appOptions: {}
   },
   mutations: {
     // For future use - save a model to a specified name
@@ -53,20 +61,18 @@ const store = new Vuex.Store({
       state.auth.type = options.get('authentication_type')
       state.auth.cas_sso = options.get('cas_sso')
       state.auth.cas_url = options.get('cas_url')
+      state.appOptions = options.toJSON()
 
       state.motd = options.get('motd') || state.motd
 
       app.options = options
     },
     setHelp(state, helpFlag) {
-      state.help = helpFlag ? true : false
+      state.help = !!helpFlag
       sessionStorage.setItem('ispyb_help', state.help)
     },
-    //
-    // Loading screen
-    //
     loading(state, status) {
-      state.isLoading = status ? true : false
+      state.isLoading = !!status
     },
   },
   actions: {
@@ -167,17 +173,38 @@ const store = new Vuex.Store({
       })
     },
 
-    // Method that returns a collection promise
+    // Method that updates a collection
+    // Note this will result in a PUT to the server
+    // Most backend endpoints do not seem to support PATCH to update collection in one hit
+    // In future might need to provide more general sync method for collections
+    // Params: collection is the Backbone collection being saved - same signature as saveModel
+    // Example: store.dispatch('updateCollection', { collection: myCollection })
+    updateCollection(context, {collection}) {
+      return new Promise((resolve, reject) => {
+        collection.update({
+          success: function(result) {
+            resolve(result)
+          },
+
+          error: function(err) {
+            let response = err.responseJSON || {status: 400, message: 'Error updating collection'}
+            reject(response)
+          },
+        })
+      })
+    },
+
+    // Method that returns a Model promise
     getModel(context, model) {
 
       return new Promise((resolve, reject) => {
         model.fetch({
-          success: function(model, response, options) {
+          success: function(model) {
             // Could extend to return the response/options
             resolve(model)
           },
 
-          error: function(model, response, options) {
+          error: function(model, response) {
             let err = response.responseJSON || {status: 400, message: 'Error getting model'}
             reject(err)
           },
@@ -190,9 +217,9 @@ const store = new Vuex.Store({
     // If the backbone model has an "ID" (as defined in it's Model class) and there are no attributes provided,
     // then save will be a PUT request rather than POST request
     // Example: store.dispatch('saveModel', {model: myModel, attributes: myAttributes})
-    saveModel(context, {model, attributes}) {
+    saveModel(context, { model, attributes }) {
       // If we have attributes, assume a patch request
-      let patch = attributes ? true : false
+      let patch = !!attributes
       let attrs = attributes || {}
 
       return new Promise((resolve, reject) => {
@@ -209,10 +236,133 @@ const store = new Vuex.Store({
         })
       })
     },
+    // Method that deletes a model from the server
+    deleteModel(context, model) {
+      return new Promise((resolve, reject) => {
+        model.destroy({
+          success: function(result) {
+            resolve(result)
+          },
+
+          error: function(err) {
+            let response = err.responseJSON || { status: 400, message: 'Error deleting model'}
+            reject(response)
+          },
+        })
+      })
+    },
+
+    // fetch data from the backend that is not attached to any model
+    async fetchDataFromApi({ state, commit, rootState }, { url, data, requestType }) {
+      return await Backbone.ajax({
+        url: app.apiurl + url,
+        data,
+
+        success: function(response) {
+          return response
+        },
+        error: function() {
+          commit('notifications/addNotification', {
+            title: 'Error performing request',
+            message: `There was an error ${requestType}`,
+            level: 'error'
+          }, {
+            root: true
+          })
+        },
+      })
+    },
+    // post data to the backend that is not attached to any model
+    async saveDataToApi({ state, commit, rootState }, args) {
+      const { url, data, requestType, ...others } = args
+      return await Backbone.ajax({
+        url: app.apiurl + url,
+        type: 'POST',
+        data,
+        ...others,
+
+        success: function(response) {
+          commit('notifications/addNotification', {
+            title: 'Action Successful',
+            message: requestType,
+            level: 'success'
+          }, {
+            root: true
+          })
+          return response
+        },
+        error: function() {
+          commit('notifications/addNotification', {
+            title: 'Error performing request',
+            message: `There was an error ${requestType}`,
+            level: 'error'
+          }, {
+            root: true
+          })
+        },
+      })
+    },
+    // update data to the backend that is not attached to any model
+    async updateDataToApi({ state, commit, rootState }, args) {
+      const { url, data, requestType, type, ...others } = args
+      return await Backbone.ajax({
+        url: app.apiurl + url,
+        type,
+        data,
+        ...others,
+
+        success: function(response) {
+          commit('notifications/addNotification', {
+            title: 'Update Successful',
+            message: requestType,
+            level: 'success'
+          }, {
+            root: true
+          })
+          return response
+        },
+        error: function() {
+          commit('notifications/addNotification', {
+            title: 'Error performing request',
+            message: `There was an error ${requestType}`,
+            level: 'error'
+          }, {
+            root: true
+          })
+        },
+      })
+    },
+    // delete data from the backend that is not attached to any model
+    async deleteDataFromApi({ state, commit, rootState }, { url, requestType }) {
+      return await Backbone.ajax({
+        url: app.apiurl + url,
+        type: 'DELETE',
+        dataType: 'json',
+
+        success: function(response) {
+          return response
+        },
+        error: function() {
+          commit('notifications/addNotification', {
+            title: 'Error performing request',
+            message: `There was an error ${requestType}`,
+            level: 'error'
+          }, {
+            root: true
+          })
+        },
+      })
+    },
+    updateLoadingState({ commit }, payload) {
+      commit('loading', payload)
+    }
   },
   getters: {
     sso: state => state.auth.cas_sso,
     sso_url: state => state.auth.cas_url,
+    apiUrl: state => state.apiUrl,
+    appUrl: state => state.appUrl,
+    getAppOptions: state => state.appOptions
   }
 })
 

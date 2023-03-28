@@ -8,6 +8,16 @@ module.exports = {
       './src/**/*.html',
       './src/**/*.vue',
     ],
+    options: {
+      whitelist: [
+        'tw-bg-auto-integrated',
+        'tw-bg-data-collected',
+        'tw-bg-auto-indexed',
+        'tw-bg-screened',
+        'tw-bg-grid-scanned',
+        'tw-bg-loaded-by-robot'
+      ]
+    }
   },
   future: {
     purgeLayersByDefault: true,
@@ -15,6 +25,11 @@ module.exports = {
   },
   // Adding a prefix so its clear where we are overriding styles
   prefix: 'tw-',
+  variants: {
+    overflow: ['responsive', 'hover', 'focus'],
+    height: ['responsive', 'hover', 'focus'],
+    position: ['responsive', 'hover', 'focus']
+  },
   theme: {
     extend: {
       fontFamily: {
@@ -23,7 +38,7 @@ module.exports = {
         'content-header': ['Droid Sans'],
         'icon': ['FontAwesome'],
         'fixed': ["Courier"],
-        },
+      },
       // Add a tiny font size for breadcrumbs etc.
       fontSize: {
         'xxs': '0.65rem',
@@ -38,7 +53,15 @@ module.exports = {
         //   '4xl': '2.25rem',
         //   '5xl': '3rem',
         //   '6xl': '4rem',
-        },
+      },
+      width: {
+        '1/7': '14.2857143%',
+        '2/7': '28.5714286%',
+        '3/7': '42.8571429%',
+        '4/7': '57.1428571%',
+        '5/7': '71.4285714%',
+        '6/7': '85.7142857%',
+      },
       backgroundImage: {
         'header-site-logo': "url('~images/diamond_gs_small.png')",
         'footer-site-logo': "url('~images/ispyb_gs_medium.png')",
@@ -112,6 +135,7 @@ module.exports = {
         'content-dark-background': '#dedede',
         'content-cal-header-background': '#cecece',
         'content-cal-background': '#eeeeee',
+        'content-cal-past-date': 'rgb(153, 153, 153)',
         'content-cal-hl1-background': '#dfdfdf',
         'content-cal-hl2-background': '#f3f3f3',
         'content-help-background': '#000000',
@@ -128,8 +152,50 @@ module.exports = {
         'table-pages-disable-color': '#ababab',
 // Plot
         'plot-legend-background': '#dddddd',
+        'motor-value-background': '#bcbcbc',
+        'motor-readback-text': '#71a56c',
+
+// Modal
+        'modal-header-background': '#e9e9e9',
+
+// Sample Status
+        'auto-integrated': '#77dd77',
+        'data-collected': '#87ceeb',
+        'auto-indexed': '#ffb347',
+        'screened': '#fdfd96',
+        'grid-scanned': '#fdfd96',
+        'loaded-by-robot': '#ff6961',
+        'dark-amber': '#d9bf98',
+
+// Sample Groups Color Theme
+        'sample-group-added-light': '#f4e7Ba',
+        'sample-group-added-dark': '#e6daae',
+// Data Collections messages color
+        'info-color': {
+          default: '#00ff00',
+          lighter: '#ccffcc',
+          darker: '#003300'
+        },
+        'alert-color': {
+          default: '#ffa500',
+          lighter: '#ffb733',
+          darker: '#332100'
+        },
+        'warning-color': {
+          default: '#ff0000',
+          lighter: '#ff4d4d',
+          darker: '#330000'
+        },
+      },
+      zIndex: {
+        '75': 75,
+        '100': 100,
+        '9999': 9999
+      },
+      margin: {
+        '1/2': '0.125rem'
       }
-    }
+    },
   },
   plugins: []
 }

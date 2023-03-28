@@ -1,10 +1,11 @@
 <template>
-
-        <div class="marionette-wrapper">
-            <!-- This is the element we attach the marionette view to -->
-            <div id="marionette-view" class="content"></div>
-        </div>
-    
+  <div class="marionette-wrapper">
+    <!-- This is the element we attach the marionette view to -->
+    <div
+      ref="marionetteView"
+      class="content"
+    />
+  </div>
 </template>
 
 <script>
@@ -13,6 +14,12 @@ import EventBus from 'js/app/components/utils/event-bus.js'
 
 export default {
     name: 'MarionetteWrapper',
+    // When MarionetteWrapper is the main route component, prefetchData as required
+    // If this component is used directly from another vue component this will not be called
+    // Instead the parent vue component will need to load the model/collection data as required
+    beforeRouteEnter: function(to, from, next) {
+        next(vm => vm.prefetchData())
+    },
     props: {
         'mview': [Function, Promise], // The marionette view could be lazy loaded or static import 
         'breadcrumbs' : Array,
@@ -55,17 +62,15 @@ export default {
             }
         },
     },
-    created: function() {
+    mounted: function() {
         console.log("MarionetteViewWrapper::created " + this.$router.currentRoute.path )
 
         this.marionetteRegion = new Marionette.Region({
-            el: "#marionette-view"
+            el: this.$refs.marionetteView
         });
         // If we have been passed breadcrumbs, send the update event
         // We will update the breadcrumbs again if the model loads and tags are present
         if (this.breadcrumbs) EventBus.$emit('bcChange', this.breadcrumbs)
-    },
-    mounted: function() {
         // Intercept any 'a' tag links from within marionette views and delegate relative links to vue-router
         this.handleHTMLAnchorEvents()
 
@@ -236,12 +241,6 @@ export default {
             })
         }
 
-    },
-    // When MarionetteWrapper is the main route component, prefetchData as required
-    // If this component is used directly from another vue component this will not be called
-    // Instead the parent vue component will need to load the model/collection data as required
-    beforeRouteEnter: function(to, from, next) {
-        next(vm => vm.prefetchData())
     }
 }
 </script>

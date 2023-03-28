@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+/* eslint no-undef: "off"*/
 
 define(['backbone', 'marionette', 'underscore', 'jquery',
     
@@ -31,8 +32,6 @@ define(['backbone', 'marionette', 'underscore', 'jquery',
 function(Backbone, Marionette, _, $, HeaderView, SideBarView, DialogRegion, LoginView, Proposal, Options, utils, config) {
 
   window.app = new Marionette.Application()
-
-  console.log('CONFIG', config)
 
   // Moved to here so its available on app start
   app.options = new Options()
@@ -57,8 +56,6 @@ function(Backbone, Marionette, _, $, HeaderView, SideBarView, DialogRegion, Logi
           var kv = v.split(/=/)
           pairs[kv[0]] = kv[1]
       })
-
-      console.log('pairs', pairs)
 
       if ('prop' in pairs) sessionStorage.setItem('prop', pairs.prop)
   }
@@ -108,8 +105,8 @@ function(Backbone, Marionette, _, $, HeaderView, SideBarView, DialogRegion, Logi
 
       // JSON content
       } else if (options.contentType == 'application/json' || options.type == 'DELETE') {
-          if (options.data) var tmp = JSON.parse(options.data)
-          else var tmp = {}
+          var tmp = {}
+          if (options.data) tmp = JSON.parse(options.data)
 
           if (Array.isArray(tmp)) tmp[0].prop = prop
           else {
@@ -167,7 +164,7 @@ function(Backbone, Marionette, _, $, HeaderView, SideBarView, DialogRegion, Logi
         try {
             json = $.parseJSON(xhr.responseText)
         } catch(err) {
-
+            console.error("Error parsing response text: ", err)
         }
     }
     var msg = json && (json.error || json.msg) ? (json.error ? json.error : json.msg) : error
@@ -449,7 +446,6 @@ app.clearVisit = function(){
           // Only need this for pushState enabled browsers
           if (Backbone.history && Backbone.history._hasPushState) {
               var $document = $(window.document);
-              var openLinkInTab = false;
               
               var is_relative_to_page = function(href) {
                   return href.match(/^\/|(http:|https:|ftp:|mailto:|javascript:)/) === null;
@@ -459,16 +455,6 @@ app.clearVisit = function(){
                   console.log('routable', href.indexOf('/'))
                   return href.indexOf("#") === -1 && (is_relative_to_page(href) || href.indexOf(Backbone.history.root) == 0 || href.indexOf('/') == 0) && (href.indexOf(app.apiurl) != 0);
               };
-              
-              $document.keydown(function(e) {
-                  if (e.ctrlKey || e.keyCode === 91) {
-                      openLinkInTab = true;
-                  }
-              });
-              
-              $document.keyup(function(e) {
-                  openLinkInTab = false;
-              });
               
               $document.on("click", "a", function(e) {
                   var href =  $(this).attr("href");

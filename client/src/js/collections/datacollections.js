@@ -20,6 +20,10 @@ define(['underscore', 'backbone', 'backbone.paginator', 'models/datacollection']
       //if (options && options.queryParams) this.queryParams = $.extend({}, this.queryParams, options.queryParams || {})
     },
 
+    isRunning: function() {
+        return this.running
+    },
+
     setFetched: function() {
       if (this.fetched) return
         

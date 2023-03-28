@@ -1,3 +1,4 @@
+/* eslint no-undef: "off"*/
 define(['marionette',
 
     'modules/admin/models/group',

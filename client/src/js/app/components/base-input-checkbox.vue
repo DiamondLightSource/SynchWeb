@@ -6,33 +6,51 @@ Can provide form component or inline (edit on hover) behaviour
 Slots include:
 - description = override sub title for the label placed after the input
 - actions = place to show action buttons
+- Checkboxes use checked attribute to set its state and listens for the change event; according to https://vuejs.org/v2/guide/forms.html
 -->
 <template>
   <div :class="outerClass">
     <input
       v-show="editable"
-      ref="inputRef"
       :id="id"
+      ref="inputRef"
       :name="name"
       type="checkbox"
-      :value="value"
       :checked="value"
-      @input="updateValue"
-      @change="changeValue"
+      :disabled="disabled"
+      @change="updateValue"
       @blur="onBlur"
       @focus="$emit('focus')"
     >
-    <span v-if="inline && !editable" class="btn-edit" @click="onEdit" @mouseover="showEditIcon = true" @mouseleave="showEditIcon = false">{{ value }} <span v-show="showEditIcon"><i :class="['fa', 'fa-edit']"></i> Edit</span></span>
+    <span
+      v-if="inline && !editable"
+      class="btn-edit"
+      @click="onEdit"
+      @mouseover="showEditIcon = true"
+      @mouseleave="showEditIcon = false"
+    >{{ value }} <span v-show="showEditIcon"><i :class="['fa', 'fa-edit']" /> Edit</span></span>
 
-    <label class="secondary" :for="id">{{label}}
+    <label
+      class="secondary"
+      :for="id"
+    >{{ label }}
       <slot name="description">
-        <span v-show="description" class="small">{{description}}</span>
+        <span
+          v-show="description"
+          class="small"
+        >{{ description }}</span>
       </slot>
     </label>
 
-    <button v-if="inline && editable" @mousedown="onSave" class="button">OK</button>
+    <button
+      v-if="inline && editable"
+      class="button"
+      @mousedown="onSave"
+    >
+      OK
+    </button>
 
-    <slot name="actions"></slot>
+    <slot name="actions" />
   </div>
 </template>
 
@@ -41,7 +59,7 @@ export default {
   name: "BaseInputCheckbox",
   props: {
     value: { // Passed in automatically if v-model used
-      type: String,
+      type: [String, Boolean, Number],
       required: true
     },
     id: {
@@ -58,13 +76,17 @@ export default {
     },
     description: {
       type: String,
-      required: false
+      required: false,
+    },
+    disabled: {
+      type: Boolean,
+      default: false,
     },
     // Default behaviour is to act as normal input
     // Set inline to enable edit/save behaviour
     inline: {
       type: Boolean,
-      default: false
+      default: false,
     },
     // Class styling for outer div of this component
     outerClass: {
@@ -79,7 +101,7 @@ export default {
   },
   watch: {
     editable: function(value) {
-      if (value == false) this.showEditIcon = false
+      if (!value) this.showEditIcon = false
     }
   },
   created() {
@@ -89,13 +111,8 @@ export default {
   methods: {
     updateValue(event) {
       // If we are in inline editing mode, only update model on save
-      // If not them update value via input event
-      if (!this.inline) this.$emit("input", event.target.checked);
-    },
-    changeValue(event) {
-      // If we are in inline editing mode, only update model on save
       // If not then update value via input event
-      if (!this.inline) this.$emit("change", event.target.checked);
+      if (!this.inline) this.$emit("input", event.target.checked);
     },
     onBlur() {
       // If in inline edit mode cancel edit
@@ -111,13 +128,12 @@ export default {
       this.editable = false
       // In this case we are in inline edit mode so need to explicitly save the input value
       this.$emit("input", this.$refs.inputRef.checked);
-      this.$emit("change", this.$refs.inputRef.checked);
       // Also emit a save event so we can catch this change easily in the parent
       this.$emit("save", this.$refs.inputRef.checked);
     },
     onEnter(event) {
       // If we are in inline edit mode - save the model on enter (key = 13)
-      if (this.inline && event.keyCode == 13) this.onSave()
+      if (this.inline && event.keyCode === 13) this.onSave()
     },
   },
 };

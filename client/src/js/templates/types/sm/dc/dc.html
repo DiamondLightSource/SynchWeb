@@ -12,19 +12,24 @@
     <div class="links">
         <a href="/dc/view/id/<%-ID%>"><i class="fa fa-picture-o fa-2x"></i> Images</a> 
         <a class="sn" href="#snapshots"><i class="fa fa-camera fa-2x"></i> Snapshots</a> 
-        <a class="dl" href="#distl"><i class="fa fa-bar-chart-o fa-2x"></i> DISTL</a> 
+        <a class="dl" href="#distl"><i class="fa fa-bar-chart-o fa-2x"></i> Per-image Analysis</a> 
     </div>
     
     <ul class="clearfix">
-        <li>Flux: <%-parseFloat(FLUX).toExponential(2)%></li>
+        <%if (FLUX != null) { %>
+          <li><%- parseFloat(FLUX).toExponential(2) %></li>
+        <% } else { %>
+          <li> Flux: </li>
+        <% } %>
         <li>&<%-ROTATIONAXIS%>; Start: <%-AXISSTART%>&deg;</li>
         <li>&<%-ROTATIONAXIS%>; Osc: <%-AXISRANGE%>&deg;</li>
         <li>&<%-ROTATIONAXIS%>; Overlap: <%-OVERLAP%>&deg;</li>
         <li>No. Images: <%-NUMIMG%></li>
         <% if (SI != 1 ) { %> <li>First Image: <%-SI%></li><% } %>
         <% if (KAPPA != null) { %><li>&kappa;: <%-KAPPA%>&deg;</li><% } %>
-        <% if (PHI != null) { %><li>&phi;: <%-PHI%>&deg;</li><% } %>
-        <% if (CHISTART != null) { %><li>&chi;: <%-CHISTART%>&deg;<% } %>
+        <% if (PHI != null && ROTATIONAXIS === 'Omega') { %><li>&phi;: <%-PHI%>&deg;</li><% } %>
+        <% if (CHISTART != null) { %><li>&chi;: <%-CHISTART%>&deg;</li><% } %>
+        <% if (OMEGASTART != null && ROTATIONAXIS === 'Phi') { %> <li>&omega;: <%- OMEGASTART %>&deg;</li> <% } %>
         <li>Resolution: <%-RESOLUTION%>&#197;</li>
         <li>Wavelength: <%-WAVELENGTH%>&#197;</li>
         <li>Detector Distance: <%-parseFloat(DET).toFixed(1)%>mm</li>

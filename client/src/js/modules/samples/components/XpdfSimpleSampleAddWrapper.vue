@@ -1,9 +1,14 @@
 <template>
-    <section class="content">
-        <h1>Add Simple Sample</h1>
-        <p class="help">This page allows you to add all sample information for one or more samples in a single transaction</p>
-        <simple-sample v-if="ready" v-bind:protein="model"></simple-sample>
-    </section>
+  <section class="content">
+    <h1>Add Simple Sample</h1>
+    <p class="help">
+      This page allows you to add all sample information for one or more samples in a single transaction
+    </p>
+    <simple-sample
+      v-if="ready"
+      :protein="model"
+    />
+  </section>
 </template>
 
 <script>
@@ -11,39 +16,15 @@ import SimpleSample from 'modules/types/xpdf/samples/views/vue-simplesample.vue'
 import Protein from 'models/protein'
 
 import EventBus from 'app/components/utils/event-bus.js'
-
-import VeeValidate from 'veevalidate'
-import Vue from 'vue'
-
-Vue.use(VeeValidate)
-
-VeeValidate.Validator.extend('closeExp', {
-    getMessage: field => field+ ' must have correctly closed brackets',
-    validate: value => {
-        var count = 0
-        for(var i=0;i<value.length;i++){
-            if(value.charAt(i) === '(')
-                count++
-            else if(value.charAt(i) === ')'){
-                if(count === 0)
-                    return false
-                else
-                    count--
-            }
-        }
-        if(count === 0)
-            return true
-        else
-            return false
-    }
-})
+import VeeValidateCustom from 'app/mixins/vee-validate-custom-rules'
 
 
 export default {
-    name: 'simple-sample-add-wrapper',
+    name: 'SimpleSampleAddWrapper',
     components: {
         'simple-sample': SimpleSample
     },
+    mixins: [VeeValidateCustom],
     props: {
         'pid': {
             type: Number,

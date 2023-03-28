@@ -1,8 +1,9 @@
 define(['marionette',
         'views/pvs',
+        'views/pvs-stream',
         'utils',
         'templates/status.html',
-    ], function(Marionette, PVView, utils, template) {
+    ], function(Marionette, PVView, StreamedPVView, utils, template) {
 
 
     return Marionette.LayoutView.extend({
@@ -21,6 +22,7 @@ define(['marionette',
         
         regions: {
             pvs: '.pvs',
+            'streamed-pvs': '.streamed-pvs'
         },
         
         ui: {
@@ -38,6 +40,7 @@ define(['marionette',
             this.ui.status.slideToggle('fast', 'swing', function() {
                 if (self.ui.status.is(':visible')) {
                     self.pvs.show(new PVView({ bl: self.getOption('bl') }))
+                    self['streamed-pvs'].show(new StreamedPVView({ bl: self.getOption('bl') }))
                     self.$el.find('.webcam img').each(function(i,w) {
                         var url = app.apiurl+'/image/cam/bl/'+self.getOption('bl')+'/n/'+i
                         utils.sign({

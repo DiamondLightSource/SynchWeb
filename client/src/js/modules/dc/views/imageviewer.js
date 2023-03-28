@@ -94,8 +94,6 @@ define(['jquery', 'marionette',
             this.onResize = _.debounce(this.onResize, 200)
             this.draw = _.debounce(this.draw, 10)
             this.readjust = _.debounce(this.readjust, 200)
-            
-            // console.log(this.model)
 
             this.n = options.n || 1
             this.img = new XHRImage()
@@ -385,21 +383,22 @@ define(['jquery', 'marionette',
         precache: function() {
             clearTimeout(this.cache_thread)
             return
-            
-            var self = this
-            if (!app.mobile() && ((this.ci - this.cistart) < 10)) {
-                var url = app.apiurl+'/image/'+(this.low ? 'diff' : 'di')+'/id/'+this.model.get('ID')+(this.low ? '/f/1' : '')+'/n/'+self.ci
-                var img = new XHRImage()
-                img.onload = function() {
-                    self.ui.loadprog.text('Cached Image '+self.ci)
-                    self.ui.loadprog.show()
-                    if (self.ci < self.model.get('NUMIMG')) {
-                        self.ci++
-                        self.cache_thread = setTimeout(self.precache.bind(self), 500)
-                    }
-                }
-                img.load(url)
-            }
+
+            // Calum Byrom: this was unreachable, but non-trivial code - so commenting out to remove linting error: would rather delete or actually make use of...
+            // var self = this
+            // if (!app.mobile() && ((this.ci - this.cistart) < 10)) {
+            //     var url = app.apiurl+'/image/'+(this.low ? 'diff' : 'di')+'/id/'+this.model.get('ID')+(this.low ? '/f/1' : '')+'/n/'+self.ci
+            //     var img = new XHRImage()
+            //     img.onload = function() {
+            //         self.ui.loadprog.text('Cached Image '+self.ci)
+            //         self.ui.loadprog.show()
+            //         if (self.ci < self.model.get('NUMIMG')) {
+            //             self.ci++
+            //             self.cache_thread = setTimeout(self.precache.bind(self), 500)
+            //         }
+            //     }
+            //     img.load(url)
+            // }
         },
         
         
@@ -528,8 +527,8 @@ define(['jquery', 'marionette',
             }
 
             var y = []
-            for (var i = 0; i < h; i++) {
-                var val = (ydat[i*4] + ydat[i*4+1] + ydat[i*4+2])
+            for (i = 0; i < h; i++) {
+                val = (ydat[i*4] + ydat[i*4+1] + ydat[i*4+2])
                 if (!this.ui.invert.is(':checked')) val = 765-val
                 y.push([val,h-1-i])
             }
@@ -663,8 +662,8 @@ define(['jquery', 'marionette',
             var newp = curp*(this.scalef/(last_scale))
             this.offsetx -= newp-curp
 
-            var curp = -this.offsety + xy[1]
-            var newp = curp*(this.scalef/(last_scale))
+            curp = -this.offsety + xy[1]
+            newp = curp*(this.scalef/(last_scale))
             this.offsety -= newp-curp
                          
             this._clamp_offset()
@@ -718,14 +717,26 @@ define(['jquery', 'marionette',
         _xy_to_dist: function(x, y) {
             return Math.sqrt(Math.pow(Math.abs(x*this.ps/this.imscale-this.model.get('XBEAM')),2)+Math.pow(Math.abs(y*this.ps/this.imscale-this.model.get('YBEAM')),2))
         },
-          
+        
+        _xy_to_res: function(x, y) {
+            if (this.model.get('DETECTORMODEL') === "Pilatus 12M") {
+                x_mm = this.ps * x / this.imscale - this.model.get('XBEAM')
+                y_mm = this.ps * y / this.imscale - this.model.get('YBEAM')
+                r_det = 250
+                theta = Math.acos(r_det * Math.cos(y_mm / r_det) / Math.sqrt(r_det * r_det + x_mm * x_mm))
+                wavelength = this.model.get('WAVELENGTH')
+                res = wavelength / (2 * Math.sin(theta / 2))
+                return res
+            }
+            return this._dist_to_res(this._xy_to_dist(x,y))
+        },
           
         // Set cursor position and resolution
         _cursor: function(x, y) {
             var posx = (x/this.scalef)-(this.offsetx/this.scalef)
             var posy = (y/this.scalef)-(this.offsety/this.scalef)
           
-            var res = this._dist_to_res(this._xy_to_dist(posx,posy))
+            var res = this._xy_to_res(posx, posy)
     
             this.ui.resc.text(res.toFixed(2))
         },

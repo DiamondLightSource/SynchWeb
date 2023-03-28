@@ -38,7 +38,7 @@ function lookupVisit(params) {
                 resolve(visitModel)
             },
             error: function() {
-                reject({msg: "The specified visit doesn\'t exist"})
+                reject({msg: "The specified visit doesn't exist"})
             }
         })    
     })
@@ -56,7 +56,7 @@ const routes = [
                 props: {
                     mview: SelectVisitView,
                     options: {
-                        collection: new Visits(null, { queryParams: { next: 1 } })
+                        collection: new Visits(null, { queryParams: { next: 1 }, state: { pageSize: 9999 }})
                     },
                     breadcrumbs: [bc]
                 }

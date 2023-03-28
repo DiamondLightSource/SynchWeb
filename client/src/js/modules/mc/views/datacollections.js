@@ -189,9 +189,10 @@ define(['backbone', 'marionette',
             this.rps.show(new ReprocessOverview({ collection: this.reprocessings, embed: true, results: true }))
 
             this.pipelines = new Pipelines([
-                { NAME: 'Xia2 3dii', VALUE: 'xia2-3dii' },
                 { NAME: 'Xia2 DIALS', VALUE: 'xia2-dials' },
+                { NAME: 'Xia2 3dii', VALUE: 'xia2-3dii' },
                 { NAME: 'Fast DP', VALUE: 'fast_dp' },
+                { NAME: 'autoPROC', VALUE: 'autoPROC' },
             ])
 
             this.ui.met.html(this.pipelines.opts())
