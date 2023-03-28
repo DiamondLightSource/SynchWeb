@@ -12,6 +12,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 use ZipStream\Option\Archive;
 use ZipStream\ZipStream;
 
+ini_set('max_execution_time', 0); // To allow large file downloads
 
 class Download extends Page
 {
