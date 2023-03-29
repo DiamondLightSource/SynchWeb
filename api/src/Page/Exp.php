@@ -178,10 +178,9 @@ class Exp extends Page
                 'd.detectorid ASC'
             );
 
-            $rows = $this->db->paginate("SELECT d.detectorid, d.detectortype, d.detectormanufacturer, d.detectorserialnumber, d.sensorthickness, d.detectormodel, d.detectorpixelsizehorizontal, d.detectorpixelsizevertical, d.detectordistancemin, d.detectordistancemax, d.density, d.composition, concat(d.detectormanufacturer,' ',d.detectormodel, ' (',d.detectortype,')') as description, d.detectormaxresolution, d.detectorminresolution, count(distinct dc.datacollectionid) as dcs, count(distinct bls.beamlinesetupid) as blsetups, (SELECT count(distinct dphd.detectorid) FROM DataCollectionPlan_has_Detector dphd WHERE dphd.detectorid = d.detectorid) as dps, CONCAT_WS(',',GROUP_CONCAT(distinct ses.beamlinename),GROUP_CONCAT(distinct bls.beamlinename)) as beamlines, d.numberofpixelsx, d.numberofpixelsy, d.detectorrollmin, d.detectorrollmax
+            $rows = $this->db->paginate("SELECT d.detectorid, d.detectortype, d.detectormanufacturer, d.detectorserialnumber, d.sensorthickness, d.detectormodel, d.detectorpixelsizehorizontal, d.detectorpixelsizevertical, d.detectordistancemin, d.detectordistancemax, d.density, d.composition, concat(d.detectormanufacturer,' ',d.detectormodel, ' (',d.detectortype,')') as description, d.detectormaxresolution, d.detectorminresolution, count(distinct dc.datacollectionid) as dcs, count(distinct bls.beamlinesetupid) as blsetups, (SELECT count(distinct dphd.detectorid) FROM DataCollectionPlan_has_Detector dphd WHERE dphd.detectorid = d.detectorid) as dps, GROUP_CONCAT(distinct bls.beamlinename) as beamlines, d.numberofpixelsx, d.numberofpixelsy, d.detectorrollmin, d.detectorrollmax
                 FROM detector d
                 LEFT OUTER JOIN datacollection dc ON dc.detectorid = d.detectorid
-                LEFT OUTER JOIN blsession ses ON ses.sessionid = dc.sessionid
                 LEFT OUTER JOIN beamlinesetup bls ON bls.detectorid = d.detectorid
                 WHERE $where
                 GROUP BY d.detectorid
