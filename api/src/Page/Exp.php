@@ -167,6 +167,7 @@ class Exp extends Page
 
             $tot = $this->db->pq("SELECT count(d.detectorid) as tot
               FROM detector d
+              LEFT OUTER JOIN beamlinesetup bls ON bls.detectorid = d.detectorid
               WHERE $where", $args);
             $tot = intval($tot[0]['TOT']);
 
