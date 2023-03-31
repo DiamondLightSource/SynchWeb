@@ -44,9 +44,9 @@ class PDF extends Page
         // Creating the temp folder here means we have the correct permissions
         // Using separate folders for temp and font data so mpdf does not try to delete ttfontdata
         global $pdf_tmp_dir;
-        $this->pdf_tmp_dir = $pdf_tmp_dir;
-        $mpdf_temp = $pdf_tmp_dir . "/mpdf/temp/";
-        $mpdf_font_data = $pdf_tmp_dir . "/mpdf/ttfontdata/";
+        $this->pdf_tmp_dir = $pdf_tmp_dir ? $pdf_tmp_dir : "/tmp";
+        $mpdf_temp = $this->pdf_tmp_dir . "/mpdf/temp/";
+        $mpdf_font_data = $this->pdf_tmp_dir . "/mpdf/ttfontdata/";
 
         if (!is_dir($mpdf_temp)) {
             mkdir($mpdf_temp, 0775, true);
