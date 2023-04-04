@@ -48,12 +48,12 @@ class PDF extends Page
         $mpdf_temp = $this->pdf_tmp_dir . "/mpdf/temp/";
         $mpdf_font_data = $this->pdf_tmp_dir . "/mpdf/ttfontdata/";
 
-        if (!is_dir($mpdf_temp)) {
-            mkdir($mpdf_temp, 0775, true);
-        }
-        if (!is_dir($mpdf_font_data)) {
-            mkdir($mpdf_font_data, 0775, true);
-        }
+        // if (!is_dir($mpdf_temp)) {
+        //     mkdir($mpdf_temp, 0775, true);
+        // }
+        // if (!is_dir($mpdf_font_data)) {
+        //     mkdir($mpdf_font_data, 0775, true);
+        // }
     }
 
     # ------------------------------------------------------------------------

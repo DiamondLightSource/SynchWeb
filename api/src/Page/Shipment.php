@@ -92,6 +92,8 @@ class Shipment extends Page
         'SCHEDULINGRESTRICTIONS' => '.*',
         'LASTMINUTEBEAMTIME' => '1?|Yes|No',
         'DEWARGROUPING' => '.*',
+        'EXTRASUPPORTREQUIREMENT' => '.*',
+        'MULTIAXISGONIOMETRY' => '1?|Yes|No',
         'ENCLOSEDHARDDRIVE' => '1?|Yes|No',
         'ENCLOSEDTOOLS' => '1?|Yes|No',
 
@@ -150,6 +152,8 @@ class Shipment extends Page
         'SCHEDULINGRESTRICTIONS',
         'LASTMINUTEBEAMTIME',
         'DEWARGROUPING',
+        'EXTRASUPPORTREQUIREMENT',
+        'MULTIAXISGONIOMETRY',
         'ENCLOSEDHARDDRIVE',
         'ENCLOSEDTOOLS'
     );
@@ -2514,6 +2518,11 @@ class Shipment extends Page
                 $last_minute_beamtime = $this->arg('LASTMINUTEBEAMTIME') ? "Yes" : "No";
             }
             $dewar_grouping = $this->has_arg('DEWARGROUPING') ? $this->arg('DEWARGROUPING') : '';
+            $extra_support_requirement = $this->has_arg('EXTRASUPPORTREQUIREMENT') ? $this->arg('EXTRASUPPORTREQUIREMENT') : '';
+            $multi_axis_goniometry = null;
+            if ($this->has_arg('MULTIAXISGONIOMETRY')) {
+                $multi_axis_goniometry = $this->arg('MULTIAXISGONIOMETRY') ? "Yes" : "No";
+            }
             $dynamic_options = array(
                 "REMOTEORMAILIN" => $remote_or_mailin,
                 "SESSIONLENGTH" => $session_length,
@@ -2521,7 +2530,9 @@ class Shipment extends Page
                 "MICROFOCUSBEAM" => $microfocus_beam,
                 "SCHEDULINGRESTRICTIONS" => $scheduling_restrictions,
                 "LASTMINUTEBEAMTIME" => $last_minute_beamtime,
-                "DEWARGROUPING" => $dewar_grouping
+                "DEWARGROUPING" => $dewar_grouping,
+                "EXTRASUPPORTREQUIREMENT" => $extra_support_requirement,
+                "MULTIAXISGONIOMETRY" => $multi_axis_goniometry
             );
 
             $extra_array = array_merge($extra_array, $dynamic_options);
