@@ -75,7 +75,7 @@ define(['backbone'], function (Backbone) {
       },
 
       EXTRASUPPORTREQUIREMENT: {
-        required: true
+        required: false
       },
 
       MULTIAXISGONIOMETRY: {
