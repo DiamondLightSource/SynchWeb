@@ -229,7 +229,7 @@ define(['marionette',
             edit.create("SCHEDULINGRESTRICTIONS", 'text')
             edit.create("LASTMINUTEBEAMTIME", 'select', { data: {'Yes': 'Yes', 'No': 'No'}})
             edit.create("DEWARGROUPING", 'select', { data: {'Yes': 'Yes', 'No': 'No', 'Don\'t mind': 'Don\'t mind'}})
-            edit.create("EXTRASUPPORTREQUIREMENT", 'textarea');
+            edit.create("EXTRASUPPORTREQUIREMENT", 'text');
             edit.create("MULTIAXISGONIOMETRY", 'select', { data: {'Yes': 'Yes', 'No': 'No'}})
 
             this.updateDynamic()
