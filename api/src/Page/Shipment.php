@@ -408,7 +408,7 @@ class Shipment extends Page
 
     function _add_history()
     {
-        global $in_contacts, $transfer_email;
+        global $in_contacts, $arrival_email;
         global $dewar_complete_email; // Email list to cc if dewar back from beamline
         # Flag to indicate we should e-mail users their dewar has returned from BL
         $from_beamline = False;
@@ -493,7 +493,7 @@ class Shipment extends Page
                   FROM person p 
                   INNER JOIN session_has_person shp ON shp.personid = p.personid
                   WHERE shp.sessionid=:1 AND (shp.role = 'Local Contact' OR shp.role = 'Local Contact 2')", array($dew['FIRSTEXPERIMENTID']));
-            $emails = array($dew['LCOUTEMAIL'], $transfer_email);
+            $emails = array($dew['LCOUTEMAIL'], $arrival_email);
             foreach ($lcs as $lc) {
                 array_push($emails, $this->_get_email($lc['LOGIN']));
             }
