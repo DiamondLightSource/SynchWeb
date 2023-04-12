@@ -97,7 +97,7 @@ export default {
       this.usersCollection.queryParams.all = 1
       this.usersCollection.queryParams.pid = this.$store.state.proposal.proposalModel.get('PROPOSALID')
 
-      if (this.plateType == 'plate') {
+      if (this.plateType === 'plate') {
         this.usersCollection.queryParams.login = 1
       }
 
