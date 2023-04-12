@@ -51,7 +51,7 @@ export default {
   },
   data() {
     let sampleCentres, sampleRadius, sampleHighlightRadius
-    if (this.container.capacity == 4) {
+    if (this.container.capacity === "4") {
       sampleCentres = [
         [200, 150],
         [320, 150],
