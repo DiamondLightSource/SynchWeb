@@ -926,7 +926,7 @@ class Shipment extends Page
         global $facility_phone;
         global $facility_contact;
         global $shipping_service_url;
-        global $dispatch_email;
+        global $facility_email;
         if (!isset($shipping_service_url)) {
             $this->_error("Server could not send request to shipping service.");
         }
@@ -945,7 +945,7 @@ class Shipment extends Page
             "shipper_post_code" => $facility_postcode,
             "shipper_contact_name" => $facility_contact,
             "shipper_contact_phone_number" => $facility_phone,
-            "shipper_contact_email" => $dispatch_email,
+            "shipper_contact_email" => $facility_email,
             "internal_contact_name" => $this->has_arg('LOCALCONTACT') ? $this->args['LOCALCONTACT'] : null,
             "shipment_reference" =>  $dispatch_info['VISIT'],
             "external_id" => (int) $dispatch_info['DEWARID']
