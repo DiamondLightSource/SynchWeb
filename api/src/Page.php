@@ -517,7 +517,7 @@ class Page
                             $tmp = array();
                             foreach ($r->$k as $val)
                             {
-                                if (preg_match('/^' . $v . '$/m', $val))
+                                if ($this->_string_match('/^' . $v . '$/m', $val))
                                 {
                                     array_push($tmp, $v == '.*' ? $purifier->purify($val) : $val);
                                 }
@@ -527,7 +527,7 @@ class Page
                         }
                         else
                         {
-                            if (preg_match('/^' . $v . '$/m', $r->$k))
+                            if ($this->_string_match('/^' . $v . '$/m', $r->$k))
                             {
                                 $par[$k] = $v == '.*' ? $purifier->purify($r->$k) : $r->$k;
                                 if ($k == 'prop')
@@ -554,7 +554,7 @@ class Page
                             $tmp = array();
                             foreach ($request[$k] as $val)
                             {
-                                if (preg_match('/^' . $v . '$/m', $val))
+                                if ($this->_string_match('/^' . $v . '$/m', $val))
                                 {
                                     array_push($tmp, $v == '.*' ? $purifier->purify($val) : $val);
                                 }
@@ -572,7 +572,7 @@ class Page
                                     $tmp = array();
                                     foreach ($value as $value2)
                                     {
-                                        if (preg_match('/^' . $v . '$/m', $value2))
+                                        if ($this->_string_match('/^' . $v . '$/m', $value2))
                                         {
                                             array_push($tmp, $v == '.*' ? $purifier->purify($value2) : $value2);
                                         }
@@ -581,7 +581,7 @@ class Page
                                 }
                                 else
                                 {
-                                    if (preg_match('/^' . $v . '$/m', $value))
+                                    if ($this->_string_match('/^' . $v . '$/m', $value))
                                     {
                                         $request[$k]->$key = $v == '.*' ? $purifier->purify($value) : $value;
                                     }
@@ -607,7 +607,7 @@ class Page
                                             $tmp = array();
                                             foreach ($item as $element)
                                             {
-                                                if (preg_match('/^' . $v . '$/m', $element))
+                                                if ($this->_string_match('/^' . $v . '$/m', $element))
                                                 {
                                                     array_push($tmp, $v == '.*' ? $purifier->purify($element) : $element);
                                                 }
@@ -616,7 +616,7 @@ class Page
                                         }
                                         else
                                         {
-                                            if (preg_match('/^' . $v . '$/m', $item))
+                                            if ($this->_string_match('/^' . $v . '$/m', $item))
                                             {
                                                 $object->$name = $v == '.*' ? $purifier->purify($item) : $item;
                                             }
@@ -628,7 +628,7 @@ class Page
                         }
                         else
                         {
-                            if (preg_match('/^' . $v . '$/m', $request[$k]))
+                            if ($this->_string_match('/^' . $v . '$/m', $request[$k]))
                             {
                                 $parsed[$k] = $v == '.*' ? $purifier->purify($request[$k]) : $request[$k];
                             }
@@ -672,6 +672,15 @@ class Page
 
     # ------------------------------------------------------------------------
     # Misc Helpers
+
+    function _string_match($pattern, $input)
+    {
+        if (is_string($input))
+            {
+                return preg_match($pattern, $input);
+            }
+        return false;
+    }
 
     # Pretty-ish printer
     function p($array)
