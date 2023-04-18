@@ -407,7 +407,7 @@ class Page
     {
         $this->_parse_args();
         $this->_get_type();
-        $this->staff = $this->user->hasPermission($this->ty . '_admin');
+        $this->staff = is_null($this->user) ? False : $this->user->hasPermission($this->ty . '_admin');
 
         if (in_array($route->getName(), array('edge', 'mca')))
         {
