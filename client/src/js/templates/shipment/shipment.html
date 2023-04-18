@@ -150,6 +150,8 @@
                 SCHEDULINGRESTRICTIONS=(typeof SCHEDULINGRESTRICTIONS !== 'undefined')? SCHEDULINGRESTRICTIONS : null;
                 LASTMINUTEBEAMTIME=(typeof LASTMINUTEBEAMTIME !== 'undefined')? LASTMINUTEBEAMTIME : null;
                 DEWARGROUPING=(typeof DEWARGROUPING !== 'undefined')? DEWARGROUPING : null;
+                EXTRASUPPORTREQUIREMENT=(typeof EXTRASUPPORTREQUIREMENT !== 'undefined')? EXTRASUPPORTREQUIREMENT : null;
+                MULTIAXISGONIOMETRY=(typeof MULTIAXISGONIOMETRY !== 'undefined')? MULTIAXISGONIOMETRY : null;
                 %>
 
                 <li class="remoteormailin">
@@ -178,7 +180,7 @@
                 </li>
 
                 <li class="remoteform">
-                    <span class="label">Consider for last-minute beamtime</span>
+                    <span class="label">Consider for short-notice beam time</span>
                     <span class="LASTMINUTEBEAMTIME"><%-LASTMINUTEBEAMTIME %></span>
                 </li>
 
@@ -186,6 +188,17 @@
                     <span class="label">Group Dewars</span>
                     <span class="DEWARGROUPING"><%-DEWARGROUPING %></span>
                 </li>
+
+                <li class="remoteform">
+                    <span class="label">Extra Support Requirement</span>
+                    <span class="EXTRASUPPORTREQUIREMENT"><%-EXTRASUPPORTREQUIREMENT %></span>
+                </li>
+
+                <li class="remoteform">
+                    <span class="label">Multi-axis goniometry</span>
+                    <span class="MULTIAXISGONIOMETRY"><%-MULTIAXISGONIOMETRY %></span>
+                </li>
+
 
             <li>
                 <span class="label">Comments</span>
