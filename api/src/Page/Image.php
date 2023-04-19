@@ -191,19 +191,28 @@ class Image extends Page
             if ($n > $info['NUM']) {
                 $this->_error('Not found', 'That image does not exist');
             }
-            
+
             $im = $info['LOC'] . '/' . $info['FT'];
             $out = '/tmp/'.$this->arg('id').'_'.$n.($this->has_arg('thresh')?'_th':'').'.jpg';
-            
-            if (!file_exists($out)) {
+
+            global $dials_rest_url, $dials_rest_jwt;
+            if (!file_exists($out) && !empty($dials_rest_url) && !empty($dials_rest_jwt)) {
                 $resp = $this->_curl(array(
-                    'url' => 'http://localhost:5000/dc/image',
-                    'jwt' => true,
-                    'data' => array(
-                        'dcid' => $this->arg('id'),
-                        'image' => $n,
+                    'url' => $dials_rest_url.'/export_bitmap/',
+                    'HEADERS' => array(
+                        'Content-Type: application/json',
+                        'accept: application/json',
+                        'Authorization: Bearer '.$dials_rest_jwt,
+                    ),
+                    'POST' => 1,
+                    'FIELDS' => array(
+                        'filename' => $im,
+                        'image_index' => $n,
                         'binning' => 4,
-                        'threshold' => $this->has_arg('thresh') ? 1 : 0,
+                        'display' => $this->has_arg('thresh') ? "threshold" : "image",
+                        'colour_scheme' => 'greyscale',
+                        'brightness' => $this->has_arg('thresh') ? 1000 : 10,
+                        'format' => 'png',
                     )
                 ));
 
@@ -211,7 +220,7 @@ class Image extends Page
                     file_put_contents($out, $resp['content']);
                 }
             }
-            
+
             if (file_exists($out)) {
                 $this->_browser_cache();
                 $this->app->contentType('image/jpeg');
