@@ -15,7 +15,10 @@ TODO - move the score colour methods to a utility class
       <p class="tw-text-sm tw-mb-3"> Selecting {{ getSelectedDropPosition(currentSelectedDropIndex) }} Drops </p>
       <base-button @perform-button-action="toggleSelectionState" class="button tw-mb-2">{{ nextFilterState }}</base-button>
     </div>
-    <div :id="plateId" class="tw-w-full"></div>
+    <div 
+      :id="plateId" 
+      class="tw-w-full"
+    />
   </div>
 </template>
 
@@ -27,7 +30,7 @@ import { scaleOrdinal as d3ScaleOrdinal} from 'd3-scale'
 import { interpolateViridis as d3InterpolateViridis} from 'd3-scale-chromatic'
 import BaseButton from 'app/components/base-button.vue'
 export default {
-  name: 'plate-view',
+  name: 'PlateView',
   components: {
     'base-button': BaseButton
   },

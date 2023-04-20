@@ -5,17 +5,66 @@
   -->
   <div class="tw-mb-2">
     <div class="tw-flex tw-flex-wrap tw-w-full tw-mb-2">
-      <button class="button" @click.prevent="$emit('clone-container')" title="Clone Plate"><i class="fa fa-plus"></i> Plate</button>
-      <button class="button" @click.prevent="$emit('clone-container-column')" title="Clone Column"><i class="fa fa-plus"></i> Column</button>
-      <button class="button" @click.prevent="$emit('clone-container-row')" title="Clone Row"><i class="fa fa-plus"></i> Row</button>
+      <button
+        class="button"
+        title="Clone Plate"
+        @click.prevent="$emit('clone-container')"
+      >
+        <i class="fa fa-plus" /> Plate
+      </button>
+      <button
+        class="button"
+        title="Clone Column"
+        @click.prevent="$emit('clone-container-column')"
+      >
+        <i class="fa fa-plus" /> Column
+      </button>
+      <button
+        class="button"
+        title="Clone Row"
+        @click.prevent="$emit('clone-container-row')"
+      >
+        <i class="fa fa-plus" /> Row
+      </button>
 
-      <button class="button" @click.prevent="$emit('clear-container')" title="Clear Plate"><i class="fa fa-times"></i> Plate</button>
-      <button class="button" @click.prevent="$emit('clear-container-column')" title="Clear Column"><i class="fa fa-times"></i> Column</button>
-      <button class="button" @click.prevent="$emit('clear-container-row')" title="Clear Row"><i class="fa fa-times"></i> Row</button>
+      <button
+        class="button"
+        title="Clear Plate"
+        @click.prevent="$emit('clear-container')"
+      >
+        <i class="fa fa-times" /> Plate
+      </button>
+      <button
+        class="button"
+        title="Clear Column"
+        @click.prevent="$emit('clear-container-column')"
+      >
+        <i class="fa fa-times" /> Column
+      </button>
+      <button
+        class="button"
+        title="Clear Row"
+        @click.prevent="$emit('clear-container-row')"
+      >
+        <i class="fa fa-times" /> Row
+      </button>
 
-      <button class="button" @click.prevent="$emit('clear-container-sample')" title="Clear Sample"><i class="fa fa-times"></i> Clear Sample</button>
+      <button
+        class="button"
+        title="Clear Sample"
+        @click.prevent="$emit('clear-container-sample')"
+      >
+        <i class="fa fa-times" /> Clear Sample
+      </button>
     </div>
-    <button v-if="extra" class="button" title="Show extra fields" @click.prevent="toggleExtra" ><i :class="['fa extra-state', extraToggle ? 'fa-minus' : 'fa-plus']"></i> Extra Fields</button>
+    <button
+      v-if="extra"
+      class="button"
+      title="Show extra fields"
+      @click.prevent="toggleExtra"
+    >
+      <i :class="['fa extra-state', extraToggle ? 'fa-minus' : 'fa-plus']" /> Extra Fields
+    </button>
   </div>
 </template>
 

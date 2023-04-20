@@ -97,8 +97,10 @@ class Stats extends Page
                            );
             
             $t = $this->has_arg('t') ? $this->arg('t') : 'dc';
-            
-            if (array_key_exists($t, $types)) $this->$types[$t]();
+            if (array_key_exists($t, $types)) {
+                $methodToCall = $types[$t];
+                $this->$methodToCall();
+            }
             else $this->_error('No such stat type');
         }
         

@@ -2,8 +2,7 @@ define(['vue',
     'utils/vuewrapper',
     'templates/types/gen/vuetable.html'
     ], function(Vue, VueWrapper, template) {
-        return Vue.component('vue-table', {
-            template: template,
+        return Vue.component('VueTable', {
 
             data: function(){
                 return {
@@ -15,6 +14,7 @@ define(['vue',
 
             methods: {
 
-            }
+            },
+            template: template
         })
     })

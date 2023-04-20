@@ -23,14 +23,10 @@ Vue.use(VeeValidate)
 Vue.config.productionTip = false
 Vue.config.devtools = !config.production
 
-
 const vm = new Vue({
   store,
   router,
-  render: function(h) {
-    if (config.maintenance) return h(MaintenanceView, {props: {'message': config.maintenance_message}})
-    else return h(Main)
-  },
+  mixins: [VeeValidateCustomRules],
   created: function() {
     console.log("VUE::created")
 
@@ -39,7 +35,10 @@ const vm = new Vue({
 
     application.start()
   },
-  mixins: [VeeValidateCustomRules]
+  render: function(h) {
+    if (config.maintenance) return h(MaintenanceView, {props: {'message': config.maintenance_message}})
+    else return h(Main)
+  }
 }).$mount('#synchweb-app')
 
 

@@ -87,7 +87,7 @@ define(['marionette',
                         try {
                             json = $.parseJSON(xhr.responseText)
                         } catch(err) {
-
+                            console.error("Error parsing response:", err)
                         }
                     }
                     app.alert({ message: json.message })
@@ -171,6 +171,22 @@ define(['marionette',
         refreshDewar: function() {
             this.fetchDewars(true)
         },
+
+        updateDynamic: function(){
+            dynamic = this.model.get('DYNAMIC')
+            dynamicSelectedValues = [true, 'Yes', 'yes', 'Y', 'y']
+            if (!dynamicSelectedValues.includes(dynamic)) {
+                this.$el.find(".remoteormailin").hide()
+                this.$el.find(".remoteform").hide()
+            } else {
+                industrial_codes = ['in', 'sw']
+                industrial_visit = industrial_codes.includes(app.prop.slice(0,2))
+                if (industrial_visit) {
+                    this.$el.find(".remoteormailin").show()
+                }
+                this.$el.find(".remoteform").show()
+            }
+        },
         
         onRender: function() {
             if (app.proposal && app.proposal.get('ACTIVE') != '1') this.ui.add_dewar.hide()
@@ -198,6 +214,7 @@ define(['marionette',
 
             edit.create("ENCLOSEDHARDDRIVE", 'select', { data: {'Yes': 'Yes', 'No': 'No'}})
             edit.create("ENCLOSEDTOOLS", 'select', { data: {'Yes': 'Yes', 'No': 'No'}})
+            edit.create("DYNAMIC", 'select', { data: {'Yes': 'Yes', 'No': 'No'}})
             industrial_codes = ['in', 'sw']
             industrial_visit = industrial_codes.includes(app.prop.slice(0,2))
             if (!industrial_visit) {
@@ -212,6 +229,9 @@ define(['marionette',
             edit.create("SCHEDULINGRESTRICTIONS", 'text')
             edit.create("LASTMINUTEBEAMTIME", 'select', { data: {'Yes': 'Yes', 'No': 'No'}})
             edit.create("DEWARGROUPING", 'select', { data: {'Yes': 'Yes', 'No': 'No', 'Don\'t mind': 'Don\'t mind'}})
+
+            this.updateDynamic()
+            this.listenTo(this.model, "change:DYNAMIC", this.updateDynamic)
             
             var self = this
             this.contacts = new LabContacts(null, { state: { pageSize: 9999 } })

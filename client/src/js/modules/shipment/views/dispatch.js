@@ -85,7 +85,7 @@ define(['marionette', 'views/form',
             dispatchState: '.dispatch-state'
         },
 
-
+        labContactCountry : null,
 
         templateHelpers: function() {
             return {
@@ -149,6 +149,7 @@ define(['marionette', 'views/form',
             if (this.countries.length > 0) {
                 this.ui.country.html(this.countries.opts())
             }
+            this.ui.country.val(this.labContactCountry)
         },
 
         initialize: function(options) {
@@ -167,7 +168,7 @@ define(['marionette', 'views/form',
                 const history = self.history.at(0)
                 const location = history ? history.get('STORAGELOCATION') : null
                 const historyComment = history ? history.get('COMMENTS') : null
-                const restrictedLocations = ['i03', 'i04', 'i04-1', 'i024']
+                const restrictedLocations = ['i03', 'i04', 'i04-1', 'i24']
 
                 if (location) {
                     self.ui.loc.val(location)
@@ -223,7 +224,8 @@ define(['marionette', 'views/form',
                 this.ui.ph.val(lc.get('PHONENUMBER'))
                 this.ui.lab.val(lc.get('LABNAME'))
                 this.ui.addr.val([lc.get('ADDRESS'), lc.get('CITY'), lc.get('POSTCODE')].join('\n'))
-                this.ui.country.val(lc.get('COUNTRY'))
+                this.labContactCountry = lc.get('COUNTRY')
+                this.ui.country.val(this.labContactCountry)
             }
         },
 

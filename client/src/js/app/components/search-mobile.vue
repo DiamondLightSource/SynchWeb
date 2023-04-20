@@ -5,7 +5,11 @@ Used by datacollections view to move search and filter widgets to top of screen 
 <template>
   <div class="tw-inline md:tw-hidden">
     <span class="search-mobile">
-        <input type="text" class="tw-font-icon search-mobile" :placeholder="icon"/>
+      <input
+        type="text"
+        class="tw-font-icon search-mobile"
+        :placeholder="icon"
+      >
     </span>
   </div>
 </template>

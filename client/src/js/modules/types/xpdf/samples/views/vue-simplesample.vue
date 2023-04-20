@@ -1,139 +1,266 @@
 <template>
-    <div>
-        <form v-on:submit.prevent="onSubmit" method="post" id="add_protein" v-bind:class="{loading: isLoading}">
+  <div>
+    <form
+      id="add_protein"
+      method="post"
+      :class="{loading: isLoading}"
+      @submit.prevent="onSubmit"
+    >
+      <div class="form">
+        <input
+          id="file"
+          v-model="fileUpload"
+          type="radio"
+          name="fileupload"
+          value="multi"
+          checked="checked"
+          :value="true"
+        >
+        <label for="file">File Upload for Multiple Samples</label><br>
+        <input
+          id="form"
+          v-model="fileUpload"
+          type="radio"
+          name="fileupload"
+          value="single"
+          :value="false"
+        >
+        <label for="form">Form for Single Sample</label><br>
 
-            <div class="form">
+        <section v-if="fileUpload">
+          <!--<ul v-if="!csvErrors.length">-->
+          <ul>
+            <li
+              v-for="csvError in csvErrors"
+              style="color:red; font-size:medium"
+            >
+              {{ csvError }}
+            </li>
+          </ul>
+          <ul>
+            <li>
+              <span class="file">
+                <input
+                  type="file"
+                  name="csv_file"
+                  accept=".csv"
+                  @change="setCSVFile($event)"
+                >
+                <span
+                  v-if="fileValid"
+                  style="color:green; font-size:medium"
+                >File OK</span>
+                <button
+                  type="button"
+                  onclick="window.open('/assets/files/simple_sample_csv_template.csv');return false"
+                >Download CSV Template</button>
+              </span>
+              <p>CSV files must contain 4 comma separated columns with the following mandatory headers on the first row: Acronym,Composition,Density,Packing Fraction</p>
+              <p>An optional column is: Comments</p>
+            </li>
+          </ul>
+          <br><br>
+        </section>
 
-                <input type="radio" id="file" name="fileupload" value="multi" checked="checked" v-model="fileUpload" v-bind:value="true">
-                <label for="file">File Upload for Multiple Samples</label><br>
-                <input type="radio" id="form" name="fileupload" value="single" v-model="fileUpload" v-bind:value="false">
-                <label for="form">Form for Single Sample</label><br>
+        <section v-else>
+          <ul>
+            <li>
+              <label>Name
+                <span class="small">Name of the sample</span></label>
+              <span class="name"><input
+                v-model="name"
+                v-validate="'required'"
+                type="text"
+                name="name"
+                :class="{ferror: errors.has('name')}"
+                :disabled="proteinid"
+              ></span>
+              <span
+                v-if="errors.has('name')"
+                class="errormessage ferror"
+              >{{ errors.first('name') }}</span>
+            </li>
 
-                <section v-if="fileUpload">
-                    <!--<ul v-if="!csvErrors.length">-->
-                    <ul>
-                        <li style="color:red; font-size:medium" v-for="csvError in csvErrors">{{ csvError }}</li>
-                    </ul>
-                    <ul>
-                        <li>
-                            <span class="file">
-                                <input type="file" name="csv_file" v-on:change="setCSVFile($event)" accept=".csv">
-                                <span v-if="fileValid" style="color:green; font-size:medium">File OK</span>
-                                <button type="button" onclick="window.open('/assets/files/simple_sample_csv_template.csv');return false">Download CSV Template</button>
-                            </span>
-                            <p>CSV files must contain 4 comma separated columns with the following mandatory headers on the first row: Acronym,Composition,Density,Packing Fraction</p>
-                            <p>An optional column is: Comments</p>
-                        </li>
-                    </ul>
-                    <br /><br />
-                </section>
+            <li>
+              <label>Acronym
+                <span class="small">Short form name for sample (must be unique!)</span></label>
+              <span class="name"><input
+                v-model="acronym"
+                v-validate="'required'"
+                type="text"
+                name="acronym"
+                :class="{ferror: errors.has('acronym')}"
+              ></span>
+              <span
+                v-if="errors.has('acronym')"
+                class="errormessage ferror"
+              >{{ errors.first('acronym') }}</span>
+            </li>
 
-                <section v-else>
+            <li>
+              <label>Composition
+                <span class="small">Chemical formula of the material</span></label>
+              <span class="composition"><input
+                v-model="seq"
+                v-validate="{required: true, closeExp: true, regex:/^[a-zA-Z0-9\(\)\.]*$/ }"
+                type="text"
+                name="seq"
+                :class="{ferror: errors.has('seq')}"
+              ></span>
+              <span
+                v-if="errors.has('seq')"
+                class="errormessage ferror"
+              >{{ errors.first('seq') }}</span>
+            </li>
 
-                    <ul>
+            <li>
+              <label>Density
+                <span class="small">Crystallographic density of the phase (g cm<span class="super">-3</span>)</span></label>
+              <span><input
+                v-model="density"
+                v-validate="'required|decimal'"
+                type="text"
+                name="density"
+                :class="{ferror: errors.has('density')}"
+              ></span>
+              <span
+                v-if="errors.has('density')"
+                class="errormessage ferror"
+              >{{ errors.first('density') }}</span>
+            </li>
 
-                        <li>
-                            <label>Name
-                            <span class="small">Name of the sample</span></label>
-                            <span class="name"><input type="text" name="name" v-model="name" v-bind:class="{ferror: errors.has('name')}" v-validate="'required'" :disabled="proteinid" /></span>
-                            <span v-if="errors.has('name')" class="errormessage ferror">{{ errors.first('name') }}</span>
-                        </li>
+            <li>
+              <label>Packing Fraction
+                <span class="small">Must be between 0 and 1</span>
+              </label>
+              <span><input
+                v-model="fraction"
+                v-validate="'required|min_value:0|max_value:1'"
+                type="text"
+                name="fraction"
+                :class="{ferror: errors.has('fraction')}"
+              ></span>
+              <span
+                v-if="errors.has('fraction')"
+                class="errormessage ferror"
+              >{{ errors.first('fraction') }}</span>
+            </li>
 
-                        <li>
-                            <label>Acronym
-                            <span class="small">Short form name for sample (must be unique!)</span></label>
-                            <span class="name"><input type="text" name="acronym" v-model="acronym" v-bind:class="{ferror: errors.has('acronym')}" v-validate="'required'" /></span>
-                            <span v-if="errors.has('acronym')" class="errormessage ferror">{{ errors.first('acronym') }}</span>
-                        </li>
+            <li>
+              <label>Comments</label>
+              <span><textarea
+                v-model="comments"
+                name="comments"
+                maxlength="255"
+                style="width:400px;height:80px"
+              /></span>
+            </li>
+          </ul>
+        </section>
 
-                        <li>
-                            <label>Composition
-                            <span class="small">Chemical formula of the material</span></label>
-                            <span class="composition"><input type="text" name="seq" v-model="seq" v-bind:class="{ferror: errors.has('seq')}" v-validate="{required: true, closeExp: true, regex:/^[a-zA-Z0-9\(\)\.]*$/ }" /></span>
-                            <span v-if="errors.has('seq')" class="errormessage ferror">{{ errors.first('seq') }}</span>
-                        </li>
+        <ul>
+          <li>
+            <label>Exposure Time
+              <span class="small">Must be a non negative integer</span>
+            </label>
+            <span><input
+              v-model="expTime"
+              v-validate="'required|min_value:0'"
+              type="text"
+              name="expTime"
+              :class="{ferror: errors.has('expTime')}"
+            ></span>
+            <span
+              v-if="errors.has('expTime')"
+              class="errormessage ferror"
+            >{{ errors.first('expTime') }}</span>
+          </li>
 
-                        <li>
-                            <label>Density
-                            <span class="small">Crystallographic density of the phase (g cm<span class="super">-3</span>)</span></label>
-                            <span><input type="text" name="density" v-model="density" v-bind:class="{ferror: errors.has('density')}" v-validate="'required|decimal'" /></span>
-                            <span v-if="errors.has('density')" class="errormessage ferror">{{ errors.first('density') }}</span>
-                        </li>
+          <li>
+            <label>Not in Capillary?</label>
+            <span><input
+              v-model="containerless"
+              type="checkbox"
+            ></span><br>
+          </li>
 
-                        <li>
-                            <label>Packing Fraction
-                                    <span class="small">Must be between 0 and 1</span>
-                            </label>
-                            <span><input type="text" name="fraction" v-model="fraction" v-bind:class="{ferror: errors.has('fraction')}" v-validate="'required|min_value:0|max_value:1'"/></span>
-                            <span v-if="errors.has('fraction')" class="errormessage ferror">{{ errors.first('fraction') }}</span>
-                        </li>
+          <li>
+            <label>Capillary
+              <span class="small">The capillary or container that should be associated with this sample</span>
+            </label>
+            <select
+              id="containerSelect"
+              v-model="type"
+              v-validate="'required'"
+              name="type"
+              style="width: 400px"
+              :disabled="containerless"
+              @change="getCapillaryInfo('density')"
+            >
+              <option
+                v-if="!hasExistingCapillaries"
+                disabled
+                value=""
+              >
+                Container*
+              </option>
+              <option v-for="container in containers">
+                {{ container }}
+              </option>
+            </select>
+            <span
+              v-if="errors.has('type')"
+              class="errormessage ferror"
+            >{{ errors.first('type') }}</span>
+          </li>
+        </ul>
 
-                        <li>
-                            <label>Comments</label>
-                            <span><textarea name="comments" maxlength="255" style="width:400px;height:80px" v-model="comments"></textarea></span>
-                        </li>
+        <button
+          type="button"
+          @click="showCifFileDialog()"
+        >
+          Upload CIF
+        </button>
+        <div v-show="showUploadDialog">
+          <ul>
+            <li>
+              <label>Type:</label>
+              <span>
+                <select name="type">
+                  <option value="pdb_file">File</option>
+                </select>
+              </span>
+            </li>
 
-                    </ul>
+            <li class="ty pdb_file">
+              <label>File:</label>
+              <span class="file">
+                <input
+                  type="file"
+                  name="pdb_file[]"
+                  multiple
+                  @change="setCifFile($event)"
+                >
+              </span>
+            </li>
+          </ul>
+          <div class="progress" />
+        </div>
+        <p>Add a cif file to this sample to enable downstream processing of your data</p>
 
-                </section>
+        <br>
 
-                <ul>
-                    <li>
-                        <label>Exposure Time
-                                <span class="small">Must be a non negative integer</span>
-                        </label>
-                        <span><input type="text" name="expTime" v-model="expTime" v-bind:class="{ferror: errors.has('expTime')}" v-validate="'required|min_value:0'"/></span>
-                        <span v-if="errors.has('expTime')" class="errormessage ferror">{{ errors.first('expTime') }}</span>
-                    </li>
-
-                    <li>
-                        <label>Not in Capillary?</label>
-                        <span><input type="checkbox" v-model="containerless" /></span><br />
-                    </li>
-
-                    <li>
-                        <label>Capillary
-                                <span class="small">The capillary or container that should be associated with this sample</span>
-                        </label>
-                        <select id="containerSelect" name="type" style="width: 400px" v-model="type" v-on:change="getCapillaryInfo('density')" v-validate="'required'" :disabled="containerless">
-                            <option v-if="!hasExistingCapillaries" disabled value="">Container*</option>
-                            <option v-for="container in containers">{{ container }}</option>
-                        </select>
-                        <span v-if="errors.has('type')" class="errormessage ferror">{{ errors.first('type') }}</span>
-                    </li>
-                </ul>
-
-                <button type="button" v-on:click="showCifFileDialog()">Upload CIF</button>
-                <div v-show="showUploadDialog">
-                    <ul>
-                        <li>
-                            <label>Type:</label>
-                            <span>
-                                <select name="type">
-                                    <option value="pdb_file">File</option>
-                                </select>
-                            </span>
-                        </li>
-
-                        <li class="ty pdb_file">
-                            <label>File:</label>
-                            <span class="file">
-                                <input type="file" name="pdb_file[]" v-on:change="setCifFile($event)" multiple/>
-                            </span>
-                        </li>
-                    </ul>
-                    <div class="progress"></div>
-                </div>
-                <p>Add a cif file to this sample to enable downstream processing of your data</p>
-
-                <br />
-
-                <button name="submit" value="1" type="submit" class="button submit"><i class="fa fa-plus"></i> Add Sample</button>
-
-            </div>
-
-        </form>
-    </div>
+        <button
+          name="submit"
+          value="1"
+          type="submit"
+          class="button submit"
+        >
+          <i class="fa fa-plus" /> Add Sample
+        </button>
+      </div>
+    </form>
+  </div>
 </template>
 
 <script>
