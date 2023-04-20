@@ -411,13 +411,18 @@ class Download extends Page
 
     # ------------------------------------------------------------------------
     # Get an archive of an autoproc
+    function _get_union($query1, $query2)
+    {
+        return $this->db->union($query1, $query2);
+    }
     function _get_autoproc_archive()
     {
+
         if (!$this->has_arg('prop')) {
             $this->_error('No proposal specific', 'No proposal specified');
         }
 
-        $aps = $this->db->union(
+        $aps = $this->_get_union(
             array(
                 "SELECT app.autoprocprogramid, app.processingprograms, app.processingstatus
                     FROM autoprocintegration api 
