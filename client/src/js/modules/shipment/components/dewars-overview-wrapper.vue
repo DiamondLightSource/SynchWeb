@@ -1,14 +1,14 @@
 <template>
-    <section>
-        <marionette-view 
-            v-if="ready" 
-            :key="$route.fullPath" 
-            :options="options" 
-            :preloaded="true"
-            :mview="mview" 
-            :breadcrumbs="bc">
-        </marionette-view>
-    </section>
+  <section>
+    <marionette-view 
+      v-if="ready" 
+      :key="$route.fullPath" 
+      :options="options" 
+      :preloaded="true"
+      :mview="mview" 
+      :breadcrumbs="bc"
+    />
+  </section>
 </template>
 
 <script>
@@ -26,7 +26,7 @@ import Dewars from 'collections/dewars'
 import store from 'app/store/store'
 
 export default {
-    name: 'dewar-overview-wrapper',
+    name: 'DewarOverviewWrapper',
     components: {
         'marionette-view': MarionetteView
     },

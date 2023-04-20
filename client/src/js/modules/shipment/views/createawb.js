@@ -361,7 +361,7 @@ define(['backbone',
                         try {
                             json = $.parseJSON(xhr.responseText)
                         } catch(err) {
-
+                            console.error("Error parsing response: ", err)
                         }
                     }
                     app.alert({ message: json.message })
@@ -404,7 +404,7 @@ define(['backbone',
 
             var prod = null
             if ((app.options.get('facility_courier_countries').indexOf(this.lc.get('COUNTRY')) == -1 && app.options.get('facility_courier_countries_nde').indexOf(this.lc.get('COUNTRY')) == -1) || !this.terms.get('ACCEPTED')) {
-                var prod = this.$el.find('input[type=radio]:checked').val()
+                prod = this.$el.find('input[type=radio]:checked').val()
                 if (!prod) {
                     app.alert({ message: 'You must select a quote' })
                     this.ui.submit.prop('disabled', false)
@@ -449,7 +449,7 @@ define(['backbone',
                         try {
                             json = $.parseJSON(xhr.responseText)
                         } catch(err) {
-
+                            console.error("Error parsing response: ", err)
                         }
                     }
                     app.alert({ message: json.message })

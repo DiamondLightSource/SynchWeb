@@ -47,8 +47,9 @@
                                 <a v-if="value.key == 'LINKS' && visit.DCCOUNT>0" class="button button-notext" title="View Statistics" id="STATS"><i class="fa fa-pie-chart"></i></a>
                                 <a v-if="value.key == 'LINKS' && visit.DCCOUNT>0" class="button button-notext" title="Download PDF Report" id="PDF"><i class="fa fa-list"></i></a>
                                 <a v-if="value.key == 'LINKS' && visit.DCCOUNT>0" class="button button-notext" title="Export Data Collections to CSV" id="CSV"><i class="fa fa-file-o"></i></a>
-                                <i data-testid="visit-table-archived" class="fa fa-archive r" title="This visit is archived, file is no longer available on disk" v-if="value.key == 'ARCHIVED' && visit.ARCHIVED == 1"></i>
-
+                                <div data-testid="visit-table-archived" v-if="value.key == 'ARCHIVED' && visit.ARCHIVED == 1">
+                                    <i class="fa fa-archive r" :title="'The raw data from this visit have been '+ isArchived + '. You can no longer reprocess data or view full sized diffraction images.'"></i>
+                                </div>
                         </td>
                     </tr>
                 
@@ -100,6 +101,7 @@ export default {
             pageSize: 15,
             currentPage: 1,
             proposal: app.prop,
+            isArchived: app.prop.includes("in") ? "deleted" : "archived",
             visitCollection: [],
             visits: [],
             searchVisit : '',

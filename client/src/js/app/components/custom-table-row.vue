@@ -1,11 +1,14 @@
 <template>
   <tr>
-    <slot :result="result" :rowIndex="rowIndex"></slot>
+    <slot
+      :result="result"
+      :row-index="rowIndex"
+    />
   </tr>
 </template>
 <script>
 export default {
-  name: 'custom-table-row',
+  name: 'CustomTableRow',
   props: {
     result: {
       type: Object,

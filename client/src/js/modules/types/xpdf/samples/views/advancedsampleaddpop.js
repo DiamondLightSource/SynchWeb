@@ -28,7 +28,12 @@ define([
         });
         return VueWrapper.extend({
             vueView: Vue.extend({
-                template: template,
+
+                el: '#table',
+
+                components: {
+                    'vue-table': vueTable
+                },
                 data: function(){
                     return {
                         acronym: '',
@@ -50,12 +55,7 @@ define([
 
                     },
                 },
-
-                components: {
-                    'vue-table': vueTable
-                },
-
-                el: '#table'
+                template: template
             })
         });
 

@@ -11,6 +11,7 @@ define(['marionette', 'modules/shipment/views/movecontainer',
     
     var ContainerItemView = Marionette.ItemView.extend({
         tagName: 'li',
+        attributes: { 'data-testid': 'shipment-containers-list-item' },
         template: template,
         
         events: {
