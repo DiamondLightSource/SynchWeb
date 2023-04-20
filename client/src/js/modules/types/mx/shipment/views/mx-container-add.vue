@@ -521,7 +521,7 @@ export default {
             })
 
           }
-
+          this.getUsers()
           this.resetSamples(type.get('CAPACITY'))
         }
       }
@@ -592,9 +592,6 @@ export default {
       handler: debounce(function() {
         this.checkContainerBarcode()
       }, 1000)
-    },
-    REQUESTEDIMAGERID: {
-      handler: 'getUsers'
     },
     SCREENID: {
       handler: 'assignScreeningComponent'
