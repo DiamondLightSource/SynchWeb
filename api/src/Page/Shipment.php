@@ -946,6 +946,7 @@ class Shipment extends Page
             "shipper_contact_name" => $facility_contact,
             "shipper_contact_phone_number" => $facility_phone,
             "shipper_contact_email" => $facility_email,
+            "internal_contact_name" => $this->has_arg('LOCALCONTACT') ? $this->args['LOCALCONTACT'] : null,
             "shipment_reference" =>  $dispatch_info['VISIT'],
             "external_id" => (int) $dispatch_info['DEWARID']
         );
