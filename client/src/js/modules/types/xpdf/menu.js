@@ -15,6 +15,7 @@ define([], function() {
             xsamples: 'Samples',
             phases: 'Phases',
             contacts: 'Lab Contacts',
+            migrate: 'Migrate',
         },
         
         extra: {
