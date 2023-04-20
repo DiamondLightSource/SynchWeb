@@ -19,7 +19,7 @@ define(['marionette', 'backbone',
             return this.model.get('new') ? rowtemplatenew : rowtemplate
         },
         tagName: 'tr',
-        
+        attributes: { 'data-testid': 'shipment-dewars-table-row' },
         templateHelpers: function() {
             return {
                 APIURL: app.apiurl,

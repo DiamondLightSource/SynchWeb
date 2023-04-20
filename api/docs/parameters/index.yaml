@@ -2,7 +2,7 @@ SearchParam:
   name: s
   in: query
   type: string
-  pattern: '[\w\s-]+'
+  pattern: '[\w\s\-]+'
   description: Search string
 
 PageNumberParam:
@@ -63,7 +63,7 @@ BLParam:
   name: bl
   type: string
   in: query
-  pattern: '[\w-]+'
+  pattern: '[\w\-]+'
   description: Beamline
 
 

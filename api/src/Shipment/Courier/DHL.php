@@ -255,7 +255,7 @@ class DHL
 
         $pickup->Place->LocationType = 'B';
         $pickup->Place->CompanyName = $options['requestor']['company'];
-        $lines = split("\n", $options['requestor']['address']);
+        $lines = explode("\n", $options['requestor']['address']);
         $pickup->Place->Address1 = $lines[0];
         if (sizeof($lines) > 1) {
             if ($lines[1]) $pickup->Place->Address2 = $lines[1];

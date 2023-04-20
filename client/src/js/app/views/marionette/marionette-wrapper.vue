@@ -14,6 +14,12 @@ import EventBus from 'js/app/components/utils/event-bus.js'
 
 export default {
     name: 'MarionetteWrapper',
+    // When MarionetteWrapper is the main route component, prefetchData as required
+    // If this component is used directly from another vue component this will not be called
+    // Instead the parent vue component will need to load the model/collection data as required
+    beforeRouteEnter: function(to, from, next) {
+        next(vm => vm.prefetchData())
+    },
     props: {
         'mview': [Function, Promise], // The marionette view could be lazy loaded or static import 
         'breadcrumbs' : Array,
@@ -235,12 +241,6 @@ export default {
             })
         }
 
-    },
-    // When MarionetteWrapper is the main route component, prefetchData as required
-    // If this component is used directly from another vue component this will not be called
-    // Instead the parent vue component will need to load the model/collection data as required
-    beforeRouteEnter: function(to, from, next) {
-        next(vm => vm.prefetchData())
     }
 }
 </script>

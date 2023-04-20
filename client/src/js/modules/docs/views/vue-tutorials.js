@@ -26,7 +26,6 @@ define(['vue',
         
         return VueWrapper.extend({
             vueView: Vue.extend({
-                template: tmpl,
                 components: {
                     'tutorial-proposal': proposalComponent,
                     'tutorial-contact': contactComponent,
@@ -45,7 +44,8 @@ define(['vue',
                     onShowPage: function(tutorial) {
                         this.currentPage = tutorial
                     }
-                }
+                },
+                template: tmpl
             })
         })
     }

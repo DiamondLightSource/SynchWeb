@@ -46,13 +46,13 @@ var MarionetteApplication = (function () {
                     options.data.append('prop', prop)
 
                 // JSON content
-                } else if (options.contentType === 'application/json' || options.type === 'DELETE') {
-                    if (options.data) var tmp = JSON.parse(options.data)
-                    else var tmp = {}
+                } else if (options.contentType == 'application/json' || options.type == 'DELETE') {
+                    var tmp = (options.data) ? JSON.parse(options.data) : {}
 
-                    if (Array.isArray(tmp)) tmp[0].prop = prop
-                    else {
-                        if (!tmp.prop) tmp.prop = prop
+                    if (Array.isArray(tmp) && tmp.length) {
+                        tmp[0].prop = prop
+                    } else if (!tmp.prop) {
+                        tmp.prop = prop
                     }
                     options.data = JSON.stringify(tmp)
 

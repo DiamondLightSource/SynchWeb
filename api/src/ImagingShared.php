@@ -5,11 +5,10 @@ namespace SynchWeb;
 class ImagingShared
 {
 	
+    private $db;
+
 		function __construct($db=null) {
             global $isp;
-			if (!$db) {
-				$db = Database::get();
-			}
 
 			$this->db = $db;
 		}

@@ -1,3 +1,4 @@
+/* eslint no-useless-escape: "off"*/
 import MarionetteView from 'app/views/marionette/marionette-wrapper.vue'
 import Page from 'app/layouts/page.vue'
 

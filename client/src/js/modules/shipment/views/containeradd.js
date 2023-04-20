@@ -361,7 +361,7 @@ define(['backbone',
             var p = this.proteins.findWhere({ ACRONYM: acronym })
             
             if (!p) {
-                var p = new Protein({ ACRONYM: acronym })
+                p = new Protein({ ACRONYM: acronym })
                 p.save({}, {
                     success: function() {
                         self.proteins.add(p)

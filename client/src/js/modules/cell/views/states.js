@@ -27,7 +27,7 @@ define(['marionette', 'utils',
                                 show: false
                             },
                         }
-        				  
+                          
                 var d = []
                 _.each(this.model.get('data'), function(v,k) {
                     d.push({ label: k, data: v })
@@ -35,7 +35,7 @@ define(['marionette', 'utils',
 
                 this.plot = $.plot(this.$el, d, options)
                 this.$el.css('opacity', 1)
-           	}
+               }
         },
             
         onDestroy: function() {
