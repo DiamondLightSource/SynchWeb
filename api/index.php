@@ -33,11 +33,11 @@ date_default_timezone_set($timezone);
 
 session_cache_limiter(false);
 
-$app = setupApplication($app, $mode);
+$app = setupApplication($mode);
 
 register_shutdown_function('session_write_close'); // prevents unexpected effects when using objects as save handlers
 
-setupDependencyInjectionContainer($app, $isb, $port);
+setupDependencyInjectionContainer($app);
 
 $auth = $app->container['auth'];
 $auth->validateAuthentication();
@@ -45,7 +45,7 @@ $auth->updateActivityTimestamp();
 
 $app->container['dispatch']->dispatch();
 
-function setupApplication($app, $mode): Slim
+function setupApplication($mode): Slim
 {
     $app = new Slim(array(
         'mode' => $mode == 'production' ? 'production' : 'development'
@@ -92,7 +92,7 @@ function setupApplication($app, $mode): Slim
     return $app;
 }
 
-function setupDependencyInjectionContainer($app, $isb, $port)
+function setupDependencyInjectionContainer($app)
 {
     $app->container->singleton('db', function () use ($app): DatabaseParent {
         $dbFactory = new DatabaseFactory(new DatabaseConnectionFactory());
