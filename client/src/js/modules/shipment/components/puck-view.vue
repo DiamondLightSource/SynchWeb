@@ -7,7 +7,7 @@ TODO - move the score colour methods to a utility class
 -->
 <template>
   <div>
-    <div :id="puckId"></div>
+    <div :id="puckId" />
   </div>
 </template>
 
@@ -50,15 +50,18 @@ export default {
     }
   },
   data() {
-    return {
-      // Define geometry of puck locations
-      cell: {
-        radius: 44,
-        highlightRadius: 35,
-      },
-      // Centre coordinates of puck 470x470 pixels
-      // Changing the background image would require changing the centres
-      centres: [
+    let sampleCentres, sampleRadius, sampleHighlightRadius
+    if (this.container.capacity === "4") {
+      sampleCentres = [
+        [200, 150],
+        [320, 150],
+        [200, 270],
+        [320, 270],
+      ]
+      sampleRadius = 50
+      sampleHighlightRadius = 60
+    } else {
+      sampleCentres = [
         [235, 157],
         [158, 213],
         [188, 301],
@@ -75,7 +78,19 @@ export default {
         [406, 261],
         [393, 163],
         [329, 92],
-      ],
+      ]
+      sampleRadius = 44
+      sampleHighlightRadius = 35
+    }
+    return {
+      // Define geometry of puck locations
+      cell: {
+        radius: sampleRadius,
+        highlightRadius: sampleHighlightRadius,
+      },
+      // Centre coordinates of puck 470x470 pixels
+      // Changing the background image would require changing the centres
+      centres: sampleCentres,
       puckImage: '/assets/images/puck_no_labels_470x470.png',
       // Holders for svg elements used in updates
       graphic: null, // Holder for svg puck graphic

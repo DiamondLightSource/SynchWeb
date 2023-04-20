@@ -1,7 +1,7 @@
 define(['backbone', 'markdown', 'models/wfile'], function(Backbone, markdown, File) {
     
     return Backbone.Model.extend(_.extend({}, {
-    	idAttribute: 'DEWARREPORTID',
+        idAttribute: 'DEWARREPORTID',
         urlRoot: '/shipment/dewars/reports',
             
         initialize: function() {

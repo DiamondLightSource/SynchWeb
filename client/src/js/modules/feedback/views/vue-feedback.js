@@ -11,7 +11,6 @@ define(['vue',
 
     return VueWrapper.extend({
         vueView: Vue.extend({
-            template: template,
 
             data: function() {
                 return {
@@ -74,7 +73,8 @@ define(['vue',
                         }
                     })
                 }
-            }
+            },
+            template: template
         })
     })
 })

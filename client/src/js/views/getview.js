@@ -7,7 +7,7 @@ define(['marionette'], function(Marionette) {
         titles: {},
         default_title: '',
 
-        get: function(type, arguments) {
+        get: function(type, args) {
             var views = this.getOption('views')
 
             if (type in views) view = views[type]
@@ -15,15 +15,12 @@ define(['marionette'], function(Marionette) {
 
             console.log('using view', view, type)
 
-            return new view(arguments)
+            return new view(args)
         },
 
         title: function(type) {
             var titles = this.getOption('titles')
-            if (type in titles) var title = titles[type]
-            else var title = this.getOption('default_title')
-
-            return title
+            return type in titles ? titles[type] : this.getOption('default_title')
         },
     })
 

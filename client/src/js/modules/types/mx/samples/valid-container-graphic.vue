@@ -1,13 +1,19 @@
 <template>
   <section class="tw-mx-auto">
-    <div v-if="containerComponent" class="tw-flex">
+    <div 
+      v-if="containerComponent" 
+      class="tw-flex"
+    >
       <div class="tw-w-full tw-m-1 tw-p-2">
-        <div v-if="containerGraphicHeader" class="tw-w-full content">
+        <div 
+          v-if="containerGraphicHeader" 
+          class="tw-w-full content"
+        >
           <p class="tw-text-xl tw-font-medium">{{ containerGraphicHeader }}</p>
         </div>
         <component
-          :key="graphicKey"
           :is="containerComponent"
+          :key="graphicKey"
           :container="geometry"
           :samples="samples"
           :selectedDrops="selectedDrops"
@@ -29,7 +35,7 @@
 import PlateView from 'modules/shipment/components/plate-view.vue'
 import PuckView from 'modules/shipment/components/puck-view.vue'
 export default {
-  name:"valid-container-graphic",
+  name:"ValidContainerGraphic",
   components: {
     'plate-view': PlateView,
     'puck-view': PuckView,
@@ -62,6 +68,11 @@ export default {
       type: String
     }
   },
+  data: function() {
+    return {
+      graphicKey: 0,
+    }
+  },
   computed: {
     containerComponent: function() {
       if (!this.geometry) return null
@@ -86,12 +97,6 @@ export default {
       return this.validSamples.map(sample => Number(sample.LOCATION))
     }
   },
-  methods: {
-    // Trick to rerender component if container geometry changes
-    updateGraphicView: function() {
-      this.graphicKey += 1;
-    },
-  },
   watch: {
     threshold: function() {
       this.updateGraphicView()
@@ -109,10 +114,11 @@ export default {
       this.updateGraphicView()
     },
   },
-  data: function() {
-    return {
-      graphicKey: 0,
-    }
+  methods: {
+    // Trick to rerender component if container geometry changes
+    updateGraphicView: function() {
+      this.graphicKey += 1;
+    },
   }
 }
 </script>

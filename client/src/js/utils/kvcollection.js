@@ -1,7 +1,7 @@
 define(['backbone'], function(Backbone) {
     
     return {
-	    // Updated options so you can pass a callback function.
+        // Updated options so you can pass a callback function.
         // The callback will receive the model and should return the class to add for that entry
         opts: function(options) {
             const initialList = options && options.empty

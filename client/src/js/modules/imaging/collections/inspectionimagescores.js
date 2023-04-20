@@ -1,19 +1,19 @@
 define(['backbone.paginator', 'modules/imaging/models/inspectionimagescore', 'utils/kvcollection'], 
-	function(PageableCollection, InspectionImageScore, KVCollection) {
+    function(PageableCollection, InspectionImageScore, KVCollection) {
        
-	return PageableCollection.extend(_.extend({}, KVCollection, {
-		model: InspectionImageScore,
-		mode: 'client',
-		url: '/imaging/inspection/images/scores',
-		               
-		keyAttribute: 'TITLE',
+    return PageableCollection.extend(_.extend({}, KVCollection, {
+        model: InspectionImageScore,
+        mode: 'client',
+        url: '/imaging/inspection/images/scores',
+                       
+        keyAttribute: 'TITLE',
         valueAttribute: 'BLSAMPLEIMAGESCOREID',
 
-		state: {
-		  	pageSize: 9999,
-		},
+        state: {
+              pageSize: 9999,
+        },
 
-		initialize: function(options) {
+        initialize: function(options) {
             this.on('change:isSelected', this.onSelectedChanged, this)
             this.trig = true
         },
@@ -37,6 +37,6 @@ define(['backbone.paginator', 'modules/imaging/models/inspectionimagescore', 'ut
             }
             this.trig = true
         },
-	  
-	}))
+      
+    }))
 })

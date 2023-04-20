@@ -6,11 +6,11 @@ define(['models/sample'], function(Sample) {
   const SampleGroupSample = Sample.extend({
     idAttribute: 'BLSAMPLEGROUPSAMPLEID',
     sampleGroupId: null,
-    urlRoot() {
+    urlRoot: function() {
       return `/sample/groups/${this.sampleGroupId}/samples`
     },
 
-    initialize(attributes, options) {
+    initialize:  function(attributes, options) {
       SampleGroupSample.__super__.initialize.call(this, attributes, options)
       let sampleGroupId = null
       if (attributes.BLSAMPLEGROUPID) {

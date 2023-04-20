@@ -9,13 +9,14 @@ The v-closable takes an object as argumnt with properties:
 -->
 <template>
   <div
-    class="custom-select-input tw-relative"
-    :class="`combo-${inputIndex}`"
     v-closable="{
       handler: 'closeComboBox'
     }"
+    class="custom-select-input tw-relative"
+    :class="`combo-${inputIndex}`"
   >
     <div
+      v-show="!searching"
       :class="{
         'select-selected': true,
         ['tw-px-2']: true,
@@ -23,42 +24,74 @@ The v-closable takes an object as argumnt with properties:
         [size]: true,
         'disabled': isDisabled
       }"
-      v-show="!searching"
-      @click="openComboBox(inputIndex, $event)" >
+      @click="openComboBox(inputIndex, $event)"
+    >
       {{ selectedItemText ? selectedItemText : defaultText }}
     </div>
-    <div class="select-items select-hide" :class="{[`select-${inputIndex}`]: true}" :ref="`select-items-${inputIndex}`">
+    <div
+      :ref="`select-items-${inputIndex}`"
+      class="select-items select-hide"
+      :class="{[`select-${inputIndex}`]: true}"
+    >
       <div class="items-list">
         <div
           v-for="(option, optionIndex) in filteredOptions"
+          :ref="`selectOption${inputIndex}${optionIndex}`"
+          :key="`selectOptionIndex${optionIndex}`"
           :class="{ 'same-as-selected':
             value === String(option[valueField])
           }"
           class="tw-cursor-pointer tw-flex tw-w-full tw-justify-between item"
-          :ref="`selectOption${inputIndex}${optionIndex}`"
-          :key="`selectOptionIndex${optionIndex}`"
           :value="option[valueField]"
-          @click.capture="selectOption(option[valueField], optionIndex)">
-          <slot :option=option>{{ option[textField] }}</slot>
+          @click.capture="selectOption(option[valueField], optionIndex)"
+        >
+          <slot :option="option">
+            {{ option[textField] }}
+          </slot>
         </div>
-        <div class="tw-w-full tw-flex tw-flex-row tw-justify-center custom-add" v-if="filteredOptions.length > 0">
-          <button class="button custom-add" @click.stop="handleMoreData" v-if="loadMore">Load More...</button>
-          <p class="tw-text-sm" v-else>No more data</p>
+        <div
+          v-if="filteredOptions.length > 0"
+          class="tw-w-full tw-flex tw-flex-row tw-justify-center custom-add"
+        >
+          <button
+            v-if="loadMore"
+            class="button custom-add"
+            @click.stop="handleMoreData"
+          >
+            Load More...
+          </button>
+          <p
+            v-else
+            class="tw-text-sm"
+          >
+            No more data
+          </p>
         </div>
-        <div class="tw-w-full tw-flex tw-flex-row tw-justify-center custom-add" v-if="canCreateNewItem && filteredOptions.length < 1 && searchText.length > 0">
-          <button class="button custom-add" @click.stop="createNewOption">Create New</button>
+        <div
+          v-if="canCreateNewItem && filteredOptions.length < 1 && searchText.length > 0"
+          class="tw-w-full tw-flex tw-flex-row tw-justify-center custom-add"
+        >
+          <button
+            class="button custom-add"
+            @click.stop="createNewOption"
+          >
+            Create New
+          </button>
         </div>
       </div>
-
     </div>
-    <div class="search-select" v-show="searching">
+    <div
+      v-show="searching"
+      class="search-select"
+    >
       <input
+        v-model="searchText"
         type="text"
         class="tw-w-full select-search-input"
         :disabled="isDisabled"
         :class="{[size]: true}"
-        v-model="searchText"
-        @focus="openOptionsList($event)"/>
+        @focus="openOptionsList($event)"
+      >
     </div>
   </div>
 </template>
@@ -67,7 +100,7 @@ The v-closable takes an object as argumnt with properties:
 import { cloneDeep } from 'lodash'
 import OutsideClickDirective from 'app/directives/outside-click.directive'
 export default {
-  name: 'combo-box',
+  name: 'ComboBox',
   mixins: [OutsideClickDirective],
   props: {
     // The list of data that will be displayed in the combobox
@@ -136,6 +169,32 @@ export default {
         perPage: 25
       }
     }
+  },
+  computed: {
+    clonedData() {
+      return cloneDeep(this.data)
+    },
+    filteredOptions() {
+      const regex = new RegExp(this.searchText, 'i')
+
+      const totalResults = this.clonedData.filter(option => {
+        if (this.searchText.length < 1) return true
+
+        const hasSearchText = option[this.textField].match(regex)
+        return hasSearchText && hasSearchText.length > 0
+      })
+
+      this.dataPagination.total = totalResults.length
+      return totalResults.slice(0, this.dataPagination.page * this.dataPagination.perPage)
+    },
+    selectedItemText() {
+      const selectedItem = this.data.find(option => String(option[this.valueField]) === String(this.value))
+
+      return selectedItem ? selectedItem[this.textField] : this.defaultText
+    },
+    loadMore() {
+      return this.dataPagination.total > this.dataPagination.page * this.dataPagination.perPage
+    },
   },
   watch: {
     excludeElementClassList: {
@@ -228,32 +287,6 @@ export default {
     createNewOption() {
       this.$emit('create-new-option', this.searchText)
     }
-  },
-  computed: {
-    clonedData() {
-      return cloneDeep(this.data)
-    },
-    filteredOptions() {
-      const regex = new RegExp(this.searchText, 'i')
-
-      const totalResults = this.clonedData.filter(option => {
-        if (this.searchText.length < 1) return true
-
-        const hasSearchText = option[this.textField].match(regex)
-        return hasSearchText && hasSearchText.length > 0
-      })
-
-      this.dataPagination.total = totalResults.length
-      return totalResults.slice(0, this.dataPagination.page * this.dataPagination.perPage)
-    },
-    selectedItemText() {
-      const selectedItem = this.data.find(option => String(option[this.valueField]) === String(this.value))
-
-      return selectedItem ? selectedItem[this.textField] : this.defaultText
-    },
-    loadMore() {
-      return this.dataPagination.total > this.dataPagination.page * this.dataPagination.perPage
-    },
   }
 }
 </script>
