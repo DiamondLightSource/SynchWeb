@@ -54,7 +54,8 @@ final class AuthenticationControllerTest extends TestCase
         $response = new \Slim\Http\Response();
         $this->slimStub->shouldReceive('response')->times(1)->andReturn($response);
         $authService = new AuthenticationController($this->slimStub, $this->dataLayerStub, false);
-        $this->assertNull($authService->getUser());
+        $this->expectExceptionMessage(AuthenticationController::ErrorUnderTestExceptionMessage);
+        $authService->getUser("Exit under test");
     }
 
     private function setupMockRequest(): \Slim\Http\Request
@@ -71,6 +72,7 @@ final class AuthenticationControllerTest extends TestCase
         $response = new \Slim\Http\Response();
         $this->slimStub->shouldReceive('response')->times(1)->andReturn($response);
         $authService = new AuthenticationController($this->slimStub, $this->dataLayerStub, false); // a bit of a hack - if the service uses exit() it is untestable as this will end the process prematurely
+        $this->expectExceptionMessage(AuthenticationController::ErrorUnderTestExceptionMessage);
         $authService->check();
 
         $this->assertContains('Content-Type: application/json', Output::$headers);
@@ -85,6 +87,7 @@ final class AuthenticationControllerTest extends TestCase
         $this->slimStub->shouldReceive('response')->times(1)->andReturn($response);
 
         $authService = new AuthenticationController($this->slimStub, $this->dataLayerStub, false);
+        $this->expectExceptionMessage(AuthenticationController::ErrorUnderTestExceptionMessage);
         $authService->validateAuthentication();
 
         $this->assertContains('Content-Type: application/json', Output::$headers);

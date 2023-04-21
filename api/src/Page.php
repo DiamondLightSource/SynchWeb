@@ -439,7 +439,7 @@ class Page
 
         $action = $act ? 'LOGON' : 'LOGOFF';
 
-        if (Utils::ShouldLogUserActivityToDB($this->user))
+        if ($this->user && Utils::ShouldLogUserActivityToDB($this->user->loginId))
         {
             $com = 'ISPyB2: ' . ($com ? $com : $_SERVER['REQUEST_URI']);
             $chk = $this->db->pq("SELECT comments FROM adminactivity WHERE username LIKE :1", array($this->user->loginId));

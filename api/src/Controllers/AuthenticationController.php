@@ -2,13 +2,16 @@
 
 namespace SynchWeb\Controllers;
 
+use Exception;
 use JWT;
 use Slim\Slim;
+use SynchWeb\Model\User;
 
 use SynchWeb\Model\Services\AuthenticationData;
 
 class AuthenticationController
 {
+    public const ErrorUnderTestExceptionMessage = "Exit under test";
     private $app;
     private $dataLayer;
     private $exitOnError;
@@ -25,6 +28,14 @@ class AuthenticationController
         'simple' => 'Simple'
     );
 
+    /**
+     * Constructor
+     * 
+     * @param app: slim application 
+     * @param dataLayer: the autherntication data layer object to connect to the database
+     * @param exitOnError: Should be true for application but in testing set to false 
+     *          and this will throw and exception rather than exiting the thread (and the tests)
+     */
     public function __construct(Slim $app, AuthenticationData $dataLayer, $exitOnError = true)
     {
         $this->app = $app;
@@ -46,7 +57,7 @@ class AuthenticationController
         $this->app->get('/authenticate/logout', array(&$this, 'logout'));
     }
 
-    function getUser()
+    function getUser(): User
     {
         if (!$this->loginId)
         {
@@ -56,7 +67,9 @@ class AuthenticationController
         {
             return $this->dataLayer->getUser($this->loginId);
         }
-        return null;
+
+        // This is a user who is logging in from a machine specified by remote IP
+        return new User($this->loginId, 0, "Machine", "", [], []);
     }
 
     // For SSO check if we are already logged in elsewhere
@@ -283,6 +296,8 @@ class AuthenticationController
         if ($this->exitOnError)
         {
             exit();
+        } else {
+            throw new \Exception(self::ErrorUnderTestExceptionMessage);
         }
     }
 
