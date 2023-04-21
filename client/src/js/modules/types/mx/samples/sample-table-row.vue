@@ -14,7 +14,7 @@
       v-slot="{ errors }"
       class="tw-px-2 protein-column tw-py-1"
       tag="div"
-      :rules="sample['NAME'] && (!containerId || editingRow === sample['LOCATION']) ? 'required' : ''"
+      :rules="canEditRow(sample['LOCATION'], editingRow) && !isContainerProcessing && !sampleHasDataCollection && sample['NAME'] && (!containerId || editingRow === sample['LOCATION']) ? 'required' : ''"
       :name="`Sample ${sampleIndex + 1} Protein`"
       :vid="`sample ${sampleIndex + 1} protein`"
     >
@@ -53,7 +53,7 @@
       v-slot="{ errors }"
       tag="div"
       class="name-column tw-py-1 tw-px-2"
-      :rules="sample['PROTEINID'] > -1 && (!containerId || editingRow === sample['LOCATION']) ? 'required|alpha_dash|max:25|' : ''"
+      :rules="canEditRow(sample['LOCATION'], editingRow) && !isContainerProcessing && !sampleHasDataCollection && sample['PROTEINID'] > -1 && (!containerId || editingRow === sample['LOCATION']) ? 'required|alpha_dash|max:25|' : ''"
       :name="`Sample ${sampleIndex + 1} Name`"
       :vid="`sample ${sampleIndex + 1} name`"
     >
