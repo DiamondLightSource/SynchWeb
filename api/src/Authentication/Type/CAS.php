@@ -14,6 +14,9 @@ class CAS extends AuthenticationParent implements AuthenticationInterface
 
         if (!$cas_sso) return false;
 
+        /**
+         * @psalm-suppress UndefinedConstant define in CAS.php
+         */
         phpCAS::client(CAS_VERSION_2_0, $cas_url, 443, '/cas');
         phpCAS::setCasServerCACert($cacert);
 

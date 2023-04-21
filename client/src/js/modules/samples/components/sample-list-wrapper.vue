@@ -1,14 +1,14 @@
 <template>
-    <section>
-        <marionette-view 
-            v-if="ready" 
-            :key="$route.fullPath" 
-            :options="options" 
-            :fetchOnLoad="true" 
-            :mview="mview" 
-            :breadcrumbs="bc">
-        </marionette-view>
-    </section>
+  <section>
+    <marionette-view 
+      v-if="ready" 
+      :key="$route.fullPath" 
+      :options="options" 
+      :fetch-on-load="true" 
+      :mview="mview" 
+      :breadcrumbs="bc"
+    />
+  </section>
 </template>
 
 <script>
@@ -19,7 +19,7 @@ import Samples from 'collections/samples'
 import { mapGetters } from 'vuex'
 
 export default {
-    name: 'protein-list-wrapper',
+    name: 'ProteinListWrapper',
     components: {
         'marionette-view': MarionetteView
     },

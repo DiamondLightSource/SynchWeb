@@ -9,7 +9,7 @@ properties:
     type: string
     description: Dewar name
     example: DLS-MX-1234
-    pattern: '([\w-])+'
+    pattern: '([\w\-])+'
   TRACKINGNUMBERTOSYNCHROTRON:
     type: string
     description: Tracking number on route to facility
@@ -24,7 +24,7 @@ properties:
     type: string
     description: Unique identifier of this dewar (barcode at DLS)
     example: DLS-MX-1234
-    pattern: '([\w-])+'
+    pattern: '([\w\-])+'
   FIRSTEXPERIMENTID:
     type: string
     description: First visit id

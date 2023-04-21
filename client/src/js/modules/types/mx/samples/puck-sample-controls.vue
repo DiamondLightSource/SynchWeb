@@ -1,11 +1,33 @@
 <template>
   <div class="la puck_controls">
-    <a v-if="autofill" class="button autofill" @click.prevent="$emit('autofill-container')" href="#" title="Autofill puck"><i class="fa fa-plus"></i> Autofill Puck</a>
+    <a
+      v-if="autofill"
+      class="button autofill"
+      href="#"
+      title="Autofill puck"
+      @click.prevent="$emit('autofill-container')"
+    ><i class="fa fa-plus" /> Autofill Puck</a>
 
-    <a class="button clonepuck" @click.prevent="$emit('clone-container', 0)" href="#" title="Clone entire puck from first sample"><i class="fa fa-plus"></i> Clone from First Sample</a>
-    <a class="button clearpuck" @click.prevent="$emit('clear-container')" href="#" title="Clear entire puck"><i class="fa fa-times"></i> Clear Puck</a>
+    <a
+      class="button clonepuck"
+      href="#"
+      title="Clone entire puck from first sample"
+      @click.prevent="$emit('clone-container', 0)"
+    ><i class="fa fa-plus" /> Clone from First Sample</a>
+    <a
+      class="button clearpuck"
+      href="#"
+      title="Clear entire puck"
+      @click.prevent="$emit('clear-container')"
+    ><i class="fa fa-times" /> Clear Puck</a>
 
-    <a v-if="extra" class="button extrainfo r" @click.prevent="toggleExtra" href="#" title="Show extra fields"><i :class="['fa extra-state', extraToggle ? 'fa-plus' : 'fa-minus']"></i> Extra Fields</a>
+    <a
+      v-if="extra"
+      class="button extrainfo r"
+      href="#"
+      title="Show extra fields"
+      @click.prevent="toggleExtra"
+    ><i :class="['fa extra-state', extraToggle ? 'fa-plus' : 'fa-minus']" /> Extra Fields</a>
   </div>
 </template>
 

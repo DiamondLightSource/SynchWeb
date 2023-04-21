@@ -97,7 +97,7 @@
           v-model="groupName"
           type="text"
           id="sample_group_name"
-          :errorMessage="errors[0]"
+          :error-message="errors[0]"
           label="Sample Group Name"
           initial-text="Click here to enter name"
           placeholder-text="Click here to enter name"

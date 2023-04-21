@@ -1,19 +1,29 @@
 <template>
   <div class="tw-mt-12 tw-mb-4">
-    <div class="tw-flex tw-justify-end tw-mb-2" v-if="!containerId">
+    <div
+      v-if="!containerId"
+      class="tw-flex tw-justify-end tw-mb-2"
+    >
       <button
         class="button tw-mr-1"
-        @click="$emit('clone-container', 0)">
+        @click="$emit('clone-container', 0)"
+      >
         Clone all from first row
       </button>
       <button
         class="button tw-ml-1"
-        @click="$emit('clear-container')">
+        @click="$emit('clear-container')"
+      >
         Clear all samples
       </button>
     </div>
-    <div class="tw-w-full tw-flex tw-flex-col tw-items-end" v-if="containerId && !isContainerProcessing && !dataCollectionStarted">
-      <p class="tw-w-full tw-mb-2">Select a field and enter a value to bulk populate in all samples</p>
+    <div
+      v-if="containerId && !isContainerProcessing && !dataCollectionStarted"
+      class="tw-w-full tw-flex tw-flex-col tw-items-end"
+    >
+      <p class="tw-w-full tw-mb-2">
+        Select a field and enter a value to bulk populate in all samples
+      </p>
       <div class="tw-flex tw-w-full tw-mb-2">
         <base-input-select
           option-text-key="title"
@@ -36,16 +46,20 @@
         <button
           name="submit"
           type="submit"
+          :class="['button submit tw-mx-2 tw-text-base tw-px-4 tw-py-1 tw-h-8', invalid ? 'tw-border tw-border-red-500 tw-bg-red-500': '']"
           @click.prevent="onUpdateSamples"
-          :class="['button submit tw-mx-2 tw-text-base tw-px-4 tw-py-1 tw-h-8', invalid ? 'tw-border tw-border-red-500 tw-bg-red-500': '']">
+        >
           Update Samples
         </button>
       </div>
-      <p class="tw-w-full tw-mb-2">Click on the button to save changes</p>
+      <p class="tw-w-full tw-mb-2">
+        Click on the button to save changes
+      </p>
     </div>
     <div class="tw-flex tw-justify-end tw-w-full tw-h-auto tw-items-center">
       <a
-        v-for="(tabName, tabNameIndex) in tabNames" :key="tabNameIndex"
+        v-for="(tabName, tabNameIndex) in tabNames"
+        :key="tabNameIndex"
         :class="{
           'tw-border-t': true,
           'tw-border-l': true,
@@ -56,7 +70,8 @@
           'tw-p-2': currentTab !== tabName.key,
           'tw-p-3': currentTab === tabName.key,
         }"
-        @click="switchTabColumn(tabName.key)">
+        @click="switchTabColumn(tabName.key)"
+      >
         {{ tabName.name }}
       </a>
     </div>
@@ -93,8 +108,8 @@
       </div>
     </div>
     <sample-table-row
-      :ref="`sample-row-${sampleIndex}`"
       v-for="(sample, sampleIndex) in samples"
+      :ref="`sample-row-${sampleIndex}`"
       :key="sampleIndex"
       :basic-columns="basicColumns"
       :extra-fields-columns="extraFieldsColumns"
@@ -104,8 +119,8 @@
       :sample-index="sampleIndex"
       :udc-columns="udcColumns"
       :proteins="proteins"
-      :samplesLength="samples.length"
-      :containerId="containerId"
+      :samples-length="samples.length"
+      :container-id="containerId"
       v-on:open-move-container-form="openMoveSampleToContainer"
       v-on="$listeners"
     />
@@ -115,18 +130,18 @@
         size="default"
         :hide-ok-button="true"
         @perform-modal-action="performModalAction"
-        @close-modal-action="closeModalAction">
-        <template v-slot:default>
-          <div class="tw-bg-modal-header-background tw-py-1 tw-pl-4 tw-pr-2 tw-rounded-sm tw-flex tw-w-full tw-justify-between tw-items-center tw-relative tw-border tw-border-content-border">
-            <p class="tw-font-bold tw-text-content-page-color">{{ displayedModalTitle }}</p>
-            <button
-                class="tw-flex tw-items-center tw-border tw-rounded-sm tw-border-content-border tw-bg-white tw-text-content-page-color tw-p-1"
-                @click="closeModalAction">
-              <i class="fa fa-times"></i>
-            </button>
-          </div>
-
-          <move-sample-to-container v-if="currentModal === 'moveSample'" :sample="selectedSample" v-on:close-modal="closeModalAction" v-on="$listeners"/>
+        @close-modal-action="closeModalAction"
+      >
+      <template v-slot:default>
+        <div class="tw-bg-modal-header-background tw-py-1 tw-pl-4 tw-pr-2 tw-rounded-sm tw-flex tw-w-full tw-justify-between tw-items-center tw-relative tw-border tw-border-content-border">
+          <p class="tw-font-bold tw-text-content-page-color">{{ displayedModalTitle }}</p>
+          <button
+              class="tw-flex tw-items-center tw-border tw-rounded-sm tw-border-content-border tw-bg-white tw-text-content-page-color tw-p-1"
+              @click="closeModalAction">
+            <i class="fa fa-times"></i>
+          </button>
+        </div>
+        <move-sample-to-container v-if="currentModal === 'moveSample'" :sample="selectedSample" v-on:close-modal="closeModalAction" v-on="$listeners"/>
         </template>
       </custom-dialog-box>
     </portal>
@@ -144,7 +159,7 @@ import sampleTableMixin from "modules/types/mx/samples/sample-table-mixin";
 import MoveSampleToContainer from 'modules/types/mx/samples/move-sample-to-container.vue'
 
 export default {
-  name: 'mx-puck-samples-table',
+  name: 'MxPuckSamplesTable',
   components: {
     'move-sample-to-container': MoveSampleToContainer,
     'custom-dialog-box': CustomDialogBox,
@@ -153,6 +168,18 @@ export default {
     'base-input-text': BaseInputText
   },
   mixins: [sampleTableMixin],
+  props: {
+    proteins: {
+      type: Array,
+      default: () => ([])
+    },
+    containerId: {
+      type: [Number, String, undefined]
+    },
+    invalid: {
+      type: Boolean
+    }
+  },
   data() {
     return {
       requiredColumns: [
@@ -192,18 +219,6 @@ export default {
       currentModal: '',
       selectedSample: null,
       displayedModalTitle: ''
-    }
-  },
-  props: {
-    proteins: {
-      type: Array,
-      default: () => ([])
-    },
-    containerId: {
-      type: [Number, String, undefined]
-    },
-    invalid: {
-      type: Boolean
     }
   },
   computed: {
@@ -434,6 +449,11 @@ export default {
       return sortBy(uniqBy(list, 'key'), 'key')
     },
   },
+  watch: {
+    selectedFieldValue: {
+      handler: 'updateSamplesFieldWithData',
+    }
+  },
   methods: {
     switchTabColumn(name) {
       this.currentTab = name
@@ -499,11 +519,6 @@ export default {
       this.$nextTick(() => {
         this.displayModal = true
       })
-    }
-  },
-  watch: {
-    selectedFieldValue: {
-      handler: 'updateSamplesFieldWithData',
     }
   },
 }
