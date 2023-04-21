@@ -22,7 +22,7 @@ class Utils
         global $log_activity_to_ispyb;
         $log_activity = isset($log_activity_to_ispyb) ? $log_activity_to_ispyb : true;
 
-        return $loginId && $log_activity;
+        return $log_activity && $loginId;
     }
 
     public static function getValueOrDefault($value, $default = false)
