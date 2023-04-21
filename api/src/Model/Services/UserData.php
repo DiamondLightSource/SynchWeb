@@ -81,6 +81,12 @@ class UserData
             $where = '1=1';
         else
             $where = 'p.login IS NOT NULL';
+
+        if ($personId == "" && $stringMatch == "" && $gid == "" && $sid == "" && $visitName == "" && $pjid == "")
+        {
+            return $this->getUsersForProposal($where, $getCount, $page, $sortBy, $pid, $currentUserId, $perPage, $isAscending);
+        }
+
         $join = '';
         $extc = '';
         $group = 'GROUP BY p.personid';
@@ -190,6 +196,85 @@ class UserData
                                WHERE $where
                                $group
                                ORDER BY $order", $args);
+
+        foreach ($rows as &$r)
+        {
+            if ($r['PERSONID'] == $personId)
+                $r['FULLNAME'] .= ' [You]';
+        }
+
+        return $rows;
+    }
+
+    function getUsersForProposal($where, $getCount, $page, $sortBy = null, $pid = null, $currentUserId = null, $perPage = 15, $isAscending = true)
+    {
+        $args = array();
+
+        $where1 = $where . ' AND prhp.proposalid=:1';
+        $where2 = $where . ' AND (lc.proposalid=:2 OR p.personid=:3)';
+
+        array_push($args, $pid);
+        array_push($args, $pid);
+        array_push($args, $currentUserId);
+
+        if ($getCount)
+        {
+            $tot = $this->db->pq("select count(personId) as tot FROM
+                (SELECT p.personid
+                FROM person p
+                LEFT OUTER JOIN proposalhasperson prhp ON prhp.personid = p.personid
+                WHERE $where1
+                UNION
+                SELECT p.personid
+                FROM person p
+                LEFT OUTER JOIN labcontact lc ON lc.personid = p.personid
+                WHERE $where2)
+                AS PERSONS", $args);
+
+            return sizeof($tot) ? intval($tot[0]['TOT']) : 0;
+        }
+
+        $start = 0;
+        $pp = $perPage;
+        $end = $pp;
+
+        if ($page)
+        {
+            $pg = $page - 1;
+            $start = $pg * $pp;
+            $end = $pg * $pp + $pp;
+        }
+
+        array_push($args, $start);
+        array_push($args, $end);
+
+        $order = 'p.familyname,p.givenname';
+        if ($sortBy)
+        {
+            $cols = array('LOGIN' => 'p.login', 'GIVENNAME' => 'p.givenname', 'FAMILYNAME' => 'p.familyname');
+            if (array_key_exists($sortBy, $cols))
+            {
+                $dir = $isAscending ? 'ASC' : 'DESC';
+                $order = $cols[$sortBy] . ' ' . $dir;
+            }
+        }
+
+        $extc = "p.personid, p.givenname, p.familyname, CONCAT(CONCAT(p.givenname, ' '), p.familyname) as fullname, p.login, p.emailaddress, p.phonenumber, l.name as labname, l.address, l.city, '' as postcode, l.country";
+        $rows = $this->db->paginate("(SELECT $extc
+                               FROM person p
+                               LEFT OUTER JOIN ProposalHasPerson prhp ON prhp.personid = p.personid
+                               LEFT OUTER JOIN laboratory l ON l.laboratoryid = p.laboratoryid
+                               WHERE $where1
+                               GROUP BY p.personid
+                               ORDER BY $order)
+                               UNION
+                               (SELECT $extc
+                               FROM person p
+                               LEFT OUTER JOIN labcontact lc ON lc.personid = p.personid
+                               LEFT OUTER JOIN Laboratory l ON l.laboratoryid = p.laboratoryid
+                               WHERE $where2
+                               GROUP BY p.personid
+                               ORDER BY $order)", $args);
 
         foreach ($rows as &$r)
         {
