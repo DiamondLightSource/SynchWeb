@@ -407,7 +407,7 @@ class Page
     {
         $this->_parse_args();
         $this->_get_type();
-        $this->staff = is_null($this->user) ? False : $this->user->hasPermission($this->ty . '_admin');
+        $this->staff = $this->user->hasPermission($this->ty . '_admin');
 
         if (in_array($route->getName(), array('edge', 'mca')))
         {
@@ -439,7 +439,7 @@ class Page
 
         $action = $act ? 'LOGON' : 'LOGOFF';
 
-        if ($this->user && Utils::ShouldLogUserActivityToDB($this->user->loginId))
+        if (Utils::ShouldLogUserActivityToDB($this->user->loginId))
         {
             $com = 'ISPyB2: ' . ($com ? $com : $_SERVER['REQUEST_URI']);
             $chk = $this->db->pq("SELECT comments FROM adminactivity WHERE username LIKE :1", array($this->user->loginId));
