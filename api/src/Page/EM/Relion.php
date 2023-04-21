@@ -236,7 +236,7 @@ trait Relion
             }
 
             $this->db->end_transaction();
-        } catch (Exception $exception) {
+        } catch (\Exception $exception) {
             $message = 'Failed to add ProcessingJob to database.';
             error_log($message);
             error_log($exception->getMessage());

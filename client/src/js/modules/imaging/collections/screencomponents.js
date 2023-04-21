@@ -3,16 +3,16 @@ define(['backbone',
     'modules/imaging/models/screencomponent'],
     function(Backbone, PageableCollection, Component) {
        
-  	return PageableCollection.extend({
-	    model: Component,
-	    mode: 'client',
-	    url: '/imaging/screen/components',
-	                                      
-	    state: {
-	      	pageSize: 15,
-	    },
+      return PageableCollection.extend({
+        model: Component,
+        mode: 'client',
+        url: '/imaging/screen/components',
+                                          
+        state: {
+              pageSize: 15,
+        },
 
-	    save: function(options) {
+        save: function(options) {
             options = _.extend({}, options)
             
             var col = this
@@ -26,5 +26,5 @@ define(['backbone',
             return Backbone.sync('update', this, options)
         },
       
-  	})
+      })
 })

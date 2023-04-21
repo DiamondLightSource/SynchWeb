@@ -212,11 +212,14 @@ define(['jquery', 'marionette',
 
         populatePIA: function() {
             var d = this.distl.get('data')
+            var defaultPIA = 'pia_total_intensity'
             if (d[0].length < 1) {
                 this.ui.ty.hide()
                 if (this.attachments.length) {
                     const heatMapsOptionsList = `${this.attachments.opts()} \n <option value=""> None </option>`
                     this.ui.ty2.html(heatMapsOptionsList).show()
+                    var a = this.attachments.findWhere({ 'NAME': defaultPIA })
+                    if (a) this.ui.ty2.val(a.get('DATACOLLECTIONFILEATTACHMENTID'))
                     this.loadAttachment()
                 }
             }

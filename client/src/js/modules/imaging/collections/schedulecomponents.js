@@ -6,12 +6,12 @@ define(['backbone.paginator', 'modules/imaging/models/schedulecomponent'], funct
     url: '/imaging/schedule/components',
                      
     defaults: {
-    	OFFSET_HOURS: 0,
-    	INSPECTIONTYPID: 1,
+        OFFSET_HOURS: 0,
+        INSPECTIONTYPID: 1,
     },
 
     state: {
-      	pageSize: 100,
+        pageSize: 100,
     },
       
   })
