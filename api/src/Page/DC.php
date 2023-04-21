@@ -122,11 +122,11 @@ class DC extends Page
 
                 $where = '';
                 if ($this->arg('t') == 'sc')
-                    $where = ' AND dc.overlap != 0';
+                    $where = ' AND (dc.overlap != 0 OR dcg.experimentType = "Screening")';
                 else if ($this->arg('t') == 'gr')
                     $where = ' AND dc.axisrange = 0';
                 else if ($this->arg('t') == 'fc')
-                    $where = ' AND dc.overlap = 0 AND dc.axisrange > 0 AND dc.numberOfImages > 1';
+                    $where = ' AND dc.overlap = 0 AND dc.axisrange > 0 AND dc.numberOfImages > 1 AND dcg.experimentType != "Screening"';
             } else if ($this->arg('t') == 'edge') {
                 $where2 = '';
             } else if ($this->arg('t') == 'mca') {
