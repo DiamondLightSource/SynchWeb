@@ -5,33 +5,43 @@ namespace SynchWeb;
 use PHPUnit\Framework\TestCase;
 use SynchWeb\Page\Download;
 use SynchWeb\Database\Type\MySQL;
+use React\EventLoop\Factory;
+use React\ChildProcess\Process;
+use ZipArchive;
+
 
 final class DownloadTest extends TestCase
 {
-    use \phpmock\phpunit\PHPMock;
 
-    private $downloadStub;
-
-    public function write_file($filePath, $fileName, $content)
+    private function countFilesInZipStream($zipFileStream)
     {
-        $fullPath = $filePath . '/' . $fileName;
-
-        if (!file_exists($filePath)) {
-            mkdir($filePath, 0755, true);
+        $zip = new ZipArchive();
+        if ($zip->open($zipFileStream) !== true) {
+            return 0;
         }
-        $file = fopen($fullPath, 'w');
-        fwrite($file, $content);
-        fclose($file);
 
+        $numFiles = $zip->numFiles;
+        $zip->close();
+
+        return $numFiles;
     }
 
-    private function captureOutput(callable $callback)
+    private function getZipStreamFileContents($zipFileStream)
     {
-        ob_start();
-        $callback();
-        $output = ob_get_clean();
+        $zip = new ZipArchive();
+        if ($zip->open($zipFileStream) !== true) {
+            return [];
+        }
 
-        return $output;
+        $fileContents = [];
+        for ($i = 0; $i < $zip->numFiles; $i++) {
+            $filename = $zip->getNameIndex($i);
+            $fileContents[$filename] = $zip->getFromIndex($i);
+        }
+
+        $zip->close();
+
+        return $fileContents;
     }
 
     /**
@@ -39,80 +49,79 @@ final class DownloadTest extends TestCase
      */
     public function testDownload()
     {
-        $dbMock = $this->getMockBuilder(MySQL::class)
-                        ->disableOriginalConstructor()
-                       ->setMethods(['union'])
-                       ->getMock();
 
-        $mockedValue = [
-            [
-                "PROCESSINGPROGRAMS" => "789"
-            ]
-        ];
+        // Download the zip file to a memory stream
+        $loop = Factory::create();
 
-        $dbMock->method('union')->willReturn($mockedValue);
+        // Call the class method in a separate process.
+        $process = new Process("php tests/Page/DownloadRun.php");
 
-        $downloadStub = $this->getMockBuilder(Download::class)
-                              ->disableOriginalConstructor()
-                              ->setMethods(['__get_autoproc_attachments', '_get_union'])
-                              ->getMock();
+        $process->start($loop);
 
-        $mocked_files = [
-            [
-                "FILEPATH" => "mocked_files",
-                "FILENAME" => "file1.txt",
-                "FILECONTENT" => 'This is file 1.'
-            ],
-            [
-                "FILEPATH" => "mocked_files",
-                "FILENAME" => "file2.txt",
-                "FILECONTENT" => 'This is file 2.'
-            ],           
-        ];
+        $process->stdout->on('data', function ($result) {
+            if ($result !== true) {
+                switch ($result) {
+                    case ZipArchive::ER_NOZIP:
+                        $this->fail('The file is not a zip archive.');
+                        break;
+                    case ZipArchive::ER_INCONS:
+                        $this->fail('The zip archive is inconsistent.');
+                        break;
+                    case ZipArchive::ER_CRC:
+                        $this->fail('The file has a CRC error.');
+                        break;
+                    default:
+                        $this->fail("Failed to open the zip file. Zip file contents " . $result);
+                        break;
+                }
+            }
 
-        foreach($mocked_files as $mocked_file){
-            $this->write_file($mocked_file["FILEPATH"], $mocked_file["FILENAME"], $mocked_file["FILECONTENT"]);
-        }
 
+            $tempFile = tempnam(sys_get_temp_dir(), 'zip');
+            file_put_contents($tempFile, $result);
+    
+            $zip = new ZipArchive();
+            $result = $zip->open($tempFile);
+
+            if ($result === true) {
+                $this->assertTrue($result, 'Failed to open the zip file.');
         
-        $downloadStub->method('__get_autoproc_attachments')->willReturn($mocked_files);
-
-        $downloadStub->method('_get_union')->willReturn([
-            [
-                "PROCESSINGPROGRAMS" => "789"
-            ]
-        ]);
-
-
-        $downloadStub->args = array(
-            'prop' => '123',
-            'AUTOPROCPROGRAMID' => '123'
-        );
-
-        $output = $this->captureOutput([$downloadStub, '_get_autoproc_archive']);
-
-        $this->assertContains('Content-Type: application/octet-stream', $capturedHeaders);
-
-        $tmpZipFile = tempnam(sys_get_temp_dir(), 'test_zip_');
-        file_put_contents($tmpZipFile, $output);
-
-        $zip = new ZipArchive();
-        $opened = $zip->open($tmpZipFile);
-
-        $this->assertTrue($opened);
-
-        $this->assertEquals(count($mocked_files), $zip->numFiles);
-
-        foreach($mocked_files as $mocked_file){
-            $fileContents = $zip->getFromName($mocked_file["FILENAME"]);
-            $this->assertEquals($mocked_file["FILECONTENT"], trim($fileContents));
-        }
-
-        $zip->close();
-        unlink($tmpZipFile);
+                $this->assertEquals(2, $zip->numFiles, 'The zip file does not contain the expected number of files.');
         
-        # Delete mocked files
-        rmdir('mocked');
+                $file1Contents = $zip->getFromName('file1.txt');
+                $this->assertNotNull($file1Contents, 'file1.txt not found in the zip file.');
+                $this->assertEquals('This is file 1.', $file1Contents, 'The contents of file1.txt are not as expected.');
+        
+                $file2Contents = $zip->getFromName('file2.txt');
+                $this->assertNotNull($file2Contents, 'file2.txt not found in the zip file.');
+                $this->assertEquals('This is file 2.', $file2Contents, 'The contents of file2.txt are not as expected.');
+        
+                $zip->close();
+        } else {
+            echo "Failed to open the zip file.";
+        };
+    
+        // Clean up the temporary file.
+        unlink($tempFile);
+
+        });
+
+        $process->on('exit', function ($exitCode) {
+            echo "Process exited with code: " . $exitCode . PHP_EOL;
+        });
+        
+        $loop->run();
+        
+        // Delete mocked files
+        $dirPath = 'mocked_files';
+        $files = glob($dirPath . '/*');
+        foreach ($files as $file) {
+            if (is_file($file)) {
+                unlink($file);
+            }
+        }
+    
+        rmdir($dirPath);
     }
 
 
