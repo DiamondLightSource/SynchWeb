@@ -71,7 +71,7 @@ final class DownloadTest extends TestCase
                         $this->fail('The file has a CRC error.');
                         break;
                     default:
-                        $this->fail("Failed to open the zip file. Zip file contents " . $result);
+                        $this->fail("Failed to open the zip file. Zip file contents: " . $result);
                         break;
                 }
             }
@@ -98,7 +98,7 @@ final class DownloadTest extends TestCase
         
                 $zip->close();
         } else {
-            echo "Failed to open the zip file.";
+            $this->fail("Failed to open the zip file. Zip file contents: " . $result);
         };
     
         // Clean up the temporary file.
