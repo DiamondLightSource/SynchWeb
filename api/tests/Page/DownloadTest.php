@@ -1,10 +1,9 @@
-<?php declare(strict_types=1);
+<?php
 
 namespace SynchWeb;
 
 use PHPUnit\Framework\TestCase;
 use SynchWeb\Page\Download;
-use SynchWeb\Database\Type\MySQL;
 use React\EventLoop\Factory;
 use React\ChildProcess\Process;
 use ZipArchive;
