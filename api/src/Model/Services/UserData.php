@@ -76,6 +76,18 @@ class UserData
     {
         $args = array();
 
+        // set up start and end
+        $start = 0;
+        $pp = $perPage;
+        $end = $pp;
+
+        if ($page)
+        {
+            $pg = $page - 1;
+            $start = $pg * $pp;
+            $end = $pg * $pp + $pp;
+        }
+
         // Set initial where clause restrict it to just users within logins unless it is for a all or a person id and only logins not set 
         if (!$onlyLogins and ($personId || $isAll))
             $where = '1=1';
@@ -84,7 +96,7 @@ class UserData
 
         if ($personId == "" && $stringMatch == "" && $gid == "" && $sid == "" && $visitName == "" && $pjid == "")
         {
-            return $this->getUsersForProposal($where, $getCount, $page, $sortBy, $pid, $currentUserId, $perPage, $isAscending);
+            return $this->getUsersForProposal($where, $getCount, $page, $sortBy, $pid, $currentUserId, $perPage, $isAscending, $start, $end);
         }
 
         $join = '';
@@ -161,18 +173,6 @@ class UserData
             return sizeof($tot) ? intval($tot[0]['TOT']) : 0;
         }
 
-        $start = 0;
-        $pp = $perPage;
-        $end = $pp;
-
-        if ($page)
-        {
-            $pg = $page - 1;
-            $start = $pg * $pp;
-            $end = $pg * $pp + $pp;
-        }
-
-        $st = sizeof($args) + 1;
         array_push($args, $start);
         array_push($args, $end);
 
@@ -206,7 +206,7 @@ class UserData
         return $rows;
     }
 
-    function getUsersForProposal($where, $getCount, $page, $sortBy = null, $pid = null, $currentUserId = null, $perPage = 15, $isAscending = true)
+    function getUsersForProposal($where, $getCount, $page, $sortBy, $pid, $currentUserId, $perPage, $isAscending, $start, $end)
     {
         $args = array();
 
@@ -232,17 +232,6 @@ class UserData
                 AS PERSONS", $args);
 
             return sizeof($tot) ? intval($tot[0]['TOT']) : 0;
-        }
-
-        $start = 0;
-        $pp = $perPage;
-        $end = $pp;
-
-        if ($page)
-        {
-            $pg = $page - 1;
-            $start = $pg * $pp;
-            $end = $pg * $pp + $pp;
         }
 
         array_push($args, $start);
@@ -275,12 +264,6 @@ class UserData
                                WHERE $where2
                                GROUP BY p.personid
                                ORDER BY $order)", $args);
-
-        foreach ($rows as &$r)
-        {
-            if ($r['PERSONID'] == $personId)
-                $r['FULLNAME'] .= ' [You]';
-        }
 
         return $rows;
     }
