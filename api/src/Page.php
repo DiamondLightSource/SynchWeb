@@ -517,7 +517,7 @@ class Page
                             $tmp = array();
                             foreach ($r->$k as $val)
                             {
-                                if ($this->_string_match('/^' . $v . '$/m', $val))
+                                if ($this->_match_pattern_to_value_unsafe('/^' . $v . '$/m', $val))
                                 {
                                     array_push($tmp, $v == '.*' ? $purifier->purify($val) : $val);
                                 }
@@ -527,7 +527,7 @@ class Page
                         }
                         else
                         {
-                            if ($this->_string_match('/^' . $v . '$/m', $r->$k))
+                            if ($this->_match_pattern_to_value_unsafe('/^' . $v . '$/m', $r->$k))
                             {
                                 $par[$k] = $v == '.*' ? $purifier->purify($r->$k) : $r->$k;
                                 if ($k == 'prop')
@@ -554,7 +554,7 @@ class Page
                             $tmp = array();
                             foreach ($request[$k] as $val)
                             {
-                                if ($this->_string_match('/^' . $v . '$/m', $val))
+                                if ($this->_match_pattern_to_value_unsafe('/^' . $v . '$/m', $val))
                                 {
                                     array_push($tmp, $v == '.*' ? $purifier->purify($val) : $val);
                                 }
@@ -572,7 +572,7 @@ class Page
                                     $tmp = array();
                                     foreach ($value as $value2)
                                     {
-                                        if ($this->_string_match('/^' . $v . '$/m', $value2))
+                                        if ($this->_match_pattern_to_value_unsafe('/^' . $v . '$/m', $value2))
                                         {
                                             array_push($tmp, $v == '.*' ? $purifier->purify($value2) : $value2);
                                         }
@@ -581,7 +581,7 @@ class Page
                                 }
                                 else
                                 {
-                                    if ($this->_string_match('/^' . $v . '$/m', $value))
+                                    if ($this->_match_pattern_to_value_unsafe('/^' . $v . '$/m', $value))
                                     {
                                         $request[$k]->$key = $v == '.*' ? $purifier->purify($value) : $value;
                                     }
@@ -607,7 +607,7 @@ class Page
                                             $tmp = array();
                                             foreach ($item as $element)
                                             {
-                                                if ($this->_string_match('/^' . $v . '$/m', $element))
+                                                if ($this->_match_pattern_to_value_unsafe('/^' . $v . '$/m', $element))
                                                 {
                                                     array_push($tmp, $v == '.*' ? $purifier->purify($element) : $element);
                                                 }
@@ -616,7 +616,7 @@ class Page
                                         }
                                         else
                                         {
-                                            if ($this->_string_match('/^' . $v . '$/m', $item))
+                                            if ($this->_match_pattern_to_value_unsafe('/^' . $v . '$/m', $item))
                                             {
                                                 $object->$name = $v == '.*' ? $purifier->purify($item) : $item;
                                             }
@@ -628,7 +628,7 @@ class Page
                         }
                         else
                         {
-                            if ($this->_string_match('/^' . $v . '$/m', $request[$k]))
+                            if ($this->_match_pattern_to_value_unsafe('/^' . $v . '$/m', $request[$k]))
                             {
                                 $parsed[$k] = $v == '.*' ? $purifier->purify($request[$k]) : $request[$k];
                             }
@@ -673,13 +673,17 @@ class Page
     # ------------------------------------------------------------------------
     # Misc Helpers
 
-    function _string_match($pattern, $input)
+    /**
+     * Return 1 if pattern matches the input, 0 if not
+     * It is unsafe because if the value can not be converted to a string it is assume to match, this is to
+     * replicate older behaviour (particularly on simple sample page)
+     */
+    function _match_pattern_to_value_unsafe($pattern, $input)
     {
-        if (is_string($input))
-            {
-                return preg_match($pattern, $input);
-            }
-        return false;
+        if (is_null($input) || is_scalar($input) || (is_object($input) && method_exists($input, '__toString'))) {
+            return preg_match($pattern, strval($input));
+        }
+        return 1;
     }
 
     # Pretty-ish printer
