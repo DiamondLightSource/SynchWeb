@@ -680,7 +680,7 @@ class Page
      */
     function _match_pattern_to_value_unsafe($pattern, $input)
     {
-        if ($input === NULL || is_scalar($input) || (is_object($input) && method_exists($input, '__toString'))) {
+        if (is_null($input) || is_scalar($input) || (is_object($input) && method_exists($input, '__toString'))) {
             return preg_match($pattern, strval($input));
         }
         return 1;
