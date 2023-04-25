@@ -2444,7 +2444,7 @@ class Shipment extends Page
     {
         if (!$this->has_arg('name'))
             $this->_error('No key specified');
-        $this->_output($this->user->setInCache($this->arg('name')));
+        $this->_output($this->user->getFromCache($this->arg('name')));
     }
 
     function _dummy_shipment_put()
