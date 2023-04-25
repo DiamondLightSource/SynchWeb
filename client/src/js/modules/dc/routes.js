@@ -100,6 +100,21 @@ let routes = [
     }),
   },
   {
+    path: '/dc(/visit/)?:visit([a-zA-Z]{2}[0-9]+-[0-9]+)?(/dcg/)?:dcg([0-9]+)?(/page/)?:page([0-9]+)?(/ty/)?:ty([a-zA-Z0-9_-]+)?(/s/)?:search([a-zA-z0-9_-]+)?(/id/)?:id([0-9]+)?(/pjid/)?:pjid([0-9]+)?(/sgid/)?:sgid([0-9]+)?',
+    name: 'dc-list',
+    component: DCWrapper,
+    props: route => ({
+        id: +route.params.id || null,
+        visit: route.params.visit || '',
+        dcg: +route.params.dcg || null,
+        page: +route.params.page || 1,
+        ty: route.params.ty || '',
+        search: route.params.search || '',
+        pjid: +route.params.pjid || null,
+        sgid: +route.params.sgid || null
+    }),
+  },
+  {
     path: '/dc/map/id/:id([0-9]+)(/aid/)?:aid([0-9]+)?',
     name: 'dc-mapmodelviewer',
     component: MapModelWrapper,
