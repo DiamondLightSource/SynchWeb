@@ -1,5 +1,6 @@
 <template>
   <div
+    data-testid="container-sample-row"
     class="tw-flex tw-w-full tw-items-center"
     :class="{
       'tw-bg-table-body-background': sampleIndex % 2 === 0,
