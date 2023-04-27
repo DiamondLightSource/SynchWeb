@@ -1444,8 +1444,8 @@ class Shipment extends Page
                 $extra_arg_value = addslashes($this->arg($extra_arg_name));
                 $shippingid = $this->arg('sid');
                 $this->db->pq(
-                    "UPDATE shipping SET extra = JSON_SET(extra, '$." . $extra_arg_name . "', '" . $extra_arg_value . "') WHERE shippingid=:1",
-                    array($shippingid)
+                    "UPDATE shipping SET extra = JSON_SET(extra, :1, :2 ) WHERE shippingid=:3",
+                    array('$.' . $extra_arg_name, $extra_arg_value, $shippingid)
                 );
                 $this->_output(array($extra_arg_name => $extra_arg_value));
             }
