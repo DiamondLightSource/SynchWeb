@@ -28,7 +28,7 @@ final class DownloadTest extends TestCase
 
     public function setUp(): void
     {
-        $this->downloadStub = $this->createPartialMock(Download::class, ['__get_autoproc_attachments', '_get_union']);
+        $this->downloadStub = $this->createPartialMock(Download::class, []);
 
         $this->mocked_file_test = sys_get_temp_dir() . "/mocked_files";
         $this->mocked_files = [
@@ -81,23 +81,20 @@ final class DownloadTest extends TestCase
 
         $zip = new ZipArchive();
         $result = $zip->open($this->tempFile);
-        if ($result == true) {
-                $this->assertTrue($result, 'Failed to open the zip file.');
+
+        $this->assertTrue($result, 'Failed to open the zip file, return should be true.');
+
+        $this->assertEquals(2, $zip->numFiles, 'The zip file does not contain the expected number of files.');
+
+        foreach ($this->mocked_files as $mocked_file) {
+            $filename = $mocked_file['FILENAME'];
+            $fileContents = $zip->getFromName($filename);
+            $this->assertNotNull($fileContents, $filename . ' not found in the zip file.');
+            $this->assertEquals($mocked_file['FILECONTENT'], $fileContents, 'The contents of ' . $filename . ' are not as expected.');
+        }
+
+        $zip->close();
         
-                $this->assertEquals(2, $zip->numFiles, 'The zip file does not contain the expected number of files.');
-        
-                $file1Contents = $zip->getFromName('file1.txt');
-                $this->assertNotNull($file1Contents, 'file1.txt not found in the zip file.');
-                $this->assertEquals('This is file 1.', $file1Contents, 'The contents of file1.txt are not as expected.');
-        
-                $file2Contents = $zip->getFromName('file2.txt');
-                $this->assertNotNull($file2Contents, 'file2.txt not found in the zip file.');
-                $this->assertEquals('This is file 2.', $file2Contents, 'The contents of file2.txt are not as expected.');
-        
-                $zip->close();
-        } else {
-            $this->fail("Failed to open the zip file. Zip file contents: " . $result);
-        };
     }
 
 }
