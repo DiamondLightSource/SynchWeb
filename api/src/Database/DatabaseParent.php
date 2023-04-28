@@ -13,6 +13,11 @@ interface DatabaseInterface
     // Paginated Query
     public function paginate($query, $args);
 
+    // Union multiple queries that take the same arguments and return the same columns
+    // Query can optionally be wrapped, where :QUERY will be replaced with the inner query:
+    //  $wrapper = 'SELECT * FROM (:QUERY) GROUP BY id';
+    public function union($queries, $args, $all = false, $wrapper = null);
+
     // Read binary
     public function read($field);
 
