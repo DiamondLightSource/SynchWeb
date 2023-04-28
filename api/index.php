@@ -101,6 +101,13 @@ function setupDependencyInjectionContainer($app)
         return $db;
     });
 
+    $app->container->singleton('dbsummary', function () use ($app): DatabaseParent {
+        $dbFactory = new DatabaseFactory(new DatabaseConnectionFactory());
+        $db = $dbFactory->get("summary");
+        $db->set_app($app);
+        return $db;
+    });
+
     $app->container->singleton('authData', function () use ($app) {
         return new AuthenticationData($app->container['db']);
     });
