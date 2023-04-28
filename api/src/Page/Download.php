@@ -411,10 +411,6 @@ class Download extends Page
 
     # ------------------------------------------------------------------------
     # Get an archive of an autoproc
-    function _get_union($query1, $query2)
-    {
-        return $this->db->union($query1, $query2);
-    }
     function _get_autoproc_archive()
     {
 
@@ -422,7 +418,7 @@ class Download extends Page
             $this->_error('No proposal specific', 'No proposal specified');
         }
 
-        $aps = $this->_get_union(
+        $aps = $this->db->union(
             array(
                 "SELECT app.autoprocprogramid, app.processingprograms, app.processingstatus
                     FROM autoprocintegration api 
@@ -453,8 +449,18 @@ class Download extends Page
         }
 
         $clean_program = preg_replace('/[^A-Za-z0-9\-]/', '', $ap['PROCESSINGPROGRAMS']);
+        $zipName = $this->arg('AUTOPROCPROGRAMID')  . '_' . $clean_program;
+        $this->_streamZipFile($files, $zipName);
+    }
 
-        $response = new StreamedResponse(function() use($files, $clean_program)
+    /**
+     * Stream a zip file based on files on the file system
+     * @param files array of files to send
+     * @param zipName name of the zip that is sent
+     */
+    function _streamZipFile($files, $zipName)
+    {
+        $response = new StreamedResponse(function () use ($files, $zipName)
         {
             # enable output of HTTP headers
             $options = new Archive();
@@ -465,7 +471,7 @@ class Download extends Page
             $options->setEnableZip64(true);
 
             # create a new zipstream object
-            $zip = new ZipStream($this->arg('AUTOPROCPROGRAMID') . '_' . $clean_program . '.zip', $options);
+            $zip = new ZipStream($zipName . '.zip', $options);
             foreach ($files as $file) {
                 $filename = $file['FILEPATH'] . '/' . $file['FILENAME'];
                 $zip->addFileFromPath(basename($filename), $filename);
@@ -473,14 +479,9 @@ class Download extends Page
 
             $zip->finish();
         });
-
         $response->send();
-        exit();
     }
 
-
-    # ------------------------------------------------------------------------
-    # Set mime and content type for a file
     /** 
      * Set mime and content type headers for the provided response.
      * Determines the mime type from the filename extension.
