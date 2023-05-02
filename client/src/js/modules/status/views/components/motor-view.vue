@@ -1,9 +1,19 @@
 <template>
-  <div v-if="epicItem.t === 1" class="tw-m-1">
+  <div
+    v-if="epicItem.t === 1"
+    class="tw-m-1"
+  >
     <div class="tw-bg-content-search-background tw-p-4 tw-rounded">
       <div class="tw-flex tw-w-full tw-items-center tw-mb-2">
-        <h1 class="tw-bg-content-highlight tw-flex-1 tw-p-2 tw-font-bold">{{ epicItem.title }}</h1>
-        <div class="tw-p-2 tw-bg-motor-value-background" title="Set Value">{{ epicItem.val['VAL'] }}</div>
+        <h1 class="tw-bg-content-highlight tw-flex-1 tw-p-2 tw-font-bold">
+          {{ epicItem.title }}
+        </h1>
+        <div
+          class="tw-p-2 tw-bg-motor-value-background"
+          title="Set Value"
+        >
+          {{ epicItem.val['VAL'] }}
+        </div>
       </div>
 
       <div
@@ -21,84 +31,102 @@
             'tw-mr-2': true,
             'tw-text-white': true,
           }"
-          title="Alarm">!</div>
+          title="Alarm"
+        >
+          !
+        </div>
         <div
           class="tw-border tw-border-black tw-rounded-sm tw-flex-1 tw-mx-2 tw-text-center tw-text-motor-readback-text tw-p-1"
-          title="Readback Value">
+          title="Readback Value"
+        >
           {{ epicItem.val['RBV'] }}
         </div>
         <div
           :class="{
-            'tw-bg-content-active':  epicItem.val['DMOV'] === 0,
+            'tw-bg-content-active': epicItem.val['DMOV'] === 0,
             'tw-bg-content-header-color': Number(epicItem.val['DMOV']) !== 0,
             'motor-button': true,
             'tw-w-2/12': true,
             'tw-ml-2': true,
             'tw-text-white': true,
           }"
-          title="Moving">M</div>
+          title="Moving"
+        >
+          M
+        </div>
       </div>
     </div>
 
     <div class="tw-relative">
-      <div class="tw-w-full tw-h-1 tw-invisible hovered-items tw-bg-white" :ref="`epics_${epicsId}`">
+      <div
+        :ref="`epics_${epicsId}`"
+        class="tw-w-full tw-h-1 tw-invisible hovered-items tw-bg-white"
+      >
         <div class="tw-my-2 tw-w-full tw-flex">
           <span
             :class="{
-            'tw-w-2/12': true,
-            'motor-button': true,
-            'tw-bg-content-minor': Number(epicItem.val['HLS']) === 1,
-            'tw-bg-content-header-color': Number(epicItem.val['HLS']) !== 1,
-            }">&nbsp;</span>
+              'tw-w-2/12': true,
+              'motor-button': true,
+              'tw-bg-content-minor': Number(epicItem.val['HLS']) === 1,
+              'tw-bg-content-header-color': Number(epicItem.val['HLS']) !== 1,
+            }"
+          >&nbsp;</span>
           <span class="tw-flex-1 tw-ml-2">High Limit</span>
-
         </div>
 
         <div class="tw-my-2 tw-w-full tw-flex">
           <span
             :class="{
-            'tw-w-2/12': true,
-            'motor-button': true,
-            'tw-bg-content-minor': Number(epicItem.val['LLS']) === 1,
-            'tw-bg-content-header-color': Number(epicItem.val['LLS']) !== 1,
-            }">&nbsp;</span>
+              'tw-w-2/12': true,
+              'motor-button': true,
+              'tw-bg-content-minor': Number(epicItem.val['LLS']) === 1,
+              'tw-bg-content-header-color': Number(epicItem.val['LLS']) !== 1,
+            }"
+          >&nbsp;</span>
           <span class="tw-flex-1 tw-ml-2">Low Limit</span>
         </div>
 
         <div class="tw-my-2 tw-w-full tw-flex">
           <span
             :class="{
-            'tw-w-2/12': true,
-            'motor-button': true,
-            'tw-bg-content-minor': Number( epicItem.val['LVIO']) === 1,
-            'tw-bg-content-header-color': Number(epicItem.val['LVIO']) !== 1,
-            }">&nbsp;</span>
+              'tw-w-2/12': true,
+              'motor-button': true,
+              'tw-bg-content-minor': Number( epicItem.val['LVIO']) === 1,
+              'tw-bg-content-header-color': Number(epicItem.val['LVIO']) !== 1,
+            }"
+          >&nbsp;</span>
           <span class="tw-flex-1 tw-ml-2">Soft Limit</span>
         </div>
 
         <div class="tw-my-2 tw-w-full tw-flex">
           <span
             :class="{
-            'tw-w-2/12': true,
-            'motor-button': true,
-            'tw-bg-content-inactive': (epicItem.val['MSTA'] & 1 << 6) === 1 << 6,
-            'tw-bg-content-header-color': (epicItem.val['MSTA'] & 1 << 6) !== 1 << 6,
-          }">&nbsp;</span>
+              'tw-w-2/12': true,
+              'motor-button': true,
+              'tw-bg-content-inactive': (epicItem.val['MSTA'] & 1 << 6) === 1 << 6,
+              'tw-bg-content-header-color': (epicItem.val['MSTA'] & 1 << 6) !== 1 << 6,
+            }"
+          >&nbsp;</span>
           <span class="tw-flex-1 tw-ml-2">Following Error</span>
         </div>
       </div>
     </div>
   </div>
-  <div v-else class="tw-bg-content-search-background tw-p-4 tw-m-1 tw-w-full tw-rounded">
+  <div
+    v-else
+    class="tw-bg-content-search-background tw-p-4 tw-m-1 tw-w-full tw-rounded"
+  >
     <div class="tw-bg-content-highlight tw-p-1 tw-flex tw-w-full">
-      <h1 class="tw-font-bold tw-flex-1">{{ epicItem.title }}</h1>
-      <div :class="['motor-button', 'tw-w-2/12', epicItem.val ? 'tw-bg-content-active' : 'tw-bg-content-header-color']"></div>
+      <h1 class="tw-font-bold tw-flex-1">
+        {{ epicItem.title }}
+      </h1>
+      <div :class="['motor-button', 'tw-w-2/12', epicItem.val ? 'tw-bg-content-active' : 'tw-bg-content-header-color']" />
     </div>
   </div>
 </template>
 <script>
 export default {
-  name: 'motor-view',
+  name: 'MotorView',
   props: {
     motorItem: {
       type: [Object, null],
@@ -110,6 +138,18 @@ export default {
       epicItem: {
         val: {}
       }
+    }
+  },
+  computed: {
+    epicsId() {
+      return this.epicItem.title.replace(/\s+/, '_').toLowerCase()
+    }
+  },
+  watch: {
+    motorItem: {
+      deep: true,
+      immediate: true,
+      handler: 'formatMotorItem'
     }
   },
   methods: {
@@ -129,18 +169,6 @@ export default {
         hoveredRef.classList.remove('tw-h-auto', 'tw-absolute', 'tw-z-9999')
         hoveredRef.classList.add('tw-invisible', 'tw-h-1')
       }
-    }
-  },
-  computed: {
-    epicsId() {
-      return this.epicItem.title.replace(/\s+/, '_').toLowerCase()
-    }
-  },
-  watch: {
-    motorItem: {
-      deep: true,
-      immediate: true,
-      handler: 'formatMotorItem'
     }
   }
 }

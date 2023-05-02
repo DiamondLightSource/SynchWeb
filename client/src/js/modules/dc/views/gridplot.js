@@ -212,11 +212,14 @@ define(['jquery', 'marionette',
 
         populatePIA: function() {
             var d = this.distl.get('data')
+            var defaultPIA = 'pia_total_intensity'
             if (d[0].length < 1) {
                 this.ui.ty.hide()
                 if (this.attachments.length) {
                     const heatMapsOptionsList = `${this.attachments.opts()} \n <option value=""> None </option>`
                     this.ui.ty2.html(heatMapsOptionsList).show()
+                    var a = this.attachments.findWhere({ 'NAME': defaultPIA })
+                    if (a) this.ui.ty2.val(a.get('DATACOLLECTIONFILEATTACHMENTID'))
                     this.loadAttachment()
                 }
             }
@@ -283,8 +286,8 @@ define(['jquery', 'marionette',
         draw: function() {
             if (!this.ctx || !this.gridFetched) return
 
-            var bw = 1000*this.grid.get('DX_MM')/Math.abs(this.grid.get('PIXELSPERMICRONX'))
-            var bh = 1000*this.grid.get('DY_MM')/Math.abs(this.grid.get('PIXELSPERMICRONY'))
+            var bw = 1000*this.grid.get('DX_MM')/Math.abs(this.grid.get('MICRONSPERPIXELX'))
+            var bh = 1000*this.grid.get('DY_MM')/Math.abs(this.grid.get('MICRONSPERPIXELY'))
 
             this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
 
@@ -296,7 +299,13 @@ define(['jquery', 'marionette',
                 var w = bw*this.grid.get('STEPS_X')
                 var h = bh*this.grid.get('STEPS_Y')
 
-                if (app.options.get('scale_grid').indexOf(this.getOption('BL')) > -1) {
+                var start_date = this.grid.get('STARTDATE')
+                var scale_grid_end_date = app.options.get('scale_grid_end_date')
+
+                var scale_grid = (app.options.get('scale_grid').indexOf(this.getOption('BL')) > -1 && (start_date < scale_grid_end_date || scale_grid_end_date == null))
+                console.log("scale_grid: "+scale_grid)
+
+                if (scale_grid) {
                     var scalef = this.snapshot.width/1024
 
                     stx *= scalef

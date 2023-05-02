@@ -1,15 +1,15 @@
 <template>
-    <section>
-        <marionette-view
-            v-if="ready"
-            :key="$route.fullPath"
-            :options="options"
-            :fetchOnLoad="true"
-            :mview="mview"
-            :breadcrumbs="bc"
-            :breadcrumb_tags="bc_tags">
-        </marionette-view>
-    </section>
+  <section>
+    <marionette-view
+      v-if="ready"
+      :key="$route.fullPath"
+      :options="options"
+      :fetch-on-load="true"
+      :mview="mview"
+      :breadcrumbs="bc"
+      :breadcrumb_tags="bc_tags"
+    />
+  </section>
 </template>
 
 <script>
@@ -23,7 +23,7 @@ import store from 'app/store/store'
 import { mapGetters } from 'vuex'
 
 export default {
-    name: 'protein-view-wrapper',
+    name: 'ProteinViewWrapper',
     components: {
         'marionette-view': MarionetteView
     },

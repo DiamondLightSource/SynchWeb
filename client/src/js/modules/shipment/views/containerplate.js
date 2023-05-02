@@ -655,8 +655,13 @@ define(['marionette',
         updateClasses: function() {
             var first = this.autoscores.at(0)
             var opts = ''
+            var defaultClass = "crystal"
             _.each(first.get('CLASSES'), function(prob, cl) {
-                opts += '<option value="'+cl+'">'+cl+'</option>'
+                if (cl === defaultClass) {
+                    opts = '<option value="'+cl+'">'+cl+'</option>' + opts
+                } else {
+                    opts += '<option value="'+cl+'">'+cl+'</option>'
+                }
             }, this)
             this.ui.class.html(opts)
         },
@@ -896,27 +901,14 @@ define(['marionette',
                             e.preventDefault()
 
                             let s = null
-
-                            console.log('swipe', direction)
-
                             if (direction === 'left') {
                                 s = self.getNext()
                             }
-
-                            if (direction === 'right') {
+                            else if (direction === 'right') {
                                 s = self.getNext({ prev: true })
                             }
 
-                            if (direction === 'up') {
-
-                            }
-
-                            if (direction === 'down') {
-
-                            }
-
                             if (s) s.set({ isSelected: true })
-
                         },
 
                         threshold: 0

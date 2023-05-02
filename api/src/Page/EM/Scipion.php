@@ -57,7 +57,7 @@ trait Scipion
         // Read workflow template file
         try {
             $template_json_string = file_get_contents("{$template_path}/{$template_file}");
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             error_log("Failed to read workflow template: {$template_path}/{$template_file}");
             $this->_error("Failed to read workflow template for electron microscopy “{$session['BEAMLINENAME']}”.", 500);
         }
@@ -114,7 +114,7 @@ trait Scipion
 
         try {
             file_put_contents("{$workflow_path}/{$workflow_file}", $workflow_json_string);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             error_log("Failed to write workflow file: {$workflow_path}/{$workflow_file}");
             $this->_error('Failed to write workflow file.', 500);
         }

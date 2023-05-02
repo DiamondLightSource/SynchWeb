@@ -1,11 +1,11 @@
 define(['backbone.paginator', 'modules/shipment/models/dewarreport'], function(PageableCollection, DewarReport) {
     
     return PageableCollection.extend({
-    	model: DewarReport,
-    	mode: 'server',
+        model: DewarReport,
+        mode: 'server',
         url: '/shipment/dewars/reports',
             
-    	state: {
+        state: {
             pageSize: 15,
         },
             

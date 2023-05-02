@@ -165,8 +165,8 @@ define(['marionette',
             var newp = curp*(this.scalef/(last_scale))
             this.offsetx -= newp-curp
 
-            var curp = -this.offsety + xy[1]
-            var newp = curp*(this.scalef/(last_scale))
+            curp = -this.offsety + xy[1]
+            newp = curp*(this.scalef/(last_scale))
             this.offsety -= newp-curp
                          
             this.clampOffsets()

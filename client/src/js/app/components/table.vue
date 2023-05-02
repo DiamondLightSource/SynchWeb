@@ -28,10 +28,16 @@ TODO - move relevant styles to this component style section
       <table class="vue-table">
         <thead>
           <th
-            v-for="(header,index) in headers" :key="index"
+            v-for="(header,index) in headers"
+            :key="index"
             class=""
-            @click="$emit('sort-by', header.key)">{{header.title}}</th>
-          <th v-if="actions">{{actions}}</th>
+            @click="$emit('sort-by', header.key)"
+          >
+            {{ header.title }}
+          </th>
+          <th v-if="actions">
+            {{ actions }}
+          </th>
         </thead>
 
         <!-- Change row[header.key] to row.get(header.key) if using Backbone models -->
@@ -39,30 +45,47 @@ TODO - move relevant styles to this component style section
           <tr
             v-for="(row, rowIndex) in data"
             :key="rowIndex"
-            v-on:click="$emit('row-clicked', row)"
+            @click="$emit('row-clicked', row)"
           >
             <!-- Default row layout override with the content slot if you need items like form inputs-->
-            <slot name="content" v-bind:row="row">
+            <slot
+              name="content"
+              :row="row"
+            >
               <td
                 v-for="(header, headerIndex) in headers"
                 :key="headerIndex"
-              >{{ getRowData(row, header) }}</td>
+              >
+                {{ getRowData(row, header) }}
+              </td>
             </slot>
 
-            <td v-if="actions"><slot name="actions" v-bind:row="row"></slot></td>
+            <td v-if="actions">
+              <slot
+                name="actions"
+                :row="row"
+              />
+            </td>
           </tr>
           <!-- Optional row to continuously add new items to an otherwise readonly table -->
           <tr v-if="addRow">
-            <slot name="addRow" v-bind:row="row"></slot>
+            <slot
+              name="addRow"
+              :row="row"
+            />
           </tr>
         </tbody>
 
         <tbody v-else>
           <tr>
-            <td :colspan="headers.length" class="renderable">{{noDataText}}</td>
+            <td
+              :colspan="headers.length"
+              class="renderable"
+            >
+              {{ noDataText }}
+            </td>
           </tr>
         </tbody>
-
       </table>
     </div>
   </div>

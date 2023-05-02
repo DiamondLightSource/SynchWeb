@@ -22,7 +22,7 @@ define(['backbone', 'markdown'], function(Backbone, markdown) {
         validation: {
             NAME: {
                 required: false,
-                pattern: 'wwsbdash',
+                pattern: 'wwsbddash',
             },
             ACRONYM: {
                 required: true,
