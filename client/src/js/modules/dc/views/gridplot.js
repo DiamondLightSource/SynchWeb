@@ -286,8 +286,8 @@ define(['jquery', 'marionette',
         draw: function() {
             if (!this.ctx || !this.gridFetched) return
 
-            var bw = 1000*this.grid.get('DX_MM')/Math.abs(this.grid.get('PIXELSPERMICRONX'))
-            var bh = 1000*this.grid.get('DY_MM')/Math.abs(this.grid.get('PIXELSPERMICRONY'))
+            var bw = 1000*this.grid.get('DX_MM')/Math.abs(this.grid.get('MICRONSPERPIXELX'))
+            var bh = 1000*this.grid.get('DY_MM')/Math.abs(this.grid.get('MICRONSPERPIXELY'))
 
             this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
 

@@ -44,6 +44,11 @@
                                        title="Comment cannot be seen by User Office"
                                        v-model="visit.edited_comment"
                                        v-on:keyup.enter="onEnter(visit)" />
+
+                                <a v-if="value.key == 'LINKS' && visit.DCCOUNT>0" class="button button-notext" title="View Statistics" id="STATS"><i class="fa fa-pie-chart"></i></a>
+                                <a v-if="value.key == 'LINKS' && visit.DCCOUNT>0" class="button button-notext" title="Download PDF Report" id="PDF"><i class="fa fa-list"></i></a>
+                                <a v-if="value.key == 'LINKS' && visit.DCCOUNT>0" class="button button-notext" title="Export Data Collections to CSV" id="CSV"><i class="fa fa-file-o"></i></a>
+                                
                                 <div data-testid="visit-table-archived" v-if="value.key == 'ARCHIVED' && visit.ARCHIVED == 1">
                                     <i class="fa fa-archive r" :title="'The raw data from this visit have been '+ isArchived + '. You can no longer reprocess data or view full sized diffraction images.'"></i>
                                 </div>
@@ -80,6 +85,7 @@ import Pagination from 'app/components/pagination.vue'
 import CustomTableComponent from 'app/components/custom-table-component.vue'
 import CustomTableRow from 'app/components/custom-table-row.vue'
 
+import Backbone from 'backbone'
 
 export default {
     name:'Visits',
@@ -133,6 +139,9 @@ export default {
                 {
                     key: "SESSIONTYPE",
                     title: 'Type'
+                },
+                {
+                    key: "LINKS",
                 },
                 {
                     key: "ARCHIVED"
@@ -201,6 +210,15 @@ export default {
             if(event.target.parentElement.id === 'COMMENTS' || event.target.id === 'COMMENTS') {
                 visit.clicked = true;
             }
+            else if(event.target.parentElement.id === 'STATS' || event.target.id === 'STATS') {
+                window.location.href = '/stats/visit/' + visit.VISIT;
+            }
+            else if(event.target.parentElement.id === 'PDF' || event.target.id === 'PDF') {
+                this.signHandler(app.apiurl+'/pdf/report/visit/'+visit.VISIT);
+            }
+            else if(event.target.parentElement.id === 'CSV' || event.target.id === 'CSV') {
+                this.signHandler(app.apiurl+'/download/csv/visit/'+visit.VISIT);
+            }
             else {
                 window.location.href = 'dc/visit/' + this.proposal + '-' + visit.VIS;
             }
@@ -210,7 +228,27 @@ export default {
             if(visit.clicked) {
                 visit.clicked = false;
             }
-        }
+        },
+        signHandler(url) {
+            this.sign({
+                url: url,
+                callback: function(resp) {
+                    window.location = url+'?token='+resp.token
+                }
+            })
+        },
+        sign(options) {
+            Backbone.ajax({
+                url: app.apiurl+'/download/sign',
+                method: 'POST',
+                data: {
+                    validity: options.url.replace(app.apiurl, ''),
+                },
+                success: function(resp) {
+                    if (options && options.callback) options.callback(resp)
+                }
+            })
+        },
     },
 
 

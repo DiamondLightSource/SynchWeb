@@ -9,7 +9,7 @@
       :selected="selectedBeamline"
       @filter-selected="updateSelectedFilter"
     />
-    <h1>Visits for {{ months[currentMonth] }} {{ currentYear }}</h1>
+    <h1 data-testid="status-calendar-header">Visits for {{ months[currentMonth] }} {{ currentYear }}</h1>
 
     <div class="tw-w-full tw-flex tw-mb-2">
       <div
