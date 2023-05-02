@@ -8,6 +8,11 @@ use SynchWeb\TemplateParser;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
+use Symfony\Component\HttpFoundation\StreamedResponse;
+use ZipStream\Option\Archive;
+use ZipStream\ZipStream;
+
+ini_set('max_execution_time', 0); // To allow large file downloads
 
 class Download extends Page
 {
@@ -408,6 +413,7 @@ class Download extends Page
     # Get an archive of an autoproc
     function _get_autoproc_archive()
     {
+
         if (!$this->has_arg('prop')) {
             $this->_error('No proposal specific', 'No proposal specified');
         }
@@ -443,31 +449,39 @@ class Download extends Page
         }
 
         $clean_program = preg_replace('/[^A-Za-z0-9\-]/', '', $ap['PROCESSINGPROGRAMS']);
-        $tar = '/tmp/' . $this->arg('AUTOPROCPROGRAMID') . '_' . $clean_program . '.tar';
-        $gz = $tar . '.gz';
-
-        $a = new \PharData($tar);
-        foreach ($files as $file) {
-            $filename = $file['FILEPATH'] . '/' . $file['FILENAME'];
-            $a->addFile($filename, basename($filename));
-        }
-        $a->compress(\Phar::GZ);
-        unlink($tar);
-
-        $response = new BinaryFileResponse($gz);
-        $response->headers->set("Content-Type", "application/octet-stream");
-        $response->setContentDisposition(
-            ResponseHeaderBag::DISPOSITION_ATTACHMENT,
-            $this->arg('AUTOPROCPROGRAMID') . '_' . $clean_program . '.tar.gz'
-        );
-        $response->deleteFileAfterSend(true);
-        $response->send();
-        exit();
+        $zipName = $this->arg('AUTOPROCPROGRAMID')  . '_' . $clean_program;
+        $this->_streamZipFile($files, $zipName);
     }
 
+    /**
+     * Stream a zip file based on files on the file system
+     * @param files array of files to send
+     * @param zipName name of the zip that is sent
+     */
+    function _streamZipFile($files, $zipName)
+    {
+        $response = new StreamedResponse(function () use ($files, $zipName)
+        {
+            # enable output of HTTP headers
+            $options = new Archive();
+            $options->setSendHttpHeaders(true);
+            $options->setContentType('application/octet-stream');
+            $options->setFlushOutput(true);
+            $options->setZeroHeader(true);
+            $options->setEnableZip64(true);
 
-    # ------------------------------------------------------------------------
-    # Set mime and content type for a file
+            # create a new zipstream object
+            $zip = new ZipStream($zipName . '.zip', $options);
+            foreach ($files as $file) {
+                $filename = $file['FILEPATH'] . '/' . $file['FILENAME'];
+                $zip->addFileFromPath(basename($filename), $filename);
+            }
+
+            $zip->finish();
+        });
+        $response->send();
+    }
+
     /** 
      * Set mime and content type headers for the provided response.
      * Determines the mime type from the filename extension.
