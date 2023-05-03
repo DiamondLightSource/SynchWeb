@@ -27,7 +27,7 @@
         <p>Registered Users</p>
         <ul>
             <?php foreach($users as $u): ?>
-                <li><?php echo $u['FULLNAME'] ?></li>
+                <li><?php echo $u['TITLE'] ?> <?php echo $u['GIVENNAME'] ?> <?php echo $u['FAMILYNAME'] ?></li>
             <?php endforeach; ?>
         </ul>
 
