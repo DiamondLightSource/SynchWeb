@@ -191,24 +191,51 @@ class Image extends Page
             if ($n > $info['NUM']) {
                 $this->_error('Not found', 'That image does not exist');
             }
-            
+
             $im = $info['LOC'] . '/' . $info['FT'];
-            $out = '/tmp/'.$this->arg('id').'_'.$n.($this->has_arg('thresh')?'_th':'').'.jpg';
-            
-            if (!file_exists($out)) {
-                $resp = $this->_curl(array(
-                    'url' => 'http://localhost:5000/dc/image',
-                    'jwt' => true,
-                    'data' => array(
-                        'dcid' => $this->arg('id'),
-                        'image' => $n,
-                        'binning' => 4,
-                        'threshold' => $this->has_arg('thresh') ? 1 : 0,
-                    )
-                ));
+            $out = '/tmp/' . $this->arg('id') . '_' . $n . ($this->has_arg('thresh') ? '_th' : '') . '.jpg';
+            global $dials_rest_url, $dials_rest_jwt;
+            if (!file_exists($out)) {                
+                if (!empty($dials_rest_url) && !empty($dials_rest_jwt)) {
+                    $resp = $this->_curl(array(
+                        'url' => $dials_rest_url.'/export_bitmap/',
+                        'HEADERS' => array(
+                            'Content-Type: application/json',
+                            'accept: application/json',
+                            'Authorization: Bearer ' . $dials_rest_jwt,
+                        ),
+                        'POST' => 1,
+                        'FIELDS' => array(
+                            'filename' => $im,
+                            'image_index' => $n,
+                            'binning' => 4,
+                            'display' => $this->has_arg('thresh') ? "threshold" : "image",
+                            'colour_scheme' => 'greyscale',
+                            'brightness' => $this->has_arg('thresh') ? 1000 : 10,
+                            'format' => 'png',
+                        )
+                    ));
+                } else {
+                    $resp = $this->_curl(array(
+                        'url' => 'http://localhost:5000/dc/image',
+                        'jwt' => true,
+                        'data' => array(
+                            'dcid' => $this->arg('id'),
+                            'image' => $n,
+                            'binning' => 4,
+                            'threshold' => $this->has_arg('thresh') ? 1 : 0,
+                        )
+                    ));
+                }
 
                 if ($resp['code'] == 200) {
                     file_put_contents($out, $resp['content']);
+                } else if ($resp['code'] == 403) {
+                    error_log("Not authorised when asking for grid scan image. Has the JWT token expired?". PHP_EOL);
+                    $this->_error('Unauthroised in image service', 'Image server has had an error.');
+                } else {
+                    error_log("Gridscan failed to contact external service. " . $resp['code'] .  " - " . $resp['content'] . PHP_EOL);
+                    $this->_error('Not found', 'Image not provided by image service.');
                 }
             }
             
@@ -219,6 +246,7 @@ class Image extends Page
                 $this->app->response->headers->set("Content-length", $size);
                 readfile($out);
             } else {
+                error_log("Grid scan image file no longer exists and should do.");
                 $this->_error('Not found', 'That image is no longer available');
             }
         }
