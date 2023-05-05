@@ -1007,14 +1007,20 @@ class Page
     {
         $ch = curl_init();
 
+        curl_setopt($ch, CURLOPT_HEADER, array_key_exists('HEADER', $options) ? 1 : 0);
+        if (array_key_exists('HEADERS', $options)) {
+            curl_setopt($ch, CURLOPT_HTTPHEADER, $options['HEADERS']);
+        }
         $headers = getallheaders();
         if (array_key_exists('Authorization', $headers) && array_key_exists('jwt', $options))
         {
             curl_setopt($ch, CURLOPT_HTTPHEADER, array('Authorization: ' . $headers['Authorization']));
         }
+        if (array_key_exists('POST', $options)) curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
+        if (array_key_exists('FIELDS', $options)) curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($options['FIELDS']));
 
         $data = '';
-        if ($options['data'])
+        if (array_key_exists('data', $options))
         {
             $data = '?' . http_build_query($options['data']);
         }
