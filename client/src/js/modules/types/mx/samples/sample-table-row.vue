@@ -53,24 +53,18 @@
       v-slot="{ errors }"
       tag="div"
       class="name-column tw-py-1 tw-px-2"
-      :rules="canEditRow(sample['LOCATION'], editingRow) && !isContainerProcessing && !sampleHasDataCollection && sample['PROTEINID'] > -1 && (!containerId || editingRow === sample['LOCATION']) ? 'required|alpha_dash|max:25|' : ''"
+      :rules="sample['PROTEINID'] > -1 && (!containerId || editingRow === sample['LOCATION']) ? 'required|alpha_dash|max:25|' : ''"
       :name="`Sample ${sampleIndex + 1} Name`"
       :vid="`sample ${sampleIndex + 1} name`"
     >
       <base-input-text
-        v-if="canEditRow(sample['LOCATION'], editingRow) && !isContainerProcessing && !sampleHasDataCollection"
+        :disabled="!canEditRow(sample['LOCATION'], editingRow) || isContainerProcessing || sampleHasDataCollection"
         v-model.trim="NAME"
         input-class="tw-w-full tw-h-8"
         :error-message="errors[0]"
         :quiet="true"
         :error-class="errors[0] ? 'tw-text-xxs ferror' : ''"
       />
-      <p
-        v-else
-        class="tw-text-center"
-      >
-        {{ sample['NAME'] }}
-      </p>
     </validation-provider>
 
     <extended-validation-provider
