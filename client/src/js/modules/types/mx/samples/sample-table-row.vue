@@ -14,7 +14,7 @@
       v-slot="{ errors }"
       class="tw-px-2 protein-column tw-py-1"
       tag="div"
-      :rules="canEditRow(sample['LOCATION'], editingRow) && !isContainerProcessing && !sampleHasDataCollection && sample['NAME'] && (!containerId || editingRow === sample['LOCATION']) ? 'required' : ''"
+      :rules="sample['NAME'] && (!containerId || editingRow === sample['LOCATION']) ? 'required' : ''"
       :name="`Sample ${sampleIndex + 1} Protein`"
       :vid="`sample ${sampleIndex + 1} protein`"
     >
@@ -40,12 +40,12 @@
           </span>
         </template>
       </combo-box>
-      <div
+      <base-input-text
         v-else
-        class="tw-text-center"
-      >
-        {{ sample['ACRONYM'] }}
-      </div>
+        disabled="true"
+        class="tw-w-full tw-text-center"
+        v-model="ACRONYM"
+      />
       <span>{{ errors[0] }}</span>
     </validation-provider>
 
