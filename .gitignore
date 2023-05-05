@@ -37,3 +37,4 @@ api/src/MockUAS.php
 entrypoint.bash
 php-fpm.conf
 php-fpm.pid
+php.ini

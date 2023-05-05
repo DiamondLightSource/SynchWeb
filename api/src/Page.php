@@ -1020,7 +1020,7 @@ class Page
         if (array_key_exists('FIELDS', $options)) curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($options['FIELDS']));
 
         $data = '';
-        if ($options['data'])
+        if (array_key_exists('data', $options))
         {
             $data = '?' . http_build_query($options['data']);
         }
