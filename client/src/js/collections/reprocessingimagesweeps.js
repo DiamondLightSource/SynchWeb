@@ -8,7 +8,7 @@ define(['backbone', 'backbone.paginator', 'models/reprocessingimagesweep'],
 
             
         state: {
-            pageSize: 15,
+            pageSize: 9999,
         },
 
 
