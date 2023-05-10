@@ -54,7 +54,8 @@ class SummaryNew extends Page
     );
 
     public static $dispatch = array(
-        array('/results', 'get', '_get_results')
+        array('/results', 'get', '_get_results'),
+        array('/proposal', 'get', '_get_proposal')
     );
 
     private $summarydb;
@@ -74,14 +75,14 @@ class SummaryNew extends Page
         $order = '';
         $order_arr = array();
         
-        if (!$this->has_arg('prop')) $this->_error('No proposal defined');
+        // if (!$this->has_arg('prop')) $this->_error('No proposal defined');
 
-        // $args = array($this->proposalid);
+        $args = array($this->proposalid);
         // array_push($where_arr, 'p.proposalid = ?');
 
 
         $args = array($this->arg('prop'));
-        array_push($where_arr, 'pt.prop = ?');
+        array_push($where_arr, 'pt.proposalid = ?');
         array_push($order_arr, 'sf.autoProcIntegrationId DESC');
 
 
@@ -161,7 +162,7 @@ class SummaryNew extends Page
 
         }
 
-        // [OPERAND, VALUE, ORDER]
+        // [VALUE, OPERAND, ORDER]
 
         if ($this->has_arg('rca')) {
             $rca_args = explode(',', $this->arg('rca'));
@@ -346,9 +347,12 @@ class SummaryNew extends Page
         $tot_args = $args;
 
         $tot = $this->summarydb->pq(
-            "SELECT sf.autoProcIntegrationId
+            "SELECT COUNT(sf.autoProcIntegrationId) as TOT
              FROM SummaryFact sf
                 JOIN ProposalDimension pt on pt.proposalDimId = sf.proposalDimId
+                JOIN VisitDimension vt on vt.sessionDimId = sf.sessionDimId
+                JOIN ProcessingProgramDimension ppt on ppt.processingProgramsDimId = sf.processingProgramsDimId
+                JOIN SpaceGroupDimension sgt on sgt.spaceGroupDimId = sgt.spaceGroupDimId
              WHERE $where"
             , $tot_args);
     
@@ -416,77 +420,17 @@ class SummaryNew extends Page
 
     }
 
+    function _get_proposal() {
+
+        $rows = $this->summarydb->pq(
+            "SELECT prop, proposalid
+            FROM ProposalDimension pt");
+
+        $this->_output($rows);
+
+    }
+
 
 
 }
 
-
-
-// // ASCENDING and DESCENDING
-        // // dc id
-        // if ($this->has_arg('descdcid')) {
-        //     array_push($order_arr, 'dc.dataCollectionId DESC');
-        // }
-        // if ($this->has_arg('ascdcid')) {
-        //     array_push($order_arr, 'dc.dataCollectionId ASC');
-        // }
-
-        // // ASCENDING and DESCENDING with Outer, Inner, Overall
-        // // rmeas outer
-        // if ($this->has_arg('descrmeasou')) {
-        //     array_push($order_arr, 'RMEASWITHINIPLUSIMINUS_OUTER_1 DESC');
-        // }
-        // if ($this->has_arg('ascrmeasou')) {
-        //     array_push($order_arr, 'RMEASWITHINIPLUSIMINUS_OUTER_1 ASC');
-        // }
-
-
-        // // Filter Params
-        // // dc id
-        // if ($this->has_arg('dcid')) {
-        //     array_push($where_arr, 'dc.dataCollectionId = :'.(sizeof($args)+1));
-        //     array_push($args, $this->arg('dcid'));
-        // }
-        // // if has comment
-        // if ($this->has_arg('com')) {
-        //     array_push($where_arr, "dcc.comments LIKE '%_FLAG_%' ");
-        // }
-        // // processing programs
-        // if ($this->has_arg('pp')) {
-        //     $st = sizeof($args) + 1;
-        //     array_push($where_arr, "lower(app.processingPrograms) LIKE lower(CONCAT(CONCAT('%',:$st),'%')) ESCAPE '$' ");
-        //     array_push($args, $this->arg('pp'));
-        // }
-        //   // refined cell a
-        // if ($this->has_arg('gca')) {
-        //     array_push($where_arr, 'ap.refinedCell_a >= :'.(sizeof($args)+1));
-        //     array_push($args, $this->arg('gca'));
-        // }
-        // // refined cell beta
-        // if ($this->has_arg('gcbe')) {
-        //     array_push($where_arr, 'ap.refinedCell_beta >= :'.(sizeof($args)+1));
-        //     array_push($args, $this->arg('gcbe'));
-        // }
-        // if ($this->has_arg('lcbe')) {
-        //     array_push($where_arr, 'ap.refinedCell_beta <= :'.(sizeof($args)+1));
-        //     array_push($args, $this->arg('lcbe'));
-        // }
-        // // Filter Params Greater/Less than Overall, Outer, Inner
-        // // resolution limit high outer
-        // if ($this->has_arg('grlhou')) {
-        //     array_push($where_arr, 'RESOLUTIONLIMITHIGH_OUTER_1 >= :'.(sizeof($args)+1));
-        //     array_push($args, $this->arg('grlhou'));
-        // }
-        // if ($this->has_arg('lrlhou')) {
-        //     array_push($where_arr, 'RESOLUTIONLIMITHIGH_OUTER_1 <= :'.(sizeof($args)+1));
-        //     array_push($args, $this->arg('lrlhou'));
-        // }
-        // // rmeas within i plus i minus outer
-        // if ($this->has_arg('grmou')) {
-        //     array_push($where_arr, 'RMEASWITHINIPLUSIMINUS_OUTER_1 >= :'.(sizeof($args)+1));
-        //     array_push($args, $this->arg('grmou'));
-        // }
-        // if ($this->has_arg('lrmou')) {
-        //     array_push($where_arr, 'RMEASWITHINIPLUSIMINUS_OUTER_1 <= :'.(sizeof($args)+1));
-        //     array_push($args, $this->arg('lrmou'));
-        // }

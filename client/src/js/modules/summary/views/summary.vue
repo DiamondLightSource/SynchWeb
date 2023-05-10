@@ -29,7 +29,7 @@
                                 Search
                                 </button>
                                 <button @click="clearQueryParams" 
-                                class=" tw-flex tw-text-white tw-text-center hover:tw-text-content-active
+                                class=" tw-flex tw-text-black tw-text-center hover:tw-text-content-active
                                 hover:tw-text-content-active tw-text-xs tw-py-2 tw-px-1 tw-ml-2
                                 " type="button"
                                 >
@@ -52,6 +52,19 @@
                 <template v-slot:filter-bar-content>
 
                     <div class="tw-grid tw-grid-cols-4 tw-gap-2 tw-pb-2">
+
+                            <div class="tw-flex tw-mx-1 ">
+                                <span class="tw-text-base">Proposal</span>
+                                <span class="tw-text-base">Drop Down</span>
+                                <span class="tw-text-base">Value</span>
+
+                            </div>
+                            <div></div>
+                            <div></div>
+                            <div></div>
+                            <div></div>
+                            <div></div>
+                            <div></div>
 
                     <custom-accordian class="tw-pt-6 tw-pb-8"> 
                         <template v-slot:title>
@@ -81,6 +94,8 @@
                     <div class="tw-grid tw-grid-cols-4 tw-grid-flow-col tw-gap-2">
                         
                         <div v-for="options in groupedOptions" :key=options.id class="tw-grid tw-grid-rows-5 tw-grid-flow-col tw-gap-2">
+
+
 
                             <custom-accordian class="tw-pt-6 tw-pb-8" v-for="value in options" :key="value.id">
                             <template v-slot:title>
@@ -132,77 +147,14 @@
                             </template>
                             </custom-accordian>
 
+
                         </div>
 
-                    </div>
 
-                    <div class="tw-pb-2 tw-pt-2">
-
-                        <custom-accordian class="tw-pt-6 tw-pb-8 tw-w-8/12">
-                            <template v-slot:title>
-                            <span class="tw-text-base">Unit Cell</span>
-                            </template>
-                            <template v-slot:content>
-                                <div class="tw-flex">
-                                    <div class="tw-grid tw-grid-cols-2 tw-pt-3 tw-pb-2">
-                                        <div class="tw-space-y-1">
-                                            <input class="tw-w-10/12 tw-block tw-appearance-none tw-text-gray-700 tw-bg-white tw-border 
-                                            hover:tw-border-gray-500 tw-px-4 tw-rounded tw-shadow tw-leading-tight focus:tw-outline-none 
-                                            focus:tw-shadow-outline"
-                                            placeholder="Greater than"
-                                            v-model="searchedGtUnitCellA">
-                                            <input class="tw-w-10/12 tw-block tw-appearance-none tw-text-gray-700 tw-bg-white tw-border 
-                                            hover:tw-border-gray-500 tw-px-4 tw-rounded tw-shadow tw-leading-tight focus:tw-outline-none 
-                                            focus:tw-shadow-outline"
-                                            placeholder="Less than"
-                                            v-model="searchedLtUnitCellA">
-                                        </div>
-                                        <p class="tw-italic">Filter for <br>Unit Cell A</p>
-                                    </div>
-
-                                    <div class="tw-grid tw-grid-cols-2 tw-pt-3 tw-pb-2">
-                                        <div class="tw-space-y-1">
-                                            <input class="tw-w-10/12 tw-block tw-appearance-none tw-text-gray-700 tw-bg-white tw-border 
-                                            hover:tw-border-gray-500 tw-px-4 tw-rounded tw-shadow tw-leading-tight focus:tw-outline-none 
-                                            focus:tw-shadow-outline"
-                                            placeholder="Greater than"
-                                            v-model="searchedGtUnitCellB">
-                                            <input class="tw-w-10/12 tw-block tw-appearance-none tw-text-gray-700 tw-bg-white tw-border 
-                                            hover:tw-border-gray-500 tw-px-4 tw-rounded tw-shadow tw-leading-tight focus:tw-outline-none 
-                                            focus:tw-shadow-outline"
-                                            placeholder="Less than"
-                                            v-model="searchedLtUnitCellB">
-                                        </div>
-                                        <p class="tw-italic">Filter for <br>Unit Cell B</p>
-                                    </div>
-
-                                    <div class="tw-grid tw-grid-cols-2 tw-pt-3 tw-pb-2">
-                                        <div class="tw-space-y-1">
-                                            <input class="tw-w-10/12 tw-block tw-appearance-none tw-text-gray-700 tw-bg-white tw-border 
-                                            hover:tw-border-gray-500 tw-px-4 tw-rounded tw-shadow tw-leading-tight focus:tw-outline-none 
-                                            focus:tw-shadow-outline"
-                                            placeholder="Greater than"
-                                            v-model="searchedGtUnitCellC">
-                                            <input class="tw-w-10/12 tw-block tw-appearance-none tw-text-gray-700 tw-bg-white tw-border 
-                                            hover:tw-border-gray-500 tw-px-4 tw-rounded tw-shadow tw-leading-tight focus:tw-outline-none 
-                                            focus:tw-shadow-outline"
-                                            placeholder="Less than"
-                                            v-model="searchedLtUnitCellC">
-                                        </div>
-                                        <p class="tw-italic">Filter for <br>Unit Cell C</p>
-                                    </div>
-                                </div>
-                                
-                            </template>
-                        </custom-accordian>
-
-                    </div>
-
-
-                    <div class="tw-grid tw-grid-cols-12 tw-pb-2 tw-p-3" tabindex="0"  @focusout="updateParamsFromUserEntered">
+                        <div tabindex="0"  @focusout="updateParamsFromUserEntered">
 
                         <textarea v-model="userEnteredParametersString" spellcheck="false" 
-                        class="tw-p-2 tw-text-white tw-shadow-xl tw-border-table-header-background tw-bg-table-header-background tw-rounded tw-col-span-6">
+                        class="tw-p-2 tw-text-black tw-border tw-border-white tw-bg-white">
                         </textarea>
 
                         <button class="tw-p-2 focus:tw-outline-none" id="copyToClipboard" v-on:click.prevent="copyToClipboard(userEnteredParametersString)">
@@ -210,7 +162,10 @@
                         </button>
 
 
+                        </div>
+
                     </div>
+
                     
 
                 </template>
@@ -273,7 +228,7 @@
 
 
             <div>
-                <p class="tw-text-content-sub-header-background tw-ml-2 tw-mt-2">Select Columns</p>
+                <p class="tw-text-black tw-ml-2 tw-mt-2">Select Columns</p>
                 <div class="tw-py-2 tw-px-6 tw-border tw-rounded-lg tw-border-content-sub-header-background">
                     <div class="tw-relative tw-w-full">
                         <button v-on:click="isHidden = !isHidden" id="dropdownInformationButton" data-dropdown-toggle="dropdown" 
@@ -553,163 +508,6 @@ export default {
                     descParam : 'descdcid',
                     ascParam : 'ascdcid',
                 },
-                {
-                    key: "FILETEMPLATE",
-                    title: 'Prefix',
-                    descParam : 'descpref',
-                    ascParam : 'ascpref',
-                },
-                {
-                    key: "_NAME",
-                    title: 'Sample Name',
-                    descParam : 'descsmpl',
-                    ascParam : 'ascsmpl',
-                },
-                {
-                    key: "STARTTIME",
-                    title: 'Start Time',
-                    descParam : 'descstdt',
-                    ascParam : 'ascstdt',
-                },
-                {
-                    key: "PROCESSINGPROGRAMS",
-                    title: 'Processing Pipeline',
-                    descParam : 'descpp',
-                    ascParam : 'ascpp',
-                },
-                {
-                    key: "SPACEGROUP",
-                    title: 'Space Group',
-                    descParam : 'descsg',
-                    ascParam : 'ascsg',
-                },
-                {
-                    key: "REFINEDCELL_A",
-                    title: 'Unit Cell A',
-                    descParam : 'descrca',
-                    ascParam : 'ascrca',
-                },
-                {
-                    key: "REFINEDCELL_B",
-                    title: 'Unit Cell B',
-                    descParam : 'descrcb',
-                    ascParam : 'ascrcb',
-                },
-                {
-                    key: "REFINEDCELL_C",
-                    title: 'Unit Cell C',
-                    descParam : 'descrcc',
-                    ascParam : 'ascrcc',
-                },
-                {
-                    key: "REFINEDCELL_ALPHA",
-                    title: 'Unit Cell Alpha',
-                    descParam : 'descrca',
-                    ascParam : 'ascrca',
-                },
-                {
-                    key: "REFINEDCELL_BETA",
-                    title: 'Unit Cell Beta',
-                    descParam : 'descrcb',
-                    ascParam : 'ascrcb',
-                },
-                {
-                    key: "REFINEDCELL_GAMMA",
-                    title: 'Unit Cell Gamma',
-                    descParam : 'descrcc',
-                    ascParam : 'ascrcc',
-                },
-                // ----------------------------------------------------
-                {
-                    key: "RMEASWITHINIPLUSIMINUS_INNER",
-                    title: 'RMeas (Inner)',
-                    descParam : 'descrmeasin',
-                    ascParam : 'ascrmeasin',
-                },
-                {
-                    key: "RMEASWITHINIPLUSIMINUS_OUTER",
-                    title: 'RMeas (Outer)',
-                    descParam : 'descrmeasou',
-                    ascParam : 'ascrmeasou',
-                },
-                {
-                    key: "RMEASWITHINIPLUSIMINUS_OVERALL",
-                    title: 'RMeas (Overall)',
-                    descParam : 'descrmeasov',
-                    ascParam : 'ascrmeasov',
-                },
-                {
-                    key: "RESOLUTIONLIMITHIGH_INNER",
-                    title: 'Resolution Limit High (Inner)',
-                    descParam : 'descrlhin',
-                    ascParam : 'ascrlhin',
-                },
-                {
-                    key: "RESOLUTIONLIMITHIGH_OUTER",
-                    title: 'Resolution Limit High (Outer)',
-                    descParam : 'descrlhou',
-                    ascParam : 'ascrlhou',
-                },
-                {
-                    key: "RESOLUTIONLIMITHIGH_OVERALL",
-                    title: 'Resolution Limit High (Overall)',
-                    descParam : 'descrlhov',
-                    ascParam : 'ascrlhov',
-                },
-                {
-                    key: "CCANOMALOUS_INNER",
-                    title: 'CC Anomalous (Inner)',
-                    descParam : 'descccain',
-                    ascParam : 'ascccain',
-                },
-                {
-                    key: "CCANOMALOUS_OUTER",
-                    title: 'CC Anomalous (Outer)',
-                    descParam : 'descccaou',
-                    ascParam : 'ascccaou',
-                },
-                {
-                    key: "CCANOMALOUS_OVERALL",
-                    title: 'CC Anomalous (Overall)',
-                    descParam : 'descccaov',
-                    ascParam : 'ascccaov',
-                },
-                {
-                    key: "RFREEVALUESTART_INNER",
-                    title: 'R Free Initial (Inner)',
-                    descParam : 'descrfsin',
-                    ascParam : 'ascrfsin',
-                },
-                {
-                    key: "RFREEVALUESTART_OUTER",
-                    title: 'R Free Initial (Outer)',
-                    descParam : 'descrfsou',
-                    ascParam : 'ascrfsou',
-                },
-                {
-                    key: "RFREEVALUESTART_OVERALL",
-                    title: 'R Free Initial (Overall)',
-                    descParam : 'descrfsov',
-                    ascParam : 'ascrfsov',
-                },
-                {
-                    key: "RFREEVALUEEND_INNER",
-                    title: 'R Free Final  (Inner)',
-                    descParam : 'descrfein',
-                    ascParam : 'ascrfein',
-                },
-                {
-                    key: "RFREEVALUEEND_OUTER",
-                    title: 'R Free Final (Outer)',
-                    descParam : 'descrfeou',
-                    ascParam : 'ascrfeou',
-                },
-                {
-                    key: "RFREEVALUEEND_OVERALL",
-                    title: 'R Free Final (Overall)',
-                    descParam : 'descrfeov',
-                    ascParam : 'ascrfeov',
-                },
             ],
             filterOptions: {
                 SPACEGROUP : {
@@ -718,120 +516,6 @@ export default {
                     textField: "SPACEGROUPNAME",
                     valueField: "SPACEGROUPNAME",
                     data: []
-                },
-                PROCESSINGPIPELINE : {
-                    title: 'Processing Pipeline',
-                    inputtype: 'combo-box',
-                    textField: "NAME",
-                    valueField: "NAME",
-                    data: []
-                },
-                RESLIMITHIGH_OUTER : {
-                    title: 'Resolution Limit High (Outer)',
-                    inputtype: 'greater-than-less-than',
-                    paramLt: 'lrlhou',
-                    paramGt: 'grlhou',
-
-                },
-                RMEASWIPLUSIMINUS_OUTER : {
-                    title: 'Rmeas (Outer)',
-                    inputtype: 'greater-than-less-than',
-                    paramLt: 'lrmou',
-                    paramGt: 'grmou',
-
-                },
-                CCANOM_OUTER : {
-                    title: 'CC Anomalous (Outer)',
-                    inputtype: 'greater-than-less-than',
-                    paramLt: 'lccou',
-                    paramGt: 'gccou',
-
-                },
-                RFREEINITIAL_OUTER : {
-                    title: 'RFree Initial (Outer)',
-                    inputtype: 'greater-than-less-than',
-                    paramLt: 'lrfiou',
-                    paramGt: 'grfiou',
-
-                },
-                RFREEFINAL_OUTER : {
-                    title: 'RFree Final (Outer)',
-                    inputtype: 'greater-than-less-than',
-                    paramLt: 'lrffou',
-                    paramGt: 'grffou',
-
-                },
-                // ----------------------------
-                RESLIMITHIGH_INNER : {
-                    title: 'Resolution Limit High (Inner)',
-                    inputtype: 'greater-than-less-than',
-                    paramLt: 'lrlhin',
-                    paramGt: 'grlhin',
-
-                },
-                RMEASWIPLUSIMINUS_INNER : {
-                    title: 'Rmeas (Inner)',
-                    inputtype: 'greater-than-less-than',
-                    paramLt: 'lrmin',
-                    paramGt: 'grmin',
-
-                },
-                CCANOM_INNER : {
-                    title: 'CC Anomalous (Inner)',
-                    inputtype: 'greater-than-less-than',
-                    paramLt: 'lccin',
-                    paramGt: 'gccin',
-
-                },
-                RFREEINITIAL_INNER : {
-                    title: 'RFree Initial (Inner)',
-                    inputtype: 'greater-than-less-than',
-                    paramLt: 'lrfiin',
-                    paramGt: 'grfiin',
-
-                },
-                RFREEFINAL_INNER : {
-                    title: 'RFree Final (Inner)',
-                    inputtype: 'greater-than-less-than',
-                    paramLt: 'lrffin',
-                    paramGt: 'grffin',
-
-                },
-                // ----------------------------
-                RESLIMITHIGH_OVERALL : {
-                    title: 'Resolution Limit High (Overall)',
-                    inputtype: 'greater-than-less-than',
-                    paramLt: 'lrlhov',
-                    paramGt: 'grlhov',
-
-                },
-                RMEASWIPLUSIMINUS_OVERALL : {
-                    title: 'Rmeas (Overall)',
-                    inputtype: 'greater-than-less-than',
-                    paramLt: 'lrmov',
-                    paramGt: 'grmov',
-
-                },
-                CCANOM_OVERALL : {
-                    title: 'CC Anomalous (Overall)',
-                    inputtype: 'greater-than-less-than',
-                    paramLt: 'lccov',
-                    paramGt: 'gccov',
-
-                },
-                RFREEINITIAL_OVERALL : {
-                    title: 'RFree Initial (Overall)',
-                    inputtype: 'greater-than-less-than',
-                    paramLt: 'lrfiov',
-                    paramGt: 'grfiov',
-
-                },
-                RFREEFINAL_OVERALL : {
-                    title: 'RFree Final (Overall)',
-                    inputtype: 'greater-than-less-than',
-                    paramLt: 'lrffov',
-                    paramGt: 'grffov',
-
                 },
             },
             selectedProposal : '',
@@ -848,10 +532,10 @@ export default {
     created() {
         this.mapSummaryColumns()
         this.mapFilterOptions()
-        this.searchProposal()
-        this.getSpaceGroupsCollection()
-        this.getProcessingPipelinesCollection() 
-        this.populateSelectedColumns()
+        // this.searchProposal()
+        // this.getSpaceGroupsCollection()
+        // this.getProcessingPipelinesCollection() 
+        // this.populateSelectedColumns()
     },
     mounted() {
         this.mapUserEnteredParameters()
