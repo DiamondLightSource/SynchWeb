@@ -5,7 +5,7 @@ namespace SynchWeb\Database\Type;
 use SqlFormatter;
 use SynchWeb\Database\DatabaseParent;
 
-class MySQL extends DatabaseParent {
+class PureMySQL extends DatabaseParent {
     /** @var string */
     protected $type = 'mysql';
     /** @var string */
@@ -92,8 +92,6 @@ class MySQL extends DatabaseParent {
 
     function pq($query, $args = array(), $upperCaseKeys = true)
     {
-        list($query, $args) = $this->oracle2mysql($query, $args);
-        $query = $this->tablelookup($query);
 
         if ($this->debug)
         {

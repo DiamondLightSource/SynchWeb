@@ -20,6 +20,8 @@ class TemplateParser
         var $params = array();
 
         function __construct($db) {
+
+            print "In BaseClass constructor\n";
             $this->db = $db;
         }
         
