@@ -1,8 +1,7 @@
 define(['marionette', 'views/form',
     'collections/visits',
     'collections/labcontacts',
-    'collections/shipments',
-    'collections/dewars',
+    'collections/countries',
     'modules/shipment/collections/dewarhistory',
 
     'modules/shipment/models/dispatch',
@@ -13,9 +12,37 @@ define(['marionette', 'views/form',
     'backbone-validation',
     
     ], function(Marionette, FormView,
-        Visits, LabContacts, Shipments, Dewars, DewarHistory,
+        Visits, LabContacts, Countries, DewarHistory,
         DispatchModel,
         template, $_, Backbone) {
+
+    /*
+     T&C Dialog
+    */
+     var Terms = Backbone.Model.extend({
+        idAttribute: 'SHIPPINGID',
+        urlRoot: '/shipment/terms',
+    })
+            
+    var TCDialog = DialogView.extend({
+        template: _.template('<%=TERMS%>'),
+        title: 'Terms & Conditions',
+        buttons: {
+            'Accept': 'accept',
+            'Cancel': 'closeDialog',
+        },
+        
+        accept: function() {
+            var self = this
+            this.model.set({ ACCEPTED: 1 })
+            this.model.save(this.model.changedAttributes(), {
+                patch: true,
+                success: function() {
+                    self.closeDialog()
+                }
+            })
+        },
+    })
 
    
     var VVisits = Visits.extend({
@@ -28,7 +55,9 @@ define(['marionette', 'views/form',
         
         events: {
             'change @ui.lc': 'getlcdetails',    
-            'change @ui.exp': 'updateLC',    
+            'change @ui.exp': 'updateLC',
+            'click @ui.useAnotherCourierAccount': 'toggleCourierAccountEditing',
+            'click @ui.facc': 'showTerms'
         },
         
         ui: {
@@ -41,18 +70,27 @@ define(['marionette', 'views/form',
             gn: 'input[name=GIVENNAME]',
             fn: 'input[name=FAMILYNAME]',
             addr: 'textarea[name=ADDRESS]',
+            country: 'select[name=COUNTRY]',
             em: 'input[name=EMAILADDRESS]',
             ph: 'input[name=PHONENUMBER]',
             lab: 'input[name=LABNAME]',
 
-            courier: 'span.courier',
+            facc: 'a.facc',
+            accountNumber: 'input[NAME=DELIVERYAGENT_AGENTCODE]',
+            courier: 'input[name=DELIVERYAGENT_AGENTNAME]',
+            courierDetails: '.courierDetails',
+            facilityCourier: '.facilityCourier',
+            awbNumber: 'input[name=AWBNUMBER]',
+            useAnotherCourierAccount: 'input[name=USE_ANOTHER_COURIER_ACCOUNT]',
+            dispatchState: '.dispatch-state'
         },
 
-
+        labContactCountry : null,
 
         templateHelpers: function() {
             return {
-                DEWAR: this.getOption('dewar').toJSON()
+                DEWAR: this.getOption('dewar').toJSON(),
+                SHIPPING: this.getOption('shipping').toJSON()
             }
         },
         
@@ -61,17 +99,17 @@ define(['marionette', 'views/form',
                 FACILITYCODE: this.getOption('dewar').get('FACILITYCODE'), 
                 DEWARID: this.getOption('dewar').get('DEWARID'), 
                 LABCONTACTID: this.getOption('dewar').get('LABCONTACTID'),
-                VISIT: this.getOption('dewar').get('FIRSTEXPERIMENT')
+                VISIT: this.getOption('dewar').get('FIRSTEXPERIMENT'),
+                // If no agent specified on inbound, default to diamond dhl
+                DELIVERYAGENT_AGENTNAME: this.getOption('shipping').get('DELIVERYAGENT_AGENTNAME') || 'DHL'
             })
         },
         
-        success: function(model, response, options) {
-            console.log('success from dispatch req')
+        success: function() {
             app.trigger('shipment:show', this.getOption('dewar').get('SHIPPINGID'))
         },
 
-        failure: function(model, response, options) {
-            console.log('failure from dispatch req')
+        failure: function() {
             app.alert({ message: 'Something went wrong registering this dispatch request, please try again'})
         },
         
@@ -81,34 +119,79 @@ define(['marionette', 'views/form',
             var d = new Date()
             var today = (d.getDate() < 10 ? '0'+d.getDate() : d.getDate()) + '-' + (d.getMonth() < 9 ? '0'+(d.getMonth()+1) : d.getMonth()+1) + '-' + d.getFullYear()
             this.$el.find('input[name=DELIVERYAGENT_SHIPPINGDATE]').val(today)
-
-            // if (this.model.get('FACILITYCODE')) {
-                // this.ui.courier.html('<select name="DELIVERYAGENT_AGENTNAME"><option value="Diamond DHL">Diamond DHL (UK ONLY)</option><option value="Diamond Fedex">Diamond Fedex (International ONLY)</option></select>')
-            // } else {
-                this.ui.courier.html('<input type="text" name="DELIVERYAGENT_AGENTNAME" />')
-            // }
+            this.$el.find('.facilityCourier').hide()
             
-            var self = this
-            this.ready.done(function() {
-                self.ui.exp.html(self.visits.opts()).val(self.model.get('VISIT'))
-                self.updateLC()
-            })
+            industrial_codes = ['in', 'sw']
+            industrial_visit = industrial_codes.includes(app.prop.slice(0,2))
+            if (industrial_visit) {
+                this.ui.facc.hide()
+            }
+
+            if (this.shipping.get('TERMSACCEPTED') == 0) {
+                this.ui.courier.val(this.shipping.get('DELIVERYAGENT_AGENTNAME'))
+                this.ui.accountNumber.val(this.shipping.get('DELIVERYAGENT_AGENTCODE'))
+                if (this.shipping.get('DELIVERYAGENT_AGENTNAME') && this.shipping.get('DELIVERYAGENT_AGENTCODE')) {
+                    this.ui.courier.attr('disabled', true)
+                    this.ui.accountNumber.attr('disabled', true)
+                }
+                this.model.courierDetailsRequired = true
+            }
+            $.when.apply($, this.ready).done(this.doOnRender.bind(this))
         },
 
-        initialize: function() {
+        doOnRender: function() {
+            this.ui.exp.html(this.visits.opts()).val(this.model.get('VISIT'))
+            this.updateLC()
+            this.populateCountries()
+        },
+
+        populateCountries: function() {
+            if (this.countries.length > 0) {
+                this.ui.country.html(this.countries.opts())
+            }
+            this.ui.country.val(this.labContactCountry)
+        },
+
+        initialize: function(options) {
+            this.dewar = options.dewar
             this.contacts = new LabContacts(null, { state: { pageSize: 9999 } })
             this.listenTo(this.contacts, 'sync', this.updateContacts)
             this.refreshContacts()
 
             var self = this
             this.visits = new VVisits(null, { state: { pageSize: 9999 } })
-            this.ready = this.visits.fetch()
+            this.ready = []
+            this.ready.push(this.visits.fetch())
 
             this.history = new DewarHistory(null, { queryParams: { did: this.getOption('dewar').get('DEWARID') }})
             this.history.fetch().done(function() {
-                var h = self.history.at(0)
-                if (h) self.ui.loc.val(h.get('STORAGELOCATION'))
+                const history = self.history.at(0)
+                const location = history ? history.get('STORAGELOCATION') : null
+                const historyComment = history ? history.get('COMMENTS') : null
+                const restrictedLocations = ['i03', 'i04', 'i04-1', 'i24']
+
+                if (location) {
+                    self.ui.loc.val(location)
+                    if (restrictedLocations.includes(location.toLowerCase())) {
+                        self.ui.dispatchState.text("Warning: This dewar is still on the beamline. We recommend waiting until the dewar returns to storage before requesting it's return. Dewars are not topped up with LN2 after a return is requested.")
+                    } else if (
+                        location.startsWith('tray-') &&
+                        (!historyComment || (typeof historyComment === 'object' && !historyComment.checked))
+                    ) {
+                        self.ui.dispatchState.text("Warning: This dewar has not had it's contents checked. We recommend asking your local contact to check the dewar's contents before requesting it's return. Dewars are not topped up with LN2 after a return is requested.")
+                    }
+                }
             })
+            // Shipping option should be a backbone model
+            this.shipping = options.shipping
+
+            this.terms = new Terms({ SHIPPINGID: this.shipping.get('SHIPPINGID') })
+            this.listenTo(this.terms, 'change:ACCEPTED', this.toggleFacilityCourier)
+            this.ready.push(this.terms.fetch())
+
+            this.countries = new Countries()
+            this.countries.state.pageSize = 9999
+            this.ready.push(this.countries.fetch())
         },
 
         updateLC: function() {
@@ -139,14 +222,40 @@ define(['marionette', 'views/form',
                 this.ui.fn.val(lc.get('FAMILYNAME'))
                 this.ui.em.val(lc.get('EMAILADDRESS'))
                 this.ui.ph.val(lc.get('PHONENUMBER'))
-                this.ui.addr.val([lc.get('ADDRESS'),lc.get('CITY'),lc.get('POSTCODE'),lc.get('COUNTRY')].join("\n"))
                 this.ui.lab.val(lc.get('LABNAME'))
+                this.ui.addr.val([lc.get('ADDRESS'), lc.get('CITY'), lc.get('POSTCODE')].join('\n'))
+                this.labContactCountry = lc.get('COUNTRY')
+                this.ui.country.val(this.labContactCountry)
             }
         },
-        
 
+        showTerms: function() {
+            var terms = new TCDialog({ model: this.terms })
+            this.listenTo(terms, 'terms:accepted', this.termsAccepted, this)
+            if (!this.terms.get('ACCEPTED')) app.dialog.show(terms)
+            return false
+        },
         
-        
+        toggleCourierAccountEditing: function(event) {
+            if (event.target.checked) {
+                this.ui.courier.attr('disabled', false)
+                this.ui.accountNumber.attr('disabled', false)
+            } else {
+                this.ui.courier.val(this.shipping.get('DELIVERYAGENT_AGENTNAME'))
+                this.ui.accountNumber.val(this.shipping.get('DELIVERYAGENT_AGENTCODE'))
+
+                this.ui.courier.attr('disabled', true)
+                this.ui.accountNumber.attr('disabled', true)
+            }
+        },
+
+        toggleFacilityCourier: function() {
+            this.ui.facc.hide()
+            this.ui.courier.val('DHL')
+            this.ui.courierDetails.hide()
+            this.ui.facilityCourier.show()
+            this.model.courierDetailsRequired = false
+        }
     })
 
 })

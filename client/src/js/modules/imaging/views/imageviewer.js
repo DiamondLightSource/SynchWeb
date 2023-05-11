@@ -33,7 +33,7 @@ define(['marionette',
             'click': 'setSelected',
         },
         
-        setSelected: function(e) {
+        setSelected: function() {
             console.log('click score')
             this.model.set('isSelected', true)
         },
@@ -170,7 +170,7 @@ define(['marionette',
                         self.plotObjects()
                     },
                     
-                    error: function(model, response, options) {
+                    error: function(model, response) {
                         app.alert({ message: 'Something went wrong creating that object, please try again: '+response.responseText })
                     },
                 })
@@ -186,7 +186,7 @@ define(['marionette',
         },
         
         
-        remSubsample: function(e) {
+        remSubsample: function() {
             this.draw()
             this.plotObjects()
         },
@@ -195,8 +195,7 @@ define(['marionette',
             return this.model.get('BLSAMPLEID')
         },
 
-        subsamplesSynced: function() {
-            var self = this
+        subSamplesSynced: function() {
             this.attachments.fetch({
                 success: this.populateHeatmap.bind(this)
             })
@@ -216,7 +215,7 @@ define(['marionette',
             }
 
             this.subsamples = options.subsamples
-            this.listenTo(this.subsamples, 'sync', this.subsamplesSynced, this)
+            this.listenTo(this.subsamples, 'sync', this.subSamplesSynced, this)
             this.listenTo(this.subsamples, 'change:BOXSIZEX', this.replotObjects, this)
             this.listenTo(this.subsamples, 'change:BOXSIZEY', this.replotObjects, this)
             this.listenTo(this.subsamples, 'change:PREFERREDBEAMSIZEX', this.replotObjects, this)
@@ -265,13 +264,12 @@ define(['marionette',
             this.resizeObject = false
         },
 
-        selectSubSample: function(e) {
+        selectSubSample: function() {
             this.draw()
             this.plotObjects()
         },
 
         hChanged: function(m) {
-            console.log('h changed', m)
             this.setModel(m)
         },
         
@@ -356,7 +354,7 @@ define(['marionette',
                 this.hist.$el.hide()
             } else (this.ui.hist.hide())
 
-            if (this.getOption('move') !== null && this.getOption('move') == false) this.ui.move.hide()
+            if (this.getOption('move') !== null && !this.getOption('move')) this.ui.move.hide()
             if (this.getOption('scores') !== null && this.getOption('scores') === false) this.$el.find('.scoresel').hide()
             
             $(document).unbind('keypress.imviewer').bind('keypress.imviewer', this.keyPress.bind(this))
@@ -369,13 +367,13 @@ define(['marionette',
                 // The ui.score.val stores the BLSAMPLESCOREID
                 // We need to determine the score from the ascii code entered, then save the BLSAMPLESCOREID in the ui
                 // The updateScores method (triggered by the change event) will then get the correct score value
-                var key = e.which - 48
+                const key = e.which - 48;
 
                 // The model stores string values so need to search by string
-                var sc = this.scores.findWhere({ SCORE: key.toString() })
+                const sc = this.scores.findWhere({SCORE: key.toString()});
 
                 // BLSAMPLEIMAGESCOREID is mapped to 'Clear'
-                var id = 1
+                let id = 1;
 
                 if (sc) {
                     id = sc.get('BLSAMPLEIMAGESCOREID')
@@ -387,7 +385,8 @@ define(['marionette',
 
                 return
             }
-            console.log(e.which)
+
+            let cur, next
             switch (e.which) {    
 
                 // ? toggle help
@@ -419,8 +418,8 @@ define(['marionette',
                 case 97:
                     if (this.ui.hist.hasClass('button-highlight')) {
                         if (!this.historyimages) return
-                        var cur = this.historyimages.indexOf(this.model)
-                        var next = this.historyimages.at(cur-1) || this.historyimages.last()
+                        cur = this.historyimages.indexOf(this.model)
+                        next = this.historyimages.at(cur-1) || this.historyimages.last()
                         if (next) {
                             this.setModel(next)
                             next.set({ isSelected: true })
@@ -434,8 +433,8 @@ define(['marionette',
                 case 100:
                     if (this.ui.hist.hasClass('button-highlight')) {
                         if (!this.historyimages) return
-                        var cur = this.historyimages.indexOf(this.model)
-                        var next = this.historyimages.at(cur+1) || this.historyimages.first()
+                        cur = this.historyimages.indexOf(this.model)
+                        next = this.historyimages.at(cur+1) || this.historyimages.first()
                         if (next) {
                             this.setModel(next)
                             next.set({ isSelected: true })
@@ -449,7 +448,7 @@ define(['marionette',
                 case 113:
                     if (this.ui.hist.hasClass('button-highlight')) {
                         if (!this.historyimages) return
-                        var next = this.historyimages.first()
+                        next = this.historyimages.first()
                         if (next) {
                             this.setModel(next)
                             next.set({ isSelected: true })
@@ -463,7 +462,7 @@ define(['marionette',
                 case 101:
                     if (this.ui.hist.hasClass('button-highlight')) {
                         if (!this.historyimages) return
-                        var next = this.historyimages.last()
+                        next = this.historyimages.last()
                         if (next) {
                             this.setModel(next)
                             next.set({ isSelected: true })
@@ -512,13 +511,12 @@ define(['marionette',
             $(document).unbind('keypress.imviewer')
         },
 
-        drawLarge: function(options) {
-            console.log('image model', this.model, this.model.urlFor('full'), 'drop', this.getOption('drop'))
+        drawLarge: function() {
             this.img.load(this.model.urlFor(app.mobile() ? 'full' : 'hd'))
             this.showProgressBar()
         },
         
-        onImageError: function(options) {
+        onImageError: function() {
             if (!this.low) {
                 this.img.load(this.model.urlFor('full'))
                 this.showProgressBar()
@@ -543,7 +541,7 @@ define(['marionette',
             this.ui.progress.hide()
         },
         
-        onImageLoaded: function(options) {
+        onImageLoaded: function() {
             this.hideProgressBar()
             this.width = this.img.width
             this.height = this.img.height
@@ -565,7 +563,6 @@ define(['marionette',
         
         
         draw: function() {
-            console.log('draw')
             this.ctx.setTransform(this.scalef,0,0,this.scalef,this.offsetx,this.offsety)
             this.ctx.clearRect(0,0,this.width,this.height)
             this.ctx.drawImage(this.img, 0, 0, this.width, this.height)
@@ -637,8 +634,8 @@ define(['marionette',
             var newp = curp*(this.scalef/(last_scale))
             this.offsetx -= newp-curp
 
-            var curp = -this.offsety + xy[1]
-            var newp = curp*(this.scalef/(last_scale))
+            curp = -this.offsety + xy[1]
+            newp = curp*(this.scalef/(last_scale))
             this.offsety -= newp-curp
                          
             this.clampOffsets()
@@ -717,7 +714,6 @@ define(['marionette',
             e.preventDefault()
             if (e.originalEvent.touches && e.originalEvent.touches.length >  1) return
                 if (e.originalEvent.touches && e.originalEvent.touches.length) e = e.originalEvent.touches[0];
-            var c = utils.get_xy(e, this.ui.canvas)
             
             if (this.record) {
                 this.moved = true
@@ -784,7 +780,7 @@ define(['marionette',
 
                         },
 
-                        error: function(model, response, options) {
+                        error: function(model, response) {
                             app.alert({ message: 'Something went wrong moving that object, please try again: '+response.responseText })
                         },
                     })
@@ -793,20 +789,21 @@ define(['marionette',
 
             if (this.drawingRegion) {
                 // swap coords if needed
+                let x1, x2, y1, y2
                 if (this.lineStart.x > this.lineEnd.x) {
-                    var x1 = this.lineEnd.x
-                    var x2 = this.lineStart.x
+                    x1 = this.lineEnd.x
+                    x2 = this.lineStart.x
                 } else {
-                    var x1 = this.lineStart.x
-                    var x2 = this.lineEnd.x
+                    x1 = this.lineStart.x
+                    x2 = this.lineEnd.x
                 }
 
                 if (this.lineStart.y > this.lineEnd.y) {
-                    var y1 = this.lineEnd.y
-                    var y2 = this.lineStart.y
+                    y1 = this.lineEnd.y
+                    y2 = this.lineStart.y
                 } else {
-                    var y1 = this.lineStart.y
-                    var y2 = this.lineEnd.y
+                    y1 = this.lineStart.y
+                    y2 = this.lineEnd.y
                 }
 
                 this.lineStart = {}
@@ -833,7 +830,7 @@ define(['marionette',
                             self.plotObjects()
                         },
                         
-                        error: function(model, response, options) {
+                        error: function(model, response) {
                             app.alert({ message: 'Something went wrong creating that object, please try again: '+response.responseText })
                         },
                     })
@@ -928,8 +925,8 @@ define(['marionette',
         _drawObject: function(options) {
             if (!options.o) return
 
-            var m = this.scalef > 1 ? 1: 1/this.scalef
-            var w = 15*m
+            const m = this.scalef > 1 ? 1 : 1/this.scalef
+            const w = 15 * m
             this.ctx.lineWidth = this.scalef > 1 ? 1 : 1/this.scalef
 
 
@@ -940,7 +937,7 @@ define(['marionette',
 
             var x = parseInt(options.o.get('X'))
             var y = parseInt(options.o.get('Y'))
-            this.ctx.strokeStyle = options.o.get('isSelected') ? 'turquoise' : 'red'
+            this.ctx.strokeStyle = options.o.get('isSelected') ? 'turquoise' : options.o.get('SOURCE') === 'auto' ? 'darkblue' : 'red'
 
             var colors = {
                 GR: '#fdfd96',
@@ -1001,7 +998,7 @@ define(['marionette',
 
             if (options.dashed) this.ctx.restore()
 
-            this.ctx.fillStyle = options.o.get('isSelected') ? 'turquoise' : 'red'
+            this.ctx.fillStyle = options.o.get('isSelected') ? 'turquoise' : options.o.get('SOURCE') === 'auto' ? 'darkblue' : 'red'
             this.ctx.font = parseInt(14*m)+'px Arial'
             this.ctx.fillText(parseInt(options.o.get('RID'))+1,x-(m*15), y-(m*6))
         },
@@ -1024,32 +1021,33 @@ define(['marionette',
         },
 
         drawGrid: function(o) {
+            let i;
             if (!o.get('BOXSIZEX') || !o.get('BOXSIZEY')) return
-            if (o.get('BOXSIZEX') == 0 || o.get('BOXSIZEY') == 0) return
+            if (o.get('BOXSIZEX') === 0 || o.get('BOXSIZEY') === 0) return
 
-            var mppx = this.model.get('MICRONSPERPIXELX') || 3
-            var mppy = this.model.get('MICRONSPERPIXELY') || 3
+            const mppx = this.model.get('MICRONSPERPIXELX') || 3;
+            const mppy = this.model.get('MICRONSPERPIXELY') || 3;
 
-            var px = parseInt(o.get('BOXSIZEX'))/mppx
-            var py = parseInt(o.get('BOXSIZEY'))/mppy
+            const px = parseInt(o.get('BOXSIZEX')) / mppx;
+            const py = parseInt(o.get('BOXSIZEY')) / mppy;
 
             this.ctx.save()
             this.ctx.setLineDash([5/this.scalef,5/this.scalef])
             this.ctx.strokeStyle = 'red'
             this.ctx.lineWidth = 1
 
-            var x = parseInt(o.get('X'))
-            var y = parseInt(o.get('Y'))
-            var x2 = parseInt(o.get('X2'))
-            var y2 = parseInt(o.get('Y2'))
+            const x = parseInt(o.get('X'));
+            const y = parseInt(o.get('Y'));
+            const x2 = parseInt(o.get('X2'));
+            const y2 = parseInt(o.get('Y2'));
 
-            for (var i = x+px; i < x2; i += px) {
+            for (i = x+px; i < x2; i += px) {
                 this.ctx.moveTo(i,o.get('Y'))
                 this.ctx.lineTo(i,o.get('Y2'))
                 this.ctx.stroke()
             }
 
-            for (var i = y+py; i < y2; i += py) {
+            for (i = y+py; i < y2; i += py) {
                 this.ctx.moveTo(o.get('X'),i)
                 this.ctx.lineTo(o.get('X2'),i)
                 this.ctx.stroke()
@@ -1065,17 +1063,16 @@ define(['marionette',
         },
 
         plotObjects: function() {
-            console.log('plot obj', this.subsamples.length, this.subsamples, arguments)
-
             if (this.rankOption) {
-                var vals = this.subsamples.map(function(m) { 
+                const values = this.subsamples.map(function(m) {
                     if (m.get(this.rankOption.value)) return m.get(this.rankOption.value) 
                 }, this)
-                this.rankOption.paramdist = [_.min(vals), _.max(vals)]
+                this.rankOption.paramdist = [_.min(values), _.max(values)]
             }
-
             this.subsamples.each(function(o) {
-                this._drawObject({ o: o })
+                if (Number(this.model.get('BLSAMPLEIMAGEID')) === Number(o.get('BLSAMPLEIMAGEID')) || o.get('SOURCE') === 'manual') {
+                    this._drawObject({ o })
+                }
             }, this)
 
             if (this.getOption('showHeatmap')) {
@@ -1095,11 +1092,12 @@ define(['marionette',
             if (this.attachments.length) this.ui.pia.show()
             else this.ui.pia.hide()
 
-            var types = _.unique(this.attachments.pluck('FILENAME'))
-            var sel = []
+            const types = _.unique(this.attachments.pluck('FILENAME'));
+            const sel = [];
             _.each(types, function(ty) {
                 sel.push('<option value="'+ty+'">'+ty.replace('.json', '')+'</option>')
             })
+            sel.push('<option value="">None</option>')
             this.ui.pia.html(sel.join(''))
             this.changeHeatmap()
         },
@@ -1126,11 +1124,10 @@ define(['marionette',
 
             $.when.apply($, ready).done(function() {
                 // this is fucking stupid, different response based on length of args
-                var args = actual.length == 1 ? [arguments] : arguments
+                var args = actual.length === 1 ? [arguments] : arguments
 
                 var data = [{ x: 10, y: 10, value: 1, radius: 1 }]
                 _.each(actual, function(ss, sid) {
-                    // console.log('matching', ss.get('BLSUBSAMPLEID'), self.attachments.findWhere({ BLSUBSAMPLEID: ss.get('BLSUBSAMPLEID') }), sid, args[sid])
                     var att = self.attachments.findWhere({ BLSUBSAMPLEID: ss.get('BLSUBSAMPLEID') })
                     if (att) {
                         data = data.concat(self.parseAttachment(ss, att, args[sid][0]))
@@ -1157,27 +1154,28 @@ define(['marionette',
             var data = []
             _.each(resp, function(v,k) {
                 // Account for vertical grid scans
-                if (att.get('ORIENTATION') == 'vertical') {
-                    var xstep = Math.floor(k / att.get('STEPS_Y'))
-                    var ystep = k % att.get('STEPS_Y')
+                let xstep, ystep, x, y
+                if (att.get('ORIENTATION') === 'vertical') {
+                    xstep = Math.floor(k / att.get('STEPS_Y'))
+                    ystep = k % att.get('STEPS_Y')
 
-                    if (att.get('SNAKED') == 1) {
-                         if (xstep % 2 == 1) ystep = (att.get('STEPS_Y')-1) - ystep
+                    if (att.get('SNAKED') === 1) {
+                         if (xstep % 2 === 1) ystep = (att.get('STEPS_Y')-1) - ystep
                     }
 
-                    var x = xstep * sw + sw/2 + parseInt(ss.get('X'))
-                    var y = ystep * sh + sh/2 + parseInt(ss.get('Y'))
+                    x = xstep * sw + sw/2 + parseInt(ss.get('X'))
+                    y = ystep * sh + sh/2 + parseInt(ss.get('Y'))
 
                 } else {
-                    var xstep = k % att.get('STEPS_X')
-                    var ystep = Math.floor(k / att.get('STEPS_X'))
+                    xstep = k % att.get('STEPS_X')
+                    ystep = Math.floor(k / att.get('STEPS_X'))
 
-                    if (att.get('SNAKED') == 1) {
-                         if (ystep % 2 == 1) xstep = (att.get('STEPS_X')-1) - xstep
+                    if (att.get('SNAKED') === 1) {
+                         if (ystep % 2 === 1) xstep = (att.get('STEPS_X')-1) - xstep
                     }
 
-                    var x = xstep * sw + sw/2 + parseInt(ss.get('X'))
-                    var y = ystep * sh + sh/2 + parseInt(ss.get('Y'))
+                    x = xstep * sw + sw/2 + parseInt(ss.get('X'))
+                    y = ystep * sh + sh/2 + parseInt(ss.get('Y'))
                 }
 
                 data.push({ x: parseInt(x), y: parseInt(y), value: v < 1 ? 0 : v, 

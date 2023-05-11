@@ -52,7 +52,6 @@ define(['backbone',
 
             DESCRIPTION: {
                 required: true,
-                pattern: 'wwsdash',
             }
         }
     })
@@ -144,6 +143,7 @@ define(['backbone',
                     this.ui.submit.show()
                     this.ui.termsq.hide()
                     this.ui.terms.show()
+                    this.shipment.validation.DELIVERYAGENT_AGENTCODE.required = false
                 } else {
                     this.ui.facc.show()
 
@@ -184,6 +184,9 @@ define(['backbone',
             this.quotes.queryParams.sid = this.shipment.get('SHIPPINGID')
 
             this.shipment.validation = JSON.parse(JSON.stringify(this.shipment.__proto__.validation))
+            if (this.shipment.get('TERMSACCEPTED') === '0') {
+                this.shipment.validation.DELIVERYAGENT_AGENTCODE.required = true;
+            }
             this.shipment.validation.DELIVERYAGENT_SHIPPINGDATE.required = true
             this.shipment.validation.PHYSICALLOCATION.required = true
             this.shipment.validation.READYBYTIME.required = true
@@ -358,7 +361,7 @@ define(['backbone',
                         try {
                             json = $.parseJSON(xhr.responseText)
                         } catch(err) {
-
+                            console.error("Error parsing response: ", err)
                         }
                     }
                     app.alert({ message: json.message })
@@ -401,7 +404,7 @@ define(['backbone',
 
             var prod = null
             if ((app.options.get('facility_courier_countries').indexOf(this.lc.get('COUNTRY')) == -1 && app.options.get('facility_courier_countries_nde').indexOf(this.lc.get('COUNTRY')) == -1) || !this.terms.get('ACCEPTED')) {
-                var prod = this.$el.find('input[type=radio]:checked').val()
+                prod = this.$el.find('input[type=radio]:checked').val()
                 if (!prod) {
                     app.alert({ message: 'You must select a quote' })
                     this.ui.submit.prop('disabled', false)
@@ -419,7 +422,7 @@ define(['backbone',
             }
 
             this.$el.addClass('loading')
-            app.alert({ message: 'Creating Airway Bill and Booking Pickup, Please Wait...'})
+            app.alert({ message: 'Creating Air Waybill and Booking Pickup, Please Wait...'})
 
             var self = this
             Backbone.ajax({
@@ -432,7 +435,7 @@ define(['backbone',
                     PRODUCTCODE: prod,
                 },
                 success: function(resp) {
-                    app.alert({ message: 'Airway Bill Successfully Created'})
+                    app.alert({ message: 'Air Waybill Successfully Created'})
                     setTimeout(function() {
                         app.trigger('shipment:show', self.shipment.get('SHIPPINGID'))
                     }, 1000)
@@ -446,7 +449,7 @@ define(['backbone',
                         try {
                             json = $.parseJSON(xhr.responseText)
                         } catch(err) {
-
+                            console.error("Error parsing response: ", err)
                         }
                     }
                     app.alert({ message: json.message })

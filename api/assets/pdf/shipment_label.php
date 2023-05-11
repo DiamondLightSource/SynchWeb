@@ -21,12 +21,11 @@
             <div class="ca">
                 <img src="assets/images/dls_logo.jpg" width="250px" />
                 <br />
-                <br />
 
                 <barcode code="<?php echo $d['BARCODE'] ?>" type="QR" size="0.75" height="1.5" />
                 <div class="mono">*<?php echo $d['BARCODE'] ?>*</div>
             </div>
-    
+
             <?php if ($d['AUTO'] > 0): ?>
                 <div class="notification notification-inline">
                     <h1>Auto Collect</h1>
@@ -70,6 +69,21 @@
                     <td><?php echo $d['BEAMLINEOPERATOR'] ?></td>
                 </tr>
             </table>
+
+            <div class="float-left px150 title-wrapper">
+                <div class="grey container-title">
+                    Containers (<?php echo $d['CONTAINERS'] ?>)
+                </div>
+            </div>
+            <div class="containers-list">
+                <?php foreach(explode(',', $d['CONTAINERSBARCODE']) as $bar_code) { ?>
+                    <div class="container-item"><?php echo strlen($bar_code) > 15 ? substr($bar_code,0,14).'+' : $bar_code ?></div>
+                <?php }?>
+                <?php if ($d['CONTAINERS'] > 10) { ?>
+                    <div class="container-item"><?php echo " plus " . ($d['CONTAINERS'] - count(explode(',', $d['CONTAINERSBARCODE']))) . " more" ?></div>
+                <?php }?>
+            </div>
+
         </div>
         <pagebreak />
 
@@ -79,17 +93,13 @@
             <div class="right thirty ca">
                 <img src="assets/images/dls_logo.jpg" width="250px" />
 
-                <br />
-                <br />
-
-                <p class="bold">Frozen samples in Dry-Shipper for experiments at facility</p>
-                <br />
-                <p class="bold">Not restricted,<br />As per IATA special provision A152</p>
-
                 <img src="assets/images/arrow.png"  width="250px" />
 
                 <p class="bold">HANDLE WITH CARE</p>
                 <p class="bold">DO NOT DROP</p>
+
+                <br />
+                <p class="bold">Cryogenic dry shipper. Not restricted,<br/>ADR A346, IATA A152.</p>
 
                 <?php if ($d['AUTO'] > 0): ?>
                     <div class="notification">
@@ -105,10 +115,7 @@
             </div>
 
             <div>
-                <div class="left large bold" style="width: 70px">TO:</div>
-                <div class="pad-left">
-                    <p class="large bold"><?php echo $ship['FACILITYADDRESS'] ?></p>
-                </div>
+                <p class="large bold" style="padding-left: 20"><?php echo $ship['FACILITYADDRESS'] ?></p>
             </div>
 
             <div class="pad" style="padding-top: 0">
@@ -174,17 +181,13 @@
             <div class="right thirty ca">
                 <img src="assets/images/dls_logo.jpg" width="250px" />
 
-                <br />
-                <br />
-
-                <p class="bold">Frozen samples in Dry-Shipper for experiments at DLS</p>
-                <br />
-                <p class="bold">Not restricted,<br />As per IATA special provision A152</p>
-
                 <img src="assets/images/arrow.png"  width="250px" />
 
                 <p class="bold">HANDLE WITH CARE</p>
                 <p class="bold">DO NOT DROP</p>
+
+                <br />
+                <p class="bold">Cryogenic dry shipper. Not restricted,<br/>ADR A346, IATA A152.</p>
             </div>
 
             <div class="ca pad">
@@ -193,16 +196,13 @@
             </div>
 
             <div>
-                <div class="left large bold" style="width: 70px">TO:</div>
-                <div class="pad-left">
-                    <p class="large bold">
-                        <?php echo ucfirst($ship['GIVENNAME2']) ?> <?php echo strtoupper($ship['FAMILYNAME2']) ?><br />
-                        <?php echo $ship['LABNAME2'] ?><br />
-                        <?php echo $ship['ADDRESS2'] ?><br />
-                        <span class="normal">Tel: <?php echo $ship['PHONENUMBER2'] ?></span><br />
-                        <span class="normal">Fax: <?php echo $ship['FAXNUMBER2'] ?></span><br />
-                    </p>
-                </div>
+                <p class="large bold" style="padding-left: 20">
+                    <?php echo ucfirst($ship['GIVENNAME2']) ?> <?php echo strtoupper($ship['FAMILYNAME2']) ?><br />
+                    <?php echo $ship['LABNAME2'] ?><br />
+                    <?php echo $ship['ADDRESS2'] ?><br />
+                    <span class="normal">Tel: <?php echo $ship['PHONENUMBER2'] ?></span><br />
+                    <span class="normal">Fax: <?php echo $ship['FAXNUMBER2'] ?></span><br />
+                </p>
             </div>
 
             <div class="pad" style="padding-top: 0">

@@ -1,19 +1,19 @@
 .dc {
     background: $content-fill-color;
-    @include cols(4,0.5%,0.5%);
+    @mixin cols 4,0.5%,0.5%;
     display: inline-block;
     border-radius: 5px;
 
     @media (max-width: $breakpoint-medium) {
-        @include cols(3,0.5%,1%);
+        @mixin cols 3,0.5%,1%;
     }
     
     @media (max-width: $breakpoint-small) {
-        @include cols(2,0.5%,1%);
+        @mixin cols 2,0.5%,1%;
     }
     
     @media (max-width: $breakpoint-vsmall) {
-        @include cols(1,0.5%,1%);
+        @mixin cols 1,0.5%,1%;
     }
     
     &.selected {

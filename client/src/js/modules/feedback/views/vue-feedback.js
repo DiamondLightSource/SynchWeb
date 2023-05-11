@@ -11,7 +11,6 @@ define(['vue',
 
     return VueWrapper.extend({
         vueView: Vue.extend({
-            template: template,
 
             data: function() {
                 return {
@@ -63,7 +62,7 @@ define(['vue',
                     model.save({}, {
                         success: function(model, response, options) {
                             // Indicate success and reset form
-                            app.alert({message: "Feedback successfully submitted"})
+                            app.message({message: "Feedback successfully submitted"})
                             self.isLoading = false
                             self.resetForm()
                         },
@@ -74,7 +73,8 @@ define(['vue',
                         }
                     })
                 }
-            }
+            },
+            template: template
         })
     })
 })

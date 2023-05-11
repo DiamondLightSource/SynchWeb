@@ -5,7 +5,7 @@ define(['collections/samples',
     return Samples.extend(_.extend({}, KVCollection, {
         model: Instance,
 
-        keyAttribute: 'NAME',
+        keyAttribute: 'ACRONYM',
         valueAttribute: 'BLSAMPLEID'
     }))
 

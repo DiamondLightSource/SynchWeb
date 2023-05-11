@@ -3,12 +3,11 @@ define(['backbone', 'modules/dc/models/downstream'], function(Backbone, DownStre
   return Backbone.Collection.extend({
     model: DownStream,
                                     
-    url: function() { return '/dc/dp/' + this.id },
+    url: function() { return '/processing/downstream/' + this.id },
 
     initialize: function(models, options) {
       this.id = options.id
     },
-
   })
        
 })

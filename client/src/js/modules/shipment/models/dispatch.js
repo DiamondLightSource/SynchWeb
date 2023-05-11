@@ -11,7 +11,7 @@ define(['backbone'], function(Backbone) {
         },
 
         LOCATION: {
-            required: true,
+            required: false,
             pattern: 'wwsdash'
         },
 
@@ -21,8 +21,8 @@ define(['backbone'], function(Backbone) {
         },
 
         LOCALCONTACT: {
-            required: true,
-            pattern: 'wwsdash'
+            required: false,
+            pattern: 'wwsddash'
         },
 
 
@@ -55,6 +55,15 @@ define(['backbone'], function(Backbone) {
             required: true
         },
 
+        COUNTRY: {
+            required: true,
+            pattern: 'country',
+            fn: function (value, attr, state) {
+                if (value === null) {
+                    return 'That didn\'t work, please select again'
+                }
+            }
+        },
 
 
         DESCRIPTION: {
@@ -68,13 +77,15 @@ define(['backbone'], function(Backbone) {
 
         
         DELIVERYAGENT_AGENTNAME: {
-            required: true,
+            required: function() {
+                return this.courierDetailsRequired
+            },
             pattern: 'wwsdash'
         },
 
         DELIVERYAGENT_AGENTCODE: {
             required: function() {
-                return !(this.get('FACILITYCODE'))
+                return this.courierDetailsRequired
             }   
         },
 
@@ -84,7 +95,8 @@ define(['backbone'], function(Backbone) {
         }
 
     },
-      
+
+    courierDetailsRequired: false, // We want to set this default to false unless 'DELIVERYAGENT_AGENTCODE' has a value in the shipment model
   })
        
 })

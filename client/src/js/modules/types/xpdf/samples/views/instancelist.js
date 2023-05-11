@@ -39,6 +39,7 @@ define(['marionette', 'backgrid',
                 columns: [
                         { name: 'NAME', label: 'Name', cell: 'string', editable: false},
                         { name: 'CRYSTAL', label: 'Sample', cell: 'string', editable: false},
+                        { name: 'ACRONYM', label: 'Acronym', cell: 'string', editable: false },
                         { name: 'COMMENTS', label: 'Comments', cell: 'string', editable: false },
                         { name: 'THEORETICALDENSITY', label: 'Crystallographic Density', cell: 'string', editable: false},
                         { name: 'PACKINGFRACTION', label: 'Packing Fraction', cell:'string', editable: false},

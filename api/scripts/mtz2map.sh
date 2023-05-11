@@ -8,7 +8,7 @@ cd /tmp
 
 # If not, define the environment variables required below
 #export CCP4_MASTER=/dls_sw/apps/ccp4/<ccp4 version>
-export CCP4_MASTER=/dls_sw/apps/ccp4/latest/ccp4-7.1
+export CCP4_MASTER=/dls_sw/apps/ccp4/latest/ccp4-8.0
 export CINCL=$CCP4_MASTER/include
 export CLIBD=$CCP4_MASTER/lib/data
 
@@ -69,7 +69,7 @@ gzip "/tmp/$2_$3_fofc.map"
 
 
 else
-$root/fft HKLIN $1 MAPOUT "/tmp/$2_ep.map" << eof
+$root/fft HKLIN $1 MAPOUT "/tmp/$2_$3.map" << eof
 title $2 fofc
 xyzlim asu
 scale F1 1.0
@@ -82,6 +82,6 @@ eof
 #BORDER 5
 #eof
 
-gzip "/tmp/$2_ep.map"
+gzip "/tmp/$2_$3.map"
 
 fi

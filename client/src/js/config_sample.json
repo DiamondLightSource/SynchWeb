@@ -22,7 +22,12 @@
 
     "ga_ident": "",
 
+    "_data_catalogue_comment": " Remove the data_catalogue object if you don't want a link on the landing page",
+    "data_catalogue": {
+		"name": "Data Catalogue",
+		"url": "https://datacatalogue.example.org"
+    },
+
     "site_name": "my site",
-    "site_link": "https://www.mysite.com",
-    "site_image": "diamond_gs_small.png"
+    "site_link": "https://www.mysite.com"
 }

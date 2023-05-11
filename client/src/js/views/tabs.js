@@ -10,8 +10,9 @@ define(['marionette',
   var TabItem = Marionette.ItemView.extend({
     tagName: 'li',
     initialize: function(options) {
-      var id = this.model.get(this.getOption('tabID')).replace(/\s+/g, '')
-      this.template = _.template('<a href="#tabs-'+id+'"><%='+this.getOption('tabTitle')+'%></a>')
+      var id = this.model.escape(this.getOption('tabID')).replace(/\s+/g, '')
+      var title = this.model.get(this.getOption('tabTitle'))
+      this.template = _.template('<a href="#tabs-'+id+'">'+title+'</a>')
     }
   })
     

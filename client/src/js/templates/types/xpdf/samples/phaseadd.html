@@ -8,7 +8,13 @@
             <li>
                 <label>Name
                 <span class="small">Name of the phase</span></label>
-                <span class="name"><input type="text" name="NAME" /></span>
+                <span class="name"><input type="text" name="NAME" disabled="disabled" /></span>
+            </li>
+
+            <li>
+                <label>Acronym
+                <span class="small">Short form of phase name (must be unique!)</span></label>
+                <span class="acronym"><input type="text" name="ACRONYM" /></span>
             </li>
 
             <li>
@@ -30,7 +36,6 @@
 
         </ul>
         
-        <input class="acronym" type="hidden" name="ACRONYM" />
         <button name="submit" value="1" type="submit" class="button submit"><i class="fa fa-plus"></i> Add Phase</button>
 
     </div>

@@ -4,7 +4,7 @@ define([], function() {
         menu: {
             dc: 'View All Data',
             visits: 'Visits',
-            calendar: 'Calendar',
+            cal: 'Calendar',
             shipments: 'Shipments',
             samples: 'Samples',
             proteins: 'Components',
@@ -17,7 +17,7 @@ define([], function() {
         },
         
         admin: {
-            faults: { title: 'Fault Reports', icon: 'tasks' },
+            faults: { title: 'Fault Reports', icon: 'fa-tasks' },
         },
     }
     

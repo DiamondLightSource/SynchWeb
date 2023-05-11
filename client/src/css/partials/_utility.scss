@@ -1,41 +1,43 @@
 // Clearfix
 .clearfix {
-    @include clearfix;
+    @util clearfix;
 }
 
 
 // Two column
 .right {
     float: right;
-    @include cols(2,0 0 0 1%);
-    
+    @mixin cols 2,0 0 0 1%;
+
     &.third {
-        @include cols(3,0 1% 0 0);
+        @mixin cols 3,0 1% 0 0;
     }
 
     &.twothird {
-        @include cols(3,0 1% 0 0, 0, 2);   
+        @mixin cols 3,0 1% 0 0, 0, 2;
     }
-
-    @media (max-width: $breakpoint-vsmall) {
-        @include cols(1,0);
+}
+@media (max-width: $breakpoint-vsmall) {
+    .right {
+        @mixin cols 1,0;
     }
 }
 
 .left {
     float: left;
-    @include cols(2,0 1% 0 0);
+    @mixin cols 2,0 1% 0 0;
 
     &.third {
-        @include cols(3,0 1% 0 0);
+        @mixin cols 3,0 1% 0 0;
     }
 
     &.twothird {
-        @include cols(3,0 1% 0 0, 0, 2);   
+        @mixin cols 3,0 1% 0 0, 0, 2;
     }
-    
-    @media (max-width: $breakpoint-vsmall) {
-        @include cols(1,0);
+}
+@media (max-width: $breakpoint-vsmall) {
+    .left {
+        @mixin cols 1,0;
     }
 }
 
@@ -58,6 +60,8 @@
     text-align: right;
 }
 
+/* TODO: If we can ever get rid of this class, we can also remove the
+   work-around in plotly support which needs to circumvent it */
 .active {
     background: $content-active;
 }
@@ -88,11 +92,11 @@
 
 
 @media (max-width: $breakpoint-vsmall) {
-    
+
     h1 {
         font-size: 12px;
     }
-    
+
 }
 
 
@@ -100,17 +104,19 @@
 .loading {
     opacity: 0.4;
     position: relative;
-    
+    z-index: 10;
+    height: 0;
+
     &:after {
         margin: auto;
-        top: 50%;
-        left: 50%;
-        position: absolute;
+        top: 15%;
+        left: 47%;
+        position: fixed;
         font-family: 'FontAwesome';
         font-size: 60px;
         content: '\f110';
         opacity: 1;
-        
+
         -webkit-animation:spin 2s linear infinite;
         -moz-animation:spin 2s linear infinite;
         animation:spin 2s linear infinite;
@@ -141,18 +147,18 @@
     text-decoration: none;
     border-radius: 3px;
     background: linear-gradient($content-page-background, $content-dark-background);
-    
+
     &:hover {
         background: linear-gradient($content-dark-background, $content-page-background);
     }
 
     &.active {
-        background: linear-gradient(lighten($content-active,10%), $content-active);
+        background: linear-gradient($content-active-tint, $content-active);
         &:hover {
-            background: linear-gradient($content-active, lighten($content-active,10%));
+            background: linear-gradient($content-active, $content-active-tint);
         }
     }
-    
+
     span {
         font-size: 11px;
 
@@ -160,15 +166,19 @@
             font-size: 18px;
         }
     }
-    
+
     &.button-notext {
         span {
             display: none;
         }
     }
-    
+
     &.button-highlight {
         background: linear-gradient($content-highlight, $content-page-background);
+    }
+
+    &:disabled {
+        cursor: not-allowed;
     }
 }
 
@@ -186,7 +196,7 @@
     -webkit-overflow-scrolling: touch;
   	overflow-y: scroll;
     overflow-x: scroll;
-    
+
     iframe {
         width: 100%;
         height: 100%;
@@ -198,8 +208,8 @@ ul.ui-autocomplete {
     z-index: 9999;
 }
 
-.super { 
-    position: relative; top: -0.5em; font-size: 80%; 
+.super {
+    position: relative; top: -0.5em; font-size: 80%;
 }
 
 .justify {
@@ -229,7 +239,7 @@ ul.ui-autocomplete {
     li.minor {
         &:after {
             content: '\f06a';
-            color: darken($content-minor, 5%);
+            color: $content-minor-shade;
         }
     }
 

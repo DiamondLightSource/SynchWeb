@@ -1,8 +1,7 @@
 define(['backbone'], function(Backbone) {
     
-  	return Backbone.Model.extend({
-    	urlRoot: '/options'
-    })
+    return Backbone.Model.extend({
+      urlRoot: '/options'
+  })
 
 })
-    

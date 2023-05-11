@@ -3,7 +3,7 @@ define(['backbone.paginator', 'models/apmessage'], function(PageableCollection, 
     return PageableCollection.extend({
         model: APMessage,
         mode: 'client',
-        url: '/dc/apm',
+        url: '/processing/messages',
 
         state: {
             pageSize: 15,

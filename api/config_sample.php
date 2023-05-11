@@ -4,7 +4,6 @@
     # - Many of the parameters in this file will in due course move into the
     #   database
 
-
     # Production / Dev Mode Switch
     # - Dev mode enabled debugging to stdout in addition to httpd error_log
     #   Values: dev | production
@@ -14,17 +13,14 @@
     $isb  = array('user' => 'user', 'pass' => 'pass', 'db' => 'localhost/ispyb');
     $dbtype = 'mysql';
 
-
     # Encoded JWT key, used to sign and check validaty of jwt tokens
     # - Create one of these using /api/authenticate/key
     #   This can be changed to invalidate all currently active tokens
     $jwt_key = '';
 
-
     # Auth type
     # Can be cas, ldap
     $authentication_type = 'cas';
-
 
     # CAS url (if using cas, assume https)
     $cas_url = 'cas.server.ac.uk';
@@ -35,11 +31,11 @@
     # CAS CA Cert (for SSO)
     $cacert = '/etc/certs/ca-bundle.crt';
 
-
     # ldap server, used for lookup and authentication (if using)
     # Update the ldap(s) prefix, hostname and search settings as required
     $ldap_server = 'ldaps://ldap.example.com';
     $ldap_search = 'ou=people,dc=example,dc=com';
+    $ldap_use_tls = false; # default - i.e. don't use secured LDAP connection
 
     # Upload directory
     # - used for user image uploads
@@ -89,42 +85,28 @@
         'pipeline=dials ' => 'DIALS',
     );
 
+    # Filtered downstream jobs
+    $downstream_filter = array();
+
     # Crystal alignment programs
     $strat_align = array('XOalign', 'dials.align_crystal');
 
-    # Places to search for autoprocessing and screening statuses. File scraping is done if no database value is available.
-    $ap_statuses = array(
-        'locations' => array('/processed', 'tmp'),
+    # List of enabled container types, all if empty
+    $enabled_container_types = array();
 
-        'types' => array(
-            'screening' => array(
-                # Name on datacollectionpage => (folder, log file, grep for success, database name for matching)
-                "Mosflm" => array('simple_strategy/', 'strategy_native.log', 'Phi start'),
-                "EDNA" => array('edna/', 'summary.html', 'Selected spacegroup'),
-            ),
-            'autoproc' => array(
-                "Fast DP" => array('fast_dp/', 'fast_dp.log', 'I/sigma', 'fast_dp'),
-                
-                "Xia2/3dii" => array('xia2/3dii-run/', 'xia2.txt' , 'I/sigma', 'xia2 3dii'),
-                "DIALS" => array('xia2/dials-run/', 'xia2.txt' , 'I/sigma', 'xia2 dials'),
-                
-                "Xia2/Multiplex" => array('xia2.multiplex/', 'xia2.multiplex.log' , 'clustering summary', 'xia2.multiplex'),
-                
-                "autoPROC" => array('autoPROC/ap-run/', 'autoPROC.log', 'Normal termination', 'autoPROC'),            
-            ),
-            'downstream' => array(
-                "Fast EP" => array('fast_ep/', 'fast_ep.log', 'Best hand:'),
-                "Dimple" => array('fast_dp/dimple/', 'refmac5_restr.log', 'DPI'),
-                "MrBUMP" => array('auto_mrbump/', 'MRBUMP.log', 'Looks like MrBUMP succeeded'),
-                "Big EP/XDS" => array('big_ep/', '/xia2/3dii-run/big_ep*.log', 'Results for', ''),
-                "Big EP/DIALS" => array('big_ep/', '/xia2/dials-run/big_ep_*.log', 'Results for', 'Residues'),
-            )
-        )
+    # Zocalo message broker credentials - Set to empty string to disable
+    $zocalo_server = 'tcp://activemq.server.ac.uk';
+    $zocalo_username = 'foo';
+    $zocalo_password = 'bar';
+
+    # Primary Zocalo entry point for recipe submission
+    $zocalo_mx_reprocess_queue = '/queue/zocolo.name';
+
+    # This is used to trigger Zocalo recipes on adding new Protein sequences
+    # Set to empty string to disable
+    $zocalo_recipes_on_add_protein_sequence = array(
+        'trigger-alphafold',
     );
-
-    # Active MQ - Set to empty string to disable
-    $activemq_server = 'tcp://activemq.server.ac.uk';
-    $activemq_rp_queue = '/queue/zocolo.name';
 
     # Paths
     # - These map files to physical locations on disk
@@ -150,9 +132,10 @@
     # - The feedback form uses this address
     $email_admin = 'webmaster@server.ac.uk';
 
-    # Recepients for dewar Dispatch / Transfers Emails when users request dispatch or tranfser from the shipping page
+    # Recipients for dewar Dispatch / Transfers Emails when users request dispatch or tranfser from the shipping page
     $dispatch_email = 'ehc@server.ac.uk, goods@server.ac.uk';
     $transfer_email = 'ehc@server.ac.uk';
+    $arrival_email = 'ehc@server.ac.uk';
 
     # and for RED experiments, 
     # email will be sent for shipments containing red level samples when "send to facility" is clicked
@@ -219,6 +202,8 @@
     $package_description = 'Dry shipper containing frozen crystals';
     $dewar_weight = 18;
 
+    # location used by Mpdf to create pdfs - this needs to be created and allow apache to create directories in it
+    $pdf_tmp_dir = "/tmp";
 
     # DHL API Details
     $dhl_enable = true;
@@ -237,6 +222,11 @@
     $dhl_service = 'N';
     // Non dom service (eu)
     $dhl_service_eu = 'U';
+
+    # Shipping service details
+    $use_shipping_service = null;
+    $shipping_service_url = null;
+    $shipping_service_links_in_emails = null;
 
 
     # VMXi
@@ -282,10 +272,32 @@
     # This maps beamlinename in blsession to a proposal type
     # - Internal maps a beamline to an api "type", there are currently:
     #     mx, gen, em
-    $bl_types = array('mx' => array('i02', 'i03', 'i04'),
-                      'gen' => array('i11'),
-                      );
+    $bl_types = array(
+        array(
+            'name' => 'i02',
+            'group' => 'mx',
+            'archived' => True
+        ),
+        array(
+            'name' => 'i03',
+            'group' => 'mx',
+            'archived' => False
+        ),
+        array(
+            'name' => 'i04',
+            'group' => 'mx',
+            'archived' => False
+        ),
+        array(
+            'name' => 'i11',
+            'group' => 'gen',
+            'archived' => False
+        )
+    );
 
+    # Web-conexs URLs
+    $conexs_url = '';
+    $conexs_mpapi_url = '';
 
     # Webcam IPs
     # - These are show on the beamline status and active datacollection lists
@@ -325,5 +337,7 @@
         'i03' => 'BL03I',
     );
 
-
+    # Dials server values
+    $dials_rest_url = "";
+    $dials_rest_jwt = "";
 ?>

@@ -1,8 +1,9 @@
-define(['views/table', 'backgrid', 'jquery', 'jquery-ui/ui/widgets/sortable'], function(TableView, Backgrid, $) {
+define(['backbone', 'views/table', 'backgrid', 'jquery', 'jquery-ui/ui/widgets/sortable'], function(Backbone, TableView, Backgrid, $) {
 
     var SortableRow = Backgrid.Row.extend({
         events: {
             'drop': 'drop',
+            'click a.clear': 'clear'
         },
         
         drop: function(event, position) {
@@ -28,6 +29,45 @@ define(['views/table', 'backgrid', 'jquery', 'jquery-ui/ui/widgets/sortable'], f
             collection.sort()
             collection.trigger('order:updated')
         },
+
+        clear: function(){
+            var self = this
+
+            Backbone.ajax({
+                url: app.apiurl+'/exp/plans/' + this.model.get('DIFFRACTIONPLANID'),
+                method: 'post',
+                data: {
+                    _METHOD: 'delete'
+                },
+
+                success: function(response){
+                    // Reorder plans on successful deletion
+                    var collection = self.model.collection
+                    var comparator = collection.comparator
+                    var position = self.model.get('PLANORDER')
+
+                    collection.each(function (model, index) {
+
+                        if(index <= position)
+                            return
+
+                        var ordinal = index
+                        var d = {}
+                            d[comparator] = ordinal-1
+                        model.set(d)
+                    }, self)
+
+                    collection.remove(self.model)
+                    collection.sort()
+                    collection.trigger('order:updated')
+                },
+                error: function(response){
+                    console.log('failed to remove DCP')
+                    app.alert({message: "Failed to remove Data CollectionPlan"})
+                }
+            })
+
+        }
     })
 
 

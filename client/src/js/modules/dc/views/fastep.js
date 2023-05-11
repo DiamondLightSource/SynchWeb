@@ -1,10 +1,7 @@
 define(['marionette', 
-    'collections/phasingattachments',
-    'modules/dc/views/autoprocattachments',
-    'views/log', 
-    'templates/dc/dc_fastep.html', 'utils'], function(Marionette, 
-        PhasingAttachments, AutoProcAttachmentsView, 
-        LogView, template, utils) {
+    'modules/dc/views/downstreambase',
+    'templates/dc/dc_fastep.html', 'utils'], function(Marionette, DownstreamBase,
+        template, utils) {
     
     return Marionette.ItemView.extend({
         template: template,
@@ -12,40 +9,6 @@ define(['marionette',
         
         ui: {
             plot: '.plot_fastep',
-        },
-        
-        
-        events: {
-            'click .logf': 'showLog',
-            'click a.pattach': 'showAttachments',
-            'click .dll': utils.signHandler,
-        },
-
-        showAttachments: function(e) {
-            e.preventDefault()
-
-            console.log('phasing', this.model)
-            this.attachments = new PhasingAttachments()
-            this.attachments.queryParams.id = this.getOption('DCID')
-            this.attachments.fetch()
-
-            app.dialog.show(new DialogView({ 
-                title: 'Fast EP Attachments: '+this.model.escape('TYPE'),
-                view: new AutoProcAttachmentsView({ collection: this.attachments, urlRoot: 'ph', idParam: 'PHASINGPROGRAMATTACHMENTID' }), 
-                autosize: true 
-            }))
-        },
-            
-        showLog: function(e) {
-            e.preventDefault()
-            var url = $(e.target).attr('href')
-            var self = this
-            utils.sign({
-                url: url,
-                callback: function(resp) {
-                    app.dialog.show(new LogView({ title: self.model.get('TYPE') + ' Log File', url: url+'?token='+resp.token }))
-                }
-            })
         },
         
         onDomRefresh: function() {

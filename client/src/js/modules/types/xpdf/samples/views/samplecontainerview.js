@@ -8,6 +8,8 @@ define([
     'views/table',
     'utils/table',
     'models/samplegroup',
+    'models/samplegroupsample',
+    'collections/samplegroupsamples',
     'collections/samplegroups',
     'modules/types/xpdf/collections/instances',
     ], function(
@@ -15,7 +17,9 @@ define([
         Backgrid,
         TableView,
         table,
-        SampleGroupMember,
+        SampleGroup,
+        SampleGroupSample,
+        SampleGroupSamples,
         SampleGroups,
         Instances
     ){
@@ -27,7 +31,6 @@ define([
         },
 
         updateSample: function() {
-            console.log('update sample')
             var c = this.column.get('containers').findWhere({ BLSAMPLEID: this.$el.find('select[name=BLSAMPLEID]').val() })
             if (c) {
                 this.model.set({
@@ -58,7 +61,6 @@ define([
             } else {
                 this.$el.text(this.model.get('SAMPLE'))
             }
-
             return this
         }
     })
@@ -72,12 +74,21 @@ define([
 
         saveModel: function(e) {
             e.preventDefault()
-            var self = this
+            const self = this
             this.model.save({}, {
-                success: function(model, resp) {
-                    // TODO: should be a better way to do this
-                    delete self.model.collection
-                    self.model.parent.add(self.model)
+                success: function() {
+                    const collection = self.model.collection
+                    collection.fetch().then(() => {
+                        collection.add(new SampleGroupSample({
+                           TYPE: 'container',
+                           GROUPORDER: collection.models.length + 1,
+                           BLSAMPLEGROUPID: self.model.id,
+                           BLSAMPLEID: null
+                       }))
+                    })
+                },
+                error: function() {
+                    app.alert({ message: 'Could not add sample. Check if it has not been added before' })
                 }
             })
         },
@@ -88,8 +99,7 @@ define([
         },
 
         render: function() {
-            console.log('render', this.model, this.model.collection)
-            if (this.model.get('BLSAMPLEID') && this.model.get('BLSAMPLEID') != this.column.get('PARENTBLSAMPLEID')) {
+            if (this.model.get('BLSAMPLEID') && this.model.get('BLSAMPLEID') !== this.column.get('PARENTBLSAMPLEID')) {
                 this.$el.html('<a class="button" href="/instances/sid/'+this.model.get('BLSAMPLEID')+'"><i class="fa fa-search"></i></a>')
                 this.$el.append(' <a class="button remove" href="#"><i class="fa fa-times"></i></a>')
             }
@@ -104,9 +114,19 @@ define([
 
 
     var SampleGroupView = Marionette.LayoutView.extend({
-        template: _.template('<h3>Group: <%-INDEX%><h3><div class="members"></div>'),
+        template: _.template('<h3>Group: <%-INDEX%></h3><div class="members"></div>'),
         regions: {
             rmembers: '.members',
+        },
+
+        initialize() {
+            this.collection = new SampleGroupSamples(null, { state: { pageSize: 9999 }, sampleGroupId: this.model.id })
+            this.deferred = []
+            this.deferred.push(this.collection.fetch())
+        },
+
+        onRender: function() {
+            $.when.apply($, this.deferred).then(this.doOnRender.bind(this))
         },
 
         templateHelpers: function() {
@@ -115,10 +135,16 @@ define([
             }
         },
 
-        onRender: function() {
-            console.log('render members', this.model)
+        doOnRender: function() {
+            this.collection.add(new SampleGroupSample({
+                TYPE: 'container',
+                GROUPORDER: this.collection.models.length + 1,
+                BLSAMPLEGROUPID: this.model.id,
+                BLSAMPLEID: null
+            }))
+
             this.rmembers.show(new TableView({
-                collection: this.model.get('MEMBERS'),
+                collection: this.collection,
                 columns: [
                     { name: 'SAMPLE', label: 'Name', cell: InstanceCell, editable: false, containers: this.getOption('containers') },
                     { name: 'GROUPORDER', label: 'Order', cell: 'string', editable: false },
@@ -132,7 +158,6 @@ define([
                 pages: false,
             }))
         },
-
     })
 
 
@@ -158,49 +183,60 @@ define([
         },
 
         initialize: function(options) {
+            this.deferred = []
             if (!options.collection) {
                 // Get samplegroups
-                this.collection = new SampleGroups()
+                this.collection = new SampleGroups(null, { state: { pageSize: 9999 } })
                 this.collection.queryParams.BLSAMPLEID = options.parent.get('BLSAMPLEID')
-                this.collection.fetch()
             }
+            this.deferred.push(this.collection.fetch())
 
             if (!options.containers) {
                 // Get sample containers
                 this.options.containers = new Instances()
                 this.options.containers.queryParams.lt = 1
-                this.options.containers.fetch()
+                this.deferred.push(this.options.containers.fetch())
             }
         },
 
 
         createGroup: function(e) {
             e.preventDefault()
-            var p = this.getOption('parent')
-            var m = new SampleGroupMember({
-                BLSAMPLEID: p.get('BLSAMPLEID'),
-                TYPE: 'sample',
-                GROUPORDER: 1,
-                SAMPLE: p.get('NAME'),
-                CRYSTAL: p.get('CRYSTAL'),
-                PACKINGFRACTION: p.get('PACKINGFRACTION'),
-                THEORETICALDENSITY: p.get('THEORETICALDENSITY'),
-                DIMENSION1: p.get('DIMENSION1'),
-                DIMENSION2: p.get('DIMENSION2'),
-                DIMENSION3: p.get('DIMENSION3'),
-            })
+            const p = this.getOption('parent')
+            const sampleGroup = new SampleGroup()
+            const self = this
+            sampleGroup.save({}, {
+                success: (result) => {
+                    const sampleGroupSample = new SampleGroupSample({
+                        BLSAMPLEGROUPID:  result.get('BLSAMPLEGROUPID'),
+                        BLSAMPLEID: p.get('BLSAMPLEID'),
+                        TYPE: 'sample',
+                        GROUPORDER: 1,
+                        SAMPLE: p.get('NAME'),
+                        CRYSTAL: p.get('CRYSTAL'),
+                        PACKINGFRACTION: p.get('PACKINGFRACTION'),
+                        THEORETICALDENSITY: p.get('THEORETICALDENSITY'),
+                        DIMENSION1: p.get('DIMENSION1'),
+                        DIMENSION2: p.get('DIMENSION2'),
+                        DIMENSION3: p.get('DIMENSION3'),
+                    })
 
-            var self = this
-            m.save({}, {
-                success: function() {
-                    self.collection.add(m)
+                    sampleGroupSample.save({}, {
+                        success: () => {
+                            self.collection.fetch()
+                        }
+                    })
                 }
             })
         },
 
         onRender: function() {
-            this.rgroups.show(new SampleGroupsView({ 
-                collection: this.collection.groups(),
+            $.when.apply($, this.deferred).then(this.doOnRender.bind(this))
+        },
+
+        doOnRender() {
+            this.rgroups.show(new SampleGroupsView({
+                collection: this.collection,
                 childViewOptions: {
                     containers: this.getOption('containers'),
                     PARENTBLSAMPLEID: this.getOption('parent').get('BLSAMPLEID')
@@ -208,6 +244,4 @@ define([
             }))
         }
     })
-
-
 })

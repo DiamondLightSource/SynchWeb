@@ -17,7 +17,9 @@
 
     <form>
 
-    <a class="button extrainfo r" href="#" title="Show extra fields"><i class="fa fa-plus"></i> Extra Fields</a>
+    <div class="tw-flex tw-flex-row-reverse">
+        <a class="button extrainfo r" href="#" title="Show extra fields"><i class="fa fa-plus"></i> Extra Fields</a>
+    </div>
     <div class="form">
         <ul>
             <li>
@@ -49,9 +51,10 @@
                 <label>Anom Scatterer</label>
                 <select name="ANOMALOUSSCATTERER"></select>
             </li>
-            <li class="extra clearifx reorder">
-                <div class="text_table table">
-                    <table class="reflow cell">      
+            <li class="extra">
+                <label class="tw-align-top">Unit Cell</label>
+                <div class="text_table table tw-inline-block tw-w-2/3">
+                    <table class="cell">      
                         <thead>            
                             <tr>
                                 <th>A</th>
@@ -74,7 +77,6 @@
                         </tbody>    
                     </table>
                 </div>
-                <label>Unit Cell</label>
             </li>
         </ul>
     </div>

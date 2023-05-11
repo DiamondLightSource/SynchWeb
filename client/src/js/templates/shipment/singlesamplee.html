@@ -28,9 +28,9 @@
                 <span class="label">Spacegroup</span>
                 <span class="SPACEGROUP"><%-SPACEGROUP%></span>
             </li>
-            <li class="clearfix reorder">
-                <div class="COMMENTS text"><%-COMMENTS%></div>
+            <li class="clearfix">
                 <span class="label">Comments</span>
+                <div class="COMMENTS text tw-inline-block tw-w-2/3"><%-COMMENTS%></div>
             </li>
 
             <li class="extra">
@@ -41,32 +41,34 @@
                 <span class="label">Anom Scatterer</span>
                 <span class="ANOMALOUSSCATTERER"><%-ANOMALOUSSCATTERER%></span>
             </li>
-            <li class="extra clearifx reorder">
-                <div class="text_table table">
-                    <table class="reflow cell">      
-                        <thead>            
-                            <tr>
-                                <th>A</th>
-                                <th>B</th>
-                                <th>C</th>
-                                <th>&alpha;</th>
-                                <th>&beta;</th>
-                                <th>&gamma;</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>                                
-                                <td><span class="CELL_A"><%-CELL_A%></span></td>
-                                <td><span class="CELL_B"><%-CELL_B%></span></td>
-                                <td><span class="CELL_C"><%-CELL_C%></span></td>
-                                <td><span class="CELL_ALPHA"><%-CELL_ALPHA%></span></td>
-                                <td><span class="CELL_BETA"><%-CELL_BETA%></span></td> 
-                                <td><span class="CELL_GAMMA"><%-CELL_GAMMA%></span></td>
-                            </tr> 
-                        </tbody>    
-                    </table>
+            <li class="extra">
+                <span class="label tw-align-top">Unit Cell</span>
+                <div>
+                    <div class="table">
+                        <table class="reflow cell">      
+                            <thead>            
+                                <tr>
+                                    <th>A</th>
+                                    <th>B</th>
+                                    <th>C</th>
+                                    <th>&alpha;</th>
+                                    <th>&beta;</th>
+                                    <th>&gamma;</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>                                
+                                    <td><span class="CELL_A"><%-CELL_A%></span></td>
+                                    <td><span class="CELL_B"><%-CELL_B%></span></td>
+                                    <td><span class="CELL_C"><%-CELL_C%></span></td>
+                                    <td><span class="CELL_ALPHA"><%-CELL_ALPHA%></span></td>
+                                    <td><span class="CELL_BETA"><%-CELL_BETA%></span></td> 
+                                    <td><span class="CELL_GAMMA"><%-CELL_GAMMA%></span></td>
+                                </tr> 
+                            </tbody>    
+                        </table>
+                    </div>    
                 </div>
-                <span class="label">Unit Cell</span>
             </li>
 
         </ul>

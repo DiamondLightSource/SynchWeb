@@ -49,6 +49,11 @@
             <input type="checkbox" name="AUTOMATED" value="1" />
         </li>
 
+        <li class="pck">
+            <label>Show all spacegroups</label>
+            <input type="checkbox" name="SPACEGROUPS" value="1" />
+        </li>
+
         <li class="pcr plate">
             <label>Barcode</label>
             <input type="text" name="BARCODE" /> <span class="message"></span>
@@ -58,7 +63,12 @@
             <label>Owner
                 <span class="small">This user will be emailed with container updates. Check your email is up to date!</span>
             </label>
-            <select name="PERSONID"></select> <a href="#" class="button edit_user"><i class="fa fa-search"></i> View</a>
+            <!-- Set height explicitly to cope with inconsistent label / label+span height -->
+            <select name="PERSONID" class="tw-h-6"></select>
+            <!-- An error message span will be written here... -->
+            <!-- Explicitly control error message span here in template. The code will show/hide as required.. -->
+            <span class="emsg tw-bg-content-light-background tw-text-xxs tw-ml-1 tw-p-1 tw-h-6">Please update your email address by clicking view</span>
+            <a href="#" class="button edit_user tw-w-16 tw-text-center tw-h-6"><i class="fa fa-search"></i> View</a>
         </li>
 
         <li class="pcr">
@@ -100,7 +110,7 @@
             <label>Imaging Schedule
                 <span class="small">Requested imaging schedule</span>
             </label>
-            <select name="SCHEDULEID"></select> <a href="#" class="button view_sch"><i class="fa fa-search"></i> View</a>
+            <select name="SCHEDULEID" class="tw-h-6"></select> <a href="#" class="button view_sch tw-w-16 tw-text-center tw-h-6"><i class="fa fa-search"></i> View</a>
         </li>
 
         <li class="plate">

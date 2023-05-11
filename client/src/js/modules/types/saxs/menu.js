@@ -4,7 +4,7 @@ define([], function() {
         menu: {
             dc: 'View All Data',
             visits: 'Visits',
-            calendar: 'Calendar',
+            cal: 'Calendar',
             shipments: 'Shipments',
             containers: 'Containers',
             samples: 'Samples',
@@ -17,8 +17,9 @@ define([], function() {
         },
         
         admin: {
-            'dewars/overview': { title: 'Logistics', icon: 'truck', permission: 'all_dewars' },
-            faults: { title: 'Fault Reports', icon: 'tasks' },
+            'runs/overview': { title: 'Run Overview', icon: 'fa-bar-chart', permission: 'all_breakdown' },
+            'dewars/overview': { title: 'Logistics', icon: 'fa-truck', permission: 'all_dewars' },
+            faults: { title: 'Fault Reports', icon: 'fa-tasks' },
         },
     }
     

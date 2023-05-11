@@ -1,4 +1,4 @@
-<h1><%-title%>s</h1>
+<h1 data-testid="protein-phase-title"><%-title%>s</h1>
 <p class="help">This page lists all <%-title.toLowerCase()%>s associated with the currently selected proposal. Approved samples are highlighted in colour.</p>
 
 <% if (!CAN_CREATE) { %>
@@ -6,6 +6,11 @@
 <% } %>
 
 <div class="ra">
+<% if (app.type == "xpdf") { %>
+    <input type="checkbox" id="uas" class="uas" style="margin-right:3px" checked>
+    <label for="uas" style="margin-right:20px">Show Only UAS Samples</label>
+<% } %>
+
 <% if (CAN_CREATE) { %>
     <a class="button" href="/<%-url%>s/add"><i class="fa fa-plus"></i> Add <%-title%></a>
 <% } %>

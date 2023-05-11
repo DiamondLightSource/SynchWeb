@@ -1,16 +1,14 @@
 define(['backbone'], function(Backbone) {
 
     return Backbone.Model.extend({
-        idAttribute: 'BEAMLINESETUPID',
-        urlRoot: '/exp/setup',
-
         defaults: [],
-
         initialize: function(attrs, options) {
             _.each(this.validation, function(v,k) {
                 this.defaults[k] = v.pattern == 'word' || v.pattern == 'wwsdash' || v.pattern == 'wwdash' ? '' : null
             }, this)
         },
+        idAttribute: 'BEAMLINESETUPID',
+        urlRoot: '/exp/setup',
 
         map: {
             REQUIREDRESOLUTION: ['DETECTORMAXRESOLUTION', 'DETECTORMINRESOLUTION'],

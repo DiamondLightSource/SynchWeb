@@ -25,10 +25,6 @@
             <span class="label">Stage Type</span>
             <span><%-CONTAINERTYPE%></span>
         </li>
-        <li>
-            <span class="label">Barcode</span>
-            <span class="BARCODE"><%-BARCODE%></span>
-        </li>
         <% if (EXPERIMENTTYPE) { %>
         <li>
             <span class="label">Experiment Type</span>
@@ -45,9 +41,9 @@
             <span class="label">Comments</span>
             <span class="COMMENTS"><%-COMMENTS%></span>
         </li>
-        <li class="clearfix reorder">
-            <div class="history text_table half"></div>
-            <span class="label">Location History</span>
+        <li class="clearfix">
+            <span class="label tw-align-top">Location History</span>
+            <div class="history tw-inline-block"></div>
         </li>
     </ul>
 </div>

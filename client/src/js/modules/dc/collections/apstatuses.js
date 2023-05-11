@@ -3,7 +3,7 @@ define(['backbone', 'modules/dc/models/apstatus'], function(Backbone, DCAPStatus
   return Backbone.Collection.extend({
     model: DCAPStatusModel,
                                                            
-    url: '/dc/aps',
+    url: '/processing/status',
   
     parse: function(r, options) {
       var data = []

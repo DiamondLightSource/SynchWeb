@@ -48,19 +48,21 @@ define(['backbone'], function(Backbone) {
                 pattern: 'wwsdash'
             },
 
-            NEXTLOCATION: {
-                required: true,
-                pattern: 'wwsdash'
+            NEXTLOCATION: function(input, field, attributes) {
+                if (!input && attributes.NEXTVISIT) {
+                    return 'This field must contain only letters, numbers, spaces, underscores, and dashes'
+                }
             },
 
             NEXTVISIT: {
-                required: true,
-                pattern: 'visit',
+                required: false,
+                pattern: 'visitornull',
             },
 
-            NEXTLOCALCONTACT: {
-                required: true,
-                pattern: 'wwsdash'
+            NEXTLOCALCONTACT: function(input, field, attributes) {
+                if (!input && attributes.NEXTVISIT) {
+                    return 'This field must contain only letters, numbers, spaces, underscores, and dashes'
+                }
             },
 
             DELIVERYAGENT_SHIPPINGDATE: {

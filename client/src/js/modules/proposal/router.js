@@ -5,7 +5,6 @@ define(['marionette', 'modules/proposal/controller'], function(Marionette, c) {
     //var Router = LazyRouter.extend({
         appRoutes: {
             'proposal(/s/:s)(/page/:page)': 'list',
-            'visits(/s/:s)(/page/:page)': 'visit_list',
         },
         
         loadEvents: ['proposals:show', 'visits:show'],

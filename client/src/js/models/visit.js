@@ -1,11 +1,11 @@
-define(['backbone', 'backbone-validation'], function(Backbone) {
-
+define(['backbone', 'backbone-validation', 'luxon'], function(Backbone, BackBoneValidation, luxon) {
   var Visit = Backbone.Model.extend({
     idAttribute: 'VISIT',
     urlRoot: '/proposal/visits',
       
-    initialize: function(options) {
+    initialize: function(attributes, options) {
       this.on('change', this.addDate, this)
+      this.dateTimeZone = window.app.options.get('timezone')
       this.addDate()
     },
 
@@ -49,11 +49,15 @@ define(['backbone', 'backbone-validation'], function(Backbone) {
     },
       
     addDate: function() {
-        this.attributes.STISO = new Date(this.get('STISO'))
-        this.attributes.ENISO = new Date(this.get('ENISO'))
-        this.attributes.LEN = +((this.attributes.ENISO - this.attributes.STISO)/(3600*1000)).toFixed(2);
+        var { DateTime } = luxon
+        
+        this.attributes.ENISO = DateTime.fromISO(this.get('ENISO'), { zone: this.dateTimeZone })
+        this.attributes.STISO = DateTime.fromISO(this.get('STISO'), { zone: this.dateTimeZone })
+        this.attributes.LEN = Number(this.attributes.ENISO.diff(this.attributes.STISO)/(3600*1000)).toFixed(2);
         this.attributes.VISITDETAIL = this.get('VISIT')+' ('+this.get('BL')+': '+this.get('ST')+')'
-    }
+    },
+
+    dateTimeZone: 'Europe/London'
       
   })
 

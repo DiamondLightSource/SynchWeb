@@ -157,7 +157,7 @@ define(['marionette',
                             self.search()
                                 
                         })
-                        if (!found) this.$el.find('.pdb_details_not_found').slideDown()
+                        if (!found) self.$el.find('.pdb_details_not_found').slideDown()
                     }
                 })
             }

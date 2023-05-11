@@ -1,25 +1,29 @@
 <?php
 /*
-    Copyright 2015 Diamond Light Source <stuart.fisher@diamond.ac.uk>
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
+ Copyright 2015 Diamond Light Source <stuart.fisher@diamond.ac.uk>
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+ http://www.apache.org/licenses/LICENSE-2.0
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ */
 
 use Slim\Slim;
-use SynchWeb\Authentication;
-use SynchWeb\Database\Type\MySQL;
+use SynchWeb\Controllers\AuthenticationController;
+use SynchWeb\Controllers\UserController;
+use SynchWeb\Controllers\AssignController;
+use SynchWeb\Model\Services\AuthenticationData;
+use SynchWeb\Model\Services\UserData;
+use SynchWeb\Model\Services\AssignData;
+use SynchWeb\Database\DatabaseFactory;
+use SynchWeb\Database\DatabaseConnectionFactory;
+use SynchWeb\Database\DatabaseParent;
+use SynchWeb\ImagingShared;
 use SynchWeb\Dispatch;
-use SynchWeb\User;
 
 require 'vendor/autoload.php';
 
@@ -29,57 +33,107 @@ date_default_timezone_set($timezone);
 
 session_cache_limiter(false);
 
-$app = new Slim(array(
-    'mode' => $mode == 'production' ? 'production' : 'development'
-));
+$app = setupApplication($mode);
 
-$app->configureMode('production', function () use ($app) {
-    $app->config(array(
-        'log.enable' => true,
-        'debug' => false
+register_shutdown_function('session_write_close'); // prevents unexpected effects when using objects as save handlers
+
+setupDependencyInjectionContainer($app);
+
+$auth = $app->container['auth'];
+$auth->validateAuthentication();
+$auth->updateActivityTimestamp();
+
+$app->container['dispatch']->dispatch();
+
+function setupApplication($mode): Slim
+{
+    $app = new Slim(array(
+        'mode' => $mode == 'production' ? 'production' : 'development'
     ));
-});
 
-$app->configureMode('development', function () use ($app) {
-    $app->config(array(
-        'log.enable' => false,
-        'debug' => true
-    ));
-});
+    $app->configureMode('production', function () use ($app) {
+        $app->config(array(
+            'log.enable' => true,
+            'debug' => false
+        ));
+    });
 
-$app->get('/options', function () use ($app) {
-    global $motd, $authentication_type, $cas_url, $cas_sso, $package_description, $facility_courier_countries, $facility_courier_countries_nde, $dhl_enable, $dhl_link, $scale_grid, $preset_proposal, $ap_statuses, $timezone, $valid_components;
-    $app->contentType('application/json');
-    $app->response()->body(json_encode(array('motd' => $motd, 'authentication_type' => $authentication_type, 'cas_url' => $cas_url, 'cas_sso' => $cas_sso, 'package_description' => $package_description, 'facility_courier_countries' => $facility_courier_countries, 'facility_courier_countries_nde' => $facility_courier_countries_nde, 'dhl_enable' => $dhl_enable, 'dhl_link' => $dhl_link, 'scale_grid' => $scale_grid, 'preset_proposal' => $preset_proposal, 'ap_statuses' => $ap_statuses['types'], 'timezone' => $timezone, 'valid_components' => $valid_components)));
-    // $app->response()->body(json_encode($options->ui()));
-});
+    $app->configureMode('development', function () use ($app) {
+        $app->config(array(
+            'log.enable' => false,
+            'debug' => true
+        ));
+    });
 
-// the following prevents unexpected effects when using objects as save handlers
-register_shutdown_function('session_write_close');
-
-$port = array_key_exists('port', $isb) ? $isb['port'] : null;
-
-// MySQL database class hard-coded
-$db = new MySQL($isb['user'], $isb['pass'], $isb['db'], $port);
-
-// Alternatively, use dynamic class instantiation.
-// Database type ($dbtype) specified in config.php.
-// $db = Database::get();
-
-$db->set_app($app);
-
-$auth = new Authentication($app, $db);
-$auth->check_auth_required();
-
-$login = $auth->get_user();
-$user = new User($login, $db, $app);
-
-if ($user->login) {
-    $chk = $db->pq("SELECT TIMESTAMPDIFF('SECOND', datetime, CURRENT_TIMESTAMP) AS lastupdate, comments FROM adminactivity WHERE username LIKE :1", array($user->login));
-    if (sizeof($chk)) {
-        if ($chk[0]['LASTUPDATE'] > 20) $db->pq("UPDATE adminactivity SET datetime=CURRENT_TIMESTAMP WHERE username=:1", array($user->login));
-    }
+    $app->get('/options', function () use ($app) {
+        global $motd, $authentication_type, $cas_url, $cas_sso, $package_description,
+            $facility_courier_countries, $facility_courier_countries_nde,
+            $dhl_enable, $dhl_link, $scale_grid, $scale_grid_end_date, $preset_proposal, $timezone,
+            $valid_components, $enabled_container_types;
+        $app->contentType('application/json');
+        $app->response()->body(json_encode(array(
+            'motd' => $motd,
+            'authentication_type' => $authentication_type,
+            'cas_url' => $cas_url,
+            'cas_sso' => $cas_sso,
+            'package_description' => $package_description,
+            'facility_courier_countries' => $facility_courier_countries,
+            'facility_courier_countries_nde' => $facility_courier_countries_nde,
+            'dhl_enable' => $dhl_enable,
+            'dhl_link' => $dhl_link,
+            'scale_grid' => $scale_grid,
+            'scale_grid_end_date' => $scale_grid_end_date,
+            'preset_proposal' => $preset_proposal,
+            'timezone' => $timezone,
+            'valid_components' => $valid_components,
+            'enabled_container_types' => $enabled_container_types
+        )));
+    });
+    return $app;
 }
 
-$type = new Dispatch($app, $db, $user);
-$type->dispatch();
+function setupDependencyInjectionContainer($app)
+{
+    $app->container->singleton('db', function () use ($app): DatabaseParent {
+        $dbFactory = new DatabaseFactory(new DatabaseConnectionFactory());
+        $db = $dbFactory->get();
+        $db->set_app($app);
+        return $db;
+    });
+
+    $app->container->singleton('authData', function () use ($app) {
+        return new AuthenticationData($app->container['db']);
+    });
+
+    $app->container->singleton('auth', function () use ($app) {
+        return new AuthenticationController($app, $app->container['authData']);
+    });
+
+    $app->container->singleton('user', function () use ($app) {
+        return $app->container['auth']->getUser();
+    });
+
+    $app->container->singleton('userData', function () use ($app) {
+        return new UserData($app->container['db']);
+    });
+
+    $app->container->singleton('userController', function () use ($app) {
+        return new UserController($app, $app->container['db'], $app->container['user'], $app->container['userData']);
+    });
+
+    $app->container->singleton('assignData', function () use ($app) {
+        return new AssignData($app->container['db']);
+    });
+
+    $app->container->singleton('assignController', function () use ($app) {
+        return new AssignController($app, $app->container['db'], $app->container['user'], $app->container['assignData']);
+    });
+
+    $app->container->singleton('imagingShared', function () use ($app) {
+        return new ImagingShared($app->container['db']);
+    });
+
+    $app->container->singleton('dispatch', function () use ($app) {
+        return new Dispatch($app, $app->container['db'], $app->container['user']);
+    });
+}
