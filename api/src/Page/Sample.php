@@ -1878,9 +1878,6 @@ class Sample extends Page
             $this->args['LOCATION'] = $defaultContainerLocation['LOCATION'];
         }
 
-        $maxLocation = array_key_exists('CONTAINERID', $this->args) ? $this->_get_current_max_dcp_plan_order($this->args['CONTAINERID']) : array(0);
-        $maxLocation = sizeof($maxLocation) ? $maxLocation : -1;
-
         $sfields = array('CODE', 'NAME', 'COMMENTS', 'VOLUME', 'PACKINGFRACTION', 'DIMENSION1', 'DIMENSION2', 'DIMENSION3', 'SHAPE', 'POSITION', 'CONTAINERID', 'LOOPTYPE', 'LOCATION');
         foreach ($sfields as $f) {
             if ($this->has_arg($f)) {
@@ -1930,8 +1927,8 @@ class Sample extends Page
 
             if(sizeof($dcps)) {
                 $maxLocation = $this->_get_current_max_dcp_plan_order($this->args['CONTAINERID']);
-                $maxLocation = sizeof($maxLocation) ? $maxLocation : -1;
-        
+                $maxLocation = array_key_exists('CONTAINERID', $this->args) ? $this->_get_current_max_dcp_plan_order($this->args['CONTAINERID']) : array(0);
+                
                 foreach($dcps as $dcp){
                     ++$maxLocation;
                     $this->db->pq("UPDATE BLSample_has_DataCollectionPlan SET planOrder = :1 WHERE dataCollectionPlanId = :2 AND blSampleId = :3", array($maxLocation, $dcp['DATACOLLECTIONPLANID'], $this->arg('sid')));
