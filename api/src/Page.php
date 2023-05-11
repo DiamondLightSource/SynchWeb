@@ -439,7 +439,7 @@ class Page
 
         $action = $act ? 'LOGON' : 'LOGOFF';
 
-        if (Utils::ShouldLogUserActivityToDB($this->user))
+        if (Utils::ShouldLogUserActivityToDB($this->user->loginId))
         {
             $com = 'ISPyB2: ' . ($com ? $com : $_SERVER['REQUEST_URI']);
             $chk = $this->db->pq("SELECT comments FROM adminactivity WHERE username LIKE :1", array($this->user->loginId));
@@ -517,7 +517,7 @@ class Page
                             $tmp = array();
                             foreach ($r->$k as $val)
                             {
-                                if (preg_match('/^' . $v . '$/m', $val))
+                                if ($this->_match_pattern_to_input('/^' . $v . '$/m', $val))
                                 {
                                     array_push($tmp, $v == '.*' ? $purifier->purify($val) : $val);
                                 }
@@ -527,7 +527,7 @@ class Page
                         }
                         else
                         {
-                            if (preg_match('/^' . $v . '$/m', $r->$k))
+                            if ($this->_match_pattern_to_input('/^' . $v . '$/m', $r->$k))
                             {
                                 $par[$k] = $v == '.*' ? $purifier->purify($r->$k) : $r->$k;
                                 if ($k == 'prop')
@@ -554,7 +554,7 @@ class Page
                             $tmp = array();
                             foreach ($request[$k] as $val)
                             {
-                                if (preg_match('/^' . $v . '$/m', $val))
+                                if ($this->_match_pattern_to_input('/^' . $v . '$/m', $val))
                                 {
                                     array_push($tmp, $v == '.*' ? $purifier->purify($val) : $val);
                                 }
@@ -572,7 +572,7 @@ class Page
                                     $tmp = array();
                                     foreach ($value as $value2)
                                     {
-                                        if (preg_match('/^' . $v . '$/m', $value2))
+                                        if ($this->_match_pattern_to_input('/^' . $v . '$/m', $value2))
                                         {
                                             array_push($tmp, $v == '.*' ? $purifier->purify($value2) : $value2);
                                         }
@@ -581,7 +581,7 @@ class Page
                                 }
                                 else
                                 {
-                                    if (preg_match('/^' . $v . '$/m', $value))
+                                    if ($this->_match_pattern_to_input('/^' . $v . '$/m', $value))
                                     {
                                         $request[$k]->$key = $v == '.*' ? $purifier->purify($value) : $value;
                                     }
@@ -607,7 +607,7 @@ class Page
                                             $tmp = array();
                                             foreach ($item as $element)
                                             {
-                                                if (preg_match('/^' . $v . '$/m', $element))
+                                                if ($this->_match_pattern_to_input('/^' . $v . '$/m', $element))
                                                 {
                                                     array_push($tmp, $v == '.*' ? $purifier->purify($element) : $element);
                                                 }
@@ -616,7 +616,7 @@ class Page
                                         }
                                         else
                                         {
-                                            if (preg_match('/^' . $v . '$/m', $item))
+                                            if ($this->_match_pattern_to_input('/^' . $v . '$/m', $item))
                                             {
                                                 $object->$name = $v == '.*' ? $purifier->purify($item) : $item;
                                             }
@@ -628,7 +628,7 @@ class Page
                         }
                         else
                         {
-                            if (preg_match('/^' . $v . '$/m', $request[$k]))
+                            if ($this->_match_pattern_to_input('/^' . $v . '$/m', $request[$k]))
                             {
                                 $parsed[$k] = $v == '.*' ? $purifier->purify($request[$k]) : $request[$k];
                             }
@@ -672,6 +672,17 @@ class Page
 
     # ------------------------------------------------------------------------
     # Misc Helpers
+
+    /**
+     * Replicates preg_match but captures the case where the input can not be converted to string
+     */
+    function _match_pattern_to_input($pattern, $input)
+    {
+        if (is_null($input) || is_scalar($input) || (is_object($input) && method_exists($input, '__toString'))) {
+            return preg_match($pattern, strval($input));
+        }
+        return false;
+    }
 
     # Pretty-ish printer
     function p($array)
@@ -996,14 +1007,20 @@ class Page
     {
         $ch = curl_init();
 
+        curl_setopt($ch, CURLOPT_HEADER, array_key_exists('HEADER', $options) ? 1 : 0);
+        if (array_key_exists('HEADERS', $options)) {
+            curl_setopt($ch, CURLOPT_HTTPHEADER, $options['HEADERS']);
+        }
         $headers = getallheaders();
         if (array_key_exists('Authorization', $headers) && array_key_exists('jwt', $options))
         {
             curl_setopt($ch, CURLOPT_HTTPHEADER, array('Authorization: ' . $headers['Authorization']));
         }
+        if (array_key_exists('POST', $options)) curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
+        if (array_key_exists('FIELDS', $options)) curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($options['FIELDS']));
 
         $data = '';
-        if ($options['data'])
+        if (array_key_exists('data', $options))
         {
             $data = '?' . http_build_query($options['data']);
         }

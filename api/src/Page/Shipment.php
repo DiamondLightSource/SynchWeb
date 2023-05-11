@@ -92,6 +92,8 @@ class Shipment extends Page
         'SCHEDULINGRESTRICTIONS' => '.*',
         'LASTMINUTEBEAMTIME' => '1?|Yes|No',
         'DEWARGROUPING' => '.*',
+        'EXTRASUPPORTREQUIREMENT' => '.*',
+        'MULTIAXISGONIOMETRY' => '1?|Yes|No',
         'ENCLOSEDHARDDRIVE' => '1?|Yes|No',
         'ENCLOSEDTOOLS' => '1?|Yes|No',
 
@@ -150,6 +152,8 @@ class Shipment extends Page
         'SCHEDULINGRESTRICTIONS',
         'LASTMINUTEBEAMTIME',
         'DEWARGROUPING',
+        'EXTRASUPPORTREQUIREMENT',
+        'MULTIAXISGONIOMETRY',
         'ENCLOSEDHARDDRIVE',
         'ENCLOSEDTOOLS'
     );
@@ -408,7 +412,7 @@ class Shipment extends Page
 
     function _add_history()
     {
-        global $in_contacts, $transfer_email;
+        global $in_contacts, $arrival_email;
         global $dewar_complete_email; // Email list to cc if dewar back from beamline
         # Flag to indicate we should e-mail users their dewar has returned from BL
         $from_beamline = False;
@@ -493,7 +497,7 @@ class Shipment extends Page
                   FROM person p 
                   INNER JOIN session_has_person shp ON shp.personid = p.personid
                   WHERE shp.sessionid=:1 AND (shp.role = 'Local Contact' OR shp.role = 'Local Contact 2')", array($dew['FIRSTEXPERIMENTID']));
-            $emails = array($dew['LCOUTEMAIL'], $transfer_email);
+            $emails = array($dew['LCOUTEMAIL'], $arrival_email);
             foreach ($lcs as $lc) {
                 array_push($emails, $this->_get_email($lc['LOGIN']));
             }
@@ -926,7 +930,7 @@ class Shipment extends Page
         global $facility_phone;
         global $facility_contact;
         global $shipping_service_url;
-        global $dispatch_email;
+        global $facility_email;
         if (!isset($shipping_service_url)) {
             $this->_error("Server could not send request to shipping service.");
         }
@@ -945,7 +949,8 @@ class Shipment extends Page
             "shipper_post_code" => $facility_postcode,
             "shipper_contact_name" => $facility_contact,
             "shipper_contact_phone_number" => $facility_phone,
-            "shipper_contact_email" => $dispatch_email,
+            "shipper_contact_email" => $facility_email,
+            "internal_contact_name" => $this->has_arg('LOCALCONTACT') ? $this->args['LOCALCONTACT'] : null,
             "shipment_reference" =>  $dispatch_info['VISIT'],
             "external_id" => (int) $dispatch_info['DEWARID']
         );
@@ -1049,91 +1054,87 @@ class Shipment extends Page
         // Case insensitive search
         if (stripos($dewar_location, 'ebic') !== false) {
             $dispatch_from_location = 'eBIC';
-
-            // Update dewar transport history with provided location.
-            $this->db->pq(
-                "INSERT INTO dewartransporthistory (dewartransporthistoryid,dewarid,dewarstatus,storagelocation,arrivaldate) 
-                VALUES (s_dewartransporthistory.nextval,:1,'dispatch-requested',:2,CURRENT_TIMESTAMP)
-                RETURNING dewartransporthistoryid INTO :id",
-                array($dew['DEWARID'], $dewar_location)
-            );
-
-            $data = $this->args;
-
-            if (Utils::getValueOrDefault($use_shipping_service) && in_array($country, $facility_courier_countries)) {
-                $terms = $this->db->pq(
-                    "SELECT cta.couriertermsacceptedid FROM couriertermsaccepted cta WHERE cta.shippingid=:1",
-                    array($dew['SHIPPINGID'])
-                );
-                $terms_accepted = sizeof($terms) ? true : false;
-                if ($terms_accepted) {
-                    try {
-                        $shipment_id = $this->_dispatch_dewar_in_shipping_service($data, $dew);
-                        if (Utils::getValueOrDefault($shipping_service_links_in_emails)) {
-                            $data['AWBURL'] = $this->shipping_service->get_awb_pdf_url($shipment_id);
-                        }
-                    } catch (Exception $e) {
-                        error_log($e);
-                        $data['AWBURL'] = "";
-                    }
-                }
-            }
-
-            # Prepare e-mail response for dispatch request
-            $subject_line = '*** Dispatch requested for Dewar ' . $dew['BARCODE'] . ' from ' . $dispatch_from_location . ' - Pickup Date: ' . $this->args['DELIVERYAGENT_SHIPPINGDATE'] . ' ***';
-            $email = new Email('dewar-dispatch', $subject_line);
-
-            // If a local contact is given, try to find their email address
-            // First try LDAP, if unsuccessful look at the ISPyB person record for a matching staff user
-            $local_contact = $this->has_arg('LOCALCONTACT') ? $this->args['LOCALCONTACT'] : '';
-            if ($local_contact) {
-                $this->args['LCEMAIL'] = $this->_get_email_fn($local_contact);
-                if (!$this->args['LCEMAIL']) {
-                    $this->args['LCEMAIL'] = $this->_get_ispyb_email_fn($local_contact);
-                }
-            }
-
-            if (!array_key_exists('FACILITYCODE', $data))
-                $data['FACILITYCODE'] = '';
-            if (!array_key_exists('AWBNUMBER', $data))
-                $data['AWBNUMBER'] = '';
-            if (!array_key_exists('DELIVERYAGENT_AGENTNAME', $data))
-                $data['DELIVERYAGENT_AGENTNAME'] = '';
-            if (!array_key_exists('DELIVERYAGENT_AGENTCODE', $data))
-                $data['DELIVERYAGENT_AGENTCODE'] = '';
-            if (!array_key_exists('LOCATION', $data))
-                $data['LOCATION'] = $dewar_location;
-            if (!array_key_exists('LOCALCONTACT', $data))
-                $data['LOCALCONTACT'] = $local_contact;
-            if (!array_key_exists('LCEMAIL', $data))
-                $data['LCEMAIL'] = '';
-            $data['ADDRESS'] = $data['ADDRESS'] . PHP_EOL . $country;
-            $email->data = $data;
-
-            if ($country != $facility_country && !is_null($dispatch_email_intl)) {
-                $recpts = $dispatch_email_intl;
-            } else {
-                $recpts = $dispatch_email;
-            }
-
-            $recpts .= ', ' . $this->arg('EMAILADDRESS');
-            $local_contact_email = $this->has_arg('LCEMAIL') ? $this->args['LCEMAIL'] : '';
-            if ($local_contact_email) $recpts .= ', ' . $local_contact_email;
-
-            $email->send($recpts);
-
-            // Also update the dewar status and storage location to keep it in sync with history...
-            $this->db->pq(
-                "UPDATE dewar
-                set dewarstatus='dispatch-requested', storagelocation=lower(:2)
-                WHERE dewarid=:1",
-                array($dew['DEWARID'], $dewar_location)
-            );
-
-            $this->_output(1);
         }
 
+        // Update dewar transport history with provided location.
+        $this->db->pq(
+            "INSERT INTO dewartransporthistory (dewartransporthistoryid,dewarid,dewarstatus,storagelocation,arrivaldate) 
+            VALUES (s_dewartransporthistory.nextval,:1,'dispatch-requested',:2,CURRENT_TIMESTAMP)
+            RETURNING dewartransporthistoryid INTO :id",
+            array($dew['DEWARID'], $dewar_location)
+        );
+
+        $data = $this->args;
+
+        if (Utils::getValueOrDefault($use_shipping_service) && in_array($country, $facility_courier_countries)) {
+            $terms = $this->db->pq(
+                "SELECT cta.couriertermsacceptedid FROM couriertermsaccepted cta WHERE cta.shippingid=:1",
+                array($dew['SHIPPINGID'])
+            );
+            $terms_accepted = sizeof($terms) ? true : false;
+            if ($terms_accepted) {
+                try {
+                    $shipment_id = $this->_dispatch_dewar_in_shipping_service($data, $dew);
+                    if (Utils::getValueOrDefault($shipping_service_links_in_emails)) {
+                        $data['AWBURL'] = $this->shipping_service->get_awb_pdf_url($shipment_id);
+                    }
+                } catch (Exception $e) {
+                    error_log($e);
+                    $data['AWBURL'] = "";
+                }
+            }
+        }
+
+        # Prepare e-mail response for dispatch request
+        $subject_line = '*** Dispatch requested for Dewar ' . $dew['BARCODE'] . ' from ' . $dispatch_from_location . ' - Pickup Date: ' . $this->args['DELIVERYAGENT_SHIPPINGDATE'] . ' ***';
+        $email = new Email('dewar-dispatch', $subject_line);
+
+        // If a local contact is given, try to find their email address
+        // First try LDAP, if unsuccessful look at the ISPyB person record for a matching staff user
+        $local_contact = $this->has_arg('LOCALCONTACT') ? $this->args['LOCALCONTACT'] : '';
+        if ($local_contact) {
+            $this->args['LCEMAIL'] = $this->_get_email_fn($local_contact);
+            if (!$this->args['LCEMAIL']) {
+                $this->args['LCEMAIL'] = $this->_get_ispyb_email_fn($local_contact);
+            }
+        }
+
+        if (!array_key_exists('FACILITYCODE', $data))
+            $data['FACILITYCODE'] = '';
+        if (!array_key_exists('AWBNUMBER', $data))
+            $data['AWBNUMBER'] = '';
+        if (!array_key_exists('DELIVERYAGENT_AGENTNAME', $data))
+            $data['DELIVERYAGENT_AGENTNAME'] = '';
+        if (!array_key_exists('DELIVERYAGENT_AGENTCODE', $data))
+            $data['DELIVERYAGENT_AGENTCODE'] = '';
+        if (!array_key_exists('LOCATION', $data))
+            $data['LOCATION'] = $dewar_location;
+        if (!array_key_exists('LOCALCONTACT', $data))
+            $data['LOCALCONTACT'] = $local_contact;
+        if (!array_key_exists('LCEMAIL', $data))
+            $data['LCEMAIL'] = '';
+        $data['ADDRESS'] = $data['ADDRESS'] . PHP_EOL . $country;
+        $email->data = $data;
+
+        if ($country != $facility_country && !is_null($dispatch_email_intl)) {
+            $recpts = $dispatch_email_intl;
+        } else {
+            $recpts = $dispatch_email;
+        }
+
+        $recpts .= ', ' . $this->arg('EMAILADDRESS');
+        $local_contact_email = $this->has_arg('LCEMAIL') ? $this->args['LCEMAIL'] : '';
+        if ($local_contact_email) $recpts .= ', ' . $local_contact_email;
+
         $email->send($recpts);
+
+        // Also update the dewar status and storage location to keep it in sync with history...
+        $this->db->pq(
+            "UPDATE dewar
+            set dewarstatus='dispatch-requested', storagelocation=lower(:2)
+            WHERE dewarid=:1",
+            array($dew['DEWARID'], $dewar_location)
+        );
 
         $this->_output(1);
     }
@@ -2447,7 +2448,7 @@ class Shipment extends Page
     {
         if (!$this->has_arg('name'))
             $this->_error('No key specified');
-        $this->_output($this->user->setInCache($this->arg('name')));
+        $this->_output($this->user->getFromCache($this->arg('name')));
     }
 
     function _dummy_shipment_put()
@@ -2518,6 +2519,11 @@ class Shipment extends Page
                 $last_minute_beamtime = $this->arg('LASTMINUTEBEAMTIME') ? "Yes" : "No";
             }
             $dewar_grouping = $this->has_arg('DEWARGROUPING') ? $this->arg('DEWARGROUPING') : '';
+            $extra_support_requirement = $this->has_arg('EXTRASUPPORTREQUIREMENT') ? $this->arg('EXTRASUPPORTREQUIREMENT') : '';
+            $multi_axis_goniometry = null;
+            if ($this->has_arg('MULTIAXISGONIOMETRY')) {
+                $multi_axis_goniometry = $this->arg('MULTIAXISGONIOMETRY') ? "Yes" : "No";
+            }
             $dynamic_options = array(
                 "REMOTEORMAILIN" => $remote_or_mailin,
                 "SESSIONLENGTH" => $session_length,
@@ -2525,7 +2531,9 @@ class Shipment extends Page
                 "MICROFOCUSBEAM" => $microfocus_beam,
                 "SCHEDULINGRESTRICTIONS" => $scheduling_restrictions,
                 "LASTMINUTEBEAMTIME" => $last_minute_beamtime,
-                "DEWARGROUPING" => $dewar_grouping
+                "DEWARGROUPING" => $dewar_grouping,
+                "EXTRASUPPORTREQUIREMENT" => $extra_support_requirement,
+                "MULTIAXISGONIOMETRY" => $multi_axis_goniometry
             );
 
             $extra_array = array_merge($extra_array, $dynamic_options);

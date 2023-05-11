@@ -504,7 +504,7 @@ export default {
           const nameToLower = this.CONTAINERTYPE.toLowerCase()
           this.containerType = Object.assign(INITIAL_CONTAINER_TYPE, type.toJSON())
 
-          if (nameToLower.includes('puck')) {
+          if (nameToLower.includes('puck') || nameToLower.includes('block')) {
             this.plateType = 'puck'
           } else if (nameToLower.includes('pcrstrip')) {
             this.plateType = 'pcr'
@@ -521,7 +521,7 @@ export default {
             })
 
           }
-
+          this.getUsers()
           this.resetSamples(type.get('CAPACITY'))
         }
       }
@@ -592,9 +592,6 @@ export default {
       handler: debounce(function() {
         this.checkContainerBarcode()
       }, 1000)
-    },
-    REQUESTEDIMAGERID: {
-      handler: 'getUsers'
     },
     SCREENID: {
       handler: 'assignScreeningComponent'

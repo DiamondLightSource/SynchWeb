@@ -135,6 +135,7 @@
     # Recipients for dewar Dispatch / Transfers Emails when users request dispatch or tranfser from the shipping page
     $dispatch_email = 'ehc@server.ac.uk, goods@server.ac.uk';
     $transfer_email = 'ehc@server.ac.uk';
+    $arrival_email = 'ehc@server.ac.uk';
 
     # and for RED experiments, 
     # email will be sent for shipments containing red level samples when "send to facility" is clicked
@@ -336,5 +337,7 @@
         'i03' => 'BL03I',
     );
 
-
+    # Dials server values
+    $dials_rest_url = "";
+    $dials_rest_jwt = "";
 ?>

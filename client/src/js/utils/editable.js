@@ -165,8 +165,18 @@ define(['marionette',
                     success: function() {
                         if (refetch) self.model.fetch()
                     },
-                    error: function(a,b,c) {
-                        console.log('editable error', a, 'xhr', b, 'opts',c)
+                    error: function(model, xhr, opts) {
+                        console.log('editable error', model, 'xhr', xhr, 'opts', opts)
+                        if(options && options.alert) {
+                            json = null
+                            if (xhr.responseText) {
+                                try {
+                                    json = $.parseJSON(xhr.responseText)
+                                } catch(err) {}
+                            }
+                            if (json.message) app.alert({ message: json.message })
+                            else app.alert({ message: 'Something went wrong' })
+                        }
                     }
                 })
                     
