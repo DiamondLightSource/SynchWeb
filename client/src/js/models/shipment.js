@@ -74,6 +74,14 @@ define(['backbone'], function (Backbone) {
         maxLength: 35,
       },
 
+      EXTRASUPPORTREQUIREMENT: {
+        required: false
+      },
+
+      MULTIAXISGONIOMETRY: {
+        required: true
+      }
+
 
     },
 
