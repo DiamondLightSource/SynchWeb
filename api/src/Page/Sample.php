@@ -1926,9 +1926,12 @@ class Sample extends Page
                                 WHERE blSampleId = :1", array($this->arg('sid')));
 
             if(sizeof($dcps)) {
-                $maxLocation = $this->_get_current_max_dcp_plan_order($this->args['CONTAINERID']);
-                $maxLocation = array_key_exists('CONTAINERID', $this->args) ? $this->_get_current_max_dcp_plan_order($this->args['CONTAINERID']) : array(0);
-                
+                if ($this->has_arg('CONTAINERID')) {
+                    $maxLocation =  $this->_get_current_max_dcp_plan_order($this->args['CONTAINERID']);
+                } else {
+                    $maxLocation = -1;
+                }
+
                 foreach($dcps as $dcp){
                     ++$maxLocation;
                     $this->db->pq("UPDATE BLSample_has_DataCollectionPlan SET planOrder = :1 WHERE dataCollectionPlanId = :2 AND blSampleId = :3", array($maxLocation, $dcp['DATACOLLECTIONPLANID'], $this->arg('sid')));
@@ -1984,17 +1987,24 @@ class Sample extends Page
 
 
     # ------------------------------------------------------------------------
-    # Look up highest value DPC plan order to append new ones
+    # Look up highest value DPC plan order to append new ones, -1 if there are no orders
     function _get_current_max_dcp_plan_order($containerId)
     {
 
-        $maxLocation = $this->db->pq("SELECT MAX(bhd.planOrder) AS LOC
+        $rows = $this->db->pq("SELECT MAX(bhd.planOrder) AS LOC
                                         FROM BLSample_has_DataCollectionPlan bhd
                                         INNER JOIN BLSample bls ON bls.blSampleId = bhd.blSampleId
                                         INNER JOIN Container c ON c.containerId = bls.containerId
                                         WHERE c.containerId = :1", array($containerId));
 
-        return $maxLocation[0]['LOC'];
+        if (sizeof($rows) == 0) {
+            $maxLocation = -1;
+        } else {
+            $maxLocation = $rows[0]['LOC'];
+            $maxLocation = $maxLocation ? $maxLocation : -1;
+        }
+        
+        return $maxLocation;
     }
 
 
