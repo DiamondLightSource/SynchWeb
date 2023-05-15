@@ -13,7 +13,7 @@
         <div>
             <expandable-sidebar >
                 <template v-slot:filter-bar-title> 
-                    <div class="tw-grid tw-grid-cols-2 tw-gap-4">
+                    <div class="tw-grid tw-grid-cols-2">
                         <div class="tw-col-span-3 tw-mt-3 tw-ml-3">
                             <i class="fa fa-filter tw-mb-1"></i>
                             <h> Filter </h>
@@ -51,136 +51,117 @@
 
                 <template v-slot:filter-bar-content>
 
-                    <div class="tw-grid tw-grid-cols-4 tw-gap-2 tw-pb-2">
+                    <!-- <div class="tw-flex">
+                        <combo-box
+                        class="combo-box tw-w-2/12 proposal-select tw-mt-2"
+                        :data="summaryParameters"
+                        textField="PROP"
+                        valueField="PROP"
+                        size="small"
+                        :can-create-new-item="false"
+                        v-model="selectedProposal"
+                        defaultText="Select Proposal"
+                        ></combo-box>
+                    </div> -->
 
-                            <div class="tw-flex tw-mx-1 ">
-                                <span class="tw-text-base">Proposal</span>
-                                <span class="tw-text-base">Drop Down</span>
-                                <span class="tw-text-base">Value</span>
+                    <div class="tw-grid tw-grid-rows-6 tw-grid-cols-3 tw-grid-flow-col tw-mb-2">
 
-                            </div>
-                            <div></div>
-                            <div></div>
-                            <div></div>
-                            <div></div>
-                            <div></div>
-                            <div></div>
+                            <div class="tw-flex" v-for="(value, index) in filters" :key="value.id">
+                                <combo-box
+                                class="combo-box tw-w-4/12 t-mr-1 tw-text-black"
+                                :data="summaryParameters"
+                                textField="title"
+                                valueField="valueField"
+                                size="small"
+                                :can-create-new-item="false"
+                                v-model="value.selected"
+                                :defaultText="value.title"
+                                ></combo-box>
 
-                    <custom-accordian class="tw-pt-6 tw-pb-8"> 
-                        <template v-slot:title>
-                        <span class="tw-text-base">Proposal</span>
-                        </template>
+                                <combo-box v-if="value.inputtype == 'combo-box'"
+                                class="combo-box tw-w-3/12 tw-mr-1"
+                                :data="value.data"
+                                :textField="value.textField"
+                                :valueField="value.valueField"
+                                size="small"
+                                :can-create-new-item="false"
+                                v-model="value.selected"
+                                defaultText='Select Value'
+                                ></combo-box>
 
-                        <template v-slot:content>
-                            <div class=" tw-flex tw-pb-2">
-                            <combo-box
-                            class="tw-w-5/12 proposal-select tw-text-black tw-ml-2"
-                            :data="proposals"
-                            textField="PROP"
-                            valueField="PROP"
-                            size="small"
-                            :can-create-new-item="false"
-                            v-model="selectedProposal"
-                            defaultText=""
-                            ></combo-box>
-                            <p class="tw-italic tw-ml-2">Search for your <br>Proposal Number</p>
-                            </div>
-                        </template>
-                    </custom-accordian>
+                                <combo-box v-if="value.inputtype == 'search-operands'"
+                                class="combo-box tw-w-2/12 tw-mr-1"
+                                :data="operands"
+                                textField="title"
+                                valueField="value"
+                                size="small"
+                                :can-create-new-item="false"
+                                v-model="value.operand"
+                                defaultText='Select Operand'
+                                ></combo-box>
 
-                    </div>
+                                <combo-box v-if="value.inputtype == 'search-operands'"
+                                class="combo-box tw-w-1/12 tw-mr-1"
+                                :data="orderby"
+                                textField="title"
+                                valueField="value"
+                                size="small"
+                                :can-create-new-item="false"
+                                v-model="value.order"
+                                defaultText='Select Value'
+                                ></combo-box>
 
-                    
-                    <div class="tw-grid tw-grid-cols-4 tw-grid-flow-col tw-gap-2">
-                        
-                        <div v-for="options in groupedOptions" :key=options.id class="tw-grid tw-grid-rows-5 tw-grid-flow-col tw-gap-2">
+                                <input  v-if="value.inputtype == 'search-operands'"
+                                v-model="value.value"
+                                class="tw-w-2/12"
+                                >
 
-
-
-                            <custom-accordian class="tw-pt-6 tw-pb-8" v-for="value in options" :key="value.id">
-                            <template v-slot:title>
-                                <span class="tw-text-base">{{ value.title }}</span>
-                            </template>
-                            <template v-slot:content>
-
-                                <div v-if="value.inputtype == 'greater-than-less-than'" class="tw-grid tw-grid-cols-2 tw-divide-x 
-                                    tw-divide-gray-400 tw-pt-3 tw-pb-2">
-                                    <div class="tw-space-y-1">
-                                    <input class="tw-w-10/12 tw-block tw-appearance-none tw-text-gray-700 tw-bg-white tw-border 
-                                    hover:tw-border-gray-500 tw-px-4 tw-rounded tw-shadow tw-leading-tight focus:tw-outline-none 
-                                    focus:tw-shadow-outline"
-                                    placeholder="Greater than"
-                                    v-model="value.filteredGt">
-                                    <input class="tw-w-10/12 tw-block tw-appearance-none tw-text-gray-700 tw-bg-white tw-border 
-                                    hover:tw-border-gray-500 tw-px-4 tw-rounded tw-shadow tw-leading-tight focus:tw-outline-none 
-                                    focus:tw-shadow-outline"
-                                    placeholder="Less than"
-                                    v-model="value.filteredLt">
-                                    </div>
-                                    <p class="tw-italic">Search for <br>{{ value.title }}</p>
-                                </div>
-
-                                <div v-if="value.inputtype == 'search-for-value'" class="tw-grid tw-grid-cols-2 tw-divide-x 
-                                    tw-divide-gray-400 tw-pt-3 tw-pb-2">
-                                    <input class="tw-w-10/12 tw-block tw-appearance-none tw-text-gray-700 tw-bg-white tw-border 
-                                    hover:tw-border-gray-500 tw-px-4 tw-rounded tw-shadow tw-leading-tight focus:tw-outline-none 
-                                    focus:tw-shadow-outline"
-                                    placeholder="Type here"
-                                    v-model="value.searchedValue">
-                                    <p class="tw-italic">Search for <br> {{value.title}} </p>
-                                </div>
-
-                                <div v-if="value.inputtype == 'combo-box'" class="tw-flex tw-pb-2 tw-pl-2">
-                                    <combo-box
-                                    class="tw-w-5/12 tw-text-black "
-                                    :data="value.data"
-                                    :textField="value.textField"
-                                    :valueField="value.valueField"
-                                    size="small"
-                                    v-on:create-new-option="(...args)=>addToCombo([value.key,...args])"
-                                    v-model="value.selectedValue"
-                                    :defaultText="value.selectedValue"
-                                    ></combo-box>
-                                    <p class="tw-italic tw-ml-2">Search for <br>{{ value.title }}</p>
-                                </div>
+                                <button v-if="value.textField != 'PROP'" v-on:click="popFilter(index)" 
+                                        class="fa fa-times tw-text-black tw-ml-1"></button>
                                 
-                            </template>
-                            </custom-accordian>
+                            </div>
+                            <div class="button_plus tw-h-3 tw-mt-2" v-if="filters.length < 18" v-on:click="addFilterOption($event)"></div>
 
 
-                        </div>
+                            
 
 
-                        <div tabindex="0"  @focusout="updateParamsFromUserEntered">
-
-                        <textarea v-model="userEnteredParametersString" spellcheck="false" 
-                        class="tw-p-2 tw-text-black tw-border tw-border-white tw-bg-white">
-                        </textarea>
-
-                        <button class="tw-p-2 focus:tw-outline-none" id="copyToClipboard" v-on:click.prevent="copyToClipboard(userEnteredParametersString)">
-                            <i class="fa fa-clipboard"></i>
-                        </button>
-
-
-                        </div>
 
                     </div>
+                    
+<!-- 
+                    <div tabindex="0"  @focusout="updateParamsFromUserEntered">
 
+                    <textarea v-model="userEnteredParametersString" spellcheck="false" 
+                    class="tw-p-2 tw-text-black tw-border tw-border-white tw-bg-white">
+                    </textarea>
+
+                    <button class="tw-p-2 focus:tw-outline-none" id="copyToClipboard" v-on:click.prevent="copyToClipboard(userEnteredParametersString)">
+                        <i class="fa fa-clipboard"></i>
+                    </button>
+
+
+                    </div>
+                
+                    <div class="copied">
+                    <p class=" tw-rounded-full tw-h-6 tw-mt-1 tw-ml-4 tw-pt-1 tw-pl-3 tw-pr-3 
+                                tw-text-white tw-font-bold tw-bg-black tw-transition-opacity tw-duration-300 tw-ease-in"
+                                :class="{
+                                    'tw-opacity-50': isCopied,
+                                    'tw-opacity-0': !isCopied,
+                                    }">
+                        Copied!</p>
+                    </div> -->
                     
 
                 </template>
             </expandable-sidebar>
         </div>
 
-        <div class="copied">
-            <p class=" tw-rounded-full tw-h-6 tw-mt-1 tw-ml-4 tw-pt-1 tw-pl-3 tw-pr-3 
-                        tw-text-white tw-font-bold tw-bg-black tw-transition-opacity tw-duration-300 tw-ease-in"
-                        :class="{
-                            'tw-opacity-50': isCopied,
-                            'tw-opacity-0': !isCopied,
-                            }">
-          Copied!</p>
-        </div>
+
+
+
+
         
         <div class="tw-grid tw-grid-cols-2 gap-8">
             <div class="tw-flex">
@@ -191,15 +172,12 @@
                         v-on:keyup.enter="onPrefixSearch" 
                         v-model = "tempSamplePrefix"
                         type="text" id="simple-search" 
-                        class="tw-block tw-pl-5 tw-pr-10 tw-p-2.5 tw-appearance-none 
-                        tw-text-gray-700 tw-bg-white tw-border 
-                        hover:tw-border-gray-500 tw-px-4 tw-rounded-xl tw-shadow tw-leading-tight focus:tw-outline-none 
-                        focus:tw-shadow-outline"
-                        placeholder="Press Enter to Search Prefix" required>
+                        class="tw-pl-6 tw-px-4 tw-border focus:tw-outline-none focus:tw-shadow-outline"
+                        placeholder="Search..." required>
 
                         <button 
                             v-on:click="onPrefixSearch"
-                            class="tw-flex tw-absolute tw-inset-y-0 tw-right-0 tw-items-center tw-ml-3 tw-p-1 tw-rounded-xl"
+                            class="tw-flex tw-absolute tw-inset-y-0 tw-right-0 tw-items-center tw-ml-3 tw-p-1"
                                 :class="{
                             'tw-bg-content-active': isLoading,
                             'tw-bg-content-sub-header-background tw-text-white': !isLoading,
@@ -495,7 +473,21 @@ export default {
             summaryData : [],
             summaryExport : [],
             proposalCollection : null,
-            proposals : [],
+            proposals :
+            [ { 
+                "PROP": "nt18231", 
+                "PROPOSALID": "42379" 
+            }, 
+            { 
+                "PROP": "nt26503", 
+                "PROPOSALID": "56277" 
+            } ],
+            spaceGroupCollection : null,
+            spaceGroups : [],
+            processingProgramCollection : null,
+            processingProgram : [],
+            beamLineCollection : null,
+            beamLines: [],
             userEnteredParameters : [],
             userEnteredParametersString : '',
             deselectedColumns: [],
@@ -509,12 +501,284 @@ export default {
                     ascParam : 'ascdcid',
                 },
             ],
+            operands: [
+                {   
+                    "title": "greater than",
+                    "value": ">"
+                },
+                {   
+                    "title": "like",
+                    "value": "LIKE"
+                },
+                {   
+                    "title": "equal to",
+                    "value": "="
+                },
+                {   
+                    "title": "",
+                    "value": ">"
+                },
+                {   
+                    "title": "greater than",
+                    "value": ">"
+                },
+            ],
+            orderby: [
+                {   
+                    "title": "desc",
+                    "value": "DESC"
+                },
+                {   
+                    "title": "asc",
+                    "value": "ASC"
+                },
+            ],
+            summaryParameters: [   
+                {
+                    "title": "SpaceGroup",
+                    "inputtype": "combo-box",
+                    "textField": "SPACEGROUP",
+                    "valueField": "SPACEGROUP",
+                    "selected": "",
+                    "operand": "",
+                    "value": "",
+                    "data": [],
+                    "arg" : "sg="
+                },
+                {
+                    "title": "Processing Programs",
+                    "inputtype": "combo-box",
+                    "textField": "PROCESSINGPROGRAMS",
+                    "valueField": "PROCESSINGPROGRAMS",
+                    "selected": "",
+                    "operand": "",
+                    "value": "",
+                    "data": [],
+                    "arg" : "pp="
+                },     
+                {
+                    "title": "Beamlinename",
+                    "inputtype": "combo-box",
+                    "textField": "BEAMLINENAME",
+                    "valueField": "BEAMLINENAME",
+                    "order": "",
+                    "selected": "",
+                    "operand": "",
+                    "value": "",
+                    "data": [],
+                    "arg" : "BEAMLINENAME="
+                },
+                
+                {
+                    "title": "Refinedcell_a",
+                    "inputtype": "search-operands",
+                    "textField": "REFINEDCELL_A",
+                    "valueField": "REFINEDCELL_A",
+                    "order": "",
+                    "selected": "",
+                    "operand": "",
+                    "value": "",
+                    "data": [],
+                    "arg" : "rca="
+                },
+                
+                {
+                    "title": "Refinedcell_b",
+                    "inputtype": "search-operands",
+                    "textField": "REFINEDCELL_B",
+                    "valueField": "REFINEDCELL_B",
+                    "order": "",
+                    "selected": "",
+                    "operand": "",
+                    "value": "",
+                    "data": [],
+                    "arg" : "rcb="
+                },
+                
+                {
+                    "title": "Refinedcell_c",
+                    "inputtype": "search-operands",
+                    "textField": "REFINEDCELL_C",
+                    "valueField": "REFINEDCELL_C",
+                    "order": "",
+                    "selected": "",
+                    "operand": "",
+                    "value": "",
+                    "data": [],
+                    "arg" : "rcc="
+                },
+                
+                {
+                    "title": "Refinedcell_alpha",
+                    "inputtype": "search-operands",
+                    "textField": "REFINEDCELL_ALPHA",
+                    "valueField": "REFINEDCELL_ALPHA",
+                    "order": "",
+                    "selected": "",
+                    "operand": "",
+                    "value": "",
+                    "data": [],
+                    "arg" : "rcal="
+                },
+                
+                {
+                    "title": "Refinedcell_beta",
+                    "inputtype": "search-operands",
+                    "textField": "REFINEDCELL_BETA",
+                    "valueField": "REFINEDCELL_BETA",
+                    "order": "",
+                    "selected": "",
+                    "operand": "",
+                    "value": "",
+                    "data": [],
+                    "arg" : "rcbe="
+                },
+                
+                {
+                    "title": "Refinedcell_gamma",
+                    "inputtype": "search-operands",
+                    "textField": "REFINEDCELL_GAMMA",
+                    "valueField": "REFINEDCELL_GAMMA",
+                    "order": "",
+                    "selected": "",
+                    "operand": "",
+                    "value": "",
+                    "data": [],
+                    "arg" : "rcga="
+                },
+                
+                {
+                    "title": "Resolutionlimithighouter",
+                    "inputtype": "search-operands",
+                    "textField": "RESOLUTIONLIMITHIGHOUTER",
+                    "valueField": "RESOLUTIONLIMITHIGHOUTER",
+                    "order": "",
+                    "selected": "",
+                    "operand": "",
+                    "value": "",
+                    "data": [],
+                    "arg" : "rlho="
+                },
+                
+                {
+                    "title": "Rmeaswithiniplusiminusinner",
+                    "inputtype": "search-operands",
+                    "textField": "RMEASWITHINIPLUSIMINUSINNER",
+                    "valueField": "RMEASWITHINIPLUSIMINUSINNER",
+                    "order": "",
+                    "selected": "",
+                    "operand": "",
+                    "value": "",
+                    "data": [],
+                    "arg" : "rmpmi="
+                },
+                
+                {
+                    "title": "Resioversigi2overall",
+                    "inputtype": "search-operands",
+                    "textField": "RESIOVERSIGI2OVERALL",
+                    "valueField": "RESIOVERSIGI2OVERALL",
+                    "order": "",
+                    "selected": "",
+                    "operand": "",
+                    "value": "",
+                    "data": [],
+                    "arg" : "riso="
+                },
+                
+                {
+                    "title": "CCanomalous Inner",
+                    "inputtype": "search-operands",
+                    "textField": "CCANOMALOUSINNER",
+                    "valueField": "CCANOMALOUSINNER",
+                    "order": "",
+                    "selected": "",
+                    "operand": "",
+                    "value": "",
+                    "data": [],
+                    "arg" : "cci="
+                },
+                
+                {
+                    "title": "CCanomalous Overall",
+                    "inputtype": "search-operands",
+                    "textField": "CCANOMALOUSOVERALL",
+                    "valueField": "CCANOMALOUSOVERALL",
+                    "order": "",
+                    "selected": "",
+                    "operand": "",
+                    "value": "",
+                    "data": [],
+                    "arg" : "cco="
+                },
+                
+                {
+                    "title": "Rfreevaluestart Inner",
+                    "inputtype": "search-operands",
+                    "textField": "RFREEVALUESTARTINNER",
+                    "valueField": "RFREEVALUESTARTINNER",
+                    "order": "",
+                    "selected": "",
+                    "operand": "",
+                    "value": "",
+                    "data": [],
+                    "arg" : "rfsi="
+                },
+                
+                {
+                    "title": "Rfreevalueend Inner",
+                    "inputtype": "search-operands",
+                    "textField": "RFREEVALUEENDINNER",
+                    "valueField": "RFREEVALUEENDINNER",
+                    "order": "",
+                    "selected": "",
+                    "operand": "",
+                    "value": "",
+                    "data": [],
+                    "arg" : "rfei="
+                },
+                
+                {
+                    "title": "Noofblobs",
+                    "inputtype": "search-operands",
+                    "textField": "NOOFBLOBS",
+                    "valueField": "NOOFBLOBS",
+                    "order": "",
+                    "selected": "",
+                    "operand": "",
+                    "value": "",
+                    "data": [],
+                    "arg" : "nobi="
+                }
+            ],
+
+            filters: [
+                {
+                    "title": "Proposal",
+                    "inputtype": "combo-box",
+                    "textField": "PROP",
+                    "valueField": "PROPOSALID",
+                    "selected": "",
+                    "operand": "",
+                    "value": "",
+                    "data": [],
+                    "arg" : "prop="
+                },
+
+            ],
             filterOptions: {
                 SPACEGROUP : {
                     title: 'Space Group',
                     inputtype: 'combo-box',
-                    textField: "SPACEGROUPNAME",
-                    valueField: "SPACEGROUPNAME",
+                    textField: "SPACEGROUP",
+                    valueField: "SPACEGROUP",
+                    data: []
+                },
+                SPACEGROUP : {
+                    title: 'Space Group',
+                    inputtype: 'search-operands',
+                    textField: "SPACEGROUP",
+                    valueField: "SPACEGROUP",
                     data: []
                 },
             },
@@ -532,9 +796,10 @@ export default {
     created() {
         this.mapSummaryColumns()
         this.mapFilterOptions()
-        // this.searchProposal()
-        // this.getSpaceGroupsCollection()
-        // this.getProcessingPipelinesCollection() 
+        this.searchProposal()
+        this.getSpaceGroups()
+        this.getProcessingPipelines() 
+        this.getBeamLine()
         // this.populateSelectedColumns()
     },
     mounted() {
@@ -548,6 +813,29 @@ export default {
         })
     },
     methods: {
+        addFilterOption(event) {
+
+            if (this.filters.length < 18) {
+                this.filters.push(
+                    {
+                    "title": "",
+                    "inputtype": "",
+                    "textField": "",
+                    "valueField": "",
+                    "order": "",
+                    "selected": "",
+                    "operand": "",
+                    "value": "",
+                    "data": [],
+                    "arg" : ""
+                    }
+                )
+            } 
+
+        },
+        popFilter(value) {
+            this.filters.splice(value, 1)
+        },
         mapSummaryResults() {
                 this.summaryData = 
                 this.summaryData.map((e) => {
@@ -643,12 +931,14 @@ export default {
 
                 this.isLoading = true;
 
-                this.proposalCollection = new ProposalCollection();
-                this.proposalCollection.queryParams.s = this.proposalText;
-                this.proposalCollection.state.pageSize = 1999;
+                const results = await this.$store.dispatch('fetchDataFromApi', {
+                  url: '/summarynew/proposal?page=1&per_page=9999',
+                  requestType: 'fetching proposals'
+                })
 
-                const results = await this.$store.dispatch('getCollection', this.proposalCollection);
-                this.proposals = results.toJSON();
+                const index = this.filters.findIndex((dict) => dict["textField"] == "PROP");
+                this.filters[index].data = results;
+
 
                 this.isLoading = false;
 
@@ -662,18 +952,18 @@ export default {
 
 
         },
-        async getSpaceGroupsCollection() {
+        async getSpaceGroups() {
             // gets space group list for combo box from space group collection 
             try {
                 this.isLoading = true;
 
-                this.spaceGroupsCollection = new SpaceGroups(null, { state: { pageSize: 9999 } })
-                if (!this.SPACEGROUP) {
-                    this.spaceGroupsCollection.queryParams.ty = this.containerGroup
-                }
+                const results = await this.$store.dispatch('fetchDataFromApi', {
+                  url: '/summarynew/spacegroup?',
+                  requestType: 'fetching pspacegroups'
+                })
 
-                const result = await this.$store.dispatch('getCollection', this.spaceGroupsCollection)
-                this.filterOptions.SPACEGROUP.data = result.toJSON()
+                const index = this.summaryParameters.findIndex((dict) => dict["textField"] == "SPACEGROUP");
+                this.summaryParameters[index].data = results;                
 
                 this.isLoading = false;
                  
@@ -686,15 +976,41 @@ export default {
 
             }
         },
-        async getProcessingPipelinesCollection() {
+        async getProcessingPipelines() {
             // gets processing pipelines list for combo box from processing pipeline collection 
             try {
                 this.isLoading = true;
 
-                let processingPipelinesCollection = new ProcessingPipelines()
+                const results = await this.$store.dispatch('fetchDataFromApi', {
+                  url: '/summarynew/procprogram?',
+                  requestType: 'fetching processingprograms'
+                })
 
-                const result = await this.$store.dispatch('getCollection', processingPipelinesCollection)
-                this.filterOptions.PROCESSINGPIPELINE.data = result.toJSON()
+                const index = this.summaryParameters.findIndex((dict) => dict["textField"] == "PROCESSINGPROGRAMS");
+                this.summaryParameters[index].data = results;  
+
+                this.isLoading = false;
+                 
+            } catch (e) {
+
+                window.onerror('Cannot get processing pipeline collection: ' + e);
+                this.isLoading = false;
+                return ;
+
+            }
+        },
+        async getBeamLine() {
+            // gets processing pipelines list for combo box from processing pipeline collection 
+            try {
+                this.isLoading = true;
+
+                const results = await this.$store.dispatch('fetchDataFromApi', {
+                  url: '/summarynew/bl?',
+                  requestType: 'fetching beamlinename'
+                })
+
+                const index = this.summaryParameters.findIndex((dict) => dict["textField"] == "BEAMLINENAME");
+                this.summaryParameters[index].data = results;  
 
                 this.isLoading = false;
                  
@@ -712,18 +1028,20 @@ export default {
                  
                 this.isLoading = true;
 
-                this.getQueryParams(false);
+                const queryParams = this.getQueryParams(false);
 
-                const results = await this.$store.dispatch('getCollection', this.summaryCollection);
+                console.log(encodeURI(queryParams))
 
-                this.totalRecords = results.state.totalRecords;
-                this.summaryData = results.toJSON();
+                // const results = await this.$store.dispatch('getCollection', this.summaryCollection);
 
-                console.log(this.summaryData)
+                // this.totalRecords = results.state.totalRecords;
+                // this.summaryData = results.toJSON();
 
-                this.mapSummaryResults()
+                // console.log(this.summaryData)
 
-                this.isLoading = false;
+                // this.mapSummaryResults()
+
+                // this.isLoading = false;
 
             } catch(e) {
 
@@ -881,61 +1199,42 @@ export default {
         // gets query params from summaryColumns or standalone variables i.e. selected Proposal etc. if this is an export then the pageSize will be for total records
         // rather than what is specified by the front page spinner. 
             console.log('getqueryparams')
-            this.summaryCollection = new SummaryCollection()
 
+            var queryParams = [];
+
+            queryParams.push('page='+this.currentPage)
 
             if (isexport) {
-                this.summaryCollection.queryParams = { page: this.currentPage, per_page: this.totalRecords };
-            }
-            else {
-                this.summaryCollection.queryParams = { page: this.currentPage, per_page: this.pageSize };
+                queryParams.push('&per_page='+this.totalRecords)
+            } else {
+                queryParams.push('&per_page='+this.pageSize)
             }
 
 
-            // loop through summaryColumns and assign variables for order by 
-            for (var index in this.summaryColumns) {
-                if(this.summaryColumns[index].orderByCount < 2 && this.summaryColumns[index].isDesc == true) {
-                    var desc = this.summaryColumns[index].descParam;
-                    this.summaryCollection.queryParams[desc] = 'desc';
+            for (var i in this.filters) {
+
+                queryParams.push('&')
+
+                console.log(this.filters[i])
+
+                queryParams.push(this.filters[i].arg)
+
+                if (this.filters[i].inputtype == "combo-box") {
+                    queryParams.push(this.filters[i].selected)
+                } else {
+                    queryParams.push(this.filters[i].operand)
+                    queryParams.push(","+this.filters[i].value)
                 }
-                else if(this.summaryColumns[index].orderByCount < 2 && this.summaryColumns[index].isDesc == false) {
-                    var asc = this.summaryColumns[index].ascParam;
-                    this.summaryCollection.queryParams[asc] = 'asc';
+
+                if (this.filters[i].order) {
+                    queryParams.push(","+this.filters[i].order)
                 }
 
-            };
-
-            // loop through filterOptions and assign variables
-            for (var index in this.filterOptions) {
-                if (this.filterOptions[index].filteredLt) {
-                this.summaryCollection.queryParams[this.filterOptions[index].paramLt] = this.filterOptions[index].filteredLt;
-                };
-                if (this.filterOptions[index].filteredGt) {
-                    this.summaryCollection.queryParams[this.filterOptions[index].paramGt] = this.filterOptions[index].filteredGt;
-                }; 
+ 
             }
 
 
-
-            if (this.selectedProposal) {
-                this.summaryCollection.queryParams.prop = this.selectedProposal;
-            }            
-            if (this.searchedSamplePrefix) {
-                this.summaryCollection.queryParams.sprefix = this.searchedSamplePrefix;
-            }
-            if (this.filterOptions.SPACEGROUP.selectedValue) {
-                this.summaryCollection.queryParams.sg = this.filterOptions.SPACEGROUP.selectedValue;
-            }
-            if (this.filterOptions.PROCESSINGPIPELINE.selectedValue) {
-                this.summaryCollection.queryParams.pp = this.filterOptions.PROCESSINGPIPELINE.selectedValue;
-            }
-
-            this.summaryCollection.queryParams.gca = this.searchedGtUnitCellA;
-            this.summaryCollection.queryParams.lca = this.searchedLtUnitCellA;
-            this.summaryCollection.queryParams.gcb = this.searchedGtUnitCellB;
-            this.summaryCollection.queryParams.lcb = this.searchedLtUnitCellB;
-            this.summaryCollection.queryParams.gc = this.searchedGtUnitCellC;
-            this.summaryCollection.queryParams.lc = this.searchedLtUnitCellC;
+            return queryParams.join("")
 
  
         },
@@ -943,12 +1242,6 @@ export default {
 
             this.selectedProposal = '';
             this.searchedSamplePrefix = '';
-            this.searchedGtUnitCellA = '';
-            this.searchedLtUnitCellA = '';
-            this.searchedGtUnitCellB = '';
-            this.searchedLtUnitCellB = '';
-            this.searchedGtUnitCellC = '';
-            this.searchedLtUnitCellC = '';
             this.filterOptions.SPACEGROUP.selectedValue = '';
             this.filterOptions.PROCESSINGPIPELINE.selectedValue = '';
 
@@ -983,26 +1276,6 @@ export default {
                 if (this.userEnteredParameters[value].title == 'PROP') {
                     this.selectedProposal = this.userEnteredParameters[value].search_value;
                     continue;
-                };
-                if (this.userEnteredParameters[value].title == 'REFINEDCELL_A') {
-                    this.searchedGtUnitCellA = this.userEnteredParameters[value].greater_than;
-                    this.searchedLtUnitCellA = this.userEnteredParameters[value].less_than;
-                    continue;
-                };
-                if (this.userEnteredParameters[value].title == 'REFINEDCELL_B') {
-                    this.searchedGtUnitCellB = this.userEnteredParameters[value].greater_than;
-                    this.searchedLtUnitCellB = this.userEnteredParameters[value].less_than;
-                    continue;
-                };
-                if (this.userEnteredParameters[value].title == 'REFINEDCELL_C') {
-                    this.searchedGtUnitCellC = this.userEnteredParameters[value].greater_than;
-                    this.searchedLtUnitCellC = this.userEnteredParameters[value].less_than;
-                    continue;
-                };
-
-                if (this.filterOptions[this.userEnteredParameters[value].title].filteredLt) {
-                    this.filterOptions[this.userEnteredParameters[value].title].filteredLt =  this.userEnteredParameters[value].less_than;
-                    this.filterOptions[this.userEnteredParameters[value].title].filteredGt =  this.userEnteredParameters[value].greater_than;                   
                 };
 
                 if (this.filterOptions[this.userEnteredParameters[value].title].selectedValue) {
@@ -1190,6 +1463,28 @@ export default {
 
     },
     watch: {
+        filters: {
+            handler(val){
+                console.log(this.filters)
+                for (var i in this.filters) {
+
+                    let keyToCompare = this.filters[i].selected;
+
+                    // Check if there is a matching dictionary in the second array
+                    let matchingDict = this.summaryParameters.find((dict2) => dict2.valueField === keyToCompare);
+
+                    if (matchingDict) {
+                        // Replace values in dict1 with corresponding values from matchingDict
+                        for (let key in matchingDict) {
+                            if (this.filters[i].hasOwnProperty(key)) {
+                                this.filters[i][key] = matchingDict[key];
+                            }
+                        }
+                    }
+                }
+            },
+            deep: true
+        },
         watchParams() {
             this.mapUserEnteredParameters();
         },
@@ -1209,8 +1504,25 @@ export default {
 
 </script>
 
+<style>
+
+.select-selected {
+    font-size: small;
+    @apply tw-box-content;
+}
+
+/* .select-search-input[data-v-ea16bc84] {
+    height: 2.0rem;
+} */
+
+
+</style>
 
 <style scoped>
+
+.combo-box {
+    font-size: small;
+}
 
 .copied {
     height: 125px;
@@ -1234,4 +1546,73 @@ export default {
     left: 50%;
 }
 
+.proposal-select {
+    color: black;
+    height: 10px;
+}
+
+
+
+.button_plus {
+  position: relative;
+  width: 25px;
+  height: 25px;
+  background: #fff;
+  cursor: pointer;
+  border: 2px solid #5a5a5a;
+
+  margin-left: 50%;
+
+}
+
+.button_plus:after {
+  content: '';
+  position: absolute;
+  transform: translate(-50%, -50%);
+  height: 4px;
+  width: 50%;
+  background: #5a5a5a;
+  top: 50%;
+  left: 50%;
+}
+
+.button_plus:before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #5a5a5a;
+  height: 50%;
+  width: 4px;
+}
+
+.button_plus:hover:before,
+.button_plus:hover:after {
+  background: #fff;
+  transition: 0.2s;
+}
+
+.button_plus:hover {
+  background-color: #5a5a5a;
+  transition: 0.2s;
+}
+
+::placeholder { /* Chrome, Firefox, Opera, Safari 10.1+ */
+  color: black;
+  opacity: 1; /* Firefox */
+  font-size: small;
+}
+
+:-ms-input-placeholder { /* Internet Explorer 10-11 */
+  color: black;
+  font-size: small;
+}
+
+::-ms-input-placeholder { /* Microsoft Edge */
+  color: black;
+  font-size: small;
+}
+
 </style>
+

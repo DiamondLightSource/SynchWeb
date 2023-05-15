@@ -44,18 +44,17 @@ class SummaryNew extends Page
         'cco' => '(.*)', // ccanomalous overall
         'rfsi' => '(.*)', // rfreevaluestart inner
         'rfei' => '(.*)', // rfreevalueend inner
-
-        //Filter Parameters - No of Blobs
         'nobi' => '(.*)', //  noofblobs inner
-        'nobo' => '(.*)', //  noofblobs inner parameter operands e.g. greater than, equal to, between, less than, like, ascending, descending
-        'nobv' => '(.*)', //  noofblobs inner comparison value
 
 
     );
 
     public static $dispatch = array(
         array('/results', 'get', '_get_results'),
-        array('/proposal', 'get', '_get_proposal')
+        array('/proposal', 'get', '_get_proposal'),
+        array('/spacegroup', 'get', '_get_spacegroup'),
+        array('/procprogram', 'get', '_get_processingprogram'),
+        array('/bl', 'get', '_get_beamline')
     );
 
     private $summarydb;
@@ -422,13 +421,77 @@ class SummaryNew extends Page
 
     function _get_proposal() {
 
+        $args = array();
+        $where = "WHERE 1=1";
+
+        if ($this->staff) {
+
+            $tot = $this->summarydb->pq(
+                "SELECT prop, proposalid
+                FROM ProposalDimension pt
+                $where", $args);
+
+            $tot = intval($tot[0]['TOT']);
+
+            $start = 0;
+            $pp = $this->has_arg('per_page') ? $this->arg('per_page') : 15;
+            $end = $pp;
+    
+            if ($this->has_arg('page')) {
+                $pg = $this->arg('page') - 1;
+                $start = $pg * $pp;
+                $end = $pg * $pp + $pp;
+            }
+    
+            $st = sizeof($args) + 1;
+            array_push($args, $start);
+            array_push($args, $end);
+
+            $order = 'p.proposalid DESC';
+
+            $rows = $this->summarydb->paginate(
+                "SELECT prop, proposalid
+                FROM ProposalDimension pt
+                $where", $args);
+
+            $this->_output($rows);  
+
+        }
+
+
+
+    }
+
+    function _get_spacegroup() {
+
         $rows = $this->summarydb->pq(
-            "SELECT prop, proposalid
-            FROM ProposalDimension pt");
+            "SELECT spaceGroup
+            FROM SpaceGroupDimension sgt");
 
         $this->_output($rows);
 
     }
+
+    function _get_processingprogram() {
+
+        $rows = $this->summarydb->pq(
+            "SELECT processingPrograms
+            FROM ProcessingProgramDimension ppt");
+
+        $this->_output($rows);
+
+    }
+
+    function _get_beamline() {
+
+        $rows = $this->summarydb->pq(
+            "SELECT beamLineName
+            FROM VisitDimension vt");
+
+        $this->_output($rows);
+
+    }
+
 
 
 

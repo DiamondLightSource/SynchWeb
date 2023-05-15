@@ -14,9 +14,8 @@
                 >
 
             <div>
-                <div v-if="loadContent" class="
-                tw-w-full  tw-h-12"
-                :class="loadContent ? 'tw-h-10' : 'tw-h-0'">
+                <div v-if="loadContent"
+                :class="loadContent ? 'tw-h-3' : 'tw-h-0'">
 
                 </div>
 
