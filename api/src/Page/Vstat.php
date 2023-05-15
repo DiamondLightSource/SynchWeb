@@ -944,10 +944,15 @@ class Vstat extends Page
         $beamlines = $this->_get_beamlines_from_type($this->ty);
         $bls = implode('\', \'', $beamlines);
 
+        $max_beam_size = 600;
+        if ($this->has_arg('bl') && $this->arg('bl') != 'i23') {
+            $max_beam_size = 150;
+        }
+
         $types = array(
             'energy' => array('unit' => 'eV', 'st' => 1000, 'en' => 25000, 'bin_size' => 200, 'col' => '(1.98644568e-25/(dc.wavelength*1e-10))/1.60217646e-19', 'count' => 'dc.wavelength'),
-            'beamsizex' => array('unit' => 'um', 'st' => 0, 'en' => 150, 'bin_size' => 5, 'col' => 'dc.beamsizeatsamplex*1000', 'count' => 'dc.beamsizeatsamplex'),
-            'beamsizey' => array('unit' => 'um', 'st' => 0, 'en' => 150, 'bin_size' => 5, 'col' => 'dc.beamsizeatsampley*1000', 'count' => 'dc.beamsizeatsampley'),
+            'beamsizex' => array('unit' => 'um', 'st' => 0, 'en' => $max_beam_size, 'bin_size' => 5, 'col' => 'dc.beamsizeatsamplex*1000', 'count' => 'dc.beamsizeatsamplex'),
+            'beamsizey' => array('unit' => 'um', 'st' => 0, 'en' => $max_beam_size, 'bin_size' => 5, 'col' => 'dc.beamsizeatsampley*1000', 'count' => 'dc.beamsizeatsampley'),
             'exposuretime' => array('unit' => 'ms', 'st' => 0, 'en' => 5000, 'bin_size' => 50, 'col' => 'dc.exposuretime*1000', 'count' => 'dc.exposuretime'),
         );
 
