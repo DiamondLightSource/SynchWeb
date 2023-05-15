@@ -195,7 +195,7 @@ class Shipment extends Page
 
 
 
-        array('/containers(/:cid)(/did/:did)', 'get', '_get_all_containers'),
+        array('/containers(/:cid)(/sid/:sid)(/did/:did)', 'get', '_get_all_containers'),
         array('/containers', 'post', '_add_container'),
         array('/containers/:cid', 'patch', '_update_container'),
         array('/containers/move', 'get', '_move_container'),
