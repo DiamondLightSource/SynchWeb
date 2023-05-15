@@ -83,8 +83,9 @@ define(['marionette', 'backbone', 'backgrid', 'views/table', 'views/filter',
         onRender: function() {
             var edit = new Editable({ model: this.model, el: this.$el })
             edit.create('NAME', 'text')
-            edit.create('CAPACITY', 'text')
-            edit.create('GLOBAL', 'select', { data: { 'Yes': 1, 'No': 0 } })
+            if (app.prop == this.model.get('PROP')) {
+                edit.create('GLOBAL', 'select', { data: { 1: 'Yes', 0: 'No' } })
+            }
 
             this.groupview = new GroupView({ components: this.components, editable: app.prop == this.model.get('PROP') })
             this.group.show(this.groupview)
