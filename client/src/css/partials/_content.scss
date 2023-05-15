@@ -329,6 +329,10 @@ div.log {
             display: none;
         }
     }
+
+    .plate-12-wide li {
+        @mixin cols 12, 2% 3.7%, 0.2%;
+    }
 }
 
 
