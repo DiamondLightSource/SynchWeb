@@ -944,16 +944,11 @@ class Vstat extends Page
         $beamlines = $this->_get_beamlines_from_type($this->ty);
         $bls = implode('\', \'', $beamlines);
 
-        $max_beam_size = 600;
-        if ($this->has_arg('bl') && $this->arg('bl') != 'i23') {
-            $max_beam_size = 150;
-        }
-
         $types = array(
-            'energy' => array('unit' => 'eV', 'st' => 1000, 'en' => 25000, 'bin_size' => 200, 'col' => '(1.98644568e-25/(dc.wavelength*1e-10))/1.60217646e-19', 'count' => 'dc.wavelength'),
-            'beamsizex' => array('unit' => 'um', 'st' => 0, 'en' => $max_beam_size, 'bin_size' => 5, 'col' => 'dc.beamsizeatsamplex*1000', 'count' => 'dc.beamsizeatsamplex'),
-            'beamsizey' => array('unit' => 'um', 'st' => 0, 'en' => $max_beam_size, 'bin_size' => 5, 'col' => 'dc.beamsizeatsampley*1000', 'count' => 'dc.beamsizeatsampley'),
-            'exposuretime' => array('unit' => 'ms', 'st' => 0, 'en' => 5000, 'bin_size' => 50, 'col' => 'dc.exposuretime*1000', 'count' => 'dc.exposuretime'),
+            'energy' => array('unit' => 'eV', 'bin_size' => 200, 'col' => '(1.98644568e-25/(dc.wavelength*1e-10))/1.60217646e-19', 'count' => 'dc.wavelength'),
+            'beamsizex' => array('unit' => 'um', 'bin_size' => 5, 'col' => 'dc.beamsizeatsamplex*1000', 'count' => 'dc.beamsizeatsamplex'),
+            'beamsizey' => array('unit' => 'um', 'bin_size' => 5, 'col' => 'dc.beamsizeatsampley*1000', 'count' => 'dc.beamsizeatsampley'),
+            'exposuretime' => array('unit' => 'ms', 'bin_size' => 5, 'col' => 'dc.exposuretime*1000', 'count' => 'dc.exposuretime'),
         );
 
         $k = 'energy';
@@ -992,9 +987,14 @@ class Vstat extends Page
                 GROUP BY s.beamlinename,x
                 ORDER BY s.beamlinename", $args);
 
+        $min = null;
+        $max = null;
         $bls = array();
-        foreach ($hist as $h)
+        foreach ($hist as $h) {
             $bls[$h['BEAMLINENAME']] = 1;
+            if (is_null($max) || $h['X'] > $max) $max = $h['X'];
+            if (is_null($min) || $h['X'] < $min) $min = $h['X'];
+        }
 
         $data = array();
         foreach ($bls as $bl => $y) {
@@ -1006,7 +1006,7 @@ class Vstat extends Page
             }
 
             $gram = array();
-            for ($bin = $t['st']; $bin <= $t['en']; $bin += $t['bin_size']) {
+            for ($bin = $min; $bin <= $max; $bin += $t['bin_size']) {
                 $gram[$bin] = array_key_exists($bin, $ha) ? $ha[$bin] : 0;
             }
 
