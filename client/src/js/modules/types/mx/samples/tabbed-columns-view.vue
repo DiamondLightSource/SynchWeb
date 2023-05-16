@@ -365,7 +365,6 @@
       <extended-validation-provider
         :ref="`sample_${sampleIndex}_screening_method`"
         class-names="tw-px-2 tw-w-24"
-        :rules="sample['PROTEINID'] > -1 && queueForUDC ? 'required' : ''"
         :name="`Sample ${sampleIndex + 1} Screening Method`"
         :vid="`sample ${sampleIndex + 1} screening method`"
       >
