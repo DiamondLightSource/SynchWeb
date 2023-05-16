@@ -195,7 +195,7 @@ class Shipment extends Page
 
 
 
-        array('/containers(/:cid)(/did/:did)', 'get', '_get_all_containers'),
+        array('/containers(/:cid)(/sid/:sid)(/did/:did)', 'get', '_get_all_containers'),
         array('/containers', 'post', '_add_container'),
         array('/containers/:cid', 'patch', '_update_container'),
         array('/containers/move', 'get', '_move_container'),
@@ -932,7 +932,7 @@ class Shipment extends Page
         global $shipping_service_url;
         global $facility_email;
         if (!isset($shipping_service_url)) {
-            $this->_error("Server could not send request to shipping service.");
+            throw new Exception("Could not send request to shipping service: shipping_service_url not set");
         }
 
         # Create shipment
@@ -959,9 +959,9 @@ class Shipment extends Page
         $address_lines = explode(PHP_EOL, rtrim($dispatch_info['ADDRESS']));
         $num_lines = count($address_lines);
         if ($num_lines < 3) {
-            $this->_error("Address must consist contain at least one line, as well as a city and post code.");
+            throw new Exception("Could not build request for shipping service: address input does contain at least 3 lines (inc. city and post code)");
         } else if ($num_lines > 5) {
-            $this->_error("Address can contain at most 3 lines, (not including city and post code).");
+            throw new Exception("Could not build request for shipping service: address input contains more than 5 lines (inc. city and post code)");
         }
         $shipment_data['consignee_post_code'] = $address_lines[$num_lines - 1];
         unset($address_lines[$num_lines - 1]);
@@ -973,16 +973,18 @@ class Shipment extends Page
 
         $create = ($dewar['DEWARSTATUS'] != 'dispatch-requested');
 
-        if ($create === true) {
-            $response = $this->shipping_service->create_shipment($shipment_data);
-        } else {
-            $this->shipping_service->update_shipment($dispatch_info['DEWARID'], $shipment_data);
-            $response = $this->shipping_service->get_shipment($dispatch_info['DEWARID']);
+        try {
+            if ($create === true) {
+                $response = $this->shipping_service->create_shipment($shipment_data);
+            } else {
+                $this->shipping_service->update_shipment($dispatch_info['DEWARID'], $shipment_data);
+                $response = $this->shipping_service->get_shipment($dispatch_info['DEWARID']);
+            }
+            $shipment_id = $response['shipmentId'];
+            $this->shipping_service->dispatch_shipment($shipment_id);
+        } catch (Exception $e) {
+            throw new Exception("Error returned from shipping service: " . $e . "\nShipment data: " . $shipment_data);
         }
-
-        $shipment_id = $response['shipmentId'];
-
-        $this->shipping_service->dispatch_shipment($shipment_id);
 
         return $shipment_id;
     }
@@ -2448,7 +2450,7 @@ class Shipment extends Page
     {
         if (!$this->has_arg('name'))
             $this->_error('No key specified');
-        $this->_output($this->user->setInCache($this->arg('name')));
+        $this->_output($this->user->getFromCache($this->arg('name')));
     }
 
     function _dummy_shipment_put()
