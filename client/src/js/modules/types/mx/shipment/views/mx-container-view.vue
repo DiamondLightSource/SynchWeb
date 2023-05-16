@@ -239,6 +239,7 @@ import { ValidationObserver, ValidationProvider }  from 'vee-validate'
 
 import ContainerHistory from 'modules/shipment/collections/containerhistory'
 import Samples from 'collections/samples'
+import SampleGroups from 'collections/samplegroups'
 import Shipments from 'collections/shipments'
 import Containers from 'collections/containers'
 import Dewars from 'collections/dewars'
@@ -416,10 +417,19 @@ export default {
           if (Number(sample[t]) > 0) status = t
         })
         sample['STATUS'] = status
-        const payload = await this.populateInitialSampleGroupValue(sample)
+        let matchingSampleGroup
+        if (sample['SAMPLEGROUP']) {
+          const sampleGroupsCollection = new SampleGroups(null)
+          sampleGroupsCollection.queryParams.BLSAMPLEID = sample['BLSAMPLEID']
+          const result = await this.$store.dispatch('getCollection', sampleGroupsCollection)
+          const sampleGroups = result.toJSON()
+          matchingSampleGroup = sampleGroups.find(item => Number(item['BLSAMPLEGROUPID']) === Number(sample['SAMPLEGROUP']))
+        }
+
+        sample.INITIALSAMPLEGROUP = matchingSampleGroup ? matchingSampleGroup['BLSAMPLEGROUPID'] : ''
         this.$store.commit('samples/setSample', {
           index: Number(sample['LOCATION']) - 1,
-          data: { ...payload, VALID: 1 }
+          data: { ...sample, VALID: 1 }
         })
 
       }
