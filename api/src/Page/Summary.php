@@ -435,25 +435,26 @@ class Summary extends Page
         if ($this->staff) {
 
             $tot = $this->summarydb->pq(
-                "SELECT prop, proposalid
+                "SELECT COUNT(proposalid) as TOT
                 FROM ProposalDimension pt
                 $where", $args);
 
-            $tot = intval($tot[0]['TOT']);
+    
+            $tot = sizeof($tot) ? intval($tot[0]['TOT']) : 0;
 
-            $start = 0;
+            // paginate
             $pp = $this->has_arg('per_page') ? $this->arg('per_page') : 15;
-            $end = $pp;
-    
-            if ($this->has_arg('page')) {
-                $pg = $this->arg('page') - 1;
-                $start = $pg * $pp;
-                $end = $pg * $pp + $pp;
-            }
-    
-            $st = sizeof($args) + 1;
+            $pg = $this->has_arg('page') ? $this->arg('page')-1 : 0;
+            $start = $pg*$pp;
+            $end = $pg*$pp+$pp;
+            
+            $st = sizeof($args)+1;
+            $en = $st + 1;
             array_push($args, $start);
             array_push($args, $end);
+
+            $pgs = intval($tot/$pp);
+            if ($tot % $pp != 0) $pgs++;
 
             $order = 'p.proposalid DESC';
 
@@ -462,12 +463,9 @@ class Summary extends Page
                 FROM ProposalDimension pt
                 $where", $args);
 
-            $this->_output($rows);  
+        $this->_output(array('data' => $rows, 'total' => $tot ));
 
         }
-
-
-
     }
 
     function _get_spacegroup() {
@@ -476,8 +474,7 @@ class Summary extends Page
             "SELECT spaceGroup
             FROM SpaceGroupDimension sgt");
 
-        $this->_output($rows);
-
+        $this->_output(array('data' => $rows ));
     }
 
     function _get_processingprogram() {
@@ -486,8 +483,7 @@ class Summary extends Page
             "SELECT processingPrograms
             FROM ProcessingProgramDimension ppt");
 
-        $this->_output($rows);
-
+        $this->_output(array('data' => $rows ));
     }
 
     function _get_beamline() {
@@ -496,8 +492,7 @@ class Summary extends Page
             "SELECT beamLineName
             FROM VisitDimension vt");
 
-        $this->_output($rows);
-
+        $this->_output(array('data' => $rows ));
     }
 
 
