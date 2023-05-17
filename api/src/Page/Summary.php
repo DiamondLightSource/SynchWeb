@@ -463,9 +463,12 @@ class Summary extends Page
                 FROM ProposalDimension pt
                 $where", $args);
 
-        $this->_output(array('data' => $rows, 'total' => $tot ));
+            $this->_output($rows);  
 
         }
+
+
+
     }
 
     function _get_spacegroup() {
@@ -474,7 +477,8 @@ class Summary extends Page
             "SELECT spaceGroup
             FROM SpaceGroupDimension sgt");
 
-        $this->_output(array('data' => $rows ));
+        $this->_output($rows);
+
     }
 
     function _get_processingprogram() {
@@ -483,7 +487,8 @@ class Summary extends Page
             "SELECT processingPrograms
             FROM ProcessingProgramDimension ppt");
 
-        $this->_output(array('data' => $rows ));
+        $this->_output($rows);
+
     }
 
     function _get_beamline() {
@@ -492,7 +497,8 @@ class Summary extends Page
             "SELECT beamLineName
             FROM VisitDimension vt");
 
-        $this->_output(array('data' => $rows ));
+        $this->_output($rows);
+
     }
 
 
