@@ -181,12 +181,12 @@ export default {
             if (!authenticated) {
               window.location.href = `${this.apiUrl}/authenticate/authorise`;
             } else {
-              this.$store.push(actualRedirectUrl);
+              this.$router.push(actualRedirectUrl);
             }
           });
         } else {
           const token = location.href.substring(tokenLocation + ("code".length + 1));
-          this.$store.dispatch("auth/getToken", token).then(() => this.$store.push(actualRedirectUrl));
+          this.$store.dispatch("auth/getToken", token).then(() => this.$router.push(actualRedirectUrl));
         }
       }
     },
