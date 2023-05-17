@@ -59,14 +59,7 @@ class OIDC extends AuthenticationParent implements AuthenticationInterface
                         '&redirect_uri=' . $redirect_url
             );
         }
-
-        error_log($this->providerConfig->token_endpoint . 
-        '?grant_type=authorization_code&redirect_uri=' . 
-        $redirect_url . 
-        "&code=" . $code . 
-        '&client_secret=' . $oidc_client_secret . 
-        '&client_id=' . $oidc_client_id);
-
+        
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $this->providerConfig->token_endpoint . 
             '?grant_type=authorization_code&redirect_uri=' . 
