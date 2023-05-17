@@ -122,14 +122,14 @@
                 <span class="DELIVERYAGENT_DELIVERYDATE"><%-DELIVERYAGENT_DELIVERYDATE%></span>
             </li>
 
-            <% if (ENCLOSEDHARDDRIVE) {%>
+            <% if (typeof ENCLOSEDHARDDRIVE !== 'undefined') {%>
             <li>
                 <span class="label">Hard drive enclosed</span>
                 <span class="ENCLOSEDHARDDRIVE"><%-ENCLOSEDHARDDRIVE %></span>
             </li>
             <% } %>
 
-            <% if (ENCLOSEDTOOLS) {%>
+            <% if (typeof ENCLOSEDTOOLS !== 'undefined') {%>
             <li>
                 <span class="label">Tools enclosed</span>
                 <span class="ENCLOSEDTOOLS"><%-ENCLOSEDTOOLS %></span>
