@@ -223,7 +223,7 @@
                         <div class="results-item tw-px-5"> {{ getProcRow(value["PROCESSINGPROGRAMS"], 'text')[0] }}</div>
                         <div class="results-item tw-px-5"> {{ getProcRow(value["REFINEDCELL_A"], '')[0] }}</div>
                         <div class="results-item tw-px-5"> {{ getProcRow(value["REFINEDCELL_B"], '')[0] }}</div>
-                        <div class="results-item tw-px-5"> {{ getProcRow(value["REFINEDCELL_C,"], '')[0] }}</div>
+                        <div class="results-item tw-px-5"> {{ getProcRow(value["REFINEDCELL_C"], '')[0] }}</div>
                         <div class="results-item tw-px-5"> {{ getProcRow(value["REFINEDCELL_ALPHA"], '')[0] }}</div>
                         <div class="results-item tw-px-5"> {{ getProcRow(value["REFINEDCELL_BETA"], '')[0] }}</div>
                         <div class="results-item tw-px-5"> {{ getProcRow(value["REFINEDCELL_GAMMA"], '')[0] }}</div>
@@ -251,7 +251,7 @@
                         <div class="results-item tw-px-5"> {{ getProcRow(value["PROCESSINGPROGRAMS"], 'text')[index] }}</div>
                         <div class="results-item tw-px-5"> {{ getProcRow(value["REFINEDCELL_A"], '')[index] }}</div>
                         <div class="results-item tw-px-5"> {{ getProcRow(value["REFINEDCELL_B"], '')[index] }}</div>
-                        <div class="results-item tw-px-5"> {{ getProcRow(value["REFINEDCELL_C,"], '')[index] }}</div>
+                        <div class="results-item tw-px-5"> {{ getProcRow(value["REFINEDCELL_C"], '')[index] }}</div>
                         <div class="results-item tw-px-5"> {{ getProcRow(value["REFINEDCELL_ALPHA"], '')[index] }}</div>
                         <div class="results-item tw-px-5"> {{ getProcRow(value["REFINEDCELL_BETA"], '')[index] }}</div>
                         <div class="results-item tw-px-5"> {{ getProcRow(value["REFINEDCELL_GAMMA"], '')[index] }}</div>
