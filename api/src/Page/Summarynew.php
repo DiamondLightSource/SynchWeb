@@ -74,21 +74,22 @@ class SummaryNew extends Page
         $order = '';
         $order_arr = array();
         
-        // if (!$this->has_arg('prop')) $this->_error('No proposal defined');
+        if (!$this->has_arg('prop')) $this->_error('No proposal defined');
 
-        $args = array($this->proposalid);
+        // $args = array($this->proposalid);
         // array_push($where_arr, 'p.proposalid = ?');
 
 
         $args = array($this->arg('prop'));
         array_push($where_arr, 'pt.proposalid = ?');
         array_push($order_arr, 'sf.autoProcIntegrationId DESC');
+        
 
 
         // [VALUE, ORDER]
 
         if ($this->has_arg('sample')) {
-            $sample_args = explode(',', $this->arg('sample'));
+            $sample_args = explode(',', urldecode($this->arg('sample')));
 
             array_push($args, $sample_args[0]);
             array_push($where_arr, "lower(sf.name) LIKE lower(CONCAT(CONCAT('%',?),'%')) ESCAPE '$' ");
@@ -101,7 +102,7 @@ class SummaryNew extends Page
 
 
         if ($this->has_arg('filetemp')) {
-            $filetemp_args = explode(',', $this->arg('filetemp'));
+            $filetemp_args = explode(',', urldecode($this->arg('filetemp')));
 
             array_push($args, $filetemp_args[0]);
             array_push($where_arr, "lower(sf.fileTemplate) LIKE lower(CONCAT(CONCAT('%',?),'%')) ESCAPE '$' ");
@@ -126,7 +127,7 @@ class SummaryNew extends Page
         }
 
         if ($this->has_arg('pp')) {
-            $pp_args = explode(',', $this->arg('pp'));
+            $pp_args = explode(',', urldecode($this->arg('pp')));
 
             array_push($args, $pp_args[0]);
             array_push($where_arr, "lower(ppt.processingPrograms) LIKE lower(CONCAT(CONCAT('%',?),'%')) ESCAPE '$' ");
@@ -138,7 +139,7 @@ class SummaryNew extends Page
         }
 
         if ($this->has_arg('sg')) {
-            $sg_args = explode(',', $this->arg('sg'));
+            $sg_args = explode(',', urldecode($this->arg('sg')));
 
             array_push($args, $sg_args[0]);
             array_push($where_arr, "lower(sgt.spaceGroup) LIKE lower(CONCAT(CONCAT('%',?),'%')) ESCAPE '$' ");
@@ -342,6 +343,8 @@ class SummaryNew extends Page
             $order = implode(", ", $order_arr);
         }
 
+        if ($this->staff) {
+
         // get tot query
         $tot_args = $args;
 
@@ -352,7 +355,8 @@ class SummaryNew extends Page
                 JOIN VisitDimension vt on vt.sessionDimId = sf.sessionDimId
                 JOIN ProcessingProgramDimension ppt on ppt.processingProgramsDimId = sf.processingProgramsDimId
                 JOIN SpaceGroupDimension sgt on sgt.spaceGroupDimId = sgt.spaceGroupDimId
-             WHERE $where"
+             WHERE $where
+             GROUP BY sf.datacollectionId"
             , $tot_args);
     
         $tot = sizeof($tot) ? intval($tot[0]['TOT']) : 0;
@@ -374,48 +378,52 @@ class SummaryNew extends Page
 
         $rows = $this->summarydb->paginate(
             "SELECT 
+                pt.prop,
                 sf.autoProcIntegrationId,
                 sf.dataCollectionId,
                 sf.personId,
                 sf.visit_number,
                 sf.startTime,
-                sf.fileTemplate,
-                sf.name,
-                sf.comments,
-                sgt.spaceGroup,
-                ppt.processingPrograms,
                 vt.beamLineName,
-                sf.refinedCell_a,
-                sf.refinedCell_b,
-                sf.refinedCell_c,
-                sf.refinedCell_alpha,
-                sf.refinedCell_beta,
-                sf.refinedCell_gamma,
-                sf.resolutionLimitHighOuter,
-                sf.rMeasWithinIPlusIMinusInner,
-                sf.resIOverSigI2Overall,
-                sf.ccAnomalousInner,
-                sf.ccAnomalousOverall,
-                sf.rFreeValueStartInner,
-                sf.rFreeValueEndInner,
-                sf.noofblobs
+                sf.comments,
+                GROUP_CONCAT(COALESCE(sf.fileTemplate, 'NULL')) as FILETEMPLATE,
+                GROUP_CONCAT(COALESCE(sf.name, 'NULL')) as SAMPLENAME,
+                GROUP_CONCAT(COALESCE(sgt.spaceGroup, 'NULL')) as SPACEGROUP,
+                GROUP_CONCAT(COALESCE(ppt.processingPrograms, 'NULL')) as PROCESSINGPROGRAMS,
+                GROUP_CONCAT(COALESCE(sf.refinedCell_a, 'NULL')) as REFINEDCELL_A,
+                GROUP_CONCAT(COALESCE(sf.refinedCell_b, 'NULL')) as REFINEDCELL_B,
+                GROUP_CONCAT(COALESCE(sf.refinedCell_c, 'NULL')) as REFINEDCELL_C,
+                GROUP_CONCAT(COALESCE(sf.refinedCell_alpha, 'NULL')) as REFINEDCELL_ALPHA,
+                GROUP_CONCAT(COALESCE(sf.refinedCell_beta, 'NULL')) as REFINEDCELL_BETA,
+                GROUP_CONCAT(COALESCE(sf.refinedCell_gamma, 'NULL')) as REFINEDCELL_GAMMA,
+                GROUP_CONCAT(COALESCE(sf.resolutionLimitHighOuter, 'NULL')) as RESOLUTIONLIMITHIGHOUTER,
+                GROUP_CONCAT(COALESCE(sf.rMeasWithinIPlusIMinusInner, 'NULL')) as RMEASWITHINIPLUSIMINUSINNER,
+                GROUP_CONCAT(COALESCE(sf.resIOverSigI2Overall, 'NULL')) as RESIOVERSIGI2OVERALL,
+                GROUP_CONCAT(COALESCE(sf.ccAnomalousInner, 'NULL')) as CCANOMALOUSINNER,
+                GROUP_CONCAT(COALESCE(sf.ccAnomalousOverall, 'NULL')) as CCANOMALOUSOVERALL,
+                GROUP_CONCAT(COALESCE(sf.rFreeValueStartInner, 'NULL')) as RFREEVALUESTARTINNER,
+                GROUP_CONCAT(COALESCE(sf.rFreeValueEndInner, 'NULL')) as RFREEVALUEENDINNER,
+                GROUP_CONCAT(COALESCE(sf.noofblobs, 'NULL')) as NOOFBLOBS
              FROM SummaryFact sf
                 JOIN ProposalDimension pt on pt.proposalDimId = sf.proposalDimId
                 JOIN VisitDimension vt on vt.sessionDimId = sf.sessionDimId
                 JOIN ProcessingProgramDimension ppt on ppt.processingProgramsDimId = sf.processingProgramsDimId
-                JOIN SpaceGroupDimension sgt on sgt.spaceGroupDimId = sgt.spaceGroupDimId
+                JOIN SpaceGroupDimension sgt on sgt.spaceGroupDimId = sf.spaceGroupDimId
              WHERE $where
+             GROUP BY sf.dataCollectionId
              ORDER BY $order "
             , $args);
+    
 
         // if (!$rows) {
         // $this->_error($this->arg('TITLE') . ' could not be found anywhere!', 404);
         // }
         
         // sql query output
-        // $this->_output(array('data' => $rows, 'total' => $tot ));
-        $this->_output(array('data' => $rows, 'where' => $where, 'order' => $order, 'args' => $args));
+        $this->_output(array('data' => $rows, 'total' => $tot ));
+        // $this->_output(array('data' => $rows, 'where' => $where, 'order' => $order, 'args' => $args));
 
+        }
 
     }
 

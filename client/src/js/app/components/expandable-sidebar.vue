@@ -1,11 +1,11 @@
 <template>
     <div class="custom-sidebar">
-        <div class="tw-relative tw-border-b tw-text-xl tw-bg-content-sub-header-hover-background"
+        <div class="tw-border-b tw-text-xl tw-bg-content-sub-header-hover-background"
             @click="toggleSidebar()">
                         <slot name="filter-bar-title" />
         </div>
         <div
-            class="tw-relative tw-bg-header-bc-color
+            class="tw-bg-header-bc-color
             tw-ease-in-out tw-transition-all tw-delay-150 tw-duration-300"
             :class="{
                 'transform-filter-height ': isOpen,
@@ -68,8 +68,9 @@
 <style scoped>
 
     .transform-filter-height {
-        height: 400px;
+        height: 250px;
         max-height: 600px;
+        overflow-y: scroll;
     }
 
     .filter-height {

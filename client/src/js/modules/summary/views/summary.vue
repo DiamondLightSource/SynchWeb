@@ -51,19 +51,6 @@
 
                 <template v-slot:filter-bar-content>
 
-                    <!-- <div class="tw-flex">
-                        <combo-box
-                        class="combo-box tw-w-2/12 proposal-select tw-mt-2"
-                        :data="summaryParameters"
-                        textField="PROP"
-                        valueField="PROP"
-                        size="small"
-                        :can-create-new-item="false"
-                        v-model="selectedProposal"
-                        defaultText="Select Proposal"
-                        ></combo-box>
-                    </div> -->
-
                     <div class="tw-grid tw-grid-rows-6 tw-grid-cols-3 tw-grid-flow-col tw-mb-2">
 
                             <div class="tw-flex" v-for="(value, index) in filters" :key="value.id">
@@ -123,35 +110,7 @@
                             <div class="button_plus tw-h-3 tw-mt-2" v-if="filters.length < 18" v-on:click="addFilterOption($event)"></div>
 
 
-                            
-
-
-
                     </div>
-                    
-<!-- 
-                    <div tabindex="0"  @focusout="updateParamsFromUserEntered">
-
-                    <textarea v-model="userEnteredParametersString" spellcheck="false" 
-                    class="tw-p-2 tw-text-black tw-border tw-border-white tw-bg-white">
-                    </textarea>
-
-                    <button class="tw-p-2 focus:tw-outline-none" id="copyToClipboard" v-on:click.prevent="copyToClipboard(userEnteredParametersString)">
-                        <i class="fa fa-clipboard"></i>
-                    </button>
-
-
-                    </div>
-                
-                    <div class="copied">
-                    <p class=" tw-rounded-full tw-h-6 tw-mt-1 tw-ml-4 tw-pt-1 tw-pl-3 tw-pr-3 
-                                tw-text-white tw-font-bold tw-bg-black tw-transition-opacity tw-duration-300 tw-ease-in"
-                                :class="{
-                                    'tw-opacity-50': isCopied,
-                                    'tw-opacity-0': !isCopied,
-                                    }">
-                        Copied!</p>
-                    </div> -->
                     
 
                 </template>
@@ -186,7 +145,7 @@
                         </button>
                     </div>
                 </div>
-                <button
+                <!-- <button
                     v-on:click="getFavourites"
                     class="tw-mt-10 tw-items-center tw-block tw-pl-5 tw-pr-5 tw-h-6 tw-ml-2
                     tw-shadow tw-text-xs
@@ -195,65 +154,15 @@
                     'tw-bg-content-active': showFavourites,
                     'tw-bg-content-sub-header-background tw-text-white': !showFavourites,
                     }" type="button">
-                    <p>Favourites</p></button>
+                    <p>Favourites</p></button> -->
                 <button
                     v-on:click="downloadFile"
                     class="tw-mt-10 tw-items-center tw-block tw-pl-5 tw-pr-5 tw-h-6 tw-ml-2 tw-mr-2 
                     tw-text-white tw-bg-content-sub-header-background tw-shadow tw-text-xs
-                    tw-rounded-full tw-shadow" type="button">
+                    tw-rounded tw-shadow" type="button">
                     <p>Export CSV</p></button>
             </div>
 
-
-            <div>
-                <p class="tw-text-black tw-ml-2 tw-mt-2">Select Columns</p>
-                <div class="tw-py-2 tw-px-6 tw-border tw-rounded-lg tw-border-content-sub-header-background">
-                    <div class="tw-relative tw-w-full">
-                        <button v-on:click="isHidden = !isHidden" id="dropdownInformationButton" data-dropdown-toggle="dropdown" 
-                        class="tw-h-8 tw-text-white tw-rounded tw-text-xs tw-px-4 tw-text-center tw-inline-flex tw-items-center 
-                        tw-bg-content-sub-header-background tw-border-content-sub-header-background tw-border-4 
-                        tw-text-black tw-py-1 tw-px-5" type="button">( and {{ Math.max(0, selectedColumns.length - 3) }} others... ) </button>
-
-                        <div id="dropdown" class="tw-absolute
-                        tw-w-44 tw-bg-white tw-rounded tw-divide-y tw-divide-gray-100 tw-shadow
-                        tw-transition tw-ease-out tw-duration-100"
-                        :class="isHidden ? 'tw-transform tw-opacity-0 tw-scale-95 tw-z-20' : 'tw-transform tw-opacity-100 tw-scale-100 tw-z-50'">
-                        
-                            <ul class="tw-py-1 tw-text-sm tw=text-gray-700" aria-labelledby="dropdownInformationButton">
-                            <li> 
-                                <div v-for="(value, index) in summaryColumns" :key="value.id" 
-                                class="tw-flex tw-items-center tw-ml-2">
-                                    <input checked
-                                    v-model="value.checked"
-                                    v-if="!isHidden"
-                                    @click="checkedColumns(index)"
-                                    id="default-checkbox" type="checkbox" value="" 
-                                    class="tw-w-4 tw-h-4 tw-text-blue-600 tw-bg-gray-100 tw-rounded 
-                                    tw-border-gray-300 focus:tw-ring-blue-500 focus:tw-ring-2">
-                                    <a class="tw-block tw-text-xs tw-py-2 tw-px-4 hover:tw-bg-gray-100"> {{ value.title }} </a>
-
-                                </div>
-                            </li>
-                            </ul>
-
-                        </div>
-
-                        <div class="tw-absolute tw-right-0 tw-top-0"> 
-                            <ul v-if="windowWidth > 900" class="tw-flex">
-                                <div v-for="(title, index) in selectedColumns" :key="title.id">
-      
-                                    <p v-if="index <= pillIndex"
-                                    class="tw-rounded-full tw-h-6 tw-max-w-xs tw-ml-1 tw-pt-1 
-                                    tw-pr-1 tw-pl-1 tw-bg-content-active ">
-                                    <button v-on:click="togglePills(title)" class="fa fa-times tw-text-black"></button>
-                                    {{ title }} </p>
-                                </div>
-                            </ul>
-                        </div>
-
-                    </div>
-                </div>
-            </div>
         </div>
 
 
@@ -265,73 +174,34 @@
                 <span class="sr-only">Loading...</span>
         </div>
 
+        <div class="results-wrapper tw-bg-table-header-background tw-text-table-header-color tw-mt-2 tw-overflow-x-scroll tw-scrolling-touch">
 
-        <div class="tw-overflow-x-scroll tw-scrolling-touch tw-z-20 tw-mt-2">
+            <div class="tw-font-bold tw-grid tw-grid-col-20 tw-grid-flow-col">
+                <div></div>
+                <div class="results-item tw-pt-3 tw-px-5"> File Template</div>
+                <div class="results-item tw-pt-3 tw-px-5"> Sample Name</div>
 
-            <table class="summary-result-table tw-w-full">
-                <thead>
-                    <tr >
-                        <th class="tw-bg-table-header-background tw-text-table-header-color"></th>
-                        <th scope="col" v-for="(value, index) in summaryColumns" :key="value.id"
-                            class="tw-bg-table-header-background tw-text-table-header-color tw-font-bold">
-                          <p v-if="value.checked" :class="'tw-w-1/' + selectedColumns.length + ' tw-flex tw-text-center tw-pt-5 tw-pb-5 tw-pl-12 tw-pr-2'">
-                          {{ value.title }}
-                            <button
-                            v-on:click="toggleOrderBy(index)"
-                            class="tw-bg-transparent tw-z-20 tw-mb-2 tw-mr-2"
-                            :aria-expanded="value.isDesc"
-                            :aria-controls="`collapse${_uid}`"
-                            >
-                                <svg
-                                v-if="value.orderByCount <= 1 && value.checked == true"
-                                class="tw-w-3 tw-h-5 tw-transition-all tw-duration-200 tw-transform"
-                                :class="{
-                                'tw-rotate-180': !value.isDesc,
-                                'tw-rotate-0': value.isDesc,
-                                }"
-                                fill="none"
-                                stroke="currentColor"
-                                xmlns="http://www.w3.org/2000/svg"
-                                viewBox="0 0 16 10"
-                                aria-hidden="true"
-                                >
-                                <path fill-rule="evenodd" d="M8 1a.5.5 0 0 1 .5.5v11.793l3.146-3.147a.5.5 0 0 1 
-                                .708.708l-4 4a.5.5 0 0 1-.708 0l-4-4a.5.5 0 0 1 .708-.708L7.5 13.293V1.5A.5.5 0 0 1 8 1z"/>
-                                </svg>
-                            </button>
+                
+                <div v-for="value in summaryParameters" :key="value.id"
+                class="results-item tw-pt-3 tw-px-5">
+                {{ value.title }}</div>
 
-                            <button
-                            v-on:click="toggleOrderBy(index)"
-                            class="tw-bg-transparent tw-z-20  tw-mb-2 tw-mr-4"
-                            :aria-expanded="value.isDesc"
-                            :aria-controls="`collapse${_uid}`"
-                            >
-                                <svg
-                                v-if="value.orderByCount == 2 && value.checked == true"
-                                class="tw-w-3 tw-h-5 tw-mb-2 tw-transition-all tw-duration-200 tw-transform"
-                                fill="none"
-                                stroke="currentColor"
-                                xmlns="http://www.w3.org/2000/svg"
-                                viewBox="0 0 16 10"
-                                aria-hidden="true"
-                                >
-                                <path fill-rule="evenodd" d="M11.5 15a.5.5 0 0 0 .5-.5V2.707l3.146 3.147a.5.5 0 0 0 .708-.708l-4-4a.5.5 0 0 0-.708 
-                                0l-4 4a.5.5 0 1 0 .708.708L11 2.707V14.5a.5.5 0 0 0 .5.5zm-7-14a.5.5 0 0 1 .5.5v11.793l3.146-3.147a.5.5 0 0 1 .708.708l-4 
-                                4a.5.5 0 0 1-.708 0l-4-4a.5.5 0 0 1 .708-.708L4 13.293V1.5a.5.5 0 0 1 .5-.5z"/>
-                                </svg>
-                            </button>
-                        </p>
-                        </th>
-                    </tr>
-                </thead> 
-                <tbody v-for="(result, rowIndex) in summaryData" :key="result.id">
-                    <tr> 
-                        <td class="tw-flex tw-pl-4 tw-pt-6 tw-pb-8 "
-                            :class="{
-                                'tw-bg-table-body-background-odd' : rowIndex % 2,
-                                'tw-bg-content-sub-header-background' : isOdd % 2,
-                            }">
-                            <button class="tw-ra tw-ml-1" title="Click to add this data collection to the list of favourite data collections"
+            </div>
+
+            <div class="results-content tw-text-black tw-text-center tw-pt-3 tw-px-5 tw-text-xl tw-bg-content-sub-header-hover-background" v-if="summaryData.length == 0">
+                    No Results</div>
+
+            <expandable-sidebar
+            class="results-content"
+            v-else v-for="value in summaryData" :key="value.id">
+                <template v-slot:filter-bar-title >
+                    <div class="tw-grid tw-grid-col-20 tw-grid-flow-col tw-text-black">
+                        <div class="tw-ra tw-ml-1 ">
+                                <a :href="'/dc/visit/' + value.PROP + '-' + value.VISIT_NUMBER
+                                + '/id/' + value.DATACOLLECTIONID" class="tw-button tw-button-notext tw-dll" title="Go to Data Collection">
+                                <i class="fa fa-search"></i></a>
+                        </div>
+                        <!-- <button class="tw-ra tw-ml-1" title="Click to add this data collection to the list of favourite data collections"
                                     @click="favourite(result)">
 
                                 <i v-if=!isFavourite(result) class="fa fa-star-o"></i>
@@ -345,68 +215,62 @@
                             <p class="tw-ra tw-ml-1">
                                 <a href="'+app.apiurl+'/download/id/<%-DCID%>/aid/<%-AID%>" class="tw-button tw-button-notext tw-dll" 
                                     title="Download MTZ file"><i class="fa fa-download"></i></a>
-                            </p>
-                        </td>
-                        <td v-for="(value) in summaryColumns" :key="value.id"
-                        :class="{
-                                'tw-bg-table-body-background-odd' : rowIndex % 2,
-                                'tw-bg-content-sub-header-background' : isOdd % 2,
-                            }">
-                            <div class="tw-flex">
-                                <p v-if="value.checked == true && value.key != 'PROCESSINGPROGRAMS'" 
-                                :class="'tw-w-1/' + selectedColumns.length + ' tw-text-center tw-pt-5 tw-pb-5 tw-pl-12 tw-pr-2'"
-                                > {{ getProcRow(value.key, result)[0] }} </p>
-                                <p v-if="value.checked == true && value.key == 'PROCESSINGPROGRAMS'" 
-                                :class="'tw-w-1/' + selectedColumns.length + ' tw-text-center tw-pt-5 tw-pb-5 tw-pl-12 tw-pr-2'">
-                                    <button  v-on:click="toggleExpandAutoProc(rowIndex)"
-                                            class="tw-flex  tw-rounded-full tw-h-6 tw-max-w-xs tw-ml-1 tw-pt-1 
-                                            tw-pr-2 tw-pl-2 tw-bg-content-active"
-                                            >{{ getProcRow(value.key, result)[0] }}
-                                            <svg
-                                                class="tw-w-3 tw-h-4 tw-ml-1 tw-transition-all tw-duration-200 tw-transform"
-                                                :class="{
-                                                    'tw-rotate-0': !result.isVisible,
-                                                    'tw-rotate-180': result.isVisible,
-                                                }"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                viewBox="0 0 16 10"
-                                                aria-hidden="true"
-                                                >
-                                                <path
-                                                    d="M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z"
-                                                    stroke-width="2"
-                                                    stroke-linecap="round"
-                                                    stroke-linejoin="round"
-                                                />
-                                            </svg>
-                                    </button> 
-                                </p>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr  class="tw-overflow-y-scroll  tw-scrolling-touch">
-                        <td></td>
-                        <td v-for="(value) in summaryColumns" :key="value.id"
-                            class="tw-relative
-                            tw-ease-in-out tw-transition-all tw-delay-150 tw-duration-300"
-                            :class="{
-                                'tw-h-56': result.isVisible,
-                                'tw-h-0': !result.isVisible,
-                        }" >                  
-                            <tr v-for="(procRow) in getProcRow(value.key, result)" :key="procRow.id">
-                                <p v-show="result.loadContent" v-if="value.checked == true"
-                                :class="'tw-w-1/' + selectedColumns.length + ' tw-text-center tw-pt-5 tw-pb-5 tw-pl-12 tw-pr-2'"
-                                >{{ procRow }}</p>
-                            </tr>
-                        </td>
-                    </tr>
-                </tbody>
+                            </p> -->
+                        <div class="results-item tw-px-5"> {{ getProcRow(value["FILETEMPLATE"], 'text')[0] }}</div>
+                        <div class="results-item tw-px-5"> {{ getProcRow(value["SAMPLENAME"], 'text')[0] }}</div>
+                        <div class="results-item tw-px-5"> {{ getProcRow(value["BEAMLINENAME"], 'text') }}</div>
+                        <div class="results-item tw-px-5"> {{ getProcRow(value["SPACEGROUP"], 'text')[0] }}</div>
+                        <div class="results-item tw-px-5"> {{ getProcRow(value["PROCESSINGPROGRAMS"], 'text')[0] }}</div>
+                        <div class="results-item tw-px-5"> {{ getProcRow(value["REFINEDCELL_A"], '')[0] }}</div>
+                        <div class="results-item tw-px-5"> {{ getProcRow(value["REFINEDCELL_B"], '')[0] }}</div>
+                        <div class="results-item tw-px-5"> {{ getProcRow(value["REFINEDCELL_C,"], '')[0] }}</div>
+                        <div class="results-item tw-px-5"> {{ getProcRow(value["REFINEDCELL_ALPHA"], '')[0] }}</div>
+                        <div class="results-item tw-px-5"> {{ getProcRow(value["REFINEDCELL_BETA"], '')[0] }}</div>
+                        <div class="results-item tw-px-5"> {{ getProcRow(value["REFINEDCELL_GAMMA"], '')[0] }}</div>
+                        <div class="results-item tw-px-5"> {{ getProcRow(value["RESOLUTIONLIMITHIGHOUTER"], 'decimal4')[0] }}</div>
+                        <div class="results-item tw-px-5"> {{ getProcRow(value["RMEASWITHINIPLUSIMINUSINNER"], '')[0] }}</div>
+                        <div class="results-item tw-px-5"> {{ getProcRow(value["RESIOVERSIGI2OVERALL"], '')[0] }}</div>
+                        <div class="results-item tw-px-5"> {{ getProcRow(value["CCANOMALOUSINNER"], '')[0] }}</div>
+                        <div class="results-item tw-px-5"> {{ getProcRow(value["CCANOMALOUSOVERALL"], '')[0] }}</div>
+                        <div class="results-item tw-px-5"> {{ getProcRow(value["RFREEVALUESTARTINNER"], '')[0] }}</div>
+                        <div class="results-item tw-px-5"> {{ getProcRow(value["RFREEVALUEENDINNER"], '')[0] }}</div>
+                        <div class="results-item tw-px-5"> {{ getProcRow(value["NOOFBLOBS"], '')[0] }}</div>
+
+                    </div>
 
 
+                </template>
 
-            </table>
+                <template v-slot:filter-bar-content> 
+                    <div v-for="(col, index) in getProcRow(value.FILETEMPLATE, 'text') " :key="index" class="tw-grid tw-grid-col-20  tw-divide-y tw-grid-flow-col tw-text-black">
+                        <div></div>
+                        <div class="results-item tw-px-5"> {{ getProcRow(value["FILETEMPLATE"], 'text')[index] }}</div>
+                        <div class="results-item tw-px-5"> {{ getProcRow(value["SAMPLENAME"], 'text')[index] }}</div>
+                        <div class="results-item tw-px-5"> {{ getProcRow(value["BEAMLINENAME"], 'text') }}</div>
+                        <div class="results-item tw-px-5"> {{ getProcRow(value["SPACEGROUP"], 'text')[index] }}</div>
+                        <div class="results-item tw-px-5"> {{ getProcRow(value["PROCESSINGPROGRAMS"], 'text')[index] }}</div>
+                        <div class="results-item tw-px-5"> {{ getProcRow(value["REFINEDCELL_A"], '')[index] }}</div>
+                        <div class="results-item tw-px-5"> {{ getProcRow(value["REFINEDCELL_B"], '')[index] }}</div>
+                        <div class="results-item tw-px-5"> {{ getProcRow(value["REFINEDCELL_C,"], '')[index] }}</div>
+                        <div class="results-item tw-px-5"> {{ getProcRow(value["REFINEDCELL_ALPHA"], '')[index] }}</div>
+                        <div class="results-item tw-px-5"> {{ getProcRow(value["REFINEDCELL_BETA"], '')[index] }}</div>
+                        <div class="results-item tw-px-5"> {{ getProcRow(value["REFINEDCELL_GAMMA"], '')[index] }}</div>
+                        <div class="results-item tw-px-5"> {{ getProcRow(value["RESOLUTIONLIMITHIGHOUTER"], 'decimal4')[index] }}</div>
+                        <div class="results-item tw-px-5"> {{ getProcRow(value["RMEASWITHINIPLUSIMINUSINNER"], '')[index] }}</div>
+                        <div class="results-item tw-px-5"> {{ getProcRow(value["RESIOVERSIGI2OVERALL"], '')[index] }}</div>
+                        <div class="results-item tw-px-5"> {{ getProcRow(value["CCANOMALOUSINNER"], '')[index] }}</div>
+                        <div class="results-item tw-px-5"> {{ getProcRow(value["CCANOMALOUSOVERALL"], '')[index] }}</div>
+                        <div class="results-item tw-px-5"> {{ getProcRow(value["RFREEVALUESTARTINNER"], '')[index] }}</div>
+                        <div class="results-item tw-px-5"> {{ getProcRow(value["RFREEVALUEENDINNER"], '')[index] }}</div>
+                        <div class="results-item tw-px-5"> {{ getProcRow(value["NOOFBLOBS"], '')[index] }}</div>
+        
+
+                    </div>
+
+                </template>
+
+            </expandable-sidebar>
+
         </div>
 
 
@@ -461,46 +325,20 @@ export default {
         
         return {
             windowWidth: window.innerWidth,
-            pillIndex : 2,
             isLoading : false,
-            isCopied : false,
             isHidden: true,
             showFavourites: false,
             totalRecords:  10,
             pageSize: 15,
             currentPage: 1,
-            summaryCollection : null,
             summaryData : [],
             summaryExport : [],
             proposalCollection : null,
-            proposals :
-            [ { 
-                "PROP": "nt18231", 
-                "PROPOSALID": "42379" 
-            }, 
-            { 
-                "PROP": "nt26503", 
-                "PROPOSALID": "56277" 
-            } ],
-            spaceGroupCollection : null,
+            proposals : [],
             spaceGroups : [],
-            processingProgramCollection : null,
             processingProgram : [],
-            beamLineCollection : null,
             beamLines: [],
-            userEnteredParameters : [],
-            userEnteredParametersString : '',
-            deselectedColumns: [],
-            selectedColumns: [],
-            expandProcessing : false,
-            summaryColumns: [
-                {
-                    key: "DATACOLLECTIONID",
-                    title: 'Data Collection Id',
-                    descParam : 'descdcid',
-                    ascParam : 'ascdcid',
-                },
-            ],
+            searchedSamplePrefix: [],
             operands: [
                 {   
                     "title": "greater than",
@@ -535,7 +373,19 @@ export default {
             ],
             summaryParameters: [   
                 {
-                    "title": "SpaceGroup",
+                    "title": "Beamline",
+                    "inputtype": "combo-box",
+                    "textField": "BEAMLINENAME",
+                    "valueField": "BEAMLINENAME",
+                    "order": "",
+                    "selected": "",
+                    "operand": "",
+                    "value": "",
+                    "data": [],
+                    "arg" : "BEAMLINENAME="
+                },
+                {
+                    "title": "Space Group",
                     "inputtype": "combo-box",
                     "textField": "SPACEGROUP",
                     "valueField": "SPACEGROUP",
@@ -557,20 +407,7 @@ export default {
                     "arg" : "pp="
                 },     
                 {
-                    "title": "Beamlinename",
-                    "inputtype": "combo-box",
-                    "textField": "BEAMLINENAME",
-                    "valueField": "BEAMLINENAME",
-                    "order": "",
-                    "selected": "",
-                    "operand": "",
-                    "value": "",
-                    "data": [],
-                    "arg" : "BEAMLINENAME="
-                },
-                
-                {
-                    "title": "Refinedcell_a",
+                    "title": "Refinedcell A",
                     "inputtype": "search-operands",
                     "textField": "REFINEDCELL_A",
                     "valueField": "REFINEDCELL_A",
@@ -583,7 +420,7 @@ export default {
                 },
                 
                 {
-                    "title": "Refinedcell_b",
+                    "title": "Refinedcell B",
                     "inputtype": "search-operands",
                     "textField": "REFINEDCELL_B",
                     "valueField": "REFINEDCELL_B",
@@ -596,7 +433,7 @@ export default {
                 },
                 
                 {
-                    "title": "Refinedcell_c",
+                    "title": "Refinedcell C",
                     "inputtype": "search-operands",
                     "textField": "REFINEDCELL_C",
                     "valueField": "REFINEDCELL_C",
@@ -609,7 +446,7 @@ export default {
                 },
                 
                 {
-                    "title": "Refinedcell_alpha",
+                    "title": "Refinedcell Alpha",
                     "inputtype": "search-operands",
                     "textField": "REFINEDCELL_ALPHA",
                     "valueField": "REFINEDCELL_ALPHA",
@@ -622,7 +459,7 @@ export default {
                 },
                 
                 {
-                    "title": "Refinedcell_beta",
+                    "title": "Refinedcell Beta",
                     "inputtype": "search-operands",
                     "textField": "REFINEDCELL_BETA",
                     "valueField": "REFINEDCELL_BETA",
@@ -635,7 +472,7 @@ export default {
                 },
                 
                 {
-                    "title": "Refinedcell_gamma",
+                    "title": "Refinedcell Gamma",
                     "inputtype": "search-operands",
                     "textField": "REFINEDCELL_GAMMA",
                     "valueField": "REFINEDCELL_GAMMA",
@@ -648,7 +485,7 @@ export default {
                 },
                 
                 {
-                    "title": "Resolutionlimithighouter",
+                    "title": "Resolution Limit High (Outer)",
                     "inputtype": "search-operands",
                     "textField": "RESOLUTIONLIMITHIGHOUTER",
                     "valueField": "RESOLUTIONLIMITHIGHOUTER",
@@ -661,7 +498,7 @@ export default {
                 },
                 
                 {
-                    "title": "Rmeaswithiniplusiminusinner",
+                    "title": "Rmeas (Inner)",
                     "inputtype": "search-operands",
                     "textField": "RMEASWITHINIPLUSIMINUSINNER",
                     "valueField": "RMEASWITHINIPLUSIMINUSINNER",
@@ -674,7 +511,7 @@ export default {
                 },
                 
                 {
-                    "title": "Resioversigi2overall",
+                    "title": "Resolution I/sig(I)=2 (Overall)",
                     "inputtype": "search-operands",
                     "textField": "RESIOVERSIGI2OVERALL",
                     "valueField": "RESIOVERSIGI2OVERALL",
@@ -687,7 +524,7 @@ export default {
                 },
                 
                 {
-                    "title": "CCanomalous Inner",
+                    "title": "CCanomalous (Inner)",
                     "inputtype": "search-operands",
                     "textField": "CCANOMALOUSINNER",
                     "valueField": "CCANOMALOUSINNER",
@@ -700,7 +537,7 @@ export default {
                 },
                 
                 {
-                    "title": "CCanomalous Overall",
+                    "title": "CCanomalous (Overall)",
                     "inputtype": "search-operands",
                     "textField": "CCANOMALOUSOVERALL",
                     "valueField": "CCANOMALOUSOVERALL",
@@ -713,7 +550,7 @@ export default {
                 },
                 
                 {
-                    "title": "Rfreevaluestart Inner",
+                    "title": "RFree Value Start (Inner)",
                     "inputtype": "search-operands",
                     "textField": "RFREEVALUESTARTINNER",
                     "valueField": "RFREEVALUESTARTINNER",
@@ -726,7 +563,7 @@ export default {
                 },
                 
                 {
-                    "title": "Rfreevalueend Inner",
+                    "title": "RFree Value End (Inner)",
                     "inputtype": "search-operands",
                     "textField": "RFREEVALUEENDINNER",
                     "valueField": "RFREEVALUEENDINNER",
@@ -739,7 +576,7 @@ export default {
                 },
                 
                 {
-                    "title": "Noofblobs",
+                    "title": "No of blobs",
                     "inputtype": "search-operands",
                     "textField": "NOOFBLOBS",
                     "valueField": "NOOFBLOBS",
@@ -766,36 +603,9 @@ export default {
                 },
 
             ],
-            filterOptions: {
-                SPACEGROUP : {
-                    title: 'Space Group',
-                    inputtype: 'combo-box',
-                    textField: "SPACEGROUP",
-                    valueField: "SPACEGROUP",
-                    data: []
-                },
-                SPACEGROUP : {
-                    title: 'Space Group',
-                    inputtype: 'search-operands',
-                    textField: "SPACEGROUP",
-                    valueField: "SPACEGROUP",
-                    data: []
-                },
-            },
-            selectedProposal : '',
-            searchedGtUnitCellA : '',
-            searchedLtUnitCellA : '',
-            searchedGtUnitCellB : '',
-            searchedLtUnitCellB : '',
-            searchedGtUnitCellC : '',
-            searchedLtUnitCellC : '',
-            tempSamplePrefix : '',
-            searchedSamplePrefix : '',
         }
     },
     created() {
-        this.mapSummaryColumns()
-        this.mapFilterOptions()
         this.searchProposal()
         this.getSpaceGroups()
         this.getProcessingPipelines() 
@@ -803,7 +613,6 @@ export default {
         // this.populateSelectedColumns()
     },
     mounted() {
-        this.mapUserEnteredParameters()
         window.onerror = (msg) => {
             alert('Error message: '+msg);
             return true;
@@ -835,94 +644,6 @@ export default {
         },
         popFilter(value) {
             this.filters.splice(value, 1)
-        },
-        mapSummaryResults() {
-                this.summaryData = 
-                this.summaryData.map((e) => {
-                return { ...e, isVisible: false, loadContent: false };
-            })
-        },
-        mapSummaryColumns() {
-            this.summaryColumns = 
-                this.summaryColumns.map((e) => {
-                return { ...e, checked: true, isDesc : false, orderByCount: 2};
-            })
-        },
-        mapFilterOptions() {
-            Object.keys(this.filterOptions).forEach(title => {
-
-                if(this.filterOptions[title].inputtype == 'combo-box') {
-                    this.filterOptions[title] = 
-                    {...this.filterOptions[title], key: title, selectedValue: ''};
-                }
-                if(this.filterOptions[title].inputtype== 'greater-than-less-than') {
-                    this.filterOptions[title] = 
-                    {...this.filterOptions[title], key: title, filteredLt: '',
-                    filteredGt: ''};
-                }
-
-            });
-        },
-        mapUserEnteredParameters() {
-
-            this.userEnteredParameters = [];
-
-            this.userEnteredParameters.push(
-                {title: "PROP", search_value: this.selectedProposal},
-                {title: "REFINEDCELL_A", greater_than: this.searchedGtUnitCellA, less_than: this.searchedLtUnitCellA},
-                {title: "REFINEDCELL_B", greater_than: this.searchedGtUnitCellB, less_than: this.searchedLtUnitCellB},
-                {title: "REFINEDCELL_C", greater_than: this.searchedGtUnitCellC, less_than: this.searchedLtUnitCellC});
-
-
-            Object.values(this.filterOptions).forEach(value => {
-                if(value.inputtype == 'combo-box') {
-                    this.userEnteredParameters.push({
-                        title: value.key, search_value: value.selectedValue});
-                }
-                if(value.inputtype == 'greater-than-less-than') {
-                    this.userEnteredParameters.push({
-                        title: value.key, greater_than: value.filteredGt, less_than: value.filteredLt});
-                }
-                
-            });
-
-            console.log(this.userEnteredParameters)
-
-            this.userEnteredParametersString = JSON.stringify(this.userEnteredParameters)
-
-        },
-        async toggleOrderBy(column) {
-            // toggles order by - ascending and descending which is specified in summary columns. changes svg depending on orderByCount
-            try {
-                this.isLoading = true;
-
-                this.summaryColumns[column].isDesc = !this.summaryColumns[column].isDesc;
-                this.summaryColumns[column].orderByCount += 1;
-
-
-                if (this.summaryColumns[column].orderByCount > 2) {
-                    this.summaryColumns[column].orderByCount = 0;
-                    this.summaryColumns[column].isDesc = false;
-                    };
-
-                this.getQueryParams(false);
-
-                const results = await this.$store.dispatch('getCollection', this.summaryCollection);
-
-                this.summaryData = results.toJSON();
-
-                this.mapSummaryResults();
-
-                this.isLoading = false;
-
-            } catch(e) {                
-                
-                window.onerror('Cannot Order By: ' + e);
-                this.isLoading = false;
-                return ;
-
-            }
-
         },
         async searchProposal() {
 
@@ -1030,18 +751,20 @@ export default {
 
                 const queryParams = this.getQueryParams(false);
 
-                console.log(encodeURI(queryParams))
+                console.log(queryParams)
 
-                // const results = await this.$store.dispatch('getCollection', this.summaryCollection);
+                const results = await this.$store.dispatch('fetchDataFromApi', {
+                  url: '/summarynew/results?'+encodeURI(queryParams),
+                  requestType: 'fetching beamlinename'
+                })
 
-                // this.totalRecords = results.state.totalRecords;
-                // this.summaryData = results.toJSON();
+                console.log('results', results)
 
-                // console.log(this.summaryData)
+                this.totalRecords = results.total;
+                this.summaryData = results.data;
 
-                // this.mapSummaryResults()
 
-                // this.isLoading = false;
+                this.isLoading = false;
 
             } catch(e) {
 
@@ -1062,16 +785,18 @@ export default {
                 this.currentPage = data.currentPage;
                 this.pageSize = data.pageSize;
 
-                if (this.selectedProposal){
 
-                    this.getQueryParams(false);
+                const queryParams = this.getQueryParams(false);
 
-                    const results = await this.$store.dispatch('getCollection', this.summaryCollection);
-                    this.summaryData = results.toJSON();
+                const results = await this.$store.dispatch('fetchDataFromApi', {
+                  url: '/summarynew/results?'+encodeURI(queryParams),
+                  requestType: 'fetching beamlinename'
+                })
 
-                    this.mapSummaryResults()
+                console.log('results', results)
 
-                };
+                this.summaryData = results.data;
+
 
                 this.isLoading = false;
 
@@ -1113,33 +838,33 @@ export default {
             // adds favourites by adding a _FLAG_ comment to DataCollection comments table. updatetype is always specified as a 'POST' rather than 'PATCH' due to some errors in 
             // api not pushing data to 'patch' endpoint. if patching the endpoint we point to dc/patchcomments, which will patch (UPDATE) through sql code. 
             try {
-                var dispatchUrl = '/dc/patchcomments';
+                // var dispatchUrl = '/dc/patchcomments';
 
-                if(result.DC_COMMENTS == null) {
-                    result.DC_COMMENTS = '';
+                // if(result.DC_COMMENTS == null) {
+                //     result.DC_COMMENTS = '';
 
-                    dispatchUrl = '/dc/comments';
-                }
+                //     dispatchUrl = '/dc/comments';
+                // }
 
-                result.DC_COMMENTS = this.isFavourite(result) ?
-                            result.DC_COMMENTS.replace('_FLAG_','').trim() :
-                            result.DC_COMMENTS.trim() + ' _FLAG_'
+                // result.DC_COMMENTS = this.isFavourite(result) ?
+                //             result.DC_COMMENTS.replace('_FLAG_','').trim() :
+                //             result.DC_COMMENTS.trim() + ' _FLAG_'
 
 
-                await this.$store.dispatch('updateDataToApi', {
-                    url: dispatchUrl,
-                    updateType: 'POST',
-                    data: {
-                        DATACOLLECTIONID: Number(result.DATACOLLECTIONID),
-                        PERSONID: Number(result.PERSONID),
-                        COMMENTS: result.DC_COMMENTS
-                    },
-                    requestType: 'updating comment for dc favourites'
-                }).then(
-                    (response) => {
-                        console.log('favourited!')
-                    }
-                )
+                // await this.$store.dispatch('updateDataToApi', {
+                //     url: dispatchUrl,
+                //     updateType: 'POST',
+                //     data: {
+                //         DATACOLLECTIONID: Number(result.DATACOLLECTIONID),
+                //         PERSONID: Number(result.PERSONID),
+                //         COMMENTS: result.DC_COMMENTS
+                //     },
+                //     requestType: 'updating comment for dc favourites'
+                // }).then(
+                //     (response) => {
+                //         console.log('favourited!')
+                //     }
+                // )
 
             }
             catch (e) {
@@ -1152,33 +877,33 @@ export default {
         async getFavourites() {
         // gets favourites based on whether the DataCollection comments table contains _FLAG_ in its comments.  
             try{
-                this.showFavourites = !this.showFavourites;
+                // this.showFavourites = !this.showFavourites;
 
-                if (this.showFavourites) {
-                this.isLoading = true;
+                // if (this.showFavourites) {
+                // this.isLoading = true;
 
-                this.summaryCollection = new SummaryCollection();
+                // this.summaryCollection = new SummaryCollection();
 
-                this.summaryCollection.queryParams = { page: this.currentPage, per_page: this.pageSize };
+                // this.summaryCollection.queryParams = { page: this.currentPage, per_page: this.pageSize };
 
-                this.summaryCollection.queryParams.com = "_FLAG_";
+                // this.summaryCollection.queryParams.com = "_FLAG_";
 
-                if (this.selectedProposal) {
-                    this.summaryCollection.queryParams.prop = this.selectedProposal;
-                }
+                // if (this.selectedProposal) {
+                //     this.summaryCollection.queryParams.prop = this.selectedProposal;
+                // }
 
-                const results = await this.$store.dispatch('getCollection', this.summaryCollection);
+                // const results = await this.$store.dispatch('getCollection', this.summaryCollection);
 
-                this.totalRecords = results.state.totalRecords;
-                this.summaryData = results.toJSON();
+                // this.totalRecords = results.state.totalRecords;
+                // this.summaryData = results.toJSON();
 
-                this.mapSummaryResults()
+                // this.mapSummaryResults()
 
-                this.isLoading = false;
+                // this.isLoading = false;
 
-                }else {
-                    this.searchFilterParams();
-                }
+                // }else {
+                //     this.searchFilterParams();
+                // }
 
             } catch(e) {
 
@@ -1190,10 +915,10 @@ export default {
 
         },
         isFavourite(result) {
-            if(!result.DC_COMMENTS) {
-                return false;
-            };
-            return result.DC_COMMENTS.includes('_FLAG_');
+            // if(!result.DC_COMMENTS) {
+            //     return false;
+            // };
+            // return result.DC_COMMENTS.includes('_FLAG_');
         },
         getQueryParams(isexport) {
         // gets query params from summaryColumns or standalone variables i.e. selected Proposal etc. if this is an export then the pageSize will be for total records
@@ -1230,7 +955,10 @@ export default {
                     queryParams.push(","+this.filters[i].order)
                 }
 
- 
+            }
+
+            if (this.searchedSamplePrefix) {
+                queryParams.push('&'+'sample='+this.searchedSamplePrefix)
             }
 
 
@@ -1240,65 +968,18 @@ export default {
         },
         clearQueryParams() {
 
-            this.selectedProposal = '';
-            this.searchedSamplePrefix = '';
-            this.filterOptions.SPACEGROUP.selectedValue = '';
-            this.filterOptions.PROCESSINGPIPELINE.selectedValue = '';
+            console.log('clear!')
 
+            for (var index in this.filters) {
+                if (this.filters[index].textField !== "PROP") {
+                    this.filters[index].selected = ''
+                    this.filters[index].operand = ''
+                    this.filters[index].value = ''
 
-            for (var index in this.summaryColumns) {
-                this.summaryColumns[index].filteredLt = '';
-                this.summaryColumns[index].filteredGt = '';
+                }
+ 
             };
-
             
-        },
-        addToCombo(args) {
-            // basic: adds new combo box option when click 'create new'. other methods 'post' to the collection but opted against that 
-            // to avoid non-validated inserts to db. 
-
-            if (args[0] == 'PROCESSINGPIPELINE'){
-                this.filterOptions.PROCESSINGPIPELINE.selectedValue = args[1];
-            }
-
-            if (args[0] == 'SPACEGROUP'){
-                this.filterOptions.SPACEGROUP.selectedValue = args[1];
-            }
-  
-        },
-        updateParamsFromUserEntered() {
-            this.userEnteredParameters = eval(this.userEnteredParametersString);
-
-            for (var value in this.userEnteredParameters ) {
-
-                console.log(this.userEnteredParameters[value])
-                
-                if (this.userEnteredParameters[value].title == 'PROP') {
-                    this.selectedProposal = this.userEnteredParameters[value].search_value;
-                    continue;
-                };
-
-                if (this.filterOptions[this.userEnteredParameters[value].title].selectedValue) {
-                    this.filterOptions[this.userEnteredParameters[value].title].selectedValue = this.userEnteredParameters[value].search_value;
-                };
-
-            }
-
-        },
-        toggleExpandAutoProc(index) {
-
-            this.summaryData[index].isVisible = !this.summaryData[index].isVisible;
-
-            this.contentDelay(index)
-        },
-        contentDelay(index) {
-
-            if (!this.summaryData[index].loadContent) { 
-          setTimeout(() => this.summaryData[index].loadContent = true, 400);
-          } else {
-            setTimeout(() => this.summaryData[index].loadContent = false, 200);
-          }
-
         },
         onPrefixSearch() {
 
@@ -1306,30 +987,6 @@ export default {
             this.searchFilterParams();
 
         },  
-        populateSelectedColumns() {
-            
-
-            for (const value of Object.entries(this.summaryColumns)) {
-                this.selectedColumns.push(value[1].title);
-            };
-
-            this.selectedColumns.reverse();
-
-        },
-        checkedColumns(index) {
-
-            this.summaryColumns[index].checked = !this.summaryColumns[index].checked;
-            if (this.summaryColumns[index].checked == false){
-
-                this.deselectedColumns.push(this.summaryColumns[index].title);
-                this.selectedColumns = this.selectedColumns.filter(item => item !== this.summaryColumns[index].title);
-            }
-            else {
-                this.selectedColumns.push(this.summaryColumns[index].title);
-                this.deselectedColumns = this.deselectedColumns.filter(item => item !== this.summaryColumns[index].title);
-
-            }
-        },
         convertToCSV(data) {
 
             const result = [
@@ -1354,28 +1011,14 @@ export default {
             anchor.click();
 
         },
-        copyToClipboard(textToCopy){
-            navigator.clipboard.writeText(textToCopy);  
-            
-            this.isCopied = true;
-
-            setTimeout(() => this.isCopied = false, 5000);
-            
-            
-        },
-        getProcRow(value, result) {
+        getProcRow(result, type) {
             // return an array for results, also change decimal places for floats
-                if (result[value]) {
-                    var dataArray = result[value].split(",");
-                    
+                if (result) {
 
-                    if( value !== 'DATACOLLECTIONID' && 
-                        value !== 'FILETEMPLATE' &&
-                        value !== 'STARTTIME' && 
-                        value !== 'PROCESSINGPROGRAMS' && 
-                        value !== 'SPACEGROUP'
-                    ) {
-                        if(value.includes('RESOLUTIONLIMIT')) {
+                    var dataArray = result.split(",");
+
+                    if( type !== 'text') {
+                        if(type == 'decimal4') {
                             return dataArray.map(function (x) { 
                                 return parseFloat(x).toFixed(4);
                              });
@@ -1393,73 +1036,11 @@ export default {
                     return [];
                 };
         },
-        togglePills(value) {
-
-            for (var index in this.summaryColumns) {
-
-                if (this.summaryColumns[index].title == value)
-                    this.checkedColumns(index);
-            }
-
-        },
-        resizePills() {
-            // change number of pills visible based on width of window
-
-            if (this.windowWidth > 1000 ) {
-                this.pillIndex = 1;
-            }
-
-            if (this.windowWidth > 1200 ) {
-                this.pillIndex = 2;
-            }
-
-            if (this.windowWidth > 1600 ) {
-                this.pillIndex = 3;
-            }
-
-            if (this.windowWidth > 1800 ) {
-                this.pillIndex = 4;
-            }
-
-            if (this.windowWidth > 2200 ) {
-                this.pillIndex = 5;
-            }
-
-            if (this.windowWidth > 2800 ) {
-                this.pillIndex = 6;
-            }
-
-
-        }
 
 
 
     },
     computed: {
-        groupedOptions() {
-            // chunks filter drop downs in advanced filter to chunks of 5 to fit into grid space easier. 
-            const chunksize = 5;
-
-            const obj = this.filterOptions
-            
-            const output = Object.keys(obj).reduce((c, k, i) => {
-            if (i % chunksize == 0) {
-                c.push(Object.fromEntries([[k, obj[k]]]));
-            } else {
-                c[c.length - 1][k] = obj[k];
-            }
-            return c;
-            }, []);
-
-            console.log(output)
-
-            return output;
-        },
-        watchParams() {
-            return `${this.selectedProposal}|${this.searchedGtUnitCellA}|${this.searchedLtUnitCellA}
-            |${this.searchedGtUnitCellB}|${this.searchedLtUnitCellB}|${this.searchedGtUnitCellC}
-            |${this.searchedLtUnitCellC}`;
-        }
 
     },
     watch: {
@@ -1485,18 +1066,6 @@ export default {
             },
             deep: true
         },
-        watchParams() {
-            this.mapUserEnteredParameters();
-        },
-        filterOptions: {
-            handler(val){
-                this.mapUserEnteredParameters();
-            },
-            deep: true
-        },
-        windowWidth() {
-            this.resizePills();
-        }
     }
 
     
@@ -1506,14 +1075,14 @@ export default {
 
 <style>
 
+.results-content .transform-filter-height {
+    height: 50px;
+}
+
 .select-selected {
     font-size: small;
     @apply tw-box-content;
 }
-
-/* .select-search-input[data-v-ea16bc84] {
-    height: 2.0rem;
-} */
 
 
 </style>
@@ -1614,5 +1183,33 @@ export default {
   font-size: small;
 }
 
+.results-wrapper{
+    overflow-x: scroll;
+}
+
+.results-content{
+    overflow: visible; 
+    min-width:max-content;
+    display:block;
+}
+
+
+
+.results-item{
+    width:130px;
+    display:inline-block;
+    text-overflow: ellipsis;
+    word-break: break-all;
+    overflow:hidden;
+    white-space: nowrap;
+    font-size:small;
+}
+
+.results-item:hover {
+    overflow: visible; 
+    white-space: normal;
+    height:auto; 
+}
+/* @apply tw-truncate tw-text-sm tw-pr-5 */
 </style>
 
