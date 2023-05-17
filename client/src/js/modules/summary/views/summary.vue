@@ -653,7 +653,7 @@ export default {
                 this.isLoading = true;
 
                 const results = await this.$store.dispatch('fetchDataFromApi', {
-                  url: '/summarynew/proposal?page=1&per_page=9999',
+                  url: '/summary/proposal?page=1&per_page=9999',
                   requestType: 'fetching proposals'
                 })
 
@@ -679,7 +679,7 @@ export default {
                 this.isLoading = true;
 
                 const results = await this.$store.dispatch('fetchDataFromApi', {
-                  url: '/summarynew/spacegroup?',
+                  url: '/summary/spacegroup?',
                   requestType: 'fetching pspacegroups'
                 })
 
@@ -703,7 +703,7 @@ export default {
                 this.isLoading = true;
 
                 const results = await this.$store.dispatch('fetchDataFromApi', {
-                  url: '/summarynew/procprogram?',
+                  url: '/summary/procprogram?',
                   requestType: 'fetching processingprograms'
                 })
 
@@ -726,7 +726,7 @@ export default {
                 this.isLoading = true;
 
                 const results = await this.$store.dispatch('fetchDataFromApi', {
-                  url: '/summarynew/bl?',
+                  url: '/summary/bl?',
                   requestType: 'fetching beamlinename'
                 })
 
@@ -754,7 +754,7 @@ export default {
                 console.log(queryParams)
 
                 const results = await this.$store.dispatch('fetchDataFromApi', {
-                  url: '/summarynew/results?'+encodeURI(queryParams),
+                  url: '/summary/results?'+encodeURI(queryParams),
                   requestType: 'fetching beamlinename'
                 })
 
@@ -788,7 +788,7 @@ export default {
                 const queryParams = this.getQueryParams(false);
 
                 const results = await this.$store.dispatch('fetchDataFromApi', {
-                  url: '/summarynew/results?'+encodeURI(queryParams),
+                  url: '/summary/results?'+encodeURI(queryParams),
                   requestType: 'fetching beamlinename'
                 })
 
