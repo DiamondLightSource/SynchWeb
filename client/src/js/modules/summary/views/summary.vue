@@ -199,7 +199,7 @@
                         <div class="tw-ra tw-ml-1 ">
                                 <a :href="'/dc/visit/' + value.PROP + '-' + value.VISIT_NUMBER
                                 + '/id/' + value.DATACOLLECTIONID" class="tw-button tw-button-notext tw-dll" title="Go to Data Collection">
-                                <i class="fa fa-search"></i></a>
+                                <i class="search-icon fa fa-search"></i></a>
                         </div>
                         <!-- <button class="tw-ra tw-ml-1" title="Click to add this data collection to the list of favourite data collections"
                                     @click="favourite(result)">
@@ -782,9 +782,8 @@ export default {
 
                 this.isLoading = true;
 
-                this.currentPage = data.currentPage;
-                this.pageSize = data.pageSize;
-
+                this.currentPage = data['current-page'];
+                this.pageSize = data['page-size'];
 
                 const queryParams = this.getQueryParams(false);
 
@@ -957,7 +956,7 @@ export default {
 
             }
 
-            if (this.searchedSamplePrefix) {
+            if (this.searchedSamplePrefix != '') {
                 queryParams.push('&'+'sample='+this.searchedSamplePrefix)
             }
 
@@ -969,6 +968,8 @@ export default {
         clearQueryParams() {
 
             console.log('clear!')
+
+            this.searchedSamplePrefix = ''
 
             for (var index in this.filters) {
                 if (this.filters[index].textField !== "PROP") {
@@ -1076,7 +1077,7 @@ export default {
 <style>
 
 .results-content .transform-filter-height {
-    height: 50px;
+    height: 70px;
 }
 
 .select-selected {
@@ -1088,6 +1089,10 @@ export default {
 </style>
 
 <style scoped>
+
+.search-icon {
+    font-size: 12px;
+}
 
 .combo-box {
     font-size: small;

@@ -50,9 +50,9 @@
         contentDelay() {
  
             if (!this.loadContent) { 
-                setTimeout(() => this.loadContent = true, 200);
+                setTimeout(() => this.loadContent = true, 50);
             } else {
-                setTimeout(() => this.loadContent = false, 300);
+                setTimeout(() => this.loadContent = false, 150);
             }
         }
         },
