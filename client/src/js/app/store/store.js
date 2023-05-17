@@ -360,6 +360,7 @@ const store = new Vuex.Store({
   getters: {
     sso: state => state.auth.cas_sso,
     sso_url: state => state.auth.cas_url,
+    oidcId: state => state.auth.oidcId,
     apiUrl: state => state.apiUrl,
     appUrl: state => state.appUrl,
     getAppOptions: state => state.appOptions

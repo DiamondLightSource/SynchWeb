@@ -25,7 +25,8 @@ class AuthenticationController
         'cas' => 'CAS',
         'dummy' => 'Dummy',
         'ldap' => 'LDAP',
-        'simple' => 'Simple'
+        'simple' => 'Simple',
+        'oidc' => 'OIDC'
     );
 
     /**
@@ -52,13 +53,19 @@ class AuthenticationController
             'password' => '.*',
         ));
 
+        $this->app->post('/authenticate/token', array(&$this, 'authenticateByCode'))->conditions(array(
+            'code' => '[A-z0-9\-]+',
+        ));
+
         $this->app->get('/authenticate/check', array(&$this, 'check'));
         $this->app->get('/authenticate/key', array(&$this, 'returnResponseWithJwtKey'));
         $this->app->get('/authenticate/logout', array(&$this, 'logout'));
+        $this->app->get('/authenticate/authorise', array(&$this, 'authorise'));
     }
 
     function getUser(): User
     {
+        // Why is this not an if/else condition?
         if (!$this->loginId)
         {
             $this->validateAuthentication();
@@ -306,6 +313,12 @@ class AuthenticationController
         $this->returnResponse($code, array('error' => $message));
     }
 
+    function returnRedirect($url) {
+        $this->app->response->setStatus(302);
+           header('Location: ' . $url);
+        exit();
+    }
+
     // Calls the relevant Authentication Mechanism
     function authenticate()
     {
@@ -338,6 +351,31 @@ class AuthenticationController
         }
         else
         {
+            $this->returnError(400, 'Invalid Credentials');
+        }
+    }
+
+    function authorise() 
+    {
+        global $cas_sso, $authentication_type;
+
+        if ($cas_sso) {
+            $this->returnRedirect($this->authenticateByType($authentication_type)->authenticate(NULL, NULL));
+        }
+    }
+
+    function authenticateByCode()
+    {
+        global $authentication_type;
+
+        $code = $this->app->request->post('code');
+
+        // Either add authByCode to the interface, or make OIDC abstract. This looks bad.
+        $fedid = $this->authenticateByType($authentication_type)->authenticate($code, NULL);
+
+        if ($fedid) {
+            $this->returnResponse(200, $this->generateJwtToken($fedid));
+        } else {
             $this->returnError(400, 'Invalid Credentials');
         }
     }
