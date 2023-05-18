@@ -1152,7 +1152,7 @@ class Shipment extends Page
         if (!$this->has_arg('DEWARID'))
             $this->_error('No dewar specified');
 
-        $where = 'AND p.proposalid=:1';
+        $where = 'AND p.proposalid=:2';
         $args = array($this->arg('DEWARID'), $this->proposalid);
 
         if ($this->user->hasPermission('all_dewars')) {
