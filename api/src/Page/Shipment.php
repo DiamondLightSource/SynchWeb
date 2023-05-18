@@ -416,6 +416,7 @@ class Shipment extends Page
         global $dewar_complete_email; // Email list to cc if dewar back from beamline
         # Flag to indicate we should e-mail users their dewar has returned from BL
         $from_beamline = False;
+        $from_mx_beamline = False;
 
         if (!$this->bcr())
             $this->_error('You need to be on the internal network to add history');
@@ -459,9 +460,13 @@ class Shipment extends Page
             // this approach covers all beamlines for future proofing.
             // Stop/break if we find a match
             $bls = $this->_get_beamlines_from_type('all');
-
             if (in_array($last_location, $bls)) {
                 $from_beamline = True;
+            }
+
+            $mxbls = $this->_get_beamlines_from_type('mx');
+            if (in_array($last_location, $mxbls)) {
+                $from_mx_beamline = True;
             }
         } else {
             // No history - could be a new dewar, so not necessarily an error...
@@ -521,10 +526,9 @@ class Shipment extends Page
             $email->send($dew['LCRETEMAIL']);
         }
 
-        // Change this so it checks if the boolean flag "from_beamline" is set
-        // The old version assumed rack-<word>-from-bl
-        //if (preg_match('/rack-\w+-from-bl/', strtolower($this->arg('LOCATION'))) && $dew['LCRETEMAIL']) {
-        if ($from_beamline && $dew['LCRETEMAIL']) {
+        $to_bl_storage = preg_match('/\w+-storage/', strtolower($this->arg('LOCATION')));
+        $to_mx_storage = preg_match('/tray-\w+/', strtolower($this->arg('LOCATION')));
+        if ($dew['LCRETEMAIL'] && ( ($from_beamline && $to_bl_storage) || ($from_mx_beamline && $to_mx_storage) ) ) {
             // Any data collections for this dewar's containers?
             // Note this counts data collection ids for containers and uses the DataCollection.SESSIONID to determine the session/visit
             // Should work for UDC (where container.sessionid is set) as well as any normal scheduled session (where container.sessionid is not set)
