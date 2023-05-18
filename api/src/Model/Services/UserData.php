@@ -103,7 +103,7 @@ class UserData
         $extc = '';
         $group = 'GROUP BY p.personid';
 
-        if (($personId && !$isManager) || $pid || (!$isStaffMember && !$visitName))
+        if ((($personId && !$isManager) || (!$isStaffMember && !$visitName)) && $pid)
         {
             $where .= $this->addPersonOrProposalSearch($pid, $currentUserId, $args);
         }
