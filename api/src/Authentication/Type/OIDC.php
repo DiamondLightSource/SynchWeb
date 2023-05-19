@@ -43,12 +43,13 @@ class OIDC extends AuthenticationParent implements AuthenticationInterface
 
     function check()
     {
-        return($this->getUser($_COOKIE["synchweb-auth"]));
+        global $cookie_key;
+        return($this->getUser($_COOKIE[$cookie_key]));
     }
 
     function authenticate($code, $_) 
     {   
-        global $cas_url, $cacert, $oidc_client_secret, $oidc_client_id;
+        global $cas_url, $cacert, $oidc_client_secret, $oidc_client_id, $cookie_key;
 
         $redirect_url = preg_replace('/(&|\?)'.preg_quote("code").'=[^&]*$/', '', $_SERVER["HTTP_REFERER"]);
         $redirect_url = urlencode(preg_replace('/(&|\?)'.preg_quote("code").'=[^&]*&/', '$1', $redirect_url));
@@ -80,7 +81,15 @@ class OIDC extends AuthenticationParent implements AuthenticationInterface
             return false;
         }
 
-        setcookie("synchweb-auth", $token , 0, $params['path'], $params['domain'], $params['secure'], isset($params['httponly']));
+        $cookieOpts = array (
+            'expires' => time() + 60*60*24,
+            'path' => '/',
+            'secure' => true,
+            'httponly' => true,
+            'samesite' => 'Strict'
+        );
+
+        setcookie($cookie_key, $token, $cookieOpts);
 
         $fedid = $this->getUser($token);
 

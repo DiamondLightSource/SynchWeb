@@ -383,7 +383,18 @@ class AuthenticationController
     // Logout
     function logout()
     {
+        global $cookie_key;
+        if (isset($_COOKIE[$cookie_key])) {
+            $cookieOpts = array (
+                'expires' => time() - 3600,
+                'path' => '/',
+                'secure' => true,
+                'httponly' => true,
+                'samesite' => 'Strict'
+            );
 
+            setcookie($cookie_key, null, $cookieOpts);
+        }
     }
 
     // Return instance of authentication class corresponding to $authentication_type.

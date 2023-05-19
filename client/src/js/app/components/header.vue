@@ -100,9 +100,12 @@ export default {
         isLoggedIn : function(){ return this.$store.getters['auth/isLoggedIn']},
         isStaff : function(){ return this.$store.getters['user/isStaff']},
         currentProposal : function(){ return this.$store.getters['proposal/currentProposal']},
-        ssoUrl: function() {
-          return this.$store.sso_url + '/cas/login?service='+encodeURIComponent(window.location.href)
+        sso: function() {
+          return this.$store.getters.sso;
         },
+        ssoUrl: function() {
+          return this.$store.getters.sso_url + '/cas/login?service='+encodeURIComponent(window.location.href)
+        }, 
         validStaffMenus: function() {
           // filter the list of staff menus based on their permissions
           let menus = this.staff_menus.filter( item => {
@@ -116,13 +119,11 @@ export default {
       logout: function () {
         this.$store.dispatch('auth/logout')
         .then(() => {
-          if (this.$store.sso) this.$router.replace(this.$store.sso_url+'/cas/logout')
-          else this.$router.push('/')
+          this.$router.push('/');
         })
       },
       login: function() {
-        if (this.$store.sso) this.$router.replace(this.ssoUrl)
-        else this.$router.push('/login')
+        this.$router.push('/login')
       },
       showSidebar: function() {
         EventBus.$emit('toggleSidebar')
