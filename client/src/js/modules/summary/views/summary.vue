@@ -275,7 +275,7 @@
 
 
         <pagination-panel
-        :initial-page="1"
+        :initial-page=currentPage
         :totalRecords=totalRecords
         :pageLinks="10"
         @page-changed="handlePageChange"
@@ -746,6 +746,8 @@ export default {
                  
                 this.isLoading = true;
 
+                this.currentPage = 1;
+
                 const queryParams = this.getQueryParams(false);
 
                 console.log(encodeURI(queryParams))
@@ -810,17 +812,21 @@ export default {
             try {
                 console.log('download')
 
-                if (this.summaryData) {
-                    this.getQueryParams(true);
 
-                    const results = await this.$store.dispatch('getCollection', this.summaryCollection);
-                    this.summaryExport = results.toJSON();
+                    const queryParams = this.getQueryParams(true);
+
+
+                    const results = await this.$store.dispatch('fetchDataFromApi', {
+                        url: '/summary/results?'+encodeURI(queryParams),
+                        requestType: 'fetching beamlinename'
+                        })
+
+                    this.summaryExport = results.data;
 
                     const csv = this.convertToCSV(this.summaryExport);
                     this.exportCSV(csv);
 
                     this.summaryExport = [];
-                }
 
             } catch(e) {
                 
