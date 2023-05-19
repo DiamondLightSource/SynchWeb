@@ -239,7 +239,6 @@ import { ValidationObserver, ValidationProvider }  from 'vee-validate'
 
 import ContainerHistory from 'modules/shipment/collections/containerhistory'
 import Samples from 'collections/samples'
-import SampleGroups from 'collections/samplegroups'
 import Shipments from 'collections/shipments'
 import Containers from 'collections/containers'
 import Dewars from 'collections/dewars'
