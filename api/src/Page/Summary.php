@@ -94,7 +94,7 @@ class Summary extends Page
             array_push($args, $sample_args[0]);
             array_push($where_arr, "lower(sf.name) LIKE lower(CONCAT(CONCAT('%',?),'%')) ESCAPE '$' ");
             
-            if ($sample_args[1] != null) {
+            if (isset($sample_args[1]) != null) {
                 array_push($order_arr, 'sf.name '.$sample_args[2]);
             }
 
@@ -107,7 +107,7 @@ class Summary extends Page
             array_push($args, $filetemp_args[0]);
             array_push($where_arr, "lower(sf.fileTemplate) LIKE lower(CONCAT(CONCAT('%',?),'%')) ESCAPE '$' ");
             
-            if ($filetemp_args[1] != null) {
+            if (isset($filetemp_args[1]) != null) {
                 array_push($order_arr, 'sf.fileTemplate '.$filetemp_args[1]);
             }
 
@@ -120,7 +120,7 @@ class Summary extends Page
             array_push($args, $dcid_args[0]);
             array_push($where_arr, 'sf.dataCollectionId = ?');
             
-            if ($dcid_args[1] != null) {
+            if (isset($dcid_args[1]) != null) {
                 array_push($order_arr, 'sf.dataCollectionId '.$dcid_args[1]);
             }
 
@@ -132,7 +132,7 @@ class Summary extends Page
             array_push($args, $pp_args[0]);
             array_push($where_arr, "lower(ppt.processingPrograms) LIKE lower(CONCAT(CONCAT('%',?),'%')) ESCAPE '$' ");
             
-            if ($pp_args[1] != null) {
+            if (isset($pp_args[1]) != null) {
                 array_push($order_arr, 'ppt.processingPrograms '.$pp_args[1]);
             }
 
@@ -144,7 +144,7 @@ class Summary extends Page
             array_push($args, $sg_args[0]);
             array_push($where_arr, "lower(sgt.spaceGroup) LIKE lower(CONCAT(CONCAT('%',?),'%')) ESCAPE '$' ");
             
-            if ($sg_args[1] != null) {
+            if (isset($sg_args[1]) != null) {
                 array_push($order_arr, 'sgt.spaceGroup '.$sg_args[1]);
             }
 
@@ -156,7 +156,7 @@ class Summary extends Page
             array_push($args, $BEAMLINENAME_args[0]);
             array_push($where_arr, "lower(vt.beamLineName) LIKE lower(CONCAT(CONCAT('%',?),'%')) ESCAPE '$' ");
             
-            if ($BEAMLINENAME_args[1] != null) {
+            if (isset($BEAMLINENAME_args[1]) != null) {
                 array_push($order_arr, 'vt.beamLineName '.$BEAMLINENAME_args[1]);
             }
 
@@ -170,7 +170,7 @@ class Summary extends Page
             array_push($args, $rca_args[0]);
             array_push($where_arr, 'sf.refinedCell_a '.$rca_args[1].' ?');
             
-            if ($rca_args[2] != null) {
+            if (isset($rca_args[2]) != null) {
                 array_push($order_arr, 'sf.refinedCell_a '.$rca_args[2]);
             }
 
@@ -183,7 +183,7 @@ class Summary extends Page
             array_push($args, $rcb_args[0]);
             array_push($where_arr, 'sf.refinedCell_b '.$rcb_args[1].' ?');
             
-            if ($rcb_args[2] != null) {
+            if (isset($rcb_args[2]) != null) {
                 array_push($order_arr, 'sf.refinedCell_b '.$rcb_args[2]);
             }
 
@@ -196,7 +196,7 @@ class Summary extends Page
             array_push($args, $rcc_args[0]);
             array_push($where_arr, 'sf.refinedCell_c '.$rcc_args[1].' ?');
             
-            if ($rcc_args[2] != null) {
+            if (isset($rcc_args[2]) != null) {
                 array_push($order_arr, 'sf.refinedCell_c '.$rcc_args[2]);
             }
 
@@ -209,7 +209,7 @@ class Summary extends Page
             array_push($args, $rcal_args[0]);
             array_push($where_arr, 'sf.refinedCell_alpha '.$rcal_args[1].' ?');
             
-            if ($rcal_args[2] != null) {
+            if (isset($rcal_args[2]) != null) {
                 array_push($order_arr, 'sf.refinedCell_alpha '.$rcal_args[2]);
             }
 
@@ -221,7 +221,7 @@ class Summary extends Page
             array_push($args, $rcbe_args[0]);
             array_push($where_arr, 'sf.refinedCell_beta '.$rcbe_args[1].' ?');
             
-            if ($rcbe_args[2] != null) {
+            if (isset($rcbe_args[2]) != null) {
                 array_push($order_arr, 'sf.refinedCell_beta '.$rcbe_args[2]);
             }
 
@@ -233,7 +233,7 @@ class Summary extends Page
             array_push($args, $rcga_args[0]);
             array_push($where_arr, 'sf.refinedCell_gamma '.$rcga_args[1].' ?');
             
-            if ($rcga_args[2] != null) {
+            if (isset($rcga_args[2]) != null) {
                 array_push($order_arr, 'sf.refinedCell_gamma '.$rcga_args[2]);
             }
 
@@ -245,7 +245,7 @@ class Summary extends Page
             array_push($args, $rlho_args[0]);
             array_push($where_arr, 'sf.resolutionLimitHighOuter '.$rlho_args[1].' ?');
             
-            if ($rlho_args[2] != null) {
+            if (isset($rlho_args[2]) != null) {
                 array_push($order_arr, 'sf.resolutionLimitHighOuter '.$rlho_args[2]);
             }
 
@@ -257,7 +257,7 @@ class Summary extends Page
             array_push($args, $rmpmi_args[0]);
             array_push($where_arr, 'sf.rMeasWithinIPlusIMinusInner '.$rmpmi_args[1].' ?');
             
-            if ($rmpmi_args[2] != null) {
+            if (isset($rmpmi_args[2]) != null) {
                 array_push($order_arr, 'sf.rMeasWithinIPlusIMinusInner '.$rmpmi_args[2]);
             }
 
@@ -269,7 +269,7 @@ class Summary extends Page
             array_push($args, $riso_args[0]);
             array_push($where_arr, 'sf.resIOverSigI2Overall '.$riso_args[1].' ?');
             
-            if ($riso_args[2] != null) {
+            if (isset($riso_args[2]) != null) {
                 array_push($order_arr, 'sf.resIOverSigI2Overall '.$riso_args[2]);
             }
 
@@ -281,7 +281,7 @@ class Summary extends Page
             array_push($args, $cci_args[0]);
             array_push($where_arr, 'sf.ccAnomalousInner '.$cci_args[1].' ?');
             
-            if ($cci_args[2] != null) {
+            if (isset($cci_args[2]) != null) {
                 array_push($order_arr, 'sf.ccAnomalousInner '.$cci_args[2]);
             }
 
@@ -293,7 +293,7 @@ class Summary extends Page
             array_push($args, $cco_args[0]);
             array_push($where_arr, 'sf.ccAnomalousOverall '.$cco_args[1].' ?');
             
-            if ($cco_args[2] != null) {
+            if (isset($cco_args[2]) != null) {
                 array_push($order_arr, 'sf.ccAnomalousOverall '.$cco_args[2]);
             }
 
@@ -305,7 +305,7 @@ class Summary extends Page
             array_push($args, $rfsi_args[0]);
             array_push($where_arr, 'sf.rFreeValueStartInner '.$rfsi_args[1].' ?');
             
-            if ($rfsi_args[2] != null) {
+            if (isset($rfsi_args[2]) != null) {
                 array_push($order_arr, 'sf.rFreeValueStartInner '.$rfsi_args[2]);
             }
 
@@ -317,7 +317,7 @@ class Summary extends Page
             array_push($args, $rfei_args[0]);
             array_push($where_arr, 'sf.rFreeValueEndInner '.$rfei_args[1].' ?');
             
-            if ($rfei_args[2] != null) {
+            if (isset($rfei_args[2]) != null) {
                 array_push($order_arr, 'sf.rFreeValueEndInner '.$rfei_args[2]);
             }
 
@@ -329,7 +329,7 @@ class Summary extends Page
             array_push($args, $nobi_args[0]);
             array_push($where_arr, 'sf.noofblobs '.$nobi_args[1].' ?');
             
-            if ($nobi_args[2] != null) {
+            if (isset($nobi_args[2]) != null) {
                 array_push($order_arr, 'sf.noofblobs '.$nobi_args[2]);
             }
 
@@ -420,7 +420,7 @@ class Summary extends Page
         // }
         
         // sql query output
-        $this->_output(array('data' => $rows, 'total' => $tot ));
+        $this->_output(array('data' => $rows, 'total' => $tot, 'someargs' => $sg_args[1] ));
         // $this->_output(array('data' => $rows, 'where' => $where, 'order' => $order, 'args' => $args));
 
         }

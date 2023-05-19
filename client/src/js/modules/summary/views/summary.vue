@@ -746,12 +746,13 @@ export default {
         async searchFilterParams() {
           // searches for results with filter parameters applied which is in getQueryParams
             try {
+
                  
                 this.isLoading = true;
 
                 const queryParams = this.getQueryParams(false);
 
-                console.log(queryParams)
+                console.log(encodeURI(queryParams))
 
                 const results = await this.$store.dispatch('fetchDataFromApi', {
                   url: '/summary/results?'+encodeURI(queryParams),
