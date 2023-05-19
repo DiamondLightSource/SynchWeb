@@ -119,7 +119,11 @@ export default {
       logout: function () {
         this.$store.dispatch('auth/logout')
         .then(() => {
-          this.$router.push('/');
+          if (this.sso) {
+            this.$router.push('/logout');
+          } else {
+            this.$router.push('/');
+          }
         })
       },
       login: function() {

@@ -15,6 +15,7 @@ import MarionetteApplication from 'app/marionette-application.js'
 
 import Home from 'app/views/home.vue'
 import Login from 'app/views/login.vue'
+import Logout from 'app/views/logout.vue'
 import NotFound from 'app/views/notfound.vue'
 import NotAuthorised from 'app/views/notauthorised.vue'
 
@@ -60,6 +61,11 @@ let routes = [
     name: 'login',
     props: true, // this will mean redirect query also passed to login as prop
     component: Login,
+  },
+  {
+    path: '/logout',
+    name: 'logout',
+    component: Logout,
   },
   {
     path: '/notfound',
@@ -121,6 +127,7 @@ router.beforeEach((to, from, next) => {
   if (to.path === '/notfound') { next(); return }
   if (to.path === '/') { next(); return }
   if (to.path === '/login') { next(); return }
+  if (to.path === '/logout') { next(); return }
 
   // Make sure the store is initialised before proceeding further
   const init = store.dispatch('initialise')
