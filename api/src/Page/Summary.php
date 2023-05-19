@@ -420,7 +420,7 @@ class Summary extends Page
         // }
         
         // sql query output
-        $this->_output(array('data' => $rows, 'total' => $tot, 'someargs' => $sg_args[1] ));
+        $this->_output(array('data' => $rows, 'total' => $tot ));
         // $this->_output(array('data' => $rows, 'where' => $where, 'order' => $order, 'args' => $args));
 
         }
