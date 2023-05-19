@@ -13,6 +13,7 @@ class Summary extends Page
     public static $arg_list = array(
         //proposal
         'TITLE' => '(\w|\s|\-|\(|\))+',
+        'propid' => '\d+',
 
         // visit
         'com' => '(.*)', //comment
@@ -74,13 +75,10 @@ class Summary extends Page
         $order = '';
         $order_arr = array();
         
-        if (!$this->has_arg('prop')) $this->_error('No proposal defined');
-
-        // $args = array($this->proposalid);
-        // array_push($where_arr, 'p.proposalid = ?');
+        // if (!$this->has_arg('prop')) $this->_error('No proposal defined');
 
 
-        $args = array($this->arg('prop'));
+        $args = array($this->arg('propid'));
         array_push($where_arr, 'pt.proposalid = ?');
         array_push($order_arr, 'sf.autoProcIntegrationId DESC');
         

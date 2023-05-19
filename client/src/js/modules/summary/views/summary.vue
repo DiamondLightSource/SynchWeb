@@ -595,7 +595,7 @@ export default {
                     "operand": "",
                     "value": "",
                     "data": [],
-                    "arg" : "prop="
+                    "arg" : "propid="
                 },
 
             ],
