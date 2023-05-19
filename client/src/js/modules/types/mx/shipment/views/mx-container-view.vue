@@ -406,7 +406,6 @@ export default {
     },
     // Reset Backbone Samples Collection
     async resetSamples(capacity) {
-      this.$store.commit('samples/reset', capacity)
       const samples = this.samplesCollection.toJSON()
 
       for (let sample of samples) {
@@ -417,22 +416,10 @@ export default {
           if (Number(sample[t]) > 0) status = t
         })
         sample['STATUS'] = status
-        let matchingSampleGroup
-        if (sample['SAMPLEGROUP']) {
-          const sampleGroupsCollection = new SampleGroups(null)
-          sampleGroupsCollection.queryParams.BLSAMPLEID = sample['BLSAMPLEID']
-          const result = await this.$store.dispatch('getCollection', sampleGroupsCollection)
-          const sampleGroups = result.toJSON()
-          matchingSampleGroup = sampleGroups.find(item => Number(item['BLSAMPLEGROUPID']) === Number(sample['SAMPLEGROUP']))
-        }
-
-        sample.INITIALSAMPLEGROUP = matchingSampleGroup ? matchingSampleGroup['BLSAMPLEGROUPID'] : ''
-        this.$store.commit('samples/setSample', {
-          index: Number(sample['LOCATION']) - 1,
-          data: { ...sample, VALID: 1 }
-        })
-
+        sample.VALID = 1
       }
+      this.$store.commit('samples/setAllSamples', {capacity, samples})
+
       this.$nextTick(() => {
         this.$refs.containerForm.reset()
       })
