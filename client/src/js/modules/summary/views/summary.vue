@@ -442,7 +442,7 @@ export default {
                 },
                 
                 {
-                    "title": "Refinedcell Alpha",
+                    "title": "Refinedcell α",
                     "inputtype": "search-operands",
                     "textField": "REFINEDCELL_ALPHA",
                     "valueField": "REFINEDCELL_ALPHA",
@@ -455,7 +455,7 @@ export default {
                 },
                 
                 {
-                    "title": "Refinedcell Beta",
+                    "title": "Refinedcell β",
                     "inputtype": "search-operands",
                     "textField": "REFINEDCELL_BETA",
                     "valueField": "REFINEDCELL_BETA",
@@ -468,7 +468,7 @@ export default {
                 },
                 
                 {
-                    "title": "Refinedcell Gamma",
+                    "title": "Refinedcell γ",
                     "inputtype": "search-operands",
                     "textField": "REFINEDCELL_GAMMA",
                     "valueField": "REFINEDCELL_GAMMA",
