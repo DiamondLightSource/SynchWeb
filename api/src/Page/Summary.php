@@ -415,9 +415,11 @@ class Summary extends Page
             , $args);
     
 
-        // if (!$rows) {
-        // $this->_error($this->arg('TITLE') . ' could not be found anywhere!', 404);
-        // }
+        if (!$rows) {
+        $this->_error($this->arg('TITLE') . ' could not be found anywhere!', 404);
+        }
+
+        
         
         // sql query output
         $this->_output(array('data' => $rows, 'total' => $tot ));
