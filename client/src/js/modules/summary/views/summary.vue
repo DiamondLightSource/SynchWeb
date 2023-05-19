@@ -218,7 +218,7 @@
                             </p> -->
                         <div class="results-item tw-px-5"> {{ getProcRow(value["FILETEMPLATE"], 'text')[0] }}</div>
                         <div class="results-item tw-px-5"> {{ getProcRow(value["SAMPLENAME"], 'text')[0] }}</div>
-                        <div class="results-item tw-px-5"> {{ getProcRow(value["BEAMLINENAME"], 'text') }}</div>
+                        <div class="results-item tw-px-5"> {{ getProcRow(value["BEAMLINENAME"], 'text')[0] }}</div>
                         <div class="results-item tw-px-5"> {{ getProcRow(value["SPACEGROUP"], 'text')[0] }}</div>
                         <div class="results-item tw-px-5"> {{ getProcRow(value["PROCESSINGPROGRAMS"], 'text')[0] }}</div>
                         <div class="results-item tw-px-5"> {{ getProcRow(value["REFINEDCELL_A"], '')[0] }}</div>
@@ -246,7 +246,7 @@
                         <div></div>
                         <div class="results-item tw-px-5"> {{ getProcRow(value["FILETEMPLATE"], 'text')[index] }}</div>
                         <div class="results-item tw-px-5"> {{ getProcRow(value["SAMPLENAME"], 'text')[index] }}</div>
-                        <div class="results-item tw-px-5"> {{ getProcRow(value["BEAMLINENAME"], 'text') }}</div>
+                        <div class="results-item tw-px-5"> {{ getProcRow(value["BEAMLINENAME"], 'text')[index] }}</div>
                         <div class="results-item tw-px-5"> {{ getProcRow(value["SPACEGROUP"], 'text')[index] }}</div>
                         <div class="results-item tw-px-5"> {{ getProcRow(value["PROCESSINGPROGRAMS"], 'text')[index] }}</div>
                         <div class="results-item tw-px-5"> {{ getProcRow(value["REFINEDCELL_A"], '')[index] }}</div>
