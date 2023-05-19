@@ -3,7 +3,7 @@
     <hero-title v-show="!skipHome" />
 
     <h1>Login</h1>
-    <p v-if="sso">Redirecting to CAS single sign on...</p>
+    <p v-if="sso" class="tw-text-center tw-text-lg">Redirecting to CAS single sign on...</p>
 
     <!-- Wrap the form in an observer component so we can check validation state on submission -->
     <validation-observer ref="observer" v-if="!sso" v-slot="{ invalid }">
