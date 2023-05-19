@@ -353,13 +353,9 @@ export default {
                     "value": "="
                 },
                 {   
-                    "title": "",
-                    "value": ">"
-                },
-                {   
-                    "title": "greater than",
-                    "value": ">"
-                },
+                    "title": "less than",
+                    "value": "<"
+                }
             ],
             orderby: [
                 {   
@@ -947,8 +943,8 @@ export default {
                 if (this.filters[i].inputtype == "combo-box") {
                     queryParams.push(this.filters[i].selected)
                 } else {
-                    queryParams.push(","+this.filters[i].value)
-                    queryParams.push(this.filters[i].operand)
+                    queryParams.push(this.filters[i].value)
+                    queryParams.push(","+this.filters[i].operand)
                 }
 
                 if (this.filters[i].order) {
