@@ -9,11 +9,9 @@ define(['marionette',
       'click': 'onClick',
     },
     onClick: function() {
-      var prop = app.prop
       app.cookie(this.model.get('PROPOSALCODE') + this.model.get('PROPOSALNUMBER'))
       app.type = this.model.get('TYPE')
-      if (!prop  && !app.staff) app.trigger('current:show')
-      else app.trigger('visits:show')
+      app.trigger('visits:show')
     },
   })
     
