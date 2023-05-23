@@ -441,11 +441,11 @@ class Sample extends Page
 
                     $expTime = $attrs->EXPOSURETIME ? $attrs->EXPOSURETIME : 600;
 
-                    // Need to know the highest current DCP plan order so we can add new ones after it
-                    $maxLocation = $this->_get_current_max_dcp_plan_order($ids[$model]['CONTAINERID']);
+                    // Need to know the next DCP plan order index
+                    $nextDCPIndex = $this->_next_dcp_plan_order_index($ids[$model]['CONTAINERID']);
 
                     $this->db->pq("INSERT INTO blsample_has_datacollectionplan (blsampleid, datacollectionplanid, planorder) 
-                            VALUES (:1, :2, :3)", array($key == 'capillary' ? $ids[$model]['BLSAMPLECAPILLARYID'] : $ids[$model]['BLSAMPLEID'], $key == 'capillary' ? $ids[$model]['CAPILLARYDIFFRACTIONPLANID'] : $ids[$model]['DIFFRACTIONPLANID'], $maxLocation + 1));
+                            VALUES (:1, :2, :3)", array($key == 'capillary' ? $ids[$model]['BLSAMPLECAPILLARYID'] : $ids[$model]['BLSAMPLEID'], $key == 'capillary' ? $ids[$model]['CAPILLARYDIFFRACTIONPLANID'] : $ids[$model]['DIFFRACTIONPLANID'], $nextDCPIndex));
 
                     $this->db->pq("INSERT INTO datacollectionplan_has_detector (datacollectionplanid, detectorid, exposureTime, distance)
                             VALUES (:1, :2, :3, :4)", array($key == 'capillary' ? $ids[$model]['CAPILLARYDIFFRACTIONPLANID'] : $ids[$model]['DIFFRACTIONPLANID'], $detector1_id, $expTime, $detector1_distance));
@@ -1878,9 +1878,6 @@ class Sample extends Page
             $this->args['LOCATION'] = $defaultContainerLocation['LOCATION'];
         }
 
-        $maxLocation = array_key_exists('CONTAINERID', $this->args) ? $this->_get_current_max_dcp_plan_order($this->args['CONTAINERID']) : array(0);
-        $maxLocation = sizeof($maxLocation) ? $maxLocation : -1;
-
         $sfields = array('CODE', 'NAME', 'COMMENTS', 'VOLUME', 'PACKINGFRACTION', 'DIMENSION1', 'DIMENSION2', 'DIMENSION3', 'SHAPE', 'POSITION', 'CONTAINERID', 'LOOPTYPE', 'LOCATION');
         foreach ($sfields as $f) {
             if ($this->has_arg($f)) {
@@ -1928,10 +1925,15 @@ class Sample extends Page
             $dcps = $this->db->pq("SELECT dataCollectionPlanId FROM BLSample_has_DataCollectionPlan
                                 WHERE blSampleId = :1", array($this->arg('sid')));
 
-            if (sizeof($dcps)) {
-                foreach ($dcps as $dcp) {
-                    ++$maxLocation;
-                    $this->db->pq("UPDATE BLSample_has_DataCollectionPlan SET planOrder = :1 WHERE dataCollectionPlanId = :2 AND blSampleId = :3", array($maxLocation, $dcp['DATACOLLECTIONPLANID'], $this->arg('sid')));
+            if(sizeof($dcps)) {
+                $nextDCPIndex = 0;
+                if ($this->has_arg('CONTAINERID')) {
+                    $nextDCPIndex =  $this->_next_dcp_plan_order_index($this->args['CONTAINERID']);
+                }
+                
+                foreach($dcps as $dcp){
+                    $this->db->pq("UPDATE BLSample_has_DataCollectionPlan SET planOrder = :1 WHERE dataCollectionPlanId = :2 AND blSampleId = :3", array($nextDCPIndex, $dcp['DATACOLLECTIONPLANID'], $this->arg('sid')));
+                    $nextDCPIndex++;
                 }
             }
         }
@@ -1984,17 +1986,24 @@ class Sample extends Page
 
 
     # ------------------------------------------------------------------------
-    # Look up highest value DPC plan order to append new ones
-    function _get_current_max_dcp_plan_order($containerId)
+    # Look up highest value DPC plan order and adds 1 to it, index starts at 0
+    function _next_dcp_plan_order_index($containerId)
     {
 
-        $maxLocation = $this->db->pq("SELECT MAX(bhd.planOrder) AS LOC
+        $rows = $this->db->pq("SELECT MAX(bhd.planOrder) AS LOC
                                         FROM BLSample_has_DataCollectionPlan bhd
                                         INNER JOIN BLSample bls ON bls.blSampleId = bhd.blSampleId
                                         INNER JOIN Container c ON c.containerId = bls.containerId
                                         WHERE c.containerId = :1", array($containerId));
 
-        return $maxLocation[0]['LOC'];
+        if (sizeof($rows) == 0) {
+            $maxLocation = 0;
+        } else {
+            $maxLocation = $rows[0]['LOC'];
+            $maxLocation = $maxLocation ? $maxLocation + 1 : 0;
+        }
+        
+        return $maxLocation;
     }
 
 
