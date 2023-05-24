@@ -1,0 +1,10 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: SynchWeb
+  annotations:
+    github.com/project-slug: DiamondLightSource/SynchWeb
+spec:
+  type: other
+  lifecycle: unknown
+  owner: james hall
