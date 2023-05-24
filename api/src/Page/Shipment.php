@@ -1067,14 +1067,16 @@ class Shipment extends Page
             array($dew['DEWARID'], $dewar_location)
         );
 
+        $terms = $this->db->pq(
+            "SELECT cta.couriertermsacceptedid FROM couriertermsaccepted cta WHERE cta.shippingid=:1",
+            array($dew['SHIPPINGID'])
+        );
+        $terms_accepted = sizeof($terms) ? true : false;
+
         $data = $this->args;
+        $data['TERMSACCEPTED'] = $terms_accepted;
 
         if (Utils::getValueOrDefault($use_shipping_service) && in_array($country, $facility_courier_countries)) {
-            $terms = $this->db->pq(
-                "SELECT cta.couriertermsacceptedid FROM couriertermsaccepted cta WHERE cta.shippingid=:1",
-                array($dew['SHIPPINGID'])
-            );
-            $terms_accepted = sizeof($terms) ? true : false;
             if ($terms_accepted) {
                 try {
                     $shipment_id = $this->_dispatch_dewar_in_shipping_service($data, $dew);
