@@ -1152,13 +1152,13 @@ class Shipment extends Page
 
         if (!$this->has_arg('DEWARID'))
             $this->_error('No dewar specified');
-
-        $where = 'AND p.proposalid=:1';
-        $args = array($this->arg('DEWARID'), $this->proposalid);
-
+        
         if ($this->user->hasPermission('all_dewars')) {
-            $where = '';
+            $where = "d.dewarid=:1";
             $args = array($this->arg('DEWARID'));
+        } else {
+            $where = "d.dewarid=:1 AND p.proposalid=:2";
+            $args = array($this->arg('DEWARID'), $this->proposalid);    
         }
 
         $dewar = $this->db->pq(
@@ -1166,7 +1166,7 @@ class Shipment extends Page
             FROM dewar d 
             INNER JOIN shipping s ON s.shippingid = d.shippingid 
             INNER JOIN proposal p ON p.proposalid = s.proposalid
-            WHERE d.dewarid=:1 $where",
+            WHERE $where",
             $args
         );
 
