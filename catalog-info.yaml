@@ -12,4 +12,5 @@ spec:
   type: website/service
   lifecycle: production
   owner: group:lims
-  dependsOn: dials-rest
+  dependsOn: 
+    - dials-rest
