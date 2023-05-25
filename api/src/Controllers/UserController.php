@@ -167,6 +167,10 @@ class UserController extends Page
 
     function _get_users()
     {
+        if($this->has_arg('pid')){
+            error_log("pid set");
+        }
+        
         $rows = $this->userData->getUsers(
             false,
             $this->staff,

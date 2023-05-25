@@ -642,7 +642,6 @@ define(['marionette',
             this.users.queryParams.all = 1
             // Assumption all plates are for vmxi, so login => users only
             this.users.queryParams.login = 1
-            this.users.queryParams.pid = app.proposal.get('PROPOSALID')
 
             Backbone.Validation.bind(this)
         },
