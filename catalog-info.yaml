@@ -13,4 +13,4 @@ spec:
   lifecycle: production
   owner: group:lims
   dependsOn: 
-    - dials-rest
+    - component: dials-rest
