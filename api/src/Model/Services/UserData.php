@@ -94,7 +94,7 @@ class UserData
         else
             $where = 'p.login IS NOT NULL';
 
-        if ($personId == "" && $stringMatch == "" && $gid == "" && $sid == "" && $visitName == "" && $pjid == "" && $pid == "")
+        if ($personId == "" && $stringMatch == "" && $gid == "" && $sid == "" && $visitName == "" && $pjid == "")
         {
             //secured by making sure the user has access toproposalid
             return $this->getUsersForProposal($where, $getCount, $page, $sortBy, $proposalid, $currentUserId, $perPage, $isAscending, $start, $end);
