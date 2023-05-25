@@ -173,7 +173,8 @@ class UserController extends Page
             $this->argOrEmptyString('s'),
             $this->argOrEmptyString('page'),
             $this->argOrEmptyString('sort_by'),
-            $this->proposalid,            
+            $this->argOrEmptyString('pid'),
+            $this->proposalid,        
             $this->argOrEmptyString('PERSONID'),
             $this->user->hasPermission('manage_users'),
             $this->user->personId,
@@ -184,8 +185,7 @@ class UserController extends Page
             $this->def_arg('per_page', 15),
             $this->def_arg('order', 'asc') == 'asc',
             $this->has_arg('all'),
-            $this->has_arg('login'),
-            $this->argOrEmptyString('pid')
+            $this->has_arg('login')
         );
 
         if ($this->has_arg('PERSONID'))
