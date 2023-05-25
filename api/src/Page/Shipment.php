@@ -195,7 +195,7 @@ class Shipment extends Page
 
 
 
-        array('/containers(/:cid)(/did/:did)', 'get', '_get_all_containers'),
+        array('/containers(/:cid)(/sid/:sid)(/did/:did)', 'get', '_get_all_containers'),
         array('/containers', 'post', '_add_container'),
         array('/containers/:cid', 'patch', '_update_container'),
         array('/containers/move', 'get', '_move_container'),
@@ -320,7 +320,8 @@ class Shipment extends Page
                 $order = $cols[$this->arg('sort_by')] . ' ' . $dir;
         }
 
-        $rows = $this->db->paginate("SELECT s.deliveryagent_agentname, s.deliveryagent_agentcode, TO_CHAR(s.deliveryagent_shippingdate, 'DD-MM-YYYY') as deliveryagent_shippingdate, TO_CHAR(s.deliveryagent_deliverydate, 'DD-MM-YYYY') as deliveryagent_deliverydate, s.safetylevel, count(d.dewarid) as dcount,s.sendinglabcontactid, c.cardname as lcout, c2.cardname as lcret, s.returnlabcontactid, s.shippingid, s.shippingname, s.shippingstatus,TO_CHAR(s.creationdate, 'DD-MM-YYYY') as created, s.isstorageshipping, s.shippingtype, s.comments, s.deliveryagent_flightcode, IF(s.deliveryAgent_label IS NOT NULL, 1, 0) as deliveryagent_has_label, TO_CHAR(s.readybytime, 'HH24:MI') as readybytime, TO_CHAR(s.closetime, 'HH24:MI') as closetime, s.physicallocation, s.deliveryagent_pickupconfirmation, TO_CHAR(s.deliveryagent_readybytime, 'HH24:MI') as deliveryAgent_readybytime, TO_CHAR(s.deliveryAgent_callintime, 'HH24:MI') as deliveryAgent_callintime, CONCAT(p.proposalcode, p.proposalnumber) as prop, TO_CHAR(s.deliveryagent_flightcodetimestamp, 'HH24:MI DD-MM-YYYY') as deliveryagent_flightcodetimestamp, sum(d.weight) as weight, pe.givenname, pe.familyname, l.name as labname, l.address, l.city, l.postcode, l.country, CONCAT(p.proposalcode, p.proposalnumber) as prop, GROUP_CONCAT(IF(d.facilitycode, d.facilitycode, d.code)) as dewars, s.deliveryagent_productcode, IF(cta.couriertermsacceptedid,1,0) as termsaccepted, GROUP_CONCAT(d.deliveryagent_barcode) as deliveryagent_barcode, pe2.login as deliveryagent_flightcodeperson, s.extra
+        $rows = $this->db->paginate("SELECT s.deliveryagent_agentname, s.deliveryagent_agentcode, TO_CHAR(s.deliveryagent_shippingdate, 'DD-MM-YYYY') as deliveryagent_shippingdate, TO_CHAR(s.deliveryagent_deliverydate, 'DD-MM-YYYY') as deliveryagent_deliverydate, s.safetylevel, count(d.dewarid) as dcount,s.sendinglabcontactid, c.cardname as lcout, c2.cardname as lcret, s.returnlabcontactid, s.shippingid, s.shippingname, s.shippingstatus,TO_CHAR(s.creationdate, 'DD-MM-YYYY') as created, s.isstorageshipping, s.shippingtype, s.comments, s.deliveryagent_flightcode, IF(s.deliveryAgent_label IS NOT NULL, 1, 0) as deliveryagent_has_label, TO_CHAR(s.readybytime, 'HH24:MI') as readybytime, TO_CHAR(s.closetime, 'HH24:MI') as closetime, s.physicallocation, s.deliveryagent_pickupconfirmation, TO_CHAR(s.deliveryagent_readybytime, 'HH24:MI') as deliveryAgent_readybytime, TO_CHAR(s.deliveryAgent_callintime, 'HH24:MI') as deliveryAgent_callintime, CONCAT(p.proposalcode, p.proposalnumber) as prop, TO_CHAR(s.deliveryagent_flightcodetimestamp, 'HH24:MI DD-MM-YYYY') as deliveryagent_flightcodetimestamp, sum(d.weight) as weight, pe.givenname, pe.familyname, l.name as labname, l.address, l.city, l.postcode, l.country, CONCAT(p.proposalcode, p.proposalnumber) as prop, GROUP_CONCAT(IF(d.facilitycode, d.facilitycode, d.code)) as dewars, s.deliveryagent_productcode, IF(cta.couriertermsacceptedid,1,0) as termsaccepted, GROUP_CONCAT(d.deliveryagent_barcode) as deliveryagent_barcode, pe2.login as deliveryagent_flightcodeperson, s.extra,
+                SUM(IF(d.dewarstatus = 'processing', 1, 0)) as processing
               FROM proposal p 
               INNER JOIN shipping s ON p.proposalid = s.proposalid 
               LEFT OUTER JOIN labcontact c2 ON s.returnlabcontactid = c2.labcontactid 
@@ -932,7 +933,7 @@ class Shipment extends Page
         global $shipping_service_url;
         global $facility_email;
         if (!isset($shipping_service_url)) {
-            $this->_error("Server could not send request to shipping service.");
+            throw new Exception("Could not send request to shipping service: shipping_service_url not set");
         }
 
         # Create shipment
@@ -959,9 +960,9 @@ class Shipment extends Page
         $address_lines = explode(PHP_EOL, rtrim($dispatch_info['ADDRESS']));
         $num_lines = count($address_lines);
         if ($num_lines < 3) {
-            $this->_error("Address must consist contain at least one line, as well as a city and post code.");
+            throw new Exception("Could not build request for shipping service: address input does contain at least 3 lines (inc. city and post code)");
         } else if ($num_lines > 5) {
-            $this->_error("Address can contain at most 3 lines, (not including city and post code).");
+            throw new Exception("Could not build request for shipping service: address input contains more than 5 lines (inc. city and post code)");
         }
         $shipment_data['consignee_post_code'] = $address_lines[$num_lines - 1];
         unset($address_lines[$num_lines - 1]);
@@ -973,16 +974,18 @@ class Shipment extends Page
 
         $create = ($dewar['DEWARSTATUS'] != 'dispatch-requested');
 
-        if ($create === true) {
-            $response = $this->shipping_service->create_shipment($shipment_data);
-        } else {
-            $this->shipping_service->update_shipment($dispatch_info['DEWARID'], $shipment_data);
-            $response = $this->shipping_service->get_shipment($dispatch_info['DEWARID']);
+        try {
+            if ($create === true) {
+                $response = $this->shipping_service->create_shipment($shipment_data);
+            } else {
+                $this->shipping_service->update_shipment($dispatch_info['DEWARID'], $shipment_data);
+                $response = $this->shipping_service->get_shipment($dispatch_info['DEWARID']);
+            }
+            $shipment_id = $response['shipmentId'];
+            $this->shipping_service->dispatch_shipment($shipment_id);
+        } catch (Exception $e) {
+            throw new Exception("Error returned from shipping service: " . $e . "\nShipment data: " . $shipment_data);
         }
-
-        $shipment_id = $response['shipmentId'];
-
-        $this->shipping_service->dispatch_shipment($shipment_id);
 
         return $shipment_id;
     }
@@ -1149,13 +1152,13 @@ class Shipment extends Page
 
         if (!$this->has_arg('DEWARID'))
             $this->_error('No dewar specified');
-
-        $where = 'AND p.proposalid=:1';
-        $args = array($this->arg('DEWARID'), $this->proposalid);
-
+        
         if ($this->user->hasPermission('all_dewars')) {
-            $where = '';
+            $where = "d.dewarid=:1";
             $args = array($this->arg('DEWARID'));
+        } else {
+            $where = "d.dewarid=:1 AND p.proposalid=:2";
+            $args = array($this->arg('DEWARID'), $this->proposalid);    
         }
 
         $dewar = $this->db->pq(
@@ -1163,7 +1166,7 @@ class Shipment extends Page
             FROM dewar d 
             INNER JOIN shipping s ON s.shippingid = d.shippingid 
             INNER JOIN proposal p ON p.proposalid = s.proposalid
-            WHERE d.dewarid=:1 $where",
+            WHERE $where",
             $args
         );
 
@@ -1448,8 +1451,8 @@ class Shipment extends Page
                 $extra_arg_value = addslashes($this->arg($extra_arg_name));
                 $shippingid = $this->arg('sid');
                 $this->db->pq(
-                    "UPDATE shipping SET extra = JSON_SET(extra, '$." . $extra_arg_name . "', '" . $extra_arg_value . "') WHERE shippingid=:1",
-                    array($shippingid)
+                    "UPDATE shipping SET extra = JSON_SET(IFNULL(extra, '{}'), :1, :2 ) WHERE shippingid=:3",
+                    array('$.' . $extra_arg_name, $extra_arg_value, $shippingid)
                 );
                 $this->_output(array($extra_arg_name => $extra_arg_value));
             }
@@ -1543,11 +1546,20 @@ class Shipment extends Page
         if (!$this->has_arg('sid'))
             $this->_error('No shipping id specified');
 
-        $ship = $this->db->pq("SELECT CONCAT(p.proposalcode, p.proposalnumber) as prop, s.safetylevel, s.shippingid, s.deliveryagent_agentname, TO_CHAR(s.deliveryagent_shippingdate, 'DD-MM-YYYY') as shippingdate, TO_CHAR(s.deliveryagent_deliverydate, 'DD-MM-YYYY') as deliverydate, s.shippingname, s.comments, c.cardname as lcout FROM shipping s INNER JOIN proposal p ON s.proposalid = p.proposalid LEFT OUTER JOIN labcontact c ON s.sendinglabcontactid = c.labcontactid WHERE p.proposalid = :1 AND s.shippingid = :2", array($this->proposalid, $this->arg('sid')));
+        $ship = $this->db->pq("SELECT CONCAT(p.proposalcode, p.proposalnumber) as prop, s.safetylevel, s.shippingid, s.deliveryagent_agentname, TO_CHAR(s.deliveryagent_shippingdate, 'DD-MM-YYYY') as shippingdate, TO_CHAR(s.deliveryagent_deliverydate, 'DD-MM-YYYY') as deliverydate, s.shippingname, s.comments, c.cardname as lcout,
+              SUM(IF(d.dewarstatus = 'processing', 1, 0)) as processing
+              FROM shipping s INNER JOIN proposal p ON s.proposalid = p.proposalid
+              LEFT OUTER JOIN labcontact c ON s.sendinglabcontactid = c.labcontactid
+              LEFT OUTER JOIN dewar d ON d.shippingid = s.shippingid
+              WHERE p.proposalid = :1 AND s.shippingid = :2", array($this->proposalid, $this->arg('sid')));
 
         if (!sizeof($ship))
             $this->_error('No such shipment');
         $ship = $ship[0];
+
+        if ($ship['PROCESSING']) {
+            $this->_error('Cant set shipment status, one or more dewars is being processed');
+        }
 
         $this->db->pq("UPDATE shipping SET shippingstatus='sent to facility' where shippingid=:1", array($ship['SHIPPINGID']));
         $this->db->pq("UPDATE dewar SET dewarstatus='sent to facility' where shippingid=:1", array($ship['SHIPPINGID']));
@@ -2448,7 +2460,7 @@ class Shipment extends Page
     {
         if (!$this->has_arg('name'))
             $this->_error('No key specified');
-        $this->_output($this->user->setInCache($this->arg('name')));
+        $this->_output($this->user->getFromCache($this->arg('name')));
     }
 
     function _dummy_shipment_put()
