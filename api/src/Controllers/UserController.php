@@ -167,8 +167,9 @@ class UserController extends Page
 
     function _get_users()
     {
+        // remove this after successfully completing LIMS-742 ticket
         if($this->has_arg('pid')){
-            error_log("pid set");
+            error_log("pid used (for ticket: https://jira.diamond.ac.uk/browse/LIMS-742)");
         }
         
         $rows = $this->userData->getUsers(
