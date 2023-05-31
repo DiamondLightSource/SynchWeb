@@ -163,6 +163,56 @@
                     <p>Export CSV</p></button>
             </div>
 
+            <div>
+                <p class="tw-text-content-sub-header-background tw-ml-2 tw-mt-2">Select Columns</p>
+                <div class="tw-py-2 tw-px-6 tw-border tw-rounded-lg tw-border-content-sub-header-background">
+                    <div class="tw-relative tw-w-full">
+                        <button v-on:click="isHidden = !isHidden" id="dropdownInformationButton" data-dropdown-toggle="dropdown" 
+                        class="tw-h-8 tw-text-white tw-rounded tw-text-xs tw-px-4 tw-text-center tw-inline-flex tw-items-center 
+                        tw-bg-content-sub-header-background tw-border-content-sub-header-background tw-border-4 
+                        tw-text-black tw-py-1 tw-px-5" type="button"> Select Columns </button>
+
+                        <div id="dropdown" class="tw-absolute
+                        tw-w-44 tw-bg-white tw-rounded tw-divide-y tw-divide-gray-100 tw-shadow
+                        tw-transition tw-ease-out tw-duration-100"
+                        :class="isHidden ? 'tw-transform tw-opacity-0 tw-scale-95 tw-z-20' : 'tw-transform tw-opacity-100 tw-scale-100 tw-z-50'">
+                        
+                            <ul class="tw-py-1 tw-text-sm tw=text-gray-700" aria-labelledby="dropdownInformationButton">
+                            <li> 
+                                <div v-for="(value, index) in summaryParameters" :key="value.id" 
+                                class="tw-flex tw-items-center tw-ml-2">
+                                    <input checked
+                                    v-model="value.checked"
+                                    v-if="!isHidden"
+                                    @click="checkedColumns(index)"
+                                    id="default-checkbox" type="checkbox" value="" 
+                                    class="tw-w-4 tw-h-4 tw-text-blue-600 tw-bg-gray-100 tw-rounded 
+                                    tw-border-gray-300 focus:tw-ring-blue-500 focus:tw-ring-2">
+                                    <a class="tw-block tw-text-xs tw-py-2 tw-px-4 hover:tw-bg-gray-100"> {{ value.title }} </a>
+
+                                </div>
+                            </li>
+                            </ul>
+
+                        </div>
+
+                        <div class="tw-absolute tw-right-0 tw-top-0"> 
+                            <ul v-if="windowWidth > 900" class="tw-flex">
+                                <div v-for="(title, index) in summaryParameters" :key="title.id">
+                                    <p v-if="index <= pillIndex && title.checked == true"
+                                    class="tw-rounded-full tw-h-6 tw-max-w-xs tw-ml-1 tw-pt-1 
+                                    tw-pr-1 tw-pl-1 tw-bg-content-active ">
+                                    <button v-on:click="togglePills(title.title)" class="fa fa-times tw-text-black"></button>
+                                    {{ title.title }} </p>
+                                    {{ selectedColumns }}
+                                </div>
+                            </ul>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
         </div>
 
 
@@ -331,6 +381,7 @@ export default {
             totalRecords:  10,
             pageSize: 15,
             currentPage: 1,
+            pillIndex: 2,
             summaryData : [],
             summaryExport : [],
             proposalCollection : null,
@@ -339,6 +390,8 @@ export default {
             processingProgram : [],
             beamLines: [],
             searchedSamplePrefix: [],
+            selectedColumns: [],
+            deselectedColumns: [],
             operands: [
                 {   
                     "title": "greater than",
@@ -378,7 +431,8 @@ export default {
                     "operand": "",
                     "value": "",
                     "data": [],
-                    "arg" : "BEAMLINENAME="
+                    "arg": "BEAMLINENAME=",
+                    "checked": true
                 },
                 {
                     "title": "Space Group",
@@ -389,7 +443,8 @@ export default {
                     "operand": "",
                     "value": "",
                     "data": [],
-                    "arg" : "sg="
+                    "arg" : "sg=",
+                    "checked": true
                 },
                 {
                     "title": "Processing Programs",
@@ -412,7 +467,8 @@ export default {
                     "operand": "",
                     "value": "",
                     "data": [],
-                    "arg" : "rca="
+                    "arg" : "rca=",
+                    "checked": true
                 },
                 
                 {
@@ -425,7 +481,8 @@ export default {
                     "operand": "",
                     "value": "",
                     "data": [],
-                    "arg" : "rcb="
+                    "arg" : "rcb=",
+                    "checked": true
                 },
                 
                 {
@@ -438,7 +495,8 @@ export default {
                     "operand": "",
                     "value": "",
                     "data": [],
-                    "arg" : "rcc="
+                    "arg" : "rcc=",
+                    "checked": true
                 },
                 
                 {
@@ -451,7 +509,8 @@ export default {
                     "operand": "",
                     "value": "",
                     "data": [],
-                    "arg" : "rcal="
+                    "arg" : "rcal=",
+                    "checked": true
                 },
                 
                 {
@@ -464,7 +523,8 @@ export default {
                     "operand": "",
                     "value": "",
                     "data": [],
-                    "arg" : "rcbe="
+                    "arg" : "rcbe=",
+                    "checked": true
                 },
                 
                 {
@@ -477,7 +537,8 @@ export default {
                     "operand": "",
                     "value": "",
                     "data": [],
-                    "arg" : "rcga="
+                    "arg" : "rcga=",
+                    "checked": true
                 },
                 
                 {
@@ -490,7 +551,8 @@ export default {
                     "operand": "",
                     "value": "",
                     "data": [],
-                    "arg" : "rlho="
+                    "arg" : "rlho=",
+                    "checked": true
                 },
                 
                 {
@@ -503,7 +565,8 @@ export default {
                     "operand": "",
                     "value": "",
                     "data": [],
-                    "arg" : "rmpmi="
+                    "arg" : "rmpmi=",
+                    "checked": true
                 },
                 
                 {
@@ -516,7 +579,8 @@ export default {
                     "operand": "",
                     "value": "",
                     "data": [],
-                    "arg" : "riso="
+                    "arg" : "riso=",
+                    "checked": true
                 },
                 
                 {
@@ -529,7 +593,8 @@ export default {
                     "operand": "",
                     "value": "",
                     "data": [],
-                    "arg" : "cci="
+                    "arg" : "cci=",
+                    "checked": true
                 },
                 
                 {
@@ -542,7 +607,8 @@ export default {
                     "operand": "",
                     "value": "",
                     "data": [],
-                    "arg" : "cco="
+                    "arg" : "cco=",
+                    "checked": true
                 },
                 
                 {
@@ -555,7 +621,8 @@ export default {
                     "operand": "",
                     "value": "",
                     "data": [],
-                    "arg" : "rfsi="
+                    "arg" : "rfsi=",
+                    "checked": true
                 },
                 
                 {
@@ -568,7 +635,8 @@ export default {
                     "operand": "",
                     "value": "",
                     "data": [],
-                    "arg" : "rfei="
+                    "arg" : "rfei=",
+                    "checked": true
                 },
                 
                 {
@@ -581,7 +649,8 @@ export default {
                     "operand": "",
                     "value": "",
                     "data": [],
-                    "arg" : "nobi="
+                    "arg" : "nobi=",
+                    "checked": true
                 }
             ],
 
@@ -1040,6 +1109,62 @@ export default {
                     return [];
                 };
         },
+        checkedColumns(index) {
+
+            this.summaryParameters[index].checked = !this.summaryParameters[index].checked;
+
+            if (this.summaryParameters[index].checked == false){
+
+            this.deselectedColumns.push(this.summaryParameters[index].title);
+            this.selectedColumns = this.selectedColumns.filter(item => item !== this.summaryParameters[index].title);
+            }
+            else {
+            this.selectedColumns.push(this.summaryParameters[index].title);
+            this.deselectedColumns = this.deselectedColumns.filter(item => item !== this.summaryParameters[index].title);
+
+            }
+
+
+        },
+        resizePills() {
+            // change number of pills visible based on width of window
+
+            if (this.windowWidth > 1000 ) {
+                this.pillIndex = 1;
+            }
+
+            if (this.windowWidth > 1200 ) {
+                this.pillIndex = 2;
+            }
+
+            if (this.windowWidth > 1600 ) {
+                this.pillIndex = 3;
+            }
+
+            if (this.windowWidth > 1800 ) {
+                this.pillIndex = 4;
+            }
+
+            if (this.windowWidth > 2200 ) {
+                this.pillIndex = 5;
+            }
+
+            if (this.windowWidth > 2800 ) {
+                this.pillIndex = 6;
+            }
+
+
+        },
+        togglePills(value) {
+
+            for (var index in this.summaryParameters) {
+
+                if (this.summaryParameters[index].title == value)
+                this.summaryParameters[index].checked = false;
+            }
+
+        },
+
 
 
 
