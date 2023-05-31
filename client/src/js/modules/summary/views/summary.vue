@@ -204,7 +204,7 @@
                                     tw-pr-1 tw-pl-1 tw-bg-content-active ">
                                     <button v-on:click="togglePills(title.title)" class="fa fa-times tw-text-black"></button>
                                     {{ title.title }} </p>
-                                    {{ selectedColumns }}
+
                                 </div>
                             </ul>
                         </div>
@@ -232,11 +232,13 @@
                 <div class="results-item tw-pt-3 tw-px-5"> Sample Name</div>
 
                 
-                <div v-for="value in summaryParameters" :key="value.id"
+                <div v-for="value in selectedColumns" :key="value.id"
                 class="results-item tw-pt-3 tw-px-5">
                 {{ value.title }}</div>
 
             </div>
+
+
 
             <div class="results-content tw-text-black tw-text-center tw-pt-3 tw-px-5 tw-text-xl tw-bg-content-sub-header-hover-background" v-if="summaryData.length == 0">
                     No Results</div>
@@ -266,25 +268,10 @@
                                 <a href="'+app.apiurl+'/download/id/<%-DCID%>/aid/<%-AID%>" class="tw-button tw-button-notext tw-dll" 
                                     title="Download MTZ file"><i class="fa fa-download"></i></a>
                             </p> -->
-                        <div class="results-item tw-px-5"> {{ getProcRow(value["FILETEMPLATE"], 'text')[0] }}</div>
-                        <div class="results-item tw-px-5"> {{ getProcRow(value["SAMPLENAME"], 'text')[0] }}</div>
-                        <div class="results-item tw-px-5"> {{ getProcRow(value["BEAMLINENAME"], 'text')[0] }}</div>
-                        <div class="results-item tw-px-5"> {{ getProcRow(value["SPACEGROUP"], 'text')[0] }}</div>
-                        <div class="results-item tw-px-5"> {{ getProcRow(value["PROCESSINGPROGRAMS"], 'text')[0] }}</div>
-                        <div class="results-item tw-px-5"> {{ getProcRow(value["REFINEDCELL_A"], '')[0] }}</div>
-                        <div class="results-item tw-px-5"> {{ getProcRow(value["REFINEDCELL_B"], '')[0] }}</div>
-                        <div class="results-item tw-px-5"> {{ getProcRow(value["REFINEDCELL_C"], '')[0] }}</div>
-                        <div class="results-item tw-px-5"> {{ getProcRow(value["REFINEDCELL_ALPHA"], '')[0] }}</div>
-                        <div class="results-item tw-px-5"> {{ getProcRow(value["REFINEDCELL_BETA"], '')[0] }}</div>
-                        <div class="results-item tw-px-5"> {{ getProcRow(value["REFINEDCELL_GAMMA"], '')[0] }}</div>
-                        <div class="results-item tw-px-5"> {{ getProcRow(value["RESOLUTIONLIMITHIGHOUTER"], 'decimal4')[0] }}</div>
-                        <div class="results-item tw-px-5"> {{ getProcRow(value["RMEASWITHINIPLUSIMINUSINNER"], '')[0] }}</div>
-                        <div class="results-item tw-px-5"> {{ getProcRow(value["RESIOVERSIGI2OVERALL"], '')[0] }}</div>
-                        <div class="results-item tw-px-5"> {{ getProcRow(value["CCANOMALOUSINNER"], '')[0] }}</div>
-                        <div class="results-item tw-px-5"> {{ getProcRow(value["CCANOMALOUSOVERALL"], '')[0] }}</div>
-                        <div class="results-item tw-px-5"> {{ getProcRow(value["RFREEVALUESTARTINNER"], '')[0] }}</div>
-                        <div class="results-item tw-px-5"> {{ getProcRow(value["RFREEVALUEENDINNER"], '')[0] }}</div>
-                        <div class="results-item tw-px-5"> {{ getProcRow(value["NOOFBLOBS"], '')[0] }}</div>
+                        
+                        <div class="results-item tw-px-5"> {{ getProcRow(value, "FILETEMPLATE", 'text')[0] }}</div>
+                        <div class="results-item tw-px-5"> {{ getProcRow(value, "SAMPLENAME", 'text')[0] }}</div>
+                        <div class="results-item tw-px-5" v-for="data in selectedColumns" :key="data.id">{{ getProcRow(value, data.textField, 'text')[0] }}</div>
 
                     </div>
 
@@ -294,25 +281,9 @@
                 <template v-slot:filter-bar-content> 
                     <div v-for="(col, index) in getProcRow(value.FILETEMPLATE, 'text') " :key="index" class="tw-grid tw-grid-col-20  tw-divide-y tw-grid-flow-col tw-text-black">
                         <div></div>
-                        <div class="results-item tw-px-5"> {{ getProcRow(value["FILETEMPLATE"], 'text')[index] }}</div>
-                        <div class="results-item tw-px-5"> {{ getProcRow(value["SAMPLENAME"], 'text')[index] }}</div>
-                        <div class="results-item tw-px-5"> {{ getProcRow(value["BEAMLINENAME"], 'text')[index] }}</div>
-                        <div class="results-item tw-px-5"> {{ getProcRow(value["SPACEGROUP"], 'text')[index] }}</div>
-                        <div class="results-item tw-px-5"> {{ getProcRow(value["PROCESSINGPROGRAMS"], 'text')[index] }}</div>
-                        <div class="results-item tw-px-5"> {{ getProcRow(value["REFINEDCELL_A"], '')[index] }}</div>
-                        <div class="results-item tw-px-5"> {{ getProcRow(value["REFINEDCELL_B"], '')[index] }}</div>
-                        <div class="results-item tw-px-5"> {{ getProcRow(value["REFINEDCELL_C"], '')[index] }}</div>
-                        <div class="results-item tw-px-5"> {{ getProcRow(value["REFINEDCELL_ALPHA"], '')[index] }}</div>
-                        <div class="results-item tw-px-5"> {{ getProcRow(value["REFINEDCELL_BETA"], '')[index] }}</div>
-                        <div class="results-item tw-px-5"> {{ getProcRow(value["REFINEDCELL_GAMMA"], '')[index] }}</div>
-                        <div class="results-item tw-px-5"> {{ getProcRow(value["RESOLUTIONLIMITHIGHOUTER"], 'decimal4')[index] }}</div>
-                        <div class="results-item tw-px-5"> {{ getProcRow(value["RMEASWITHINIPLUSIMINUSINNER"], '')[index] }}</div>
-                        <div class="results-item tw-px-5"> {{ getProcRow(value["RESIOVERSIGI2OVERALL"], '')[index] }}</div>
-                        <div class="results-item tw-px-5"> {{ getProcRow(value["CCANOMALOUSINNER"], '')[index] }}</div>
-                        <div class="results-item tw-px-5"> {{ getProcRow(value["CCANOMALOUSOVERALL"], '')[index] }}</div>
-                        <div class="results-item tw-px-5"> {{ getProcRow(value["RFREEVALUESTARTINNER"], '')[index] }}</div>
-                        <div class="results-item tw-px-5"> {{ getProcRow(value["RFREEVALUEENDINNER"], '')[index] }}</div>
-                        <div class="results-item tw-px-5"> {{ getProcRow(value["NOOFBLOBS"], '')[index] }}</div>
+                        <div class="results-item tw-px-5"> {{ getProcRow(value, "FILETEMPLATE", 'text')[index] }}</div>
+                        <div class="results-item tw-px-5"> {{ getProcRow(value, "SAMPLENAME", 'text')[index] }}</div>
+                        <div class="results-item tw-px-5" v-for="data in selectedColumns" :key="data.id">{{ getProcRow(value, data.textField, 'text')[index] }}</div>
         
 
                     </div>
@@ -432,7 +403,8 @@ export default {
                     "value": "",
                     "data": [],
                     "arg": "BEAMLINENAME=",
-                    "checked": true
+                    "checked": true,
+                    "type": "text"
                 },
                 {
                     "title": "Space Group",
@@ -444,7 +416,8 @@ export default {
                     "value": "",
                     "data": [],
                     "arg" : "sg=",
-                    "checked": true
+                    "checked": true,
+                    "type": "text"
                 },
                 {
                     "title": "Processing Programs",
@@ -455,7 +428,9 @@ export default {
                     "operand": "",
                     "value": "",
                     "data": [],
-                    "arg" : "pp="
+                    "arg" : "pp=",
+                    "checked": true,
+                    "type": "text"
                 },     
                 {
                     "title": "Refinedcell A",
@@ -468,7 +443,8 @@ export default {
                     "value": "",
                     "data": [],
                     "arg" : "rca=",
-                    "checked": true
+                    "checked": true,
+                    "type": ""
                 },
                 
                 {
@@ -482,7 +458,8 @@ export default {
                     "value": "",
                     "data": [],
                     "arg" : "rcb=",
-                    "checked": true
+                    "checked": true,
+                    "type": ""
                 },
                 
                 {
@@ -496,7 +473,8 @@ export default {
                     "value": "",
                     "data": [],
                     "arg" : "rcc=",
-                    "checked": true
+                    "checked": true,
+                    "type": ""
                 },
                 
                 {
@@ -510,7 +488,8 @@ export default {
                     "value": "",
                     "data": [],
                     "arg" : "rcal=",
-                    "checked": true
+                    "checked": true,
+                    "type": ""
                 },
                 
                 {
@@ -524,7 +503,8 @@ export default {
                     "value": "",
                     "data": [],
                     "arg" : "rcbe=",
-                    "checked": true
+                    "checked": true,
+                    "type": ""
                 },
                 
                 {
@@ -538,7 +518,8 @@ export default {
                     "value": "",
                     "data": [],
                     "arg" : "rcga=",
-                    "checked": true
+                    "checked": true,
+                    "type": ""
                 },
                 
                 {
@@ -552,7 +533,8 @@ export default {
                     "value": "",
                     "data": [],
                     "arg" : "rlho=",
-                    "checked": true
+                    "checked": true,
+                    "type": "decimal4"
                 },
                 
                 {
@@ -566,7 +548,8 @@ export default {
                     "value": "",
                     "data": [],
                     "arg" : "rmpmi=",
-                    "checked": true
+                    "checked": true,
+                    "type": ""
                 },
                 
                 {
@@ -580,7 +563,8 @@ export default {
                     "value": "",
                     "data": [],
                     "arg" : "riso=",
-                    "checked": true
+                    "checked": true,
+                    "type": ""
                 },
                 
                 {
@@ -594,7 +578,8 @@ export default {
                     "value": "",
                     "data": [],
                     "arg" : "cci=",
-                    "checked": true
+                    "checked": true,
+                    "type": ""
                 },
                 
                 {
@@ -608,7 +593,8 @@ export default {
                     "value": "",
                     "data": [],
                     "arg" : "cco=",
-                    "checked": true
+                    "checked": true,
+                    "type": ""
                 },
                 
                 {
@@ -622,7 +608,8 @@ export default {
                     "value": "",
                     "data": [],
                     "arg" : "rfsi=",
-                    "checked": true
+                    "checked": true,
+                    "type": ""
                 },
                 
                 {
@@ -636,7 +623,8 @@ export default {
                     "value": "",
                     "data": [],
                     "arg" : "rfei=",
-                    "checked": true
+                    "checked": true,
+                    "type": ""
                 },
                 
                 {
@@ -650,7 +638,8 @@ export default {
                     "value": "",
                     "data": [],
                     "arg" : "nobi=",
-                    "checked": true
+                    "checked": true,
+                    "type": ""
                 }
             ],
 
@@ -675,6 +664,7 @@ export default {
         this.getSpaceGroups()
         this.getProcessingPipelines() 
         this.getBeamLine()
+        this.populateSelectedColumns()
         // this.populateSelectedColumns()
     },
     mounted() {
@@ -1084,11 +1074,12 @@ export default {
             anchor.click();
 
         },
-        getProcRow(result, type) {
+        getProcRow(result, field, type) {
             // return an array for results, also change decimal places for floats
-                if (result) {
+                console.log('getProcRow')
+                if (result[field]) {
 
-                    var dataArray = result.split(",");
+                    var dataArray = result[field].split(",");
 
                     if( type !== 'text') {
                         if(type == 'decimal4') {
@@ -1115,12 +1106,12 @@ export default {
 
             if (this.summaryParameters[index].checked == false){
 
-            this.deselectedColumns.push(this.summaryParameters[index].title);
-            this.selectedColumns = this.selectedColumns.filter(item => item !== this.summaryParameters[index].title);
+            this.deselectedColumns.push(this.summaryParameters[index]);
+            this.selectedColumns = this.selectedColumns.filter(item => item !== this.summaryParameters[index]);
             }
             else {
-            this.selectedColumns.push(this.summaryParameters[index].title);
-            this.deselectedColumns = this.deselectedColumns.filter(item => item !== this.summaryParameters[index].title);
+            this.selectedColumns.push(this.summaryParameters[index]);
+            this.deselectedColumns = this.deselectedColumns.filter(item => item !== this.summaryParameters[index]);
 
             }
 
@@ -1162,6 +1153,15 @@ export default {
                 if (this.summaryParameters[index].title == value)
                 this.summaryParameters[index].checked = false;
             }
+
+        },
+        populateSelectedColumns() {
+            
+
+            for (const value of Object.entries(this.summaryParameters)) {
+                this.selectedColumns.push(value[1]);
+            };
+
 
         },
 
