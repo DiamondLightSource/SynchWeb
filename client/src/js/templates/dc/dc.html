@@ -36,7 +36,7 @@
         <li data-testid="dc-transmission">Transmission: <%-TRANSMISSION%>%</li>
         <li data-testid="dc-beam-size">Beamsize: <%-BSX%>x<%-BSY%>&mu;m</li>
         <li data-testid="dc-type">Type: <% if (DCT) print(DCT) %></li>
-        <li data-testid="dc-comment" class="comment" title="Click to edit the comment for this data collection">Comment: <span class="COMMENTS"><%-COMMENTS%></span></li>
+        <li data-testid="dc-comment" class="comment">Comment: <span class="COMMENTS"><%-COMMENTS%></span></li>
         <% if (!STATE) { %><li data-testid="dc-status">Status: <span class="b">Stopped</span></li><% } %>
     </ul>
 
