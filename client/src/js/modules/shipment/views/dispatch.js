@@ -278,8 +278,8 @@ define(['marionette', 'views/form',
         },
 
         formatAddress: function() {
-            // Remove duplicate new lines and whitespace before/after each line
-            this.ui.addr.val(this.ui.addr.val().replace(/,? *\n+\s*/g, "\n").trim())
+            // Remove duplicate new lines and whitespace or commas before/after each line
+            this.ui.addr.val(this.ui.addr.val().replace(/([,\s]*\n[,\s]*)+/g, "\n").trim())
         }
     })
 
