@@ -56,6 +56,7 @@ define(['backbone',
     ProposalLookup) {
     
     var bc = { title: 'Shipments', url: '/shipments' }
+    
         
   var controller = {
     list: function(page) {
@@ -107,6 +108,7 @@ define(['backbone',
 
     create_awb: function(sid) {
         var shipment = new Shipment({ SHIPPINGID: sid })
+        
         shipment.fetch({
             success: function() {
                 app.bc.reset([bc, { title: shipment.get('SHIPPINGNAME') }, { title: 'Create Air Waybill' }])
@@ -154,6 +156,7 @@ define(['backbone',
       
       
     view_container: function(cid, iid, sid) {
+        
         var lookup = new ProposalLookup({ field: 'CONTAINERID', value: cid })
         lookup.find({
             success: function() {

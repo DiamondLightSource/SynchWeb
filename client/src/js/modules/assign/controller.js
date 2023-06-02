@@ -7,6 +7,7 @@ define(['marionette',
     ], function(Marionette, Visit, Visits, SelectVisitView, AssignView) {
     
     var bc = { title: 'Assign Containers', url: '/assign' }
+
     
     var controller = {
         

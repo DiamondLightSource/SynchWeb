@@ -146,14 +146,10 @@ define(['marionette',
         
         showDewar: function(did, force) {
             if (did == this.lastDewarID && !force) return
+            alert("herere")
             this.$el.find('.dewar_name').text(this.dewars.findWhere({ DEWARID: did }).get('CODE'))
-            if (app.proposal && app.proposal.get('ACTIVE') == '1') {
-            if (app.type == "xpdf"){
-                 this.$el.find('.add_container').html('<a class="button" href="/containers/add/did/'+did+'"><i class="fa fa-plus"></i> Add Puck</a>')
-                } else {
-                this.$el.find('.add_container').html('<a class="button" href="/containers/add/did/'+did+'"><i class="fa fa-plus"></i> Add Container</a>')
-                }
-            }
+            
+            if (app.proposal && app.proposal.get('ACTIVE') == '1') this.$el.find('.add_container').html('<a class="button" href="/containers/add/did/'+did+'"><i class="fa fa-plus"></i> Add Container</a>')
             this.dewarcontent.dewarID = did
             this.dewarcontent.fetch()
             this.dewarhistory.id = did
