@@ -5,6 +5,7 @@ namespace SynchWeb\Authentication\Type;
 use phpCAS;
 use SynchWeb\Authentication\AuthenticationInterface;
 use SynchWeb\Authentication\AuthenticationParent;
+use SynchWeb\Utils;
 
 class OIDC extends AuthenticationParent implements AuthenticationInterface
 {
@@ -17,10 +18,17 @@ class OIDC extends AuthenticationParent implements AuthenticationInterface
         curl_setopt($ch, CURLOPT_URL, 'https://' . $cas_url . '/.well-known/openid-configuration');
         curl_setopt($ch, CURLOPT_HEADER, 0);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        $this->response = curl_exec($ch);
+        $response = curl_exec($ch);
         curl_close($ch);
 
-        $this->providerConfig = json_decode($this->response);
+        $newProviderConfig = json_decode($response);
+
+        if($newProviderConfig == null) {
+            error_log("OIDC Authentication provider replied with invalid JSON body");
+            return;
+        }
+
+        $this->providerConfig = $newProviderConfig;
     }
 
     private function getUser($token)
@@ -31,12 +39,11 @@ class OIDC extends AuthenticationParent implements AuthenticationInterface
         curl_setopt($ch, CURLOPT_URL, $this->providerConfig->userinfo_endpoint);
         curl_setopt($ch, CURLOPT_HEADER, 0);
         curl_setopt($ch, CURLOPT_HTTPHEADER, array('Authorization: Bearer ' . $token));
-        curl_setopt($ch, CURLOPT_CAINFO, $cacert);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        $this->response = curl_exec($ch);
+        $response = curl_exec($ch);
         curl_close($ch);
         
-        $fedid = json_decode($this->response)->id;
+        $fedid = json_decode($response)->id;
 
         return $fedid;
     }
@@ -51,8 +58,7 @@ class OIDC extends AuthenticationParent implements AuthenticationInterface
     {   
         global $cas_url, $cacert, $oidc_client_secret, $oidc_client_id, $cookie_key;
 
-        $redirect_url = preg_replace('/(&|\?)'.preg_quote("code").'=[^&]*$/', '', $_SERVER["HTTP_REFERER"]);
-        $redirect_url = urlencode(preg_replace('/(&|\?)'.preg_quote("code").'=[^&]*&/', '$1', $redirect_url));
+        $redirect_url = Utils::filterParamFromUrl($_SERVER["HTTP_REFERER"], "code");
 
         if (is_null($code)) {
             return ( $this->providerConfig->authorization_endpoint . 
@@ -72,12 +78,13 @@ class OIDC extends AuthenticationParent implements AuthenticationInterface
         curl_setopt($ch, CURLOPT_HEADER, 0);
         curl_setopt($ch, CURLOPT_CAINFO, $cacert);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        $this->response = curl_exec($ch);
+        $response = curl_exec($ch);
         curl_close($ch);
 
-        $token = json_decode($this->response)->access_token;
+        $token = json_decode($response)->access_token;
 
         if(!$token) {
+            error_log("Invalid authentication attempt, provider returned no access token");
             return false;
         }
 
@@ -90,10 +97,7 @@ class OIDC extends AuthenticationParent implements AuthenticationInterface
         );
 
         setcookie($cookie_key, $token, $cookieOpts);
-
-        $fedid = $this->getUser($token);
-
-        return $fedid;
+        return $this->getUser($token);
     }
 }
 
