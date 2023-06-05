@@ -48,24 +48,33 @@ class OIDC extends AuthenticationParent implements AuthenticationInterface
         return $fedid;
     }
 
+    function authenticate($login, $password) 
+    {
+        return false;
+    }
+
     function check()
     {
         global $cookie_key;
         return($this->getUser($_COOKIE[$cookie_key]));
     }
 
-    function authenticate($code, $_) 
+    function authorise() 
+    {
+        global $oidc_client_id;
+        $redirect_url = Utils::filterParamFromUrl($_SERVER["HTTP_REFERER"], "code");
+
+        return ( $this->providerConfig->authorization_endpoint . 
+            '?response_type=code&client_id=' . $oidc_client_id . 
+            '&redirect_uri=' . $redirect_url
+        );
+    }
+
+    function authenticateByCode($code) 
     {   
         global $cas_url, $cacert, $oidc_client_secret, $oidc_client_id, $cookie_key;
 
         $redirect_url = Utils::filterParamFromUrl($_SERVER["HTTP_REFERER"], "code");
-
-        if (is_null($code)) {
-            return ( $this->providerConfig->authorization_endpoint . 
-                        '?response_type=code&client_id=' . $oidc_client_id . 
-                        '&redirect_uri=' . $redirect_url
-            );
-        }
         
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $this->providerConfig->token_endpoint . 

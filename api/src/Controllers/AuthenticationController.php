@@ -65,7 +65,6 @@ class AuthenticationController
 
     function getUser(): User
     {
-        // Why is this not an if/else condition?
         if (!$this->loginId)
         {
             $this->validateAuthentication();
@@ -313,12 +312,6 @@ class AuthenticationController
         $this->returnResponse($code, array('error' => $message));
     }
 
-    function returnRedirect($url) {
-        $this->app->response->setStatus(302);
-           header('Location: ' . $url);
-        exit();
-    }
-
     // Calls the relevant Authentication Mechanism
     function authenticate()
     {
@@ -360,7 +353,10 @@ class AuthenticationController
         global $cas_sso, $authentication_type;
 
         if ($cas_sso) {
-            $this->returnRedirect($this->authenticateByType($authentication_type)->authenticate(NULL, NULL));
+            header('Location: ' . $this->authenticateByType($authentication_type)->authorise());
+            $this->returnResponse(302, array('status' => "Redirecting to CAS"));
+        } else {
+            returnError(501, "SSO not configured");
         }
     }
 
@@ -369,9 +365,7 @@ class AuthenticationController
         global $authentication_type;
 
         $code = $this->app->request->post('code');
-
-        // Either add authByCode to the interface, or make OIDC abstract. This looks bad.
-        $fedid = $this->authenticateByType($authentication_type)->authenticate($code, NULL);
+        $fedid = $this->authenticateByType($authentication_type)->authenticateByCode($code);
 
         if ($fedid) {
             $this->returnResponse(200, $this->generateJwtToken($fedid));

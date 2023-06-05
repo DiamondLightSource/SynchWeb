@@ -25,8 +25,8 @@ final class AuthenticationControllerTest extends TestCase
     {
         Output::reset();
         $this->slimStub = Mockery::mock('Slim\Slim');
-        $this->slimStub->shouldReceive('post')->times(1)->andReturn(new AppStub());
-        $this->slimStub->shouldReceive('get')->times(3);
+        $this->slimStub->shouldReceive('post')->times(2)->andReturn(new AppStub());
+        $this->slimStub->shouldReceive('get')->times(4);
         $this->dataLayerStub = $this->getMockBuilder(AuthenticationData::class)
             ->disableOriginalConstructor()
             ->disableOriginalClone()
