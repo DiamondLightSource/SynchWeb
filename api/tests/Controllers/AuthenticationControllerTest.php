@@ -12,6 +12,14 @@ use SynchWeb\Controllers\AppStub;
 
 require_once __DIR__ . '/Utils/Functions.php';
 
+class Request
+{
+    function post($val)
+    {
+        return "aaaa";
+    }
+}
+
 final class AuthenticationControllerTest extends TestCase
 {
     use \phpmock\phpunit\PHPMock;
@@ -92,5 +100,38 @@ final class AuthenticationControllerTest extends TestCase
 
         $this->assertContains('Content-Type: application/json', Output::$headers);
         $this->assertContains('X-PHP-Response-Code: 401', Output::$headers);
+    }
+
+    public function testNoSSOAuthorisationRedirect(): void
+    {
+        $request = $this->setupMockRequest();
+        $response = new \Slim\Http\Response();
+        $this->slimStub->shouldReceive('response')->times(1)->andReturn($response);
+
+        $authService = new AuthenticationController($this->slimStub, $this->dataLayerStub, false);
+        $this->expectExceptionMessage(AuthenticationController::ErrorUnderTestExceptionMessage);
+        $authService->authorise();
+
+        $this->assertContains('Content-Type: application/json', Output::$headers);
+        $this->assertContains('X-PHP-Response-Code: 501', Output::$headers);
+    }
+
+    public function testValidateAuthorisationRedirect(): void
+    {
+        global $authentication_type, $cas_sso;
+        $cas_sso = true;
+
+        $_SERVER['HTTP_REFERER'] = "localhost/test";
+
+        $request = $this->setupMockRequest();
+        $response = new \Slim\Http\Response();
+        $this->slimStub->shouldReceive('response')->times(1)->andReturn($response);
+
+        $authService = new AuthenticationController($this->slimStub, $this->dataLayerStub, false);
+        $this->expectExceptionMessage(AuthenticationController::ErrorUnderTestExceptionMessage);
+        $authService->authorise();
+
+        $this->assertContains('Content-Type: application/json', Output::$headers);
+        $this->assertContains('X-PHP-Response-Code: 501', Output::$headers);
     }
 }

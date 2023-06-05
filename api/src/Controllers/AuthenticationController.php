@@ -356,7 +356,7 @@ class AuthenticationController
             header('Location: ' . $this->authenticateByType($authentication_type)->authorise());
             $this->returnResponse(302, array('status' => "Redirecting to CAS"));
         } else {
-            returnError(501, "SSO not configured");
+            $this->returnError(501, "SSO not configured");
         }
     }
 
@@ -370,7 +370,7 @@ class AuthenticationController
         if ($fedid) {
             $this->returnResponse(200, $this->generateJwtToken($fedid));
         } else {
-            $this->returnError(400, 'Invalid Credentials');
+            $this->returnError(401, 'Invalid Credentials');
         }
     }
 
