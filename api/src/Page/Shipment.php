@@ -39,8 +39,8 @@ class Shipment extends Page
         'CODE' => '([\w\-])+',
         'FACILITYCODE' => '([\w\-])+',
         'NEWFACILITYCODE' => '([\w\-])+',
-        'TRACKINGNUMBERTOSYNCHROTRON' => '\w+',
-        'TRACKINGNUMBERFROMSYNCHROTRON' => '\w+',
+        'TRACKINGNUMBERTOSYNCHROTRON' => '\w*',
+        'TRACKINGNUMBERFROMSYNCHROTRON' => '\w*',
         'FIRSTEXPERIMENTID' => '\d+|^(?![\s\S])',
         'SHIPPINGID' => '\d+',
 
@@ -81,6 +81,7 @@ class Shipment extends Page
         'DELIVERYAGENT_DELIVERYDATE' => '\d+-\d+-\d+',
         'DELIVERYAGENT_AGENTNAME' => '[\s|\w|\-]+',
         'DELIVERYAGENT_AGENTCODE' => '[\w\-]+',
+        'DELIVERYAGENT_FLIGHTCODE' => '\d*',
         'SAFETYLEVEL' => '\w+',
         //   'DEWARS' => '\d+',
         //'FIRSTEXPERIMENTID' => '\w+\d+-\d+',
@@ -1424,7 +1425,7 @@ class Shipment extends Page
         if (!sizeof($ship))
             $this->_error('No such shipment');
 
-        $fields = array('SHIPPINGNAME', 'SAFETYLEVEL', 'COMMENTS', 'DELIVERYAGENT_AGENTNAME', 'DELIVERYAGENT_AGENTCODE', 'DELIVERYAGENT_SHIPPINGDATE', 'DELIVERYAGENT_DELIVERYDATE', 'SENDINGLABCONTACTID', 'RETURNLABCONTACTID', 'READYBYTIME', 'CLOSETIME', 'PHYSICALLOCATION');
+        $fields = array('SHIPPINGNAME', 'SAFETYLEVEL', 'COMMENTS', 'DELIVERYAGENT_AGENTNAME', 'DELIVERYAGENT_AGENTCODE', 'DELIVERYAGENT_FLIGHTCODE', 'DELIVERYAGENT_SHIPPINGDATE', 'DELIVERYAGENT_DELIVERYDATE', 'SENDINGLABCONTACTID', 'RETURNLABCONTACTID', 'READYBYTIME', 'CLOSETIME', 'PHYSICALLOCATION');
         foreach ($fields as $f) {
             if ($this->has_arg($f)) {
                 $fl = ':1';
