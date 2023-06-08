@@ -12,14 +12,6 @@ use SynchWeb\Controllers\AppStub;
 
 require_once __DIR__ . '/Utils/Functions.php';
 
-class Request
-{
-    function post($val)
-    {
-        return "aaaa";
-    }
-}
-
 final class AuthenticationControllerTest extends TestCase
 {
     use \phpmock\phpunit\PHPMock;
@@ -71,8 +63,8 @@ final class AuthenticationControllerTest extends TestCase
         $environment = \Slim\Environment::mock([
             'REQUEST_METHOD' => 'GET',
             'REQUEST_URI' => '/echo',
-            'QUERY_STRING' => 'foo=bar']
-        );
+            'QUERY_STRING' => 'foo=bar'
+        ]);
         return new \Slim\Http\Request($environment);
     }
     public function testCheckResultsInitiallyFails(): void
@@ -101,10 +93,9 @@ final class AuthenticationControllerTest extends TestCase
         $this->assertContains('Content-Type: application/json', Output::$headers);
         $this->assertContains('X-PHP-Response-Code: 401', Output::$headers);
     }
-
+    
     public function testNoSSOAuthorisationRedirect(): void
     {
-        $request = $this->setupMockRequest();
         $response = new \Slim\Http\Response();
         $this->slimStub->shouldReceive('response')->times(1)->andReturn($response);
 
@@ -123,7 +114,6 @@ final class AuthenticationControllerTest extends TestCase
 
         $_SERVER['HTTP_REFERER'] = "localhost/test";
 
-        $request = $this->setupMockRequest();
         $response = new \Slim\Http\Response();
         $this->slimStub->shouldReceive('response')->times(1)->andReturn($response);
 
