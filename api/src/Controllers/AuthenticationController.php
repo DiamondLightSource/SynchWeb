@@ -364,7 +364,7 @@ class AuthenticationController
     {
         global $authentication_type;
 
-        $code = $this->app->request->post('code');
+        $code = $this->app->request()->post('code');
         $fedid = $this->authenticateByType($authentication_type)->authenticateByCode($code);
 
         if ($fedid) {

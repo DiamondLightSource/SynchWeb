@@ -93,6 +93,20 @@ final class AuthenticationControllerTest extends TestCase
         $this->assertContains('Content-Type: application/json', Output::$headers);
         $this->assertContains('X-PHP-Response-Code: 401', Output::$headers);
     }
+
+    public function testCodeAuthenticationInitiallyFails(): void
+    {
+        $request = $this->setupMockRequest();
+        $this->slimStub->shouldReceive('request')->times(1)->andReturn($request);
+        $response = new \Slim\Http\Response();
+        $this->slimStub->shouldReceive('response')->times(1)->andReturn($response);
+        $authService = new AuthenticationController($this->slimStub, $this->dataLayerStub, false);
+        $this->expectExceptionMessage(AuthenticationController::ErrorUnderTestExceptionMessage);
+        $authService->authenticateByCode();
+
+        $this->assertContains('Content-Type: application/json', Output::$headers);
+        $this->assertContains('X-PHP-Response-Code: 400', Output::$headers);
+    }
     
     public function testNoSSOAuthorisationRedirect(): void
     {
