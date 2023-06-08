@@ -28,6 +28,12 @@ If not using the development VMs you will also need an instance of the
 ISPyB database - available
 [here](https://github.com/DiamondLightSource/ispyb-database).
 
+If not already installed, you must install the following packages:
+
+```
+php php-mysqlnd php-mbstring php-xml php-gd php-fpm php-cli php-xdebug
+```
+
 ### Check out the code
 ```sh
 $ git clone https://github.com/DiamondLightSource/SynchWeb

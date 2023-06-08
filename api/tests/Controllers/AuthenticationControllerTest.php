@@ -25,8 +25,8 @@ final class AuthenticationControllerTest extends TestCase
     {
         Output::reset();
         $this->slimStub = Mockery::mock('Slim\Slim');
-        $this->slimStub->shouldReceive('post')->times(1)->andReturn(new AppStub());
-        $this->slimStub->shouldReceive('get')->times(3);
+        $this->slimStub->shouldReceive('post')->times(2)->andReturn(new AppStub());
+        $this->slimStub->shouldReceive('get')->times(4);
         $this->dataLayerStub = $this->getMockBuilder(AuthenticationData::class)
             ->disableOriginalConstructor()
             ->disableOriginalClone()
@@ -63,8 +63,8 @@ final class AuthenticationControllerTest extends TestCase
         $environment = \Slim\Environment::mock([
             'REQUEST_METHOD' => 'GET',
             'REQUEST_URI' => '/echo',
-            'QUERY_STRING' => 'foo=bar']
-        );
+            'QUERY_STRING' => 'foo=bar'
+        ]);
         return new \Slim\Http\Request($environment);
     }
     public function testCheckResultsInitiallyFails(): void
@@ -92,5 +92,36 @@ final class AuthenticationControllerTest extends TestCase
 
         $this->assertContains('Content-Type: application/json', Output::$headers);
         $this->assertContains('X-PHP-Response-Code: 401', Output::$headers);
+    }
+    
+    public function testNoSSOAuthorisationRedirect(): void
+    {
+        $response = new \Slim\Http\Response();
+        $this->slimStub->shouldReceive('response')->times(1)->andReturn($response);
+
+        $authService = new AuthenticationController($this->slimStub, $this->dataLayerStub, false);
+        $this->expectExceptionMessage(AuthenticationController::ErrorUnderTestExceptionMessage);
+        $authService->authorise();
+
+        $this->assertContains('Content-Type: application/json', Output::$headers);
+        $this->assertContains('X-PHP-Response-Code: 501', Output::$headers);
+    }
+
+    public function testValidateAuthorisationRedirect(): void
+    {
+        global $authentication_type, $cas_sso;
+        $cas_sso = true;
+
+        $_SERVER['HTTP_REFERER'] = "localhost/test";
+
+        $response = new \Slim\Http\Response();
+        $this->slimStub->shouldReceive('response')->times(1)->andReturn($response);
+
+        $authService = new AuthenticationController($this->slimStub, $this->dataLayerStub, false);
+        $this->expectExceptionMessage(AuthenticationController::ErrorUnderTestExceptionMessage);
+        $authService->authorise();
+
+        $this->assertContains('Content-Type: application/json', Output::$headers);
+        $this->assertContains('X-PHP-Response-Code: 501', Output::$headers);
     }
 }
