@@ -337,7 +337,7 @@ class Proposal extends Page
                 $p = $props[0]['ID'];
 
             $args = array($p);
-            $where = 'WHERE s.proposalid = :1';
+            $where = 'WHERE s.proposalid = :1 AND s.visit_number is not NULL';
         }
 
         if ($this->has_arg('year')) {
