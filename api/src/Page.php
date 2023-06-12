@@ -951,44 +951,40 @@ class Page
     function _get_archive($pv, $s, $e, $n = 100)
     {
         global $timezone;
+        global $archive_url;
 
-        $m = new xmlrpcmsg('archiver.values', array(
-            new xmlrpcval(1000, 'int'),
-            new xmlrpcval(array(new xmlrpcval($pv, 'string')), 'array'),
-            new xmlrpcval($s, 'int'),
-            new xmlrpcval(0, 'int'),
-            new xmlrpcval($e, 'int'),
-            new xmlrpcval(0, 'int'),
-            new xmlrpcval($n, 'int'),
-            new xmlrpcval(0, 'int'),
-        ));
-        $c = new xmlrpc_client("/archive/cgi/ArchiveDataServer.cgi", "archiver.pri.diamond.ac.uk", 80);
+        if (empty($archive_url))
+            return array();
 
-        $r = $c->send($m);
-        $val = $r->value();
+        $parameters = array(
+            'pv' => $pv,
+            'from' => date("Y-m-d\TH:i:s", $s).'Z',
+            'to' => date("Y-m-d\TH:i:s", $e).'Z',
+        );
+
+        $ret = array();
+        $url_query = http_build_query($parameters);
+        $archive_query_url = $archive_url . $url_query;
+        $val = file_get_contents($archive_query_url);
 
         if ($val)
         {
-            $str = $val->arrayMem(0);
-            $vals = $str->structMem('values');
+            $str = json_decode($val)[0];
+            $vals = $str->data;
 
-            $ret = array();
-            for ($i = 0; $i < $vals->arraySize(); $i++)
+            for ($i = 0; $i < sizeof($vals); $i++)
             {
-                $vs = $vals->arrayMem($i);
-                $v = $vs->structMem('value')->arrayMem(0)->scalarVal();
-                $t = $vs->structMem('secs')->scalarVal() - 3600;
-
+                $vs = $vals[$i];
+                $v = $vs->val;
+                $t = $vs->secs - 3600;
                 $inputTZ = new \DateTimeZone($timezone);
                 $transitions = $inputTZ->getTransitions($t, $t);
                 if ($transitions[0]['isdst'])
                     $t += 3600;
-
                 array_push($ret, array($t, $v));
             }
-
-            return $ret;
         }
+        return $ret;
     }
 
 

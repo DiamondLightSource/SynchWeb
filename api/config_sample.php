@@ -52,6 +52,9 @@
     # Timezone
     $timezone = 'Europe/London';
 
+    # URL to access the PV archiver
+    $archive_url = '';
+
     # Valid Components
     #   Denotes that only staff may create proteins, otherwise they must come from replication 
     #   with a valid `externalid`, users may still clone proteins
