@@ -948,7 +948,7 @@ class Page
 
     # ------------------------------------------------------------------------
     # Talk to channel archiver to get a pv
-    function _get_archive($pv, $s, $e, $n = 100)
+    function _get_archive($pv, $s, $e)
     {
         global $timezone;
         global $archive_url;

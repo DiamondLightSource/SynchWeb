@@ -375,8 +375,6 @@ class Vstat extends Page
         // Beam status 
         $bs = $this->_get_archive('CS-CS-MSTAT-01:MODE', strtotime($info['ST']), strtotime($info['EN']));
 
-        if (!$bs)
-            $bs = array();
 
         $lastv = 0;
         $ex = 3600 * 1000;
@@ -519,8 +517,6 @@ class Vstat extends Page
 
             // Beam status
             $bs = $this->_get_archive('CS-CS-MSTAT-01:MODE', strtotime($d['ST']), strtotime($d['EN']));
-            if (!$bs)
-                $bs = array();
 
             $lastv = 0;
             $ex = 3600 * 1000;
