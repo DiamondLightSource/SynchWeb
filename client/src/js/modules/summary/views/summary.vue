@@ -11,28 +11,46 @@
 
 
         <div>
-            <expandable-sidebar >
+            <expandable-sidebar :isOpen="isOpen" :load-content="isOpen">
                 <template v-slot:filter-bar-title> 
-                    <div class="tw-grid tw-grid-cols-2">
-                        <div class="tw-col-span-3 tw-mt-3 tw-ml-3">
-                            <i class="fa fa-filter tw-mb-1"></i>
+                    <div class="tw-grid tw-grid-cols-5">
+                        <div class="tw-flex tw-col-span-1 tw-mt-3 tw-ml-3">
+                            <i class="fa fa-filter tw-mb-1 tw-mr-2"></i>
                             <h> Filter </h>
                         </div>
-                        <div class="tw-col-span-1 tw-col-start-5 tw-mt-2 tw-mr-3 ">
+                        <div class="tw-flex tw-col-span-2 tw-col-start-2 tw-mt-3 tw-ml-3">
+                            <combo-box
+                                class="combo-box tw-w-4/12 t-mr-1 tw-mb-2 tw-text-black"
+                                :data="propSelect"
+                                textField="title"
+                                valueField="valueField"
+                                size="small"
+                                :can-create-new-item="false"
+                                v-model="filters[0].selected"
+                                :defaultText="filters[0].title"
+                            ></combo-box>
+                            <combo-box v-if="filters[0].inputtype == 'combo-box'"
+                                class="combo-box tw-w-7/12 tw-mr-1 tw-mb-2"
+                                :data="filters[0].data"
+                                :textField="filters[0].textField"
+                                :valueField="filters[0].valueField"
+                                size="small"
+                                :can-create-new-item="false"
+                                v-model="filters[0].selected"
+                                defaultText='Select Operand'
+                                :multiple="true"
+                                :valueArray="filters[0].selectedArr"
+                                :searchArray="filters[0].selectedArr"
+                                ></combo-box>
+                        </div>
+                        <div class="tw-col-span-1 tw-col-start-6 tw-mt-2 tw-mr-3 ">
 
                             <div class="tw-flex tw-mb-2">
-                                <button @click="searchFilterParams" 
-                                class="tw-text-center tw-bg-content-active hover:tw-bg-teal-700 
-                                tw-border-content-active hover:tw-border-teal-700 tw-text-xs tw-border-4 tw-text-black tw-py-1 tw-px-1 
-                                tw-rounded" type="button"
-                                >
+                                <button class="sidebar-button tw-mr-1" @click="toggleSidebar()">Advanced Filter</button>
+                                <button class="sidebar-button" @click="searchFilterParams" >
                                 Search
                                 </button>
-                                <button @click="clearQueryParams" 
-                                class=" tw-flex tw-text-black tw-text-center hover:tw-text-content-active
-                                hover:tw-text-content-active tw-text-xs tw-py-2 tw-px-1 tw-ml-2
-                                " type="button"
-                                >
+                                <button class="clear-button" @click="clearQueryParams" >
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" 
                                 class="bi bi-x-square tw-mr-1" viewBox="0 0 16 16">
                                 <path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h12zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 
@@ -51,10 +69,11 @@
 
                 <template v-slot:filter-bar-content>
 
-                    <div class="tw-grid tw-grid-rows-6 tw-grid-cols-3 tw-grid-flow-col tw-mb-2">
+                    <div class="filter-grid">
 
-                            <div class="tw-flex" v-for="(value, index) in filters" :key="value.id">
+                            <div class="tw-flex" v-for="(value, index) in filters.slice(2)" :key="value.id">
                                 <combo-box
+                                v-if="value.title!='Proposal'"
                                 class="combo-box tw-w-4/12 t-mr-1 tw-text-black"
                                 :data="summaryParameters"
                                 textField="title"
@@ -65,15 +84,18 @@
                                 :defaultText="value.title"
                                 ></combo-box>
 
-                                <combo-box v-if="value.inputtype == 'combo-box'"
-                                class="combo-box tw-w-3/12 tw-mr-1"
+                                <combo-box v-if="value.inputtype == 'combo-box' & value.title != 'Proposal'"
+                                class="combo-box tw-w-7/12 tw-mr-1"
                                 :data="value.data"
                                 :textField="value.textField"
                                 :valueField="value.valueField"
                                 size="small"
                                 :can-create-new-item="false"
                                 v-model="value.selected"
-                                defaultText='Select Value'
+                                defaultText='Select Operand'
+                                :multiple="true"
+                                :valueArray="value.selectedArr"
+                                :searchArray="value.selectedArr"
                                 ></combo-box>
 
                                 <combo-box v-if="value.inputtype == 'search-operands'"
@@ -131,7 +153,7 @@
                         v-on:keyup.enter="onPrefixSearch" 
                         v-model = "tempSamplePrefix"
                         type="text" id="simple-search" 
-                        class="tw-pl-6 tw-px-4 tw-border focus:tw-outline-none focus:tw-shadow-outline"
+                        class="simple-search"
                         placeholder="Search..." required>
 
                         <button 
@@ -157,9 +179,7 @@
                     <p>Favourites</p></button> -->
                 <button
                     v-on:click="downloadFile"
-                    class="tw-mt-10 tw-items-center tw-block tw-pl-5 tw-pr-5 tw-h-6 tw-ml-2 tw-mr-2 
-                    tw-text-white tw-bg-content-sub-header-background tw-shadow tw-text-xs
-                    tw-rounded tw-shadow" type="button">
+                    class="download-file" type="button">
                     <p>Export CSV</p></button>
             </div>
 
@@ -244,7 +264,8 @@
                     No Results</div>
 
             <expandable-sidebar
-            class="results-content"
+            class="results-content" v-click="true"
+            :disable-clickable-sidebar="false"
             v-else v-for="value in summaryData" :key="value.id">
                 <template v-slot:filter-bar-title >
                     <div class="tw-grid tw-grid-col-20 tw-grid-flow-col tw-text-black">
@@ -275,11 +296,10 @@
 
                     </div>
 
-
                 </template>
 
                 <template v-slot:filter-bar-content> 
-                    <div v-for="(col, index) in getProcRow(value.FILETEMPLATE, 'text') " :key="index" class="tw-grid tw-grid-col-20  tw-divide-y tw-grid-flow-col tw-text-black">
+                    <div v-for="(col, index) in getProcRow(value, 'FILETEMPLATE', 'text') " :key="index" class="tw-grid tw-grid-col-20  tw-divide-y tw-grid-flow-col tw-text-black">
                         <div></div>
                         <div class="results-item tw-px-5"> {{ getProcRow(value, "FILETEMPLATE", 'text')[index] }}</div>
                         <div class="results-item tw-px-5"> {{ getProcRow(value, "SAMPLENAME", 'text')[index] }}</div>
@@ -348,6 +368,7 @@ export default {
             windowWidth: window.innerWidth,
             isLoading : false,
             isHidden: true,
+            isOpen: true,
             showFavourites: false,
             totalRecords:  10,
             pageSize: 15,
@@ -358,6 +379,7 @@ export default {
             proposalCollection : null,
             proposals : [],
             spaceGroups : [],
+            propSelect: [],
             processingProgram : [],
             beamLines: [],
             searchedSamplePrefix: [],
@@ -397,13 +419,7 @@ export default {
                     "inputtype": "combo-box",
                     "textField": "BEAMLINENAME",
                     "valueField": "BEAMLINENAME",
-                    "order": "",
-                    "selected": "",
-                    "operand": "",
-                    "value": "",
-                    "data": [],
                     "arg": "BEAMLINENAME=",
-                    "checked": true,
                     "type": "text"
                 },
                 {
@@ -411,12 +427,7 @@ export default {
                     "inputtype": "combo-box",
                     "textField": "SPACEGROUP",
                     "valueField": "SPACEGROUP",
-                    "selected": "",
-                    "operand": "",
-                    "value": "",
-                    "data": [],
                     "arg" : "sg=",
-                    "checked": true,
                     "type": "text"
                 },
                 {
@@ -424,12 +435,7 @@ export default {
                     "inputtype": "combo-box",
                     "textField": "PROCESSINGPROGRAMS",
                     "valueField": "PROCESSINGPROGRAMS",
-                    "selected": "",
-                    "operand": "",
-                    "value": "",
-                    "data": [],
                     "arg" : "pp=",
-                    "checked": true,
                     "type": "text"
                 },     
                 {
@@ -437,13 +443,7 @@ export default {
                     "inputtype": "search-operands",
                     "textField": "REFINEDCELL_A",
                     "valueField": "REFINEDCELL_A",
-                    "order": "",
-                    "selected": "",
-                    "operand": "",
-                    "value": "",
-                    "data": [],
                     "arg" : "rca=",
-                    "checked": true,
                     "type": ""
                 },
                 
@@ -452,13 +452,7 @@ export default {
                     "inputtype": "search-operands",
                     "textField": "REFINEDCELL_B",
                     "valueField": "REFINEDCELL_B",
-                    "order": "",
-                    "selected": "",
-                    "operand": "",
-                    "value": "",
-                    "data": [],
                     "arg" : "rcb=",
-                    "checked": true,
                     "type": ""
                 },
                 
@@ -467,13 +461,7 @@ export default {
                     "inputtype": "search-operands",
                     "textField": "REFINEDCELL_C",
                     "valueField": "REFINEDCELL_C",
-                    "order": "",
-                    "selected": "",
-                    "operand": "",
-                    "value": "",
-                    "data": [],
                     "arg" : "rcc=",
-                    "checked": true,
                     "type": ""
                 },
                 
@@ -482,13 +470,7 @@ export default {
                     "inputtype": "search-operands",
                     "textField": "REFINEDCELL_ALPHA",
                     "valueField": "REFINEDCELL_ALPHA",
-                    "order": "",
-                    "selected": "",
-                    "operand": "",
-                    "value": "",
-                    "data": [],
                     "arg" : "rcal=",
-                    "checked": true,
                     "type": ""
                 },
                 
@@ -497,13 +479,7 @@ export default {
                     "inputtype": "search-operands",
                     "textField": "REFINEDCELL_BETA",
                     "valueField": "REFINEDCELL_BETA",
-                    "order": "",
-                    "selected": "",
-                    "operand": "",
-                    "value": "",
-                    "data": [],
                     "arg" : "rcbe=",
-                    "checked": true,
                     "type": ""
                 },
                 
@@ -512,13 +488,7 @@ export default {
                     "inputtype": "search-operands",
                     "textField": "REFINEDCELL_GAMMA",
                     "valueField": "REFINEDCELL_GAMMA",
-                    "order": "",
-                    "selected": "",
-                    "operand": "",
-                    "value": "",
-                    "data": [],
                     "arg" : "rcga=",
-                    "checked": true,
                     "type": ""
                 },
                 
@@ -527,13 +497,7 @@ export default {
                     "inputtype": "search-operands",
                     "textField": "RESOLUTIONLIMITHIGHOUTER",
                     "valueField": "RESOLUTIONLIMITHIGHOUTER",
-                    "order": "",
-                    "selected": "",
-                    "operand": "",
-                    "value": "",
-                    "data": [],
                     "arg" : "rlho=",
-                    "checked": true,
                     "type": "decimal4"
                 },
                 
@@ -542,13 +506,7 @@ export default {
                     "inputtype": "search-operands",
                     "textField": "RMEASWITHINIPLUSIMINUSINNER",
                     "valueField": "RMEASWITHINIPLUSIMINUSINNER",
-                    "order": "",
-                    "selected": "",
-                    "operand": "",
-                    "value": "",
-                    "data": [],
                     "arg" : "rmpmi=",
-                    "checked": true,
                     "type": ""
                 },
                 
@@ -557,13 +515,7 @@ export default {
                     "inputtype": "search-operands",
                     "textField": "RESIOVERSIGI2OVERALL",
                     "valueField": "RESIOVERSIGI2OVERALL",
-                    "order": "",
-                    "selected": "",
-                    "operand": "",
-                    "value": "",
-                    "data": [],
                     "arg" : "riso=",
-                    "checked": true,
                     "type": ""
                 },
                 
@@ -572,13 +524,7 @@ export default {
                     "inputtype": "search-operands",
                     "textField": "CCANOMALOUSINNER",
                     "valueField": "CCANOMALOUSINNER",
-                    "order": "",
-                    "selected": "",
-                    "operand": "",
-                    "value": "",
-                    "data": [],
                     "arg" : "cci=",
-                    "checked": true,
                     "type": ""
                 },
                 
@@ -587,13 +533,7 @@ export default {
                     "inputtype": "search-operands",
                     "textField": "CCANOMALOUSOVERALL",
                     "valueField": "CCANOMALOUSOVERALL",
-                    "order": "",
-                    "selected": "",
-                    "operand": "",
-                    "value": "",
-                    "data": [],
                     "arg" : "cco=",
-                    "checked": true,
                     "type": ""
                 },
                 
@@ -602,13 +542,7 @@ export default {
                     "inputtype": "search-operands",
                     "textField": "RFREEVALUESTARTINNER",
                     "valueField": "RFREEVALUESTARTINNER",
-                    "order": "",
-                    "selected": "",
-                    "operand": "",
-                    "value": "",
-                    "data": [],
                     "arg" : "rfsi=",
-                    "checked": true,
                     "type": ""
                 },
                 
@@ -617,13 +551,7 @@ export default {
                     "inputtype": "search-operands",
                     "textField": "RFREEVALUEENDINNER",
                     "valueField": "RFREEVALUEENDINNER",
-                    "order": "",
-                    "selected": "",
-                    "operand": "",
-                    "value": "",
-                    "data": [],
                     "arg" : "rfei=",
-                    "checked": true,
                     "type": ""
                 },
                 
@@ -632,13 +560,7 @@ export default {
                     "inputtype": "search-operands",
                     "textField": "NOOFBLOBS",
                     "valueField": "NOOFBLOBS",
-                    "order": "",
-                    "selected": "",
-                    "operand": "",
-                    "value": "",
-                    "data": [],
                     "arg" : "nobi=",
-                    "checked": true,
                     "type": ""
                 }
             ],
@@ -650,21 +572,25 @@ export default {
                     "textField": "PROP",
                     "valueField": "PROPOSALID",
                     "selected": "",
+                    "selectedArr": [],
                     "operand": "",
                     "value": "",
                     "data": [],
                     "arg" : "propid="
-                },
+                }
 
             ],
         }
     },
     created() {
+        this.mapSummaryParameters()
+        this.createPropList()
         this.searchProposal()
         this.getSpaceGroups()
         this.getProcessingPipelines() 
         this.getBeamLine()
         this.populateSelectedColumns()
+        this.addFilterOption()
         // this.populateSelectedColumns()
     },
     mounted() {
@@ -677,6 +603,26 @@ export default {
         })
     },
     methods: {
+        toggleSidebar() {
+        this.isOpen = !this.isOpen;
+        },
+        createPropList() {
+            this.propSelect = this.filters;
+        },
+        mapSummaryParameters() {
+            this.summaryParameters = 
+            this.summaryParameters.map((e) => {  
+            return { ...e, 
+                "order": "",
+                "selected": "",
+                "selectedArr": [],
+                "operand": "",
+                "value": "",
+                "checked": true,
+                "data": [] };
+        })
+        console.log(this.summaryParameters)
+        },
         addFilterOption(event) {
 
             if (this.filters.length < 18) {
@@ -688,6 +634,7 @@ export default {
                     "valueField": "",
                     "order": "",
                     "selected": "",
+                    "selectedArr": [],
                     "operand": "",
                     "value": "",
                     "data": [],
@@ -999,14 +946,20 @@ export default {
 
             for (var i in this.filters) {
 
+                console.log('this-filters', this.filters[i])
+
                 queryParams.push('&')
 
-                console.log(this.filters[i])
 
                 queryParams.push(this.filters[i].arg)
 
                 if (this.filters[i].inputtype == "combo-box") {
-                    queryParams.push(this.filters[i].selected)
+                    var queryArray = [];
+                    for (var j in this.filters[i].selectedArr ) {
+                        var textVal = this.filters[i].valueField
+                        queryArray.push(this.filters[i].selectedArr[j][textVal]) 
+                    }
+                    queryParams.push('['+queryArray.toString()+']')
                 } else {
                     queryParams.push(this.filters[i].value)
                     queryParams.push(","+this.filters[i].operand)
@@ -1344,5 +1297,39 @@ export default {
     height:auto; 
 }
 /* @apply tw-truncate tw-text-sm tw-pr-5 */
+
+.sidebar-button {
+    @apply tw-text-center tw-bg-content-active tw-border-content-active tw-text-xs tw-border-4 tw-text-black tw-py-1 tw-px-1 tw-rounded
+}
+.sidebar-button:hover {
+    @apply tw-border-teal-700 tw-bg-teal-700
+}
+
+.clear-button {
+    @apply tw-flex tw-text-black tw-text-center tw-text-xs tw-py-2 tw-px-1 tw-ml-2
+}
+
+.clear-button:focus {
+    @apply tw-text-content-active tw-text-content-active
+}
+
+.filter-grid {
+    @apply tw-grid tw-grid-rows-6 tw-grid-cols-3 tw-grid-flow-col tw-mb-2
+}
+
+.download-file {
+    @apply tw-mt-10 tw-items-center tw-block tw-pl-5 tw-pr-5 tw-h-6 tw-ml-2 tw-mr-2 
+                    tw-text-white tw-bg-content-sub-header-background tw-shadow tw-text-xs
+                    tw-rounded tw-shadow
+}
+
+.simple-search {
+    @apply tw-pl-6 tw-px-4 tw-border
+}
+
+.simple-search:focus {
+    @apply tw-outline-none tw-shadow-outline
+}
+
 </style>
 

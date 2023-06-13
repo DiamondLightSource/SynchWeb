@@ -1,8 +1,9 @@
 <template>
     <div class="custom-sidebar">
         <div class="tw-border-b tw-text-xl tw-bg-content-sub-header-hover-background"
-            @click="toggleSidebar()">
-                        <slot name="filter-bar-title" />
+        @click="disableClickableSidebar ? null : toggleSidebar()">
+            
+            <slot name="filter-bar-title" />
         </div>
         <div
             class="tw-bg-header-bc-color
@@ -35,9 +36,23 @@
     export default {
 
     name: 'expandable-sidebar',
+    props: {
+    // The list of data that will be displayed in the combobox
+    isOpen: {
+      type: Boolean,
+      default: false
+    },
+    loadContent: {
+      type: Boolean,
+      default: false
+    },
+    disableClickableSidebar: {
+        type: Boolean,
+        default: true
+    }
+    },
     data() {
         return {
-        isOpen: false,
         loadContent : false
         };
     },
@@ -58,7 +73,9 @@
         },
 
     watch: {
-
+        isOpen () {
+            this.contentDelay()
+        }
         }
     };
 
@@ -76,6 +93,15 @@
     .filter-height {
     height: 100%;
     max-height: 600px;
+    }
+
+    .expandable-button {
+        font-size:small;
+        @apply tw-text-center tw-bg-content-active tw-border-content-active tw-text-black tw-py-1 tw-px-1 tw-rounded
+    }
+
+    .expandable-button:hover {
+        @apply tw-bg-teal-700 tw-border-teal-700 
     }
 
 </style>

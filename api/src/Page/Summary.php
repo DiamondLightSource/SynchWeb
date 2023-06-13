@@ -13,7 +13,7 @@ class Summary extends Page
     public static $arg_list = array(
         //proposal
         'TITLE' => '(\w|\s|\-|\(|\))+',
-        'propid' => '\d+',
+        'propid' => '(.*)',
 
         // visit
         'com' => '(.*)', //comment
@@ -74,14 +74,23 @@ class Summary extends Page
         $where_arr = array();
         $order = '';
         $order_arr = array();
+        $args = array();
+        $sg_where = '';
+        $pp_where = '';
+        $BEAMLINENAME_where = '';
         
         // if (!$this->has_arg('prop')) $this->_error('No proposal defined');
 
+        // $args = array($this->arg('propid'));
+        // array_push($where_arr, 'pt.proposalid = ?');
+        // foreach ($args as $value) {
+        //     array_push($where_arr, 'pt.proposalid = ?');
+        // };
 
-        $args = array($this->arg('propid'));
-        array_push($where_arr, 'pt.proposalid = ?');
+        // $propid_array  = explode(',', $this->arg('propid'));
+        $propid_args = preg_split('/[,]+(?![^\[]*\])/', urldecode($this->arg('propid')));
+        $propid_array = explode(',', implode(str_replace(array('[',']'),'', $propid_args)));
         array_push($order_arr, 'sf.autoProcIntegrationId DESC');
-        
 
 
         // [VALUE, ORDER]
@@ -125,10 +134,19 @@ class Summary extends Page
         }
 
         if ($this->has_arg('pp')) {
-            $pp_args = explode(',', urldecode($this->arg('pp')));
 
-            array_push($args, $pp_args[0]);
-            array_push($where_arr, "lower(ppt.processingPrograms) LIKE lower(CONCAT(CONCAT('%',?),'%')) ESCAPE '$' ");
+            $pp_array = array();
+
+            $pp_args  = preg_split('/[,]+(?![^\[]*\])/', urldecode($this->arg('pp')));
+
+            $pp_values = explode(',', str_replace(array('[',']'),'', $pp_args[0]));
+            // $pp_args = explode(',', urldecode($this->arg('pp')));
+
+            foreach ($pp_values as $value) {
+                array_push($pp_array, "lower(ppt.processingPrograms) LIKE lower(CONCAT(CONCAT('%','".$value."'),'%')) ESCAPE '$' ");
+            }
+
+            $pp_where = ' AND ('.implode(" OR ", $pp_array).')';
             
             if (isset($pp_args[1]) != null) {
                 array_push($order_arr, 'ppt.processingPrograms '.$pp_args[1]);
@@ -137,10 +155,18 @@ class Summary extends Page
         }
 
         if ($this->has_arg('sg')) {
-            $sg_args = explode(',', urldecode($this->arg('sg')));
 
-            array_push($args, $sg_args[0]);
-            array_push($where_arr, "lower(sgt.spaceGroup) LIKE lower(CONCAT(CONCAT('%',?),'%')) ESCAPE '$' ");
+            $sg_array = array();
+
+            $sg_args  = preg_split('/[,]+(?![^\[]*\])/', urldecode($this->arg('sg')));
+
+            $sg_values = explode(',', str_replace(array('[',']'),'', $sg_args[0]));
+
+            foreach ($sg_values as $value) {
+                array_push($sg_array, "lower(sgt.spaceGroup) LIKE lower(CONCAT(CONCAT('%','".$value."'),'%')) ESCAPE '$' ");
+            };
+
+            $sg_where = ' AND ('.implode(" OR ", $sg_array).')';
             
             if (isset($sg_args[1]) != null) {
                 array_push($order_arr, 'sgt.spaceGroup '.$sg_args[1]);
@@ -149,10 +175,18 @@ class Summary extends Page
         }
 
         if ($this->has_arg('BEAMLINENAME')) {
-            $BEAMLINENAME_args = explode(',', $this->arg('BEAMLINENAME'));
 
-            array_push($args, $BEAMLINENAME_args[0]);
-            array_push($where_arr, "lower(vt.beamLineName) LIKE lower(CONCAT(CONCAT('%',?),'%')) ESCAPE '$' ");
+            $BEAMLINENAME_array = array();
+
+            $BEAMLINENAME_args = preg_split('/[,]+(?![^\[]*\])/', urldecode($this->arg('BEAMLINENAME')));
+
+            $BEAMLINENAME_values = explode(',', str_replace(array('[',']'),'', $BEAMLINENAME_args[0]));
+
+            foreach ($BEAMLINENAME_values as $value) {
+                array_push($BEAMLINENAME_array, "lower(vt.beamLineName) LIKE lower(CONCAT(CONCAT('%','".$value."'),'%')) ESCAPE '$' ");
+            };
+
+            $BEAMLINENAME_where = ' AND ('.implode(" OR ", $BEAMLINENAME_array).')';
             
             if (isset($BEAMLINENAME_args[1]) != null) {
                 array_push($order_arr, 'vt.beamLineName '.$BEAMLINENAME_args[1]);
@@ -342,19 +376,42 @@ class Summary extends Page
         }
 
         if ($this->staff) {
+            $person_id = $this->user->personId;
+            
+            $where_person_propid_array = array();
+
+            #delete
+            $person_id = 16565;
+
+            // # check user can see selected proposals and get all available visits if so
+            foreach ($propid_array as $value) {
+                array_push($where_person_propid_array, '(sf.personid = '.$person_id.' AND pt.proposalid = '.$value.')');
+            };
+
+            $where_person_propid = '('.implode(' OR ', $where_person_propid_array).')';
+
+            if (empty($where)) {
+                $where =  $where_person_propid;
+            } else {
+                $where =  $where_person_propid.' AND ('.$where.')';
+            }
+        }
+
+        // add multiselect params to end of where clause. 
+        $where = $where.$pp_where.$sg_where.$BEAMLINENAME_where;
 
         // get tot query
         $tot_args = $args;
 
         $tot = $this->summarydb->pq(
             "SELECT COUNT(sf.autoProcIntegrationId) as TOT
-             FROM SummaryFact sf
+            FROM SummaryFact sf
                 JOIN ProposalDimension pt on pt.proposalDimId = sf.proposalDimId
                 JOIN VisitDimension vt on vt.sessionDimId = sf.sessionDimId
                 JOIN ProcessingProgramDimension ppt on ppt.processingProgramsDimId = sf.processingProgramsDimId
                 JOIN SpaceGroupDimension sgt on sgt.spaceGroupDimId = sgt.spaceGroupDimId
-             WHERE $where
-             GROUP BY sf.datacollectionId"
+            WHERE $where
+            GROUP BY sf.datacollectionId"
             , $tot_args);
     
         $tot = sizeof($tot) ? intval($tot[0]['TOT']) : 0;
@@ -402,17 +459,17 @@ class Summary extends Page
                 GROUP_CONCAT(COALESCE(sf.rFreeValueStartInner, 'NULL')) as RFREEVALUESTARTINNER,
                 GROUP_CONCAT(COALESCE(sf.rFreeValueEndInner, 'NULL')) as RFREEVALUEENDINNER,
                 GROUP_CONCAT(COALESCE(sf.noofblobs, 'NULL')) as NOOFBLOBS
-             FROM SummaryFact sf
+            FROM SummaryFact sf
                 JOIN ProposalDimension pt on pt.proposalDimId = sf.proposalDimId
                 JOIN VisitDimension vt on vt.sessionDimId = sf.sessionDimId
                 JOIN ProcessingProgramDimension ppt on ppt.processingProgramsDimId = sf.processingProgramsDimId
                 JOIN SpaceGroupDimension sgt on sgt.spaceGroupDimId = sf.spaceGroupDimId
-             WHERE $where
-             GROUP BY sf.dataCollectionId
-             ORDER BY $order "
+            WHERE $where
+            GROUP BY sf.dataCollectionId
+            ORDER BY $order "
             , $args);
-    
-
+        
+            
         // if (!$rows) {
         // $this->_error($this->arg('TITLE') . ' could not be found anywhere!', 404);
         // }
@@ -420,10 +477,12 @@ class Summary extends Page
         
         
         // sql query output
+
+        // $this->_output(array('data' => $where));
         $this->_output(array('data' => $rows, 'total' => $tot ));
         // $this->_output(array('data' => $rows, 'where' => $where, 'order' => $order, 'args' => $args));
 
-        }
+
 
     }
 
@@ -433,6 +492,22 @@ class Summary extends Page
         $where = "WHERE 1=1";
 
         if ($this->staff) {
+            $person_id = $this->user->personId;
+
+            $person_id = 16565;
+
+            $where_person = "sf.personId = ".$person_id;
+
+            $rows = $this->summarydb->pq(
+                "SELECT pt.prop, pt.proposalid
+                FROM ProposalDimension pt
+                JOIN SummaryFact sf on pt.proposalDimId = sf.proposalDimId
+                WHERE $where_person
+                GROUP BY pt.proposalid");
+
+            $this->_output($rows);  
+
+        } else {
 
             $tot = $this->summarydb->pq(
                 "SELECT COUNT(proposalid) as TOT
@@ -463,7 +538,7 @@ class Summary extends Page
                 FROM ProposalDimension pt
                 $where", $args);
 
-            $this->_output($rows);  
+            $this->_output($rows); 
 
         }
 
