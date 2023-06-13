@@ -2,11 +2,13 @@
 
 namespace SynchWeb\Controllers;
 
+use Exception;
 use Slim\Slim;
 use Mockery;
 use PHPUnit\Framework\TestCase;
 use SynchWeb\Controllers\AuthenticationController;
 use SynchWeb\Model\Services\AuthenticationData;
+use SynchWeb\Authentication\AuthenticationTypeFactory;
 use SynchWeb\Controllers\Output;
 use SynchWeb\Controllers\AppStub;
 
@@ -21,8 +23,54 @@ final class AuthenticationControllerTest extends TestCase
     private $slimStub;
     private $dataLayerStub;
 
+    /**
+     * Expect the function to return an exception and then carry on
+     */
+    public function expectExceptionOn($function_throwing_exception, $errorMessage = AuthenticationController::ErrorUnderTestExceptionMessage) {
+        try {
+            $function_throwing_exception();
+            $this->fail("Exception not thrown");
+        }
+        catch (\Exception $e) {
+            if ($e->getMessage() !== $errorMessage) {
+                throw $e;
+            }            
+        }
+    }
+
+    /**
+     * We expect slim to recieve method calls about request made and responses to those requests
+     */
+    private function setupSlimStubsRequestAndResponse($expectedRequestCalls, $expectedReponseCalls)
+    {
+        $environment = \Slim\Environment::mock([
+            'REQUEST_METHOD' => 'GET',
+            'REQUEST_URI' => '/echo',
+            'QUERY_STRING' => 'foo=bar'
+        ]);
+        $request = new \Slim\Http\Request($environment);
+        $this->slimStub->shouldReceive('request')->times($expectedRequestCalls)->andReturn($request);
+        $response = new \Slim\Http\Response();
+        $this->slimStub->shouldReceive('response')->times($expectedReponseCalls)->andReturn($response);
+    }
+
+    /**
+     * Set up auth controller with mocked authentication type in
+     */
+    private function setUpAuthControllerWithMockedAuthType($authTypeMethod, $authTypeReturnValue) {
+        global $authentication_type;
+        $authentication_type="test";
+        $authTypeMock = Mockery::mock('AuthenticationType');
+        $authTypeMock->shouldReceive($authTypeMethod)->andReturn($authTypeReturnValue);
+        $mockAuthFactory = Mockery::mock('AuthenticationTypeFactory');
+        $mockAuthFactory->shouldReceive('create')->with($authentication_type)->andReturn($authTypeMock);
+        return new AuthenticationController($this->slimStub, $this->dataLayerStub, false, $mockAuthFactory);
+    }
+
     protected function setUp(): void
     {
+        global $authentication_type;
+        $authentication_type = "cas";
         Output::reset();
         $this->slimStub = Mockery::mock('Slim\Slim');
         $this->slimStub->shouldReceive('post')->times(2)->andReturn(new AppStub());
@@ -44,78 +92,106 @@ final class AuthenticationControllerTest extends TestCase
 
     public function testConstructorSetsUpExpectedRoutes(): void
     {
-        new AuthenticationController($this->slimStub, $this->dataLayerStub);
+        new AuthenticationController($this->slimStub, $this->dataLayerStub, false);
     }
 
-    public function testGetUserInitiallyReturnsNull(): void
+    public function testGivenUnknownAuthTypeWhenCheckThenInternalServerError(): void
     {
-        $request = $this->setupMockRequest();
-        $this->slimStub->shouldReceive('request')->times(2)->andReturn($request);
-        $response = new \Slim\Http\Response();
-        $this->slimStub->shouldReceive('response')->times(1)->andReturn($response);
+        global $authentication_type;
+        $authentication_type = "unknown";
+        $this->setupSlimStubsRequestAndResponse(0,1);
+        
         $authService = new AuthenticationController($this->slimStub, $this->dataLayerStub, false);
-        $this->expectExceptionMessage(AuthenticationController::ErrorUnderTestExceptionMessage);
-        $authService->getUser("Exit under test");
+
+        $this->expectExceptionOn( function () use ($authService){
+            $authService->check();
+        });
+        
+        $this->assertContains('X-PHP-Response-Code: 500', Output::$headers);
     }
 
-    private function setupMockRequest(): \Slim\Http\Request
-    {
-        $environment = \Slim\Environment::mock([
-            'REQUEST_METHOD' => 'GET',
-            'REQUEST_URI' => '/echo',
-            'QUERY_STRING' => 'foo=bar'
-        ]);
-        return new \Slim\Http\Request($environment);
-    }
     public function testCheckResultsInitiallyFails(): void
     {
         $response = new \Slim\Http\Response();
         $this->slimStub->shouldReceive('response')->times(1)->andReturn($response);
-        $authService = new AuthenticationController($this->slimStub, $this->dataLayerStub, false); // a bit of a hack - if the service uses exit() it is untestable as this will end the process prematurely
-        $this->expectExceptionMessage(AuthenticationController::ErrorUnderTestExceptionMessage);
-        $authService->check();
-
+        $authService = new AuthenticationController($this->slimStub, $this->dataLayerStub, false);
+        
+        $this->expectExceptionOn( function () use ($authService){
+            $authService->check();
+        });
+        
         $this->assertContains('Content-Type: application/json', Output::$headers);
         $this->assertContains('X-PHP-Response-Code: 400', Output::$headers);
     }
 
+    public function testGetUserWithNoTokenInitiallyReturnsUnauthorised(): void
+    {
+        $this->setupSlimStubsRequestAndResponse(2, 1);
+        $authService = new AuthenticationController($this->slimStub, $this->dataLayerStub, false);
+        
+        $this->expectExceptionOn( function () use ($authService){
+            $authService->getUser();
+        });
+
+        $this->assertContains('X-PHP-Response-Code: 401', Output::$headers);
+    }
+
     public function testValidateAuthenticationInitiallyFails(): void
     {
-        $request = $this->setupMockRequest();
-        $this->slimStub->shouldReceive('request')->times(2)->andReturn($request);
-        $response = new \Slim\Http\Response();
-        $this->slimStub->shouldReceive('response')->times(1)->andReturn($response);
-
+        $this->setupSlimStubsRequestAndResponse(2,1);
         $authService = new AuthenticationController($this->slimStub, $this->dataLayerStub, false);
-        $this->expectExceptionMessage(AuthenticationController::ErrorUnderTestExceptionMessage);
-        $authService->validateAuthentication();
+        
+        $this->expectExceptionOn( function () use ($authService){
+            $authService->validateAuthentication();
+        });
 
         $this->assertContains('Content-Type: application/json', Output::$headers);
         $this->assertContains('X-PHP-Response-Code: 401', Output::$headers);
     }
 
-    public function testCodeAuthenticationInitiallyFails(): void
+    public function testCodeAuthenticationInitiallyFailsWhenAuthenticationTypeReturnsFalse(): void
     {
-        $request = $this->setupMockRequest();
-        $this->slimStub->shouldReceive('request')->times(1)->andReturn($request);
-        $response = new \Slim\Http\Response();
-        $this->slimStub->shouldReceive('response')->times(1)->andReturn($response);
-        $authService = new AuthenticationController($this->slimStub, $this->dataLayerStub, false);
-        $this->expectExceptionMessage(AuthenticationController::ErrorUnderTestExceptionMessage);
-        $authService->authenticateByCode();
+        $request = $this->setupSlimStubsRequestAndResponse(1, 1);
+        $authService = new AuthenticationController($this->slimStub, $this->dataLayerStub, false); //Use default CAS auth to return type
+        
+        $this->expectExceptionOn( function () use ($authService){
+            $authService->authenticateByCode();
+        });
 
         $this->assertContains('Content-Type: application/json', Output::$headers);
-        $this->assertContains('X-PHP-Response-Code: 400', Output::$headers);
+        $this->assertContains('X-PHP-Response-Code: 401', Output::$headers);
     }
-    
+
+    public function testCodeAuthenticationWhenGetValidFedIdReturnsSuccess(): void
+    {
+        global $jwt_key;
+        $jwt_key = "test_key";
+        
+        $expectedFedID = "FedId012";
+        $_SERVER['HTTP_HOST'] = "host";
+
+        $this->setupSlimStubsRequestAndResponse(1, 1);
+        $authService = $this->setUpAuthControllerWithMockedAuthType("authenticateByCode", $expectedFedID);
+        
+        $this->expectExceptionOn( function () use ($authService){
+            $authService->authenticateByCode();
+        });
+
+        $this->assertContains('Content-Type: application/json', Output::$headers);
+        $this->assertContains('X-PHP-Response-Code: 200', Output::$headers);
+    }
+
+
     public function testNoSSOAuthorisationRedirect(): void
     {
         $response = new \Slim\Http\Response();
         $this->slimStub->shouldReceive('response')->times(1)->andReturn($response);
 
         $authService = new AuthenticationController($this->slimStub, $this->dataLayerStub, false);
-        $this->expectExceptionMessage(AuthenticationController::ErrorUnderTestExceptionMessage);
-        $authService->authorise();
+        
+        $this->expectExceptionOn( function () use ($authService){
+            $authService->authorise();
+        });
 
         $this->assertContains('Content-Type: application/json', Output::$headers);
         $this->assertContains('X-PHP-Response-Code: 501', Output::$headers);
@@ -123,19 +199,19 @@ final class AuthenticationControllerTest extends TestCase
 
     public function testValidateAuthorisationRedirect(): void
     {
-        global $authentication_type, $cas_sso;
+        global $cas_sso;
         $cas_sso = true;
 
         $_SERVER['HTTP_REFERER'] = "localhost/test";
+        $expectedURL = "expectedRedirectURL";
 
-        $response = new \Slim\Http\Response();
-        $this->slimStub->shouldReceive('response')->times(1)->andReturn($response);
+        $this->setupSlimStubsRequestAndResponse(0, 1);
+        $authService = $this->setUpAuthControllerWithMockedAuthType("authorise", $expectedURL);
 
-        $authService = new AuthenticationController($this->slimStub, $this->dataLayerStub, false);
-        $this->expectExceptionMessage(AuthenticationController::ErrorUnderTestExceptionMessage);
-        $authService->authorise();
-
+        $this->expectExceptionOn( function () use ($authService){
+            $authService->authorise();  // once a function calls an exception the stack finishes to add finally to run final tests.
+        });
         $this->assertContains('Content-Type: application/json', Output::$headers);
-        $this->assertContains('X-PHP-Response-Code: 501', Output::$headers);
+        $this->assertContains('X-PHP-Response-Code: 302', Output::$headers);
     }
 }
