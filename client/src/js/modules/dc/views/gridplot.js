@@ -213,6 +213,8 @@ define(['jquery', 'marionette',
         populatePIA: function() {
             var d = this.distl.get('data')
             var defaultPIA = 'pia_total_intensity'
+            var numberOfImages = this.grid.get('STEPS_X') * this.grid.get('STEPS_Y')
+            var dcAgeMinutes = this.getOption('parent').get('AGE')
             if (d[0].length < 1) {
                 this.ui.ty.hide()
                 if (this.attachments.length) {
@@ -222,6 +224,12 @@ define(['jquery', 'marionette',
                     if (a) this.ui.ty2.val(a.get('DATACOLLECTIONFILEATTACHMENTID'))
                     this.loadAttachment()
                 }
+            } else if (d[0].length != numberOfImages && dcAgeMinutes < 5) {
+                this.trigger('warning', 'Per image analysis still ongoing');
+            } else if (d[0].length != numberOfImages) {
+                this.trigger('warning', 'Missing per image analysis');
+            } else if (Math.max(...d[0].map(o => o[1])) == 0) {
+                this.trigger('warning', 'Zero spots found');
             }
         },
 
