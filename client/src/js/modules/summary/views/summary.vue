@@ -220,7 +220,7 @@
 
                         <div class="tw-absolute tw-right-0 tw-top-0"> 
                             <ul v-if="windowWidth > 900" class="tw-flex">
-                                <div v-for="(title, index) in summaryParameters" :key="title.id">
+                                <div v-for="(title, index) in selectedColumns" :key="title.id">
                                     <p v-if="index <= pillIndex && title.checked == true"
                                     class="tw-rounded-full tw-h-6 tw-max-w-xs tw-ml-1 tw-pt-1 
                                     tw-pr-1 tw-pl-1 tw-bg-content-active ">
@@ -641,7 +641,7 @@ export default {
         this.populateSelectedColumns()
         this.addFilterOption()
         this.toggleSidebar()
-        // this.populateSelectedColumns()
+        this.populateSelectedColumns()
     },
     mounted() {
         window.onerror = (msg) => {
@@ -658,6 +658,16 @@ export default {
         },
         createPropList() {
             this.propSelect = this.filters;
+        },
+        populateSelectedColumns() {
+            
+
+            for (const value of Object.entries(this.summaryColumns)) {
+                this.selectedColumns.push(value[1].title);
+            };
+
+            this.selectedColumns.reverse();
+
         },
         mapSummaryParameters() {
             this.summaryParameters = 
@@ -1188,11 +1198,12 @@ export default {
 
             for (var index in this.summaryParameters) {
 
-                if (this.summaryParameters[index].title == value)
-                this.summaryParameters[index].checked = false;
-
-                this.deselectedColumns.push(this.summaryParameters[index]);
-                this.selectedColumns = this.selectedColumns.filter(item => item !== this.summaryParameters[index]);
+                if (this.summaryParameters[index].title == value) {
+                    this.summaryParameters[index].checked = false;
+                    this.deselectedColumns.push(this.summaryParameters[index]);
+                    this.selectedColumns = this.selectedColumns.filter(item => item !== this.summaryParameters[index]);
+                }
+   
             }
 
         },
