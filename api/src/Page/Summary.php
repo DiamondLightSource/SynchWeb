@@ -79,7 +79,7 @@ class Summary extends Page
         $pp_where = '';
         $BEAMLINENAME_where = '';
         
-        // if (!$this->has_arg('prop')) $this->_error('No proposal defined');
+        if (!$this->has_arg('propid')) $this->_error('No proposal defined');
 
         // $args = array($this->arg('propid'));
         // array_push($where_arr, 'pt.proposalid = ?');
@@ -375,13 +375,13 @@ class Summary extends Page
             $order = implode(", ", $order_arr);
         }
 
-        if ($this->staff) {
+        if (!$this->staff) {
             $person_id = $this->user->personId;
             
             $where_person_propid_array = array();
 
-            #delete
-            $person_id = 16565;
+            // #delete
+            // $person_id = 16565;
 
             // # check user can see selected proposals and get all available visits if so
             foreach ($propid_array as $value) {
@@ -395,6 +395,22 @@ class Summary extends Page
             } else {
                 $where =  $where_person_propid.' AND ('.$where.')';
             }
+        } else {
+            $where_propid_array = array();
+
+            foreach ($propid_array as $value) {
+                array_push($where_propid_array, 'pt.proposalid = '.$value);
+            };
+
+            $where_propid = '('.implode(' OR ', $where_propid_array).')';
+
+            if (empty($where)) {
+                $where =  $where_propid;
+            } else {
+                $where =  $where_propid.' AND ('.$where.')';
+            }
+
+
         }
 
         // add multiselect params to end of where clause. 
@@ -470,9 +486,9 @@ class Summary extends Page
             , $args);
         
             
-        // if (!$rows) {
-        // $this->_error($this->arg('TITLE') . ' could not be found anywhere!', 404);
-        // }
+        if (!$rows) {
+        $this->_error($this->arg('TITLE') . ' could not be found anywhere!', 404);
+        }
 
         
         
@@ -491,10 +507,10 @@ class Summary extends Page
         $args = array();
         $where = "WHERE 1=1";
 
-        if ($this->staff) {
+        if (!$this->staff) {
             $person_id = $this->user->personId;
 
-            $person_id = 16565;
+            // $person_id = 16565;
 
             $where_person = "sf.personId = ".$person_id;
 

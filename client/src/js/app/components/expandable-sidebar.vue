@@ -1,16 +1,16 @@
 <template>
     <div class="custom-sidebar">
-        <div class="tw-border-b tw-text-xl tw-bg-content-sub-header-hover-background"
+        <div class="tw-border-b tw-text-xl title-format "
         @click="disableClickableSidebar ? null : toggleSidebar()">
             
             <slot name="filter-bar-title" />
         </div>
         <div
-            class="tw-bg-header-bc-color
+            class="content-format
             tw-ease-in-out tw-transition-all tw-delay-150 tw-duration-300"
             :class="{
                 'transform-filter-height ': isOpen,
-                'tw-h-0': !isOpen,
+                'transform-filter-height-clicked ': !isOpen,
                 }"
                 >
 
@@ -53,8 +53,10 @@
     },
     data() {
         return {
-        loadContent : false
         };
+    },
+    created() {
+        toggleSidebar()
     },
     methods: {
         toggleSidebar() {
@@ -85,24 +87,27 @@
 <style scoped>
 
     .transform-filter-height {
-        height: 250px;
-        max-height: 600px;
+        /* height: 250px; */
+        max-height: 500px;
         overflow-y: scroll;
+        transition: max-height 0.45s ease-in;
     }
 
-    .filter-height {
-    height: 100%;
-    max-height: 600px;
+    .transform-filter-height-clicked {
+        /* height: 250px; */
+        max-height: 0;
+        overflow-y: scroll;
+        transition: max-height 0.25s ease-out;
     }
 
-    .expandable-button {
-        font-size:small;
-        @apply tw-text-center tw-bg-content-active tw-border-content-active tw-text-black tw-py-1 tw-px-1 tw-rounded
+    .title-format {
+        @apply tw-bg-content-sub-header-hover-background
     }
 
-    .expandable-button:hover {
-        @apply tw-bg-teal-700 tw-border-teal-700 
+    .content-format {
+        @apply tw-bg-header-bc-color 
     }
+
 
 </style>
 

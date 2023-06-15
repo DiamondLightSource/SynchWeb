@@ -11,7 +11,11 @@
 
 
         <div>
-            <expandable-sidebar :isOpen="isOpen" :load-content="isOpen">
+            <i class="tooltip fa fa-info-circle" aria-hidden="true">
+                <span class="tooltiptext">Use the Advanced Filter Search bar to filter your values</span>
+            </i>
+
+            <expandable-sidebar :isOpen="isOpen">
                 <template v-slot:filter-bar-title> 
                     <div class="tw-grid tw-grid-cols-5">
                         <div class="tw-flex tw-col-span-1 tw-mt-3 tw-ml-3">
@@ -99,7 +103,7 @@
                                 ></combo-box>
 
                                 <combo-box v-if="value.inputtype == 'search-operands'"
-                                class="combo-box tw-w-2/12 tw-mr-1"
+                                class="combo-box tw-w-3/12 tw-mr-1"
                                 :data="operands"
                                 textField="title"
                                 valueField="value"
@@ -109,27 +113,20 @@
                                 defaultText='Select Operand'
                                 ></combo-box>
 
-                                <combo-box v-if="value.inputtype == 'search-operands'"
-                                class="combo-box tw-w-1/12 tw-mr-1"
-                                :data="orderby"
-                                textField="title"
-                                valueField="value"
-                                size="small"
-                                :can-create-new-item="false"
-                                v-model="value.order"
-                                defaultText='Select Value'
-                                ></combo-box>
-
                                 <input  v-if="value.inputtype == 'search-operands'"
                                 v-model="value.value"
                                 class="tw-w-2/12"
                                 >
 
-                                <button v-if="value.textField != 'PROP'" v-on:click="popFilter(index)" 
+                                <button v-if="value.textField != 'PROP'" v-on:click="popFilter(index+1)" 
                                         class="fa fa-times tw-text-black tw-ml-1"></button>
                                 
                             </div>
-                            <div class="button_plus tw-h-3 tw-mt-2" v-if="filters.length < 18" v-on:click="addFilterOption($event)"></div>
+                            <div class="button_plus tw-h-3 tw-mt-2" v-if="filters.length < 18" v-on:click="addFilterOption($event)">
+                            </div>
+                            <i class="tooltip tooltip-position fa fa-info-circle tw-absolute tw-top-0 tw-left-0" v-if="filters.length < 3" aria-hidden="true">
+                            <span class="tooltiptext">Click to add filter options</span>
+                            </i>
 
 
                     </div>
@@ -184,7 +181,12 @@
             </div>
 
             <div>
-                <p class="tw-text-content-sub-header-background tw-ml-2 tw-mt-2">Select Columns</p>
+                <div class="tw-flex tw-mt-2">
+                <p class="tw-text-content-sub-header-background tw-ml-2">Select Columns</p>
+                <i class="tooltip fa fa-info-circle tw-ml-2" aria-hidden="true">
+                <span class="tooltiptext">Toggle column visibility using the select columns drop down</span>
+                 </i>
+                </div>
                 <div class="tw-py-2 tw-px-6 tw-border tw-rounded-lg tw-border-content-sub-header-background">
                     <div class="tw-relative tw-w-full">
                         <button v-on:click="isHidden = !isHidden" id="dropdownInformationButton" data-dropdown-toggle="dropdown" 
@@ -237,24 +239,61 @@
 
 
         <div v-if="isLoading" role="status">
-                <svg class="status tw-text-teal-200 tw-fill-current tw-animate-spin" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <svg class="status tw-fill-current tw-animate-spin" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M73,50c0-12.7-10.3-23-23-23S27,37.3,27,50 M30.9,50c0-10.5,8.5-19.1,19.1-19.1S69.1,39.5,69.1,50">
                         </path>
                     </svg>
                 <span class="sr-only">Loading...</span>
         </div>
 
+
+
         <div class="results-wrapper tw-bg-table-header-background tw-text-table-header-color tw-mt-2 tw-overflow-x-scroll tw-scrolling-touch">
 
-            <div class="tw-font-bold tw-grid tw-grid-col-20 tw-grid-flow-col">
-                <div></div>
-                <div class="results-item tw-pt-3 tw-px-5"> File Template</div>
-                <div class="results-item tw-pt-3 tw-px-5"> Sample Name</div>
-
+            <div class="results-grid tw-font-bold ">
+                <!-- <div></div> -->
+                <div class="results-item tw-px-5 tw-my-3"> File Template</div>
+                <div class="results-item tw-px-5 tw-my-3"> Sample Name</div>
                 
-                <div v-for="value in selectedColumns" :key="value.id"
-                class="results-item tw-pt-3 tw-px-5">
-                {{ value.title }}</div>
+                <div v-for="(value, index) in selectedColumns" :key="value.id"
+                class="results-item tw-px-5 tw-my-3">
+                        <p class="results-content-child tw-mr-1">{{ value.title }}</p>
+                        <div>
+                            <svg    
+                            @click="orderBy(index)"
+                            v-if="value.order!=''"
+                            class="order-by tw-transition-all tw-duration-200 tw-transform"
+                            :class="{
+                            'tw-rotate-180': value.order == 'ASC',
+                            'tw-rotate-0': value.order == 'DESC',
+                            }"
+                            fill="none"
+                            stroke="currentColor"
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 16 10"
+                            aria-hidden="true"
+                            >
+                            <path fill-rule="evenodd" d="M8 1a.5.5 0 0 1 .5.5v11.793l3.146-3.147a.5.5 0 0 1 
+                            .708.708l-4 4a.5.5 0 0 1-.708 0l-4-4a.5.5 0 0 1 .708-.708L7.5 13.293V1.5A.5.5 0 0 1 8 1z"/>
+                            </svg>
+                        
+                            <svg
+                            @click="orderBy(index)"
+                            v-if="value.order==''"
+                            class="order-by tw-transition-all tw-duration-200 tw-transform"
+                            fill="none"
+                            stroke="currentColor"
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 16 10"
+                            aria-hidden="true"
+                            >
+                            <path fill-rule="evenodd" d="M11.5 15a.5.5 0 0 0 .5-.5V2.707l3.146 3.147a.5.5 0 0 0 .708-.708l-4-4a.5.5 0 0 0-.708 
+                            0l-4 4a.5.5 0 1 0 .708.708L11 2.707V14.5a.5.5 0 0 0 .5.5zm-7-14a.5.5 0 0 1 .5.5v11.793l3.146-3.147a.5.5 0 0 1 .708.708l-4 
+                            4a.5.5 0 0 1-.708 0l-4-4a.5.5 0 0 1 .708-.708L4 13.293V1.5a.5.5 0 0 1 .5-.5z"/>
+                            </svg>
+                        </div>
+                        
+                    </div>
 
             </div>
 
@@ -263,17 +302,35 @@
             <div class="results-content tw-text-black tw-text-center tw-pt-3 tw-px-5 tw-text-xl tw-bg-content-sub-header-hover-background" v-if="summaryData.length == 0">
                     No Results</div>
 
+                                
+
             <expandable-sidebar
-            class="results-content" v-click="true"
+            class="results-content tw-flex" v-click="true"
             :disable-clickable-sidebar="false"
-            v-else v-for="value in summaryData" :key="value.id">
+            v-else v-for="(value,index) in summaryData" :key="value.id">
                 <template v-slot:filter-bar-title >
-                    <div class="tw-grid tw-grid-col-20 tw-grid-flow-col tw-text-black">
-                        <div class="tw-ra tw-ml-1 ">
+
+
+                        <a class="tiptext-preview fa fa-eye" @mouseover="renderIFrame(index)">
+                            <iframe ref='iframeref' class="description" :srcdoc='baseUrl+"/dc/visit/" + value.PROP + "-" + value.VISIT_NUMBER
+                                    + "/id/" + value.DATACOLLECTIONID'></iframe>
+                        </a>
+
+
+                        <div class="dc-nav tw-ra ">
                                 <a :href="'/dc/visit/' + value.PROP + '-' + value.VISIT_NUMBER
                                 + '/id/' + value.DATACOLLECTIONID" class="tw-button tw-button-notext tw-dll" title="Go to Data Collection">
-                                <i class="search-icon fa fa-search"></i></a>
+                                <i class="search-icon  fa fa-search"></i>
+                                </a>
+
                         </div>
+
+
+
+                    <div class="results-grid tw-text-black">
+
+
+ 
                         <!-- <button class="tw-ra tw-ml-1" title="Click to add this data collection to the list of favourite data collections"
                                     @click="favourite(result)">
 
@@ -290,21 +347,21 @@
                                     title="Download MTZ file"><i class="fa fa-download"></i></a>
                             </p> -->
                         
-                        <div class="results-item tw-px-5"> {{ getProcRow(value, "FILETEMPLATE", 'text')[0] }}</div>
-                        <div class="results-item tw-px-5"> {{ getProcRow(value, "SAMPLENAME", 'text')[0] }}</div>
-                        <div class="results-item tw-px-5" v-for="data in selectedColumns" :key="data.id">{{ getProcRow(value, data.textField, 'text')[0] }}</div>
+                        <div class="results-item results-content-child tw-px-5 tw-mt-2 tw-my-2"> {{ getProcRow(value, "FILETEMPLATE", 'text')[0] }}</div>
+                        <div class="results-item results-content-child tw-px-5 tw-mt-2 tw-my-2"> {{ getProcRow(value, "SAMPLENAME", 'text')[0] }}</div>
+                        <div class="results-item results-content-child tw-px-5 tw-mt-2 tw-my-2" v-for="data in selectedColumns" :key="data.id">{{ getProcRow(value, data.textField, 'text')[0] }}
+                        </div>
 
                     </div>
 
                 </template>
 
                 <template v-slot:filter-bar-content> 
-                    <div v-for="(col, index) in getProcRow(value, 'FILETEMPLATE', 'text') " :key="index" class="tw-grid tw-grid-col-20  tw-divide-y tw-grid-flow-col tw-text-black">
-                        <div></div>
-                        <div class="results-item tw-px-5"> {{ getProcRow(value, "FILETEMPLATE", 'text')[index] }}</div>
-                        <div class="results-item tw-px-5"> {{ getProcRow(value, "SAMPLENAME", 'text')[index] }}</div>
-                        <div class="results-item tw-px-5" v-for="data in selectedColumns" :key="data.id">{{ getProcRow(value, data.textField, 'text')[index] }}</div>
-        
+                    <div v-for="(col, index) in getProcRow(value, 'FILETEMPLATE', 'text') " :key="index" class="results-grid  tw-divide-y tw-text-black">
+                        <!-- <div></div> -->
+                        <div class="results-item results-content-child tw-px-3 tw-mt-2 tw-my-2"> {{ getProcRow(value, "FILETEMPLATE", 'text')[index] }}</div>
+                        <div class="results-item results-content-child tw-px-3 tw-mt-2 tw-my-2"> {{ getProcRow(value, "SAMPLENAME", 'text')[index] }}</div>
+                        <div class="results-item results-content-child tw-px-3 tw-mt-2 tw-my-2" v-for="data in selectedColumns" :key="data.id">{{ getProcRow(value, data.textField, 'text')[index] }}</div>
 
                     </div>
 
@@ -324,6 +381,7 @@
 
 
     </div>
+
 </template>
 
 
@@ -366,6 +424,7 @@ export default {
         
         return {
             windowWidth: window.innerWidth,
+            baseUrl: window.location.origin,
             isLoading : false,
             isHidden: true,
             isOpen: true,
@@ -402,16 +461,6 @@ export default {
                     "title": "less than",
                     "value": "<"
                 }
-            ],
-            orderby: [
-                {   
-                    "title": "desc",
-                    "value": "DESC"
-                },
-                {   
-                    "title": "asc",
-                    "value": "ASC"
-                },
             ],
             summaryParameters: [   
                 {
@@ -591,6 +640,7 @@ export default {
         this.getBeamLine()
         this.populateSelectedColumns()
         this.addFilterOption()
+        this.toggleSidebar()
         // this.populateSelectedColumns()
     },
     mounted() {
@@ -813,6 +863,40 @@ export default {
             }
 
         },
+        async orderBy(index) {
+            try {
+
+                if (this.selectedColumns[index].order == '') {
+                    this.selectedColumns[index].order = 'DESC'
+                } else if (this.selectedColumns[index].order == 'DESC') {
+                    this.selectedColumns[index].order = 'ASC'
+                } else {
+                    this.selectedColumns[index].order = ''
+                }
+
+                this.isLoading = true;
+
+                const queryParams = this.getQueryParams(false);
+
+                const results = await this.$store.dispatch('fetchDataFromApi', {
+                url: '/summary/results?'+encodeURI(queryParams),
+                requestType: 'fetching beamlinename'
+                })
+
+                console.log('results', results)
+
+                this.summaryData = results.data;
+
+
+                this.isLoading = false;
+            } catch(e) {
+
+                window.onerror('Cannot order selected parameter: ' + e);
+                this.isLoading = false;
+                return ;
+
+            }
+        },
         async downloadFile() {
           // downloads all results (not page by page) whilst taking into account current filter params.  
             try {
@@ -989,6 +1073,7 @@ export default {
             for (var index in this.filters) {
                 if (this.filters[index].textField !== "PROP") {
                     this.filters[index].selected = ''
+                    this.filters[index].selectedArr = []
                     this.filters[index].operand = ''
                     this.filters[index].value = ''
 
@@ -1105,6 +1190,9 @@ export default {
 
                 if (this.summaryParameters[index].title == value)
                 this.summaryParameters[index].checked = false;
+
+                this.deselectedColumns.push(this.summaryParameters[index]);
+                this.selectedColumns = this.selectedColumns.filter(item => item !== this.summaryParameters[index]);
             }
 
         },
@@ -1117,7 +1205,16 @@ export default {
 
 
         },
+        renderIFrame(index) {
+            var src = this.$refs.iframeref[index].srcdoc
 
+            if (src) {
+                this.$refs.iframeref[index].removeAttribute('srcdoc')
+                this.$refs.iframeref[index].setAttribute('src', src)
+
+            }
+
+        }
 
 
 
@@ -1157,9 +1254,14 @@ export default {
 
 <style>
 
-.results-content .transform-filter-height {
-    height: 70px;
+.results-content .title-format {
+    background-color: rgb(255, 255, 255);
 }
+
+.results-content .content-format {
+    background-color: rgb(217, 217, 217);
+}
+
 
 .select-selected {
     font-size: small;
@@ -1199,6 +1301,7 @@ export default {
     position: fixed;
     top: 45%;
     left: 50%;
+    color: rgb(111, 213, 111);
 }
 
 .proposal-select {
@@ -1271,32 +1374,64 @@ export default {
 
 .results-wrapper{
     overflow-x: scroll;
+    background-color: rgb(94, 94, 94);
 }
+
+.results-grid {
+    display: grid;
+    grid-template-columns: repeat(20, 20fr);
+    grid-auto-flow: column;
+    grid-template-rows: 50px;
+}
+
+.results-grid-child {
+    display:grid;
+    grid-template-columns: 5fr 15fr;
+    grid-auto-flow: column;
+}
+
 
 .results-content{
     overflow: visible; 
     min-width:max-content;
     display:block;
+    background-color: rgb(255, 255, 255);
 }
 
-
-
 .results-item{
-    width:130px;
-    display:inline-block;
+    /* min-width: 100px;
+    max-width:130px; */
+    height: 18px;
+    width: 140px;
+    display: flex;
+}
+
+.results-content-child {
     text-overflow: ellipsis;
     word-break: break-all;
     overflow:hidden;
     white-space: nowrap;
     font-size:small;
+    font-family: Arial, Helvetica, sans-serif;
+
 }
 
-.results-item:hover {
+
+.results-content-child:hover {
     overflow: visible; 
     white-space: normal;
     height:auto; 
 }
-/* @apply tw-truncate tw-text-sm tw-pr-5 */
+
+.order-by {
+  cursor: pointer;
+  position: relative;
+  /* top: 60%; */
+  content: "";
+  width: 15px;
+  height: 20px;
+}
+
 
 .sidebar-button {
     @apply tw-text-center tw-bg-content-active tw-border-content-active tw-text-xs tw-border-4 tw-text-black tw-py-1 tw-px-1 tw-rounded
@@ -1330,6 +1465,73 @@ export default {
 .simple-search:focus {
     @apply tw-outline-none tw-shadow-outline
 }
+
+/* Tooltip container */
+.tooltip {
+  position: relative;
+  display: inline-block;
+  color: rgb(104, 104, 104); /* If you want dots under the hoverable text */
+}
+
+.tooltip-position {
+    position: absolute;
+    top: 60%;
+    left: 25%;
+}
+
+/* Tooltip text */
+.tooltip .tooltiptext {
+  font-family: Arial, Helvetica, sans-serif;
+  visibility: hidden;
+  opacity: 0.9;
+  width: 120px;
+  background-color: rgb(25, 24, 24);
+  color: #fff;
+  text-align: center;
+  padding: 5px 0;
+  border-radius: 6px;
+ 
+  /* Position the tooltip text - see examples below! */
+  position: absolute;
+  z-index: 1;
+}
+
+/* Show the tooltip text when you mouse over the tooltip container */
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+}
+
+.dc-nav {
+    position: absolute;
+    left: 9%;
+    margin-bottom: 2px;
+}
+
+.tiptext-preview {
+    position: absolute;
+    left: 7.5%;
+    font-size:small;
+    display: inline-block;
+    margin: 2em;
+    cursor:pointer;
+}
+
+.description {
+    display:none;
+    position:absolute;
+    left:50%;
+    border:1px solid #000;
+    width:400px;
+    height:400px;
+}
+
+.tiptext-preview:hover .description {
+    display:block;
+}
+
+
+
+
 
 </style>
 
