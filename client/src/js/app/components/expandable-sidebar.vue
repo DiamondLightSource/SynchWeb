@@ -55,9 +55,6 @@
         return {
         };
     },
-    created() {
-        toggleSidebar()
-    },
     methods: {
         toggleSidebar() {
         this.isOpen = !this.isOpen;

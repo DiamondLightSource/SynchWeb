@@ -41,7 +41,7 @@
                                 size="small"
                                 :can-create-new-item="false"
                                 v-model="filters[0].selected"
-                                defaultText='Select Operand'
+                                defaultText='Select Multiple'
                                 :multiple="true"
                                 :valueArray="filters[0].selectedArr"
                                 :searchArray="filters[0].selectedArr"
@@ -72,62 +72,76 @@
                 </template>
 
                 <template v-slot:filter-bar-content>
+                    <div class="filter-grid tw-divide-x tw-divide-white">
+                        <div class="filter-options-grid tw-col-span-3 ">
 
-                    <div class="filter-grid">
+                                <div class="tw-flex" v-for="(value, index) in filters.slice(2)" :key="value.id">
+                                    <combo-box
+                                    v-if="value.title!='Proposal'"
+                                    class="combo-box tw-w-7/12 t-mr-1 tw-text-black"
+                                    :data="summaryParameters"
+                                    textField="title"
+                                    valueField="valueField"
+                                    size="small"
+                                    :can-create-new-item="false"
+                                    v-model="value.selected"
+                                    :defaultText="value.title"
+                                    ></combo-box>
 
-                            <div class="tw-flex" v-for="(value, index) in filters.slice(2)" :key="value.id">
-                                <combo-box
-                                v-if="value.title!='Proposal'"
-                                class="combo-box tw-w-4/12 t-mr-1 tw-text-black"
-                                :data="summaryParameters"
-                                textField="title"
-                                valueField="valueField"
-                                size="small"
-                                :can-create-new-item="false"
-                                v-model="value.selected"
-                                :defaultText="value.title"
-                                ></combo-box>
+                                    <i class="tooltip fa fa-ellipsis-v tw-ml-1 tw-text-base tw-my-2" aria-hidden="true">
+                                        <div class="description-options">
+                                        <combo-box v-if="value.inputtype == 'combo-box' & value.title != 'Proposal'"
+                                            class="combo-box-description tw-px-4 tw-my-5"
+                                            :data="value.data"
+                                            :textField="value.textField"
+                                            :valueField="value.valueField"
+                                            size="small"
+                                            :can-create-new-item="false"
+                                            v-model="value.selected"
+                                            defaultText='Select Multiple'
+                                            :multiple="true"
+                                            :valueArray="value.selectedArr"
+                                            :searchArray="value.selectedArr"
+                                            ></combo-box>
 
-                                <combo-box v-if="value.inputtype == 'combo-box' & value.title != 'Proposal'"
-                                class="combo-box tw-w-7/12 tw-mr-1"
-                                :data="value.data"
-                                :textField="value.textField"
-                                :valueField="value.valueField"
-                                size="small"
-                                :can-create-new-item="false"
-                                v-model="value.selected"
-                                defaultText='Select Operand'
-                                :multiple="true"
-                                :valueArray="value.selectedArr"
-                                :searchArray="value.selectedArr"
-                                ></combo-box>
+                                            <combo-box v-if="value.inputtype == 'search-operands'"
+                                            class="combo-box-description tw-px-4 tw-my-5"
+                                            :data="operands"
+                                            textField="title"
+                                            valueField="value"
+                                            size="small"
+                                            :can-create-new-item="false"
+                                            v-model="value.operand"
+                                            defaultText='Select Operand'
+                                            ></combo-box>
 
-                                <combo-box v-if="value.inputtype == 'search-operands'"
-                                class="combo-box tw-w-3/12 tw-mr-1"
-                                :data="operands"
-                                textField="title"
-                                valueField="value"
-                                size="small"
-                                :can-create-new-item="false"
-                                v-model="value.operand"
-                                defaultText='Select Operand'
-                                ></combo-box>
+                                            <input  v-if="value.inputtype == 'search-operands'"
+                                            v-model="value.value"
+                                            class="input-description tw-mb-4 tw-mx-4"
+                                            placeholder="Enter Value"
+                                            >
+                                        </div>
+                                    </i>
 
-                                <input  v-if="value.inputtype == 'search-operands'"
-                                v-model="value.value"
-                                class="tw-w-2/12"
-                                >
 
-                                <button v-if="value.textField != 'PROP'" v-on:click="popFilter(index+1)" 
-                                        class="fa fa-times tw-text-black tw-ml-1"></button>
-                                
-                            </div>
-                            <div class="button_plus tw-h-3 tw-mt-2" v-if="filters.length < 18" v-on:click="addFilterOption($event)">
-                            </div>
-                            <i class="tooltip tooltip-position fa fa-info-circle tw-absolute tw-top-0 tw-left-0" v-if="filters.length < 3" aria-hidden="true">
-                            <span class="tooltiptext">Click to add filter options</span>
-                            </i>
 
+                                    <button v-if="value.textField != 'PROP'" v-on:click="popFilter(index+1)" 
+                                            class="fa fa-times-circle tw-text-red-600 tw-ml-2"></button>
+                                    
+                                </div>
+                                <div class="button_plus tw-h-3 tw-mt-2" v-if="filters.length < 18" v-on:click="addFilterOption($event)">
+                                <i class="button-plus-icon fa fa-plus"></i>
+                                </div>
+
+                                <i class="tooltip tooltip-position fa fa-info-circle tw-ml-6" v-if="filters.length < 3" aria-hidden="true">
+                                    <span class="tooltiptext">Click to add filter options</span>
+                                </i>
+
+                        </div>
+
+                        <div class="format-options-grid">
+                            
+                        </div>
 
                     </div>
                     
@@ -135,7 +149,6 @@
                 </template>
             </expandable-sidebar>
         </div>
-
 
 
 
@@ -190,14 +203,10 @@
                 <div class="tw-py-2 tw-px-6 tw-border tw-rounded-lg tw-border-content-sub-header-background">
                     <div class="tw-relative tw-w-full">
                         <button v-on:click="isHidden = !isHidden" id="dropdownInformationButton" data-dropdown-toggle="dropdown" 
-                        class="tw-h-8 tw-text-white tw-rounded tw-text-xs tw-px-4 tw-text-center tw-inline-flex tw-items-center 
-                        tw-bg-content-sub-header-background tw-border-content-sub-header-background tw-border-4 
-                        tw-text-black tw-py-1 tw-px-5" type="button"> Select Columns </button>
+                        class="select-column-button" type="button"> Select Columns </button>
 
-                        <div id="dropdown" class="tw-absolute
-                        tw-w-44 tw-bg-white tw-rounded tw-divide-y tw-divide-gray-100 tw-shadow
-                        tw-transition tw-ease-out tw-duration-100"
-                        :class="isHidden ? 'tw-transform tw-opacity-0 tw-scale-95 tw-z-20' : 'tw-transform tw-opacity-100 tw-scale-100 tw-z-50'">
+                        <div id="dropdown" class="select-columns-dropdown tw-w-44 tw-divide-y tw-divide-gray-100"
+                        :class="isHidden ? 'select-columns-dropdown-hide' : 'select-columns-dropdown-show'">
                         
                             <ul class="tw-py-1 tw-text-sm tw=text-gray-700" aria-labelledby="dropdownInformationButton">
                             <li> 
@@ -208,8 +217,7 @@
                                     v-if="!isHidden"
                                     @click="checkedColumns(index)"
                                     id="default-checkbox" type="checkbox" value="" 
-                                    class="tw-w-4 tw-h-4 tw-text-blue-600 tw-bg-gray-100 tw-rounded 
-                                    tw-border-gray-300 focus:tw-ring-blue-500 focus:tw-ring-2">
+                                    class="select-columns-checkbox focus:tw-ring-blue-500 focus:tw-ring-2">
                                     <a class="tw-block tw-text-xs tw-py-2 tw-px-4 hover:tw-bg-gray-100"> {{ value.title }} </a>
 
                                 </div>
@@ -224,7 +232,7 @@
                                     <p v-if="index <= pillIndex && title.checked == true"
                                     class="tw-rounded-full tw-h-6 tw-max-w-xs tw-ml-1 tw-pt-1 
                                     tw-pr-1 tw-pl-1 tw-bg-content-active ">
-                                    <button v-on:click="togglePills(title.title)" class="fa fa-times tw-text-black"></button>
+                                    <button v-on:click="togglePills(title.title)" class="fa fa-times-circle tw-text-red-600"></button>
                                     {{ title.title }} </p>
 
                                 </div>
@@ -258,7 +266,7 @@
                 <div v-for="(value, index) in selectedColumns" :key="value.id"
                 class="results-item tw-px-5 tw-my-3">
                         <p class="results-content-child tw-mr-1">{{ value.title }}</p>
-                        <div>
+                        <div class="tooltip add-white">
                             <svg    
                             @click="orderBy(index)"
                             v-if="value.order!=''"
@@ -291,6 +299,7 @@
                             0l-4 4a.5.5 0 1 0 .708.708L11 2.707V14.5a.5.5 0 0 0 .5.5zm-7-14a.5.5 0 0 1 .5.5v11.793l3.146-3.147a.5.5 0 0 1 .708.708l-4 
                             4a.5.5 0 0 1-.708 0l-4-4a.5.5 0 0 1 .708-.708L4 13.293V1.5a.5.5 0 0 1 .5-.5z"/>
                             </svg>
+                            <span class="tooltiptext">Click to order by parameter</span>
                         </div>
                         
                     </div>
@@ -326,7 +335,6 @@
                         </div>
 
 
-
                     <div class="results-grid tw-text-black">
 
 
@@ -346,11 +354,14 @@
                                 <a href="'+app.apiurl+'/download/id/<%-DCID%>/aid/<%-AID%>" class="tw-button tw-button-notext tw-dll" 
                                     title="Download MTZ file"><i class="fa fa-download"></i></a>
                             </p> -->
+
                         
-                        <div class="results-item results-content-child tw-px-5 tw-mt-2 tw-my-2"> {{ getProcRow(value, "FILETEMPLATE", 'text')[0] }}</div>
-                        <div class="results-item results-content-child tw-px-5 tw-mt-2 tw-my-2"> {{ getProcRow(value, "SAMPLENAME", 'text')[0] }}</div>
-                        <div class="results-item results-content-child tw-px-5 tw-mt-2 tw-my-2" v-for="data in selectedColumns" :key="data.id">{{ getProcRow(value, data.textField, 'text')[0] }}
-                        </div>
+                        <div class="results-item results-content-child add-gray tw-px-5 tw-mt-2 tw-my-2"> {{ getProcRow(value, "FILETEMPLATE", 'text')[0] }}
+                            </div>
+                        <div class="results-item results-content-child tooltip tw-px-5 tw-mt-2 tw-my-2"> {{ getProcRow(value, "SAMPLENAME", 'text')[0] }}
+                            <span class="tooltiptext">Click to expand</span></div>
+                        <div class="results-item results-content-child tooltip tw-px-5 tw-mt-2 tw-my-2" v-for="data in selectedColumns" :key="data.id">{{ getProcRow(value, data.textField, 'text')[0] }}
+                            <span class="tooltiptext">Click to expand</span></div>
 
                     </div>
 
@@ -1292,6 +1303,18 @@ export default {
     font-size: small;
 }
 
+.combo-box-description {
+    width: 200px;
+    font-size: small;
+}
+
+.input-description {
+    width: 170px;
+    font-size: small;
+}
+
+
+
 .copied {
     height: 125px;
     width: 75px;
@@ -1323,7 +1346,6 @@ export default {
 
 
 .button_plus {
-  position: relative;
   width: 25px;
   height: 25px;
   background: #fff;
@@ -1334,7 +1356,18 @@ export default {
 
 }
 
-.button_plus:after {
+.button-plus-icon {
+    color:  #5a5a5a;
+    padding: 27%
+
+}
+
+.button_plus:hover .button-plus-icon:hover {
+    color: #fff;
+}
+
+
+/* .button_plus:after {
   content: '';
   position: absolute;
   transform: translate(-50%, -50%);
@@ -1354,7 +1387,7 @@ export default {
   background: #5a5a5a;
   height: 50%;
   width: 4px;
-}
+} */
 
 .button_plus:hover:before,
 .button_plus:hover:after {
@@ -1460,7 +1493,40 @@ export default {
 }
 
 .filter-grid {
+    @apply tw-grid tw-grid-rows-1 tw-grid-cols-4 tw-grid-flow-col
+}
+
+.filter-options-grid {
     @apply tw-grid tw-grid-rows-6 tw-grid-cols-3 tw-grid-flow-col tw-mb-2
+}
+
+.format-options-grid {
+    @apply tw-grid tw-grid-rows-6 tw-grid-cols-2 tw-grid-flow-col tw-mb-2
+
+}
+
+.select-column-button {
+    @apply tw-h-8 tw-text-white tw-rounded tw-text-xs tw-px-4 tw-text-center tw-inline-flex tw-items-center 
+            tw-bg-content-sub-header-background tw-border-content-sub-header-background tw-border-4 
+            tw-text-black tw-py-1 tw-px-5
+}
+
+.select-columns-dropdown {
+    @apply tw-absolute tw-bg-white tw-rounded tw-shadow
+            tw-transition tw-ease-out tw-duration-100
+}
+
+.select-columns-dropdown-show{
+    @apply tw-transform tw-opacity-100 tw-scale-100 tw-z-50
+}
+
+.select-columns-dropdown-hide {
+    z-index: -1;
+    @apply tw-transform tw-opacity-0 tw-scale-95
+}
+
+.select-columns-checkbox {
+    @apply tw-w-4 tw-h-4 tw-text-blue-600 tw-bg-gray-100 tw-rounded tw-border-gray-300
 }
 
 .download-file {
@@ -1484,11 +1550,18 @@ export default {
   color: rgb(104, 104, 104); /* If you want dots under the hoverable text */
 }
 
+.add-white {
+    color: white; 
+}
+
+.add-gray {
+    color: rgb(104, 104, 104);
+}
+
 .tooltip-position {
     position: absolute;
-    top: 60%;
-    left: 25%;
 }
+
 
 /* Tooltip text */
 .tooltip .tooltiptext {
@@ -1510,6 +1583,24 @@ export default {
 /* Show the tooltip text when you mouse over the tooltip container */
 .tooltip:hover .tooltiptext {
   visibility: visible;
+}
+
+.description-options {
+    display:none;
+    position:absolute;
+    left:50%;
+    border:1px solid #828282;
+    font-family: Arial, Helvetica, sans-serif;
+
+}
+
+.tooltip:hover .description-options {
+    display:block;
+    min-width:100px;
+    min-height:50px;
+    background-color: white;
+    left:40%;
+    top: 50%
 }
 
 .dc-nav {
@@ -1539,6 +1630,9 @@ export default {
 .tiptext-preview:hover .description {
     display:block;
 }
+
+
+
 
 
 
