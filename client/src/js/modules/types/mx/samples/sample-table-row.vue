@@ -24,6 +24,7 @@
         :is-disabled="!canEditRow(sample['LOCATION'], editingRow) || isContainerProcessing || sampleHasDataCollection"
         :data="proteinsOptionsList"
         class="tw-w-full protein-select"
+        dataTestId="add-container-protein-select"
         text-field="ACRONYM"
         value-field="PROTEINID"
         :input-index="sampleIndex"
@@ -36,6 +37,7 @@
             <span class="tw-"><i
               v-if="option.SAFETYLEVEL === 'GREEN'"
               class="fa fa-check green"
+              data-testid="add-container-approved"
             /></span>
             {{ option['ACRONYM'] }}
           </span>
@@ -59,6 +61,7 @@
         :error-message="errors[0]"
         :quiet="true"
         :error-class="errors[0] ? 'tw-text-xxs ferror' : ''"
+        dataTestId="add-container-sample-name"
       />
     </validation-provider>
 
@@ -129,6 +132,7 @@
           class="button tw-mx-1"
           href=""
           @click.prevent="$emit('clone-sample', sampleIndex)"
+          data-testid="add-container-clone-sample"
         ><i class="fa fa-plus" /></a>
         <a
           class="button tw-mx-1"
