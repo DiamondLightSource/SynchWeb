@@ -995,7 +995,7 @@ class Vstat extends Page
             if (is_null($max) || $h['X'] > $max) $max = $h['X'];
             if (is_null($min) || $h['X'] < $min) $min = $h['X'];
         }
-        $min = is_null($min) ? 0 : floor($min/$binSize) * $binSize; // make min align with bin size, or 0 for no data
+        $min = is_null($min) ? 0 : intval(floor($min/$binSize) * $binSize); // make min align with bin size, or 0 for no data
 
         $data = array();
         foreach ($bls as $bl => $y) {
