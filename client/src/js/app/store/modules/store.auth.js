@@ -86,7 +86,7 @@ const auth = {
       })
     },
 
-    login({state, commit, rootState}, credentials) {
+    login({ commit, rootState }, credentials) {
       return new Promise((resolve, reject) => {
         commit('loading', true, { root: true })
 
@@ -109,7 +109,7 @@ const auth = {
         })
     },
 
-    getToken({state, commit, rootState}, code) {
+    getToken({ commit, rootState, dispatch }, code) {
       return new Promise((resolve, reject) => {
         commit('loading', true, { root: true })
 
@@ -120,7 +120,7 @@ const auth = {
           success: function(resp) {
             const token = resp.jwt
             commit('authSuccess', token)
-            resolve(resp)
+            dispatch("user/getUser", {}, {root: true}).then(() => resolve(true))
           },
           error: function(req, status, error) {
             commit('authError')
