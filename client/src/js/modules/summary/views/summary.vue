@@ -15,7 +15,7 @@
                 <span class="tooltiptext">Use the Advanced Filter Search bar to filter your values</span>
             </i>
 
-            <expandable-sidebar :isOpen="isOpen">
+            <expandable-sidebar class="sidebar-scroll" :isOpen="isOpen">
                 <template v-slot:filter-bar-title> 
                     <div class="tw-grid tw-grid-cols-5">
                         <div class="tw-flex tw-col-span-1 tw-mt-3 tw-ml-3">
@@ -140,6 +140,35 @@
                         </div>
 
                         <div class="format-options-grid">
+
+
+                            <!-- <div class="tw-flex" v-for="value in format.slice(2)" :key="value.id">
+                                    <combo-box
+                                    v-if="value.title!='Proposal'"
+                                    class="combo-box tw-w-7/12 t-mx-2 tw-text-black"
+                                    :data="summaryParameters.slice(3)"
+                                    textField="title"
+                                    valueField="valueField"
+                                    size="small"
+                                    :can-create-new-item="false"
+                                    v-model="value.selected"
+                                    :defaultText="value.title"
+                                    ></combo-box>
+
+                                    <i class="tooltip fa fa-ellipsis-v tw-ml-1 tw-text-base tw-my-2" aria-hidden="true">
+                                        <div class="description-options">
+                                            <input type="range" min="0" max="100" step="1" v-model="value.maxColor">
+                                            <input v-model="value.maxColor" type="number" class="input" /> 
+                                        </div>
+                                    </i>
+
+                                    <button v-if="value.textField != 'PROP'" v-on:click="popFormat(index+1)" 
+                                            class="fa fa-times-circle tw-text-red-600 tw-ml-2"></button>
+                            </div>
+
+                            <div class="button_plus tw-h-3 tw-mt-2" v-if="format.length < 6" v-on:click="addFormatOption($event)">
+                            <i class="button-plus-icon fa fa-plus"></i>
+                            </div> -->
                             
                         </div>
 
@@ -640,6 +669,24 @@ export default {
                 }
 
             ],
+            format: [
+            {
+                    "title": "",
+                    "inputtype": "",
+                    "textField": "",
+                    "valueField": "",
+                    "selected": "",
+                    "selectedArr": [],
+                    "operand": "",
+                    "value": "",
+                    "data": [],
+                    "arg" : "",
+                    "min":"0",
+                    "max":"100",
+                    "minColor": "",
+                    "maxColor": ""
+                }
+            ],
         }
     },
     created() {
@@ -651,6 +698,7 @@ export default {
         this.getBeamLine()
         this.populateSelectedColumns()
         this.addFilterOption()
+        this.addFormatOption()
         this.toggleSidebar()
         this.populateSelectedColumns()
     },
@@ -709,7 +757,8 @@ export default {
                     "operand": "",
                     "value": "",
                     "data": [],
-                    "arg" : ""
+                    "arg" : "",
+
                     }
                 )
             } 
@@ -717,6 +766,33 @@ export default {
         },
         popFilter(value) {
             this.filters.splice(value, 1)
+        },
+        addFormatOption(event) {
+            if (this.format.length < 18) {
+                this.format.push(
+                    {
+                    "title": "",
+                    "inputtype": "",
+                    "textField": "",
+                    "valueField": "",
+                    "order": "",
+                    "selected": "",
+                    "selectedArr": [],
+                    "operand": "",
+                    "value": "",
+                    "data": [],
+                    "arg" : "",
+                    "min":"0",
+                    "max":"100",
+                    "minColor": "",
+                    "maxColor": ""
+                    }
+                )
+            } 
+
+        },
+        popFormat(value) {
+            this.format.splice(value, 1)
         },
         async searchProposal() {
 
@@ -1051,27 +1127,35 @@ export default {
 
             for (var i in this.filters) {
 
-                console.log('this-filters', this.filters[i])
-
-                queryParams.push('&')
 
 
-                queryParams.push(this.filters[i].arg)
+                if (this.filters[i].selected || this.filters[i].selectedArr.length !== 0) {
 
-                if (this.filters[i].inputtype == "combo-box") {
-                    var queryArray = [];
-                    for (var j in this.filters[i].selectedArr ) {
-                        var textVal = this.filters[i].valueField
-                        queryArray.push(this.filters[i].selectedArr[j][textVal]) 
+                    console.log('filters', this.filters[i].selected)
+                    console.log('filters', this.filters[i].selectedArr)
+
+                    console.log('this-filters', this.filters[i])
+
+                    queryParams.push('&')
+
+
+                    queryParams.push(this.filters[i].arg)
+
+                    if (this.filters[i].inputtype == "combo-box") {
+                        var queryArray = [];
+                        for (var j in this.filters[i].selectedArr ) {
+                            var textVal = this.filters[i].valueField
+                            queryArray.push(this.filters[i].selectedArr[j][textVal]) 
+                        }
+                        queryParams.push('['+queryArray.toString()+']')
+                    } else {
+                        queryParams.push(this.filters[i].value)
+                        queryParams.push(","+this.filters[i].operand)
                     }
-                    queryParams.push('['+queryArray.toString()+']')
-                } else {
-                    queryParams.push(this.filters[i].value)
-                    queryParams.push(","+this.filters[i].operand)
-                }
 
-                if (this.filters[i].order) {
-                    queryParams.push(","+this.filters[i].order)
+                    if (this.filters[i].order) {
+                        queryParams.push(","+this.filters[i].order)
+                    }
                 }
 
             }
@@ -1101,6 +1185,8 @@ export default {
                 }
  
             };
+
+            console.log('filters', this.filters)
             
         },
         onPrefixSearch() {
@@ -1135,7 +1221,6 @@ export default {
         },
         getProcRow(result, field, type) {
             // return an array for results, also change decimal places for floats
-                console.log('getProcRow')
                 if (result[field]) {
 
                     var dataArray = result[field].split(",");
@@ -1314,7 +1399,6 @@ export default {
 }
 
 
-
 .copied {
     height: 125px;
     width: 75px;
@@ -1366,28 +1450,6 @@ export default {
     color: #fff;
 }
 
-
-/* .button_plus:after {
-  content: '';
-  position: absolute;
-  transform: translate(-50%, -50%);
-  height: 4px;
-  width: 50%;
-  background: #5a5a5a;
-  top: 50%;
-  left: 50%;
-}
-
-.button_plus:before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: #5a5a5a;
-  height: 50%;
-  width: 4px;
-} */
 
 .button_plus:hover:before,
 .button_plus:hover:after {
@@ -1493,7 +1555,7 @@ export default {
 }
 
 .filter-grid {
-    @apply tw-grid tw-grid-rows-1 tw-grid-cols-4 tw-grid-flow-col
+    @apply tw-grid tw-grid-rows-1 tw-grid-cols-4 tw-grid-flow-col 
 }
 
 .filter-options-grid {
@@ -1501,7 +1563,7 @@ export default {
 }
 
 .format-options-grid {
-    @apply tw-grid tw-grid-rows-6 tw-grid-cols-2 tw-grid-flow-col tw-mb-2
+    @apply tw-grid tw-grid-rows-6 tw-grid-cols-1 tw-grid-flow-col tw-mb-2
 
 }
 
@@ -1588,9 +1650,10 @@ export default {
 .description-options {
     display:none;
     position:absolute;
-    left:50%;
     border:1px solid #828282;
     font-family: Arial, Helvetica, sans-serif;
+    overflow-x:visible;
+    overflow-y:visible;
 
 }
 
@@ -1621,7 +1684,7 @@ export default {
 .description {
     display:none;
     position:absolute;
-    left:50%;
+    left: 50%;
     border:1px solid #000;
     width:400px;
     height:400px;
@@ -1630,6 +1693,8 @@ export default {
 .tiptext-preview:hover .description {
     display:block;
 }
+
+
 
 
 
