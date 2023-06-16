@@ -975,9 +975,9 @@ class Vstat extends Page
 
         $col = $t['col'];
         $ct = $t['count'];
-        $bs = $t['bin_size'];
+        $binSize = $t['bin_size'];
 
-        $hist = $this->db->pq("SELECT ($col div $bs) * $bs as x, count($ct) as y, s.beamlinename
+        $hist = $this->db->pq("SELECT ($col div $binSize) * $binSize as x, count($ct) as y, s.beamlinename
                 FROM datacollection dc 
                 INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
                 INNER JOIN blsession s ON s.sessionid = dcg.sessionid
@@ -995,6 +995,7 @@ class Vstat extends Page
             if (is_null($max) || $h['X'] > $max) $max = $h['X'];
             if (is_null($min) || $h['X'] < $min) $min = $h['X'];
         }
+        $min = is_null($min) ? 0 : floor($min/$binSize) * $binSize; // make min align with bin size, or 0 for no data
 
         $data = array();
         foreach ($bls as $bl => $y) {
@@ -1006,7 +1007,7 @@ class Vstat extends Page
             }
 
             $gram = array();
-            for ($bin = $min; $bin <= $max; $bin += $t['bin_size']) {
+            for ($bin = $min; $bin <= $max; $bin += $binSize) {
                 $gram[$bin] = array_key_exists($bin, $ha) ? $ha[$bin] : 0;
             }
 
