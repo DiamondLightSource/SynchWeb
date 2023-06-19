@@ -167,6 +167,7 @@ class Sample extends Page
         array('/sub/:ssid', 'put', '_update_sub_sample_full'),
         array('/sub', 'post', '_add_sub_sample'),
         array('/sub/:ssid', 'delete', '_delete_sub_sample'),
+        array('/sub/queue', 'post', '_pre_q_sub_sample'),
         array('/sub/queue(/:BLSUBSAMPLEID)', 'get', '_pre_q_sub_sample'),
 
         array('/plan', 'get', '_get_diffraction_plans'),

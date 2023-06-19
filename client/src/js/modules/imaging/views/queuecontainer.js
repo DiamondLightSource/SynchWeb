@@ -524,6 +524,7 @@ define(['marionette',
             'click button.submit': 'queueContainer',
             'click a.apply': 'applyPreset',
             'click a.unqueue': 'unqueueContainer',
+            'click a.addpage': 'queuePageSamples',
             'click a.addall': 'queueAllSamples',
             'change @ui.nodata': 'refreshSubSamples',
             'change @ui.notcompleted': 'refreshSubSamples',
@@ -538,7 +539,7 @@ define(['marionette',
         },
 
 
-        queueAllSamples: function(e) {
+        queuePageSamples: function(e) {
             e.preventDefault()
 
             var self = this
@@ -560,6 +561,37 @@ define(['marionette',
             setTimeout(function() {
                 self.refreshQSubSamples.bind(self)
             }, 200)
+        },
+
+        queueAllSamples: function(e) {
+            e.preventDefault()
+
+            var self = this
+            var sids = _.map(this.subsamples.fullCollection.filter(function(ss) { return (!ss.get('QUEUECOMPLETED'))  }), function(ss) {return ss.get('BLSUBSAMPLEID')})
+
+            // cannot send >1000 at once
+            const chunkSize = 500;
+            for (let i = 0; i < Math.ceil(sids.length / chunkSize); i++) {
+                var chunk = sids.slice(i*chunkSize, (i+1)*chunkSize);
+
+                Backbone.ajax({
+                    type: 'post',
+                    url: app.apiurl+'/sample/sub/queue',
+                    data: {
+                        BLSUBSAMPLEID: chunk,
+                    },
+                    success: function(resp) {
+                        _.each(resp, function (r) {
+                            var ss = self.subsamples.fullCollection.findWhere({ BLSUBSAMPLEID: r.BLSUBSAMPLEID })
+                            ss.set({ READYFORQUEUE: '1' })
+                        })
+                    },
+                })
+            }
+
+            setTimeout(function() {
+                self.refreshQSubSamples.bind(self)
+            }, 1000)
         },
 
 
