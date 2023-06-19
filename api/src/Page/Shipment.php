@@ -1562,7 +1562,7 @@ class Shipment extends Page
         }
 
         $this->db->pq("UPDATE shipping SET shippingstatus='sent to facility' where shippingid=:1", array($ship['SHIPPINGID']));
-        $this->db->pq("UPDATE dewar SET dewarstatus='sent to facility' where shippingid=:1", array($ship['SHIPPINGID']));
+        $this->db->pq("UPDATE dewar SET dewarstatus='sent to facility', storagelocation='off-site' where shippingid=:1", array($ship['SHIPPINGID']));
 
         $dewars = $this->db->pq("SELECT d.dewarid, s.visit_number as vn, s.beamlinename as bl, TO_CHAR(s.startdate, 'DD-MM-YYYY HH24:MI') as startdate 
               FROM dewar d 
@@ -1570,8 +1570,8 @@ class Shipment extends Page
               WHERE d.shippingid=:1", array($ship['SHIPPINGID']));
         foreach ($dewars as $d) {
             $this->db->pq(
-                "INSERT INTO dewartransporthistory (dewartransporthistoryid,dewarid,dewarstatus,arrivaldate) 
-                  VALUES (s_dewartransporthistory.nextval,:1,'sent to facility',CURRENT_TIMESTAMP) RETURNING dewartransporthistoryid INTO :id",
+                "INSERT INTO dewartransporthistory (dewartransporthistoryid,dewarid,dewarstatus,storagelocation,arrivaldate)
+                  VALUES (s_dewartransporthistory.nextval,:1,'sent to facility','off-site',CURRENT_TIMESTAMP) RETURNING dewartransporthistoryid INTO :id",
                 array($d['DEWARID'])
             );
         }
@@ -2798,11 +2798,11 @@ class Shipment extends Page
                         continue;
 
                     $p = $awb['pieces'][$i];
-                    $this->db->pq("UPDATE dewar SET $tno=:1, deliveryAgent_barcode=:2, dewarstatus='awb created' WHERE dewarid=:3", array($awb['awb'], $p['licenseplate'], $d['DEWARID']));
+                    $this->db->pq("UPDATE dewar SET $tno=:1, deliveryAgent_barcode=:2, dewarstatus='awb created', storagelocation='off-site' WHERE dewarid=:3", array($awb['awb'], $p['licenseplate'], $d['DEWARID']));
 
                     $this->db->pq(
-                        "INSERT INTO dewartransporthistory (dewartransporthistoryid,dewarid,dewarstatus,arrivaldate) 
-                        VALUES (s_dewartransporthistory.nextval,:1,'awb created',CURRENT_TIMESTAMP) RETURNING dewartransporthistoryid INTO :id",
+                        "INSERT INTO dewartransporthistory (dewartransporthistoryid,dewarid,dewarstatus,storagelocation,arrivaldate)
+                        VALUES (s_dewartransporthistory.nextval,:1,'awb created','off-site',CURRENT_TIMESTAMP) RETURNING dewartransporthistoryid INTO :id",
                         array($d['DEWARID'])
                     );
                 }
@@ -2955,10 +2955,10 @@ class Shipment extends Page
                 WHERE shippingid=:4", array($pickup['confirmationnumber'], $pickup['readybytime'], $pickup['callintime'], $options['shippingid']));
 
             foreach ($options['dewars'] as $i => $d) {
-                $this->db->pq("UPDATE dewar SET dewarstatus='pickup booked' WHERE dewarid=:1", array($d['DEWARID']));
+                $this->db->pq("UPDATE dewar SET dewarstatus='pickup booked', storagelocation='off-site' WHERE dewarid=:1", array($d['DEWARID']));
                 $this->db->pq(
-                    "INSERT INTO dewartransporthistory (dewartransporthistoryid,dewarid,dewarstatus,arrivaldate) 
-                    VALUES (s_dewartransporthistory.nextval,:1,'pickup booked',CURRENT_TIMESTAMP) RETURNING dewartransporthistoryid INTO :id",
+                    "INSERT INTO dewartransporthistory (dewartransporthistoryid,dewarid,dewarstatus,storagelocation,arrivaldate)
+                    VALUES (s_dewartransporthistory.nextval,:1,'pickup booked','off-site',CURRENT_TIMESTAMP) RETURNING dewartransporthistoryid INTO :id",
                     array($d['DEWARID'])
                 );
             }
@@ -3090,7 +3090,7 @@ class Shipment extends Page
             $this->_error('No such lab contact');
         $cont = $cont[0];
 
-        $dewars = $this->db->pq("SELECT d.dewarid
+        $dewars = $this->db->pq("SELECT d.dewarid, d.storagelocation
                 FROM dewar d
                 WHERE d.shippingid=:1 AND d.deliveryagent_barcode IS NOT NULL", array($this->arg('sid')));
 
@@ -3112,9 +3112,9 @@ class Shipment extends Page
             foreach ($dewars as $i => $d) {
                 $this->db->pq("UPDATE dewar SET dewarstatus='pickup cancelled' WHERE dewarid=:1", array($d['DEWARID']));
                 $this->db->pq(
-                    "INSERT INTO dewartransporthistory (dewarid,dewarstatus,arrivaldate) 
-                    VALUES (:1,'pickup cancelled',CURRENT_TIMESTAMP)",
-                    array($d['DEWARID'])
+                    "INSERT INTO dewartransporthistory (dewarid,dewarstatus,storagelocation,arrivaldate)
+                    VALUES (:1,'pickup cancelled',:2,CURRENT_TIMESTAMP)",
+                    array($d['DEWARID'], $d['STORAGELOCATION'])
                 );
             }
         } catch (\Exception $e) {
