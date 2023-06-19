@@ -523,6 +523,7 @@ define(['marionette',
         events: {
             'click button.submit': 'queueContainer',
             'click a.apply': 'applyPreset',
+            'click a.applyall': 'applyPresetAll',
             'click a.unqueue': 'unqueueContainer',
             'click a.addall': 'queueAllSamples',
             'change @ui.nodata': 'refreshSubSamples',
@@ -592,11 +593,22 @@ define(['marionette',
             e.preventDefault()
 
             var p = this.plans.findWhere({ DIFFRACTIONPLANID: this.ui.preset.val() })
-            if (p) this.applyModel(p)
+            if (p) this.applyModel(p, false)
         },
 
-        applyModel: function(p) {
-            var models = this.qsubsamples.where({ isGridSelected: true })
+        applyPresetAll:function(e) {
+            e.preventDefault()
+
+            var p = this.plans.findWhere({ DIFFRACTIONPLANID: this.ui.preset.val() })
+            if (p) this.applyModelAll(p, true)
+        },
+
+        applyModel: function(p, all) {
+            if (all) {
+                var models = this.qsubsamples.fullCollection.filter(function(ss) { return true })
+            } else {
+                var models = this.qsubsamples.where({ isGridSelected: true })
+            }
             _.each(models, function(m) {
                 if (p.get('EXPERIMENTKIND') !== m.get('EXPERIMENTKIND')) return
                     
@@ -610,7 +622,7 @@ define(['marionette',
 
         cloneModel: function(m) {
             console.log('cloning', m)
-            this.applyModel(m)
+            this.applyModel(m, false)
         },
 
         queueContainer: function(e) {
