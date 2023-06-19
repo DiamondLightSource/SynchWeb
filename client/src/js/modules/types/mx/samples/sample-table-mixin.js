@@ -115,6 +115,7 @@ export default {
     // If the sample belongs to more than one group, we want to return the first matching name and how many other groups it belongs to
     ...createFieldsForSamples([
       'ABUNDANCE',
+      'ACRONYM',
       'ANOMALOUSSCATTERER',
       'BLSUBSAMPLEID',
       'CODE',

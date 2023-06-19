@@ -20,8 +20,8 @@
       :vid="`sample ${sampleIndex + 1} protein`"
     >
       <combo-box
-        v-if="canEditRow(sample['LOCATION'], editingRow) && !isContainerProcessing && !sampleHasDataCollection"
         v-model="PROTEINID"
+        :is-disabled="!canEditRow(sample['LOCATION'], editingRow) || isContainerProcessing || sampleHasDataCollection"
         :data="proteinsOptionsList"
         class="tw-w-full protein-select"
         text-field="ACRONYM"
@@ -41,12 +41,6 @@
           </span>
         </template>
       </combo-box>
-      <div
-        v-else
-        class="tw-text-center"
-      >
-        {{ sample['ACRONYM'] }}
-      </div>
       <span>{{ errors[0] }}</span>
     </validation-provider>
 
@@ -59,19 +53,13 @@
       :vid="`sample ${sampleIndex + 1} name`"
     >
       <base-input-text
-        v-if="canEditRow(sample['LOCATION'], editingRow) && !isContainerProcessing && !sampleHasDataCollection"
+        :disabled="!canEditRow(sample['LOCATION'], editingRow) || isContainerProcessing || sampleHasDataCollection"
         v-model.trim="NAME"
         input-class="tw-w-full tw-h-8"
         :error-message="errors[0]"
         :quiet="true"
         :error-class="errors[0] ? 'tw-text-xxs ferror' : ''"
       />
-      <p
-        v-else
-        class="tw-text-center"
-      >
-        {{ sample['NAME'] }}
-      </p>
     </validation-provider>
 
     <extended-validation-provider

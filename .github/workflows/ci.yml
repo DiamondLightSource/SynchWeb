@@ -4,11 +4,13 @@ on:
   push:
     branches: 
       - 'master'
+      - 'prerelease'
       - 'release/**'
       - 'pre-release/**'
   pull_request:
     branches:
       - 'master'
+      - 'prerelease'
       - 'release/**'
       - 'pre-release/**'
 
@@ -54,7 +56,7 @@ jobs:
         with:
           bootstrap: api/vendor/autoload.php
           configuration: api/tests/phpunit.xml
-          php_extensions: xdebug mysqli
+          php_extensions: xdebug mysqli zip
           args: --coverage-text
           php_version: 7.3
           version: 9

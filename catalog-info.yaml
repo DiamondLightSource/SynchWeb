@@ -1,0 +1,16 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: SynchWeb
+  description: Experimental Information Management for Synchrotrons and Large Scale Facilities. This is not ISPyB which is the database
+  annotations:
+    github.com/project-slug: DiamondLightSource/SynchWeb
+  links:
+    - url: https://ispyb.diamond.ac.uk
+      title: Live system
+spec:
+  type: website/service
+  lifecycle: production
+  owner: group:lims
+  dependsOn: 
+    - component:dials-rest
