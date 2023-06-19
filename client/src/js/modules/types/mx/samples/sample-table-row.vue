@@ -24,6 +24,7 @@
         :is-disabled="!canEditRow(sample['LOCATION'], editingRow) || isContainerProcessing || sampleHasDataCollection"
         :data="proteinsOptionsList"
         class="tw-w-full protein-select"
+        dataTestId="add-container-protein-select"
         text-field="ACRONYM"
         value-field="PROTEINID"
         :input-index="sampleIndex"
@@ -36,6 +37,7 @@
             <span class="tw-"><i
               v-if="option.SAFETYLEVEL === 'GREEN'"
               class="fa fa-check green"
+              data-testid="add-container-approved"
             /></span>
             {{ option['ACRONYM'] }}
           </span>
@@ -59,6 +61,7 @@
         :error-message="errors[0]"
         :quiet="true"
         :error-class="errors[0] ? 'tw-text-xxs ferror' : ''"
+        dataTestId="add-container-sample-name"
       />
     </validation-provider>
 
@@ -103,23 +106,25 @@
           <a
             class="button tw-cursor-pointer  "
             @click="$emit('save-sample', sampleIndex)"
+            data-testid="container-save-sample"
           ><i class="fa fa-check" /></a>
           <a
             class="button tw-cursor-pointer tw-mx-1"
             @click="closeSampleEditing"
+            data-testid="container-cancel-sample"
           ><i class="fa fa-times" /></a>
         </span>
         <span v-else>
-          <a class="button tw-py-1 tw-cursor-pointer tw-mx-1" v-if="sample['BLSAMPLEID'] && !isContainerProcessing" @click="moveSampleToAnotherContainer(sampleIndex)">
+          <a class="button tw-py-1 tw-cursor-pointer tw-mx-1" data-testid="container-move-sample" v-if="sample['BLSAMPLEID'] && !isContainerProcessing" @click="moveSampleToAnotherContainer(sampleIndex)">
             <i class="fa fa-exchange"/>
           </a>
-          <a class="button tw-py-1 tw-cursor-pointer tw-mx-1" @click="editRow(sample)" >
+          <a class="button tw-py-1 tw-cursor-pointer tw-mx-1" data-testid="container-edit-sample" @click="editRow(sample)" >
             <i class="fa fa-pencil" />
           </a>
-          <router-link v-if="sample['BLSAMPLEID']" class="button tw-py-1 tw-mx-1" :to="`/samples/sid/${sample['BLSAMPLEID']}`" >
+          <router-link v-if="sample['BLSAMPLEID']" class="button tw-py-1 tw-mx-1" data-testid="container-view-sample" :to="`/samples/sid/${sample['BLSAMPLEID']}`" >
             <i class="fa fa-search" />
           </router-link>
-          <a class="button tw-cursor-pointer tw-py-1 tw-mx-1" v-if="sample['BLSAMPLEID']" @click="onAddToSampleGroup">
+          <a class="button tw-cursor-pointer tw-py-1 tw-mx-1" v-if="sample['BLSAMPLEID']" data-testid="container-sample-groups" @click="onAddToSampleGroup">
             <i class="fa fa-cubes" />
           </a>
         </span>
@@ -129,6 +134,7 @@
           class="button tw-mx-1"
           href=""
           @click.prevent="$emit('clone-sample', sampleIndex)"
+          data-testid="add-container-clone-sample"
         ><i class="fa fa-plus" /></a>
         <a
           class="button tw-mx-1"

@@ -14,6 +14,7 @@ The v-closable takes an object as argumnt with properties:
     }"
     class="custom-select-input tw-relative"
     :class="`combo-${inputIndex}`"
+    :data-testid="dataTestId"
   >
     <div
       v-show="!searching"
@@ -125,6 +126,10 @@ export default {
     defaultText: {
       type: String,
       default: 'Select an Item'
+    },
+    dataTestId: {
+      type: String,
+      required: false
     },
     inputIndex: {
       // InputIndex is used for keeping track of  how many combo-box elements we have on the current page
