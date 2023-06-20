@@ -39,8 +39,8 @@ class Shipment extends Page
         'CODE' => '([\w\-])+',
         'FACILITYCODE' => '([\w\-])+',
         'NEWFACILITYCODE' => '([\w\-])+',
-        'TRACKINGNUMBERTOSYNCHROTRON' => '\w+',
-        'TRACKINGNUMBERFROMSYNCHROTRON' => '\w+',
+        'TRACKINGNUMBERTOSYNCHROTRON' => '\w*',
+        'TRACKINGNUMBERFROMSYNCHROTRON' => '\w*',
         'FIRSTEXPERIMENTID' => '\d+|^(?![\s\S])',
         'SHIPPINGID' => '\d+',
 
@@ -57,6 +57,8 @@ class Shipment extends Page
 
         'ADDRESS' => '.*',
         'COUNTRY' => '.*',
+        'CITY' => '([\w\s\-])+',
+        'POSTCODE' => '([\w\s\-])+',
         //   'DESCRIPTION' => '.*',
         'EMAILADDRESS' => '.*',
         'FAMILYNAME' => '.*',
@@ -79,6 +81,7 @@ class Shipment extends Page
         'DELIVERYAGENT_DELIVERYDATE' => '\d+-\d+-\d+',
         'DELIVERYAGENT_AGENTNAME' => '[\s|\w|\-]+',
         'DELIVERYAGENT_AGENTCODE' => '[\w\-]+',
+        'DELIVERYAGENT_FLIGHTCODE' => '\d*',
         'SAFETYLEVEL' => '\w+',
         //   'DEWARS' => '\d+',
         //'FIRSTEXPERIMENTID' => '\w+\d+-\d+',
@@ -940,6 +943,8 @@ class Shipment extends Page
         $shipment_data = array(
             "consignee_company_name" => $dispatch_info['LABNAME'],
             "consignee_country" => $dispatch_info['COUNTRY'],
+            "consignee_city" => $dispatch_info['CITY'],
+            "consignee_post_code" => Utils::getValueOrDefault($dispatch_info['POSTCODE'], null),
             "consignee_contact_name" =>  $dispatch_info['GIVENNAME'] . " " .  $dispatch_info['FAMILYNAME'],
             "consignee_contact_phone_number" =>  $dispatch_info['PHONENUMBER'],
             "consignee_contact_email" =>  $dispatch_info['EMAILADDRESS'],
@@ -959,15 +964,9 @@ class Shipment extends Page
         # Split up address. Necessary as address is a single field in ispyb
         $address_lines = explode(PHP_EOL, rtrim($dispatch_info['ADDRESS']));
         $num_lines = count($address_lines);
-        if ($num_lines < 3) {
-            throw new Exception("Could not build request for shipping service: address input does contain at least 3 lines (inc. city and post code)");
-        } else if ($num_lines > 5) {
-            throw new Exception("Could not build request for shipping service: address input contains more than 5 lines (inc. city and post code)");
+        if ($num_lines  > 3) {
+            throw new Exception("Could not build request for shipping service: address input contains more than 3 lines (exc. city and post code)");
         }
-        $shipment_data['consignee_post_code'] = $address_lines[$num_lines - 1];
-        unset($address_lines[$num_lines - 1]);
-        $shipment_data['consignee_city'] = $address_lines[$num_lines - 2];
-        unset($address_lines[$num_lines - 2]);
         if (isset($address_lines[0])) $shipment_data['consignee_address_line1'] = $address_lines[0];
         if (isset($address_lines[1])) $shipment_data['consignee_address_line2'] = $address_lines[1];
         if (isset($address_lines[2])) $shipment_data['consignee_address_line3'] = $address_lines[2];
@@ -1067,14 +1066,16 @@ class Shipment extends Page
             array($dew['DEWARID'], $dewar_location)
         );
 
+        $terms = $this->db->pq(
+            "SELECT cta.couriertermsacceptedid FROM couriertermsaccepted cta WHERE cta.shippingid=:1",
+            array($dew['SHIPPINGID'])
+        );
+        $terms_accepted = sizeof($terms) ? true : false;
+
         $data = $this->args;
+        $data['TERMSACCEPTED'] = $terms_accepted;
 
         if (Utils::getValueOrDefault($use_shipping_service) && in_array($country, $facility_courier_countries)) {
-            $terms = $this->db->pq(
-                "SELECT cta.couriertermsacceptedid FROM couriertermsaccepted cta WHERE cta.shippingid=:1",
-                array($dew['SHIPPINGID'])
-            );
-            $terms_accepted = sizeof($terms) ? true : false;
             if ($terms_accepted) {
                 try {
                     $shipment_id = $this->_dispatch_dewar_in_shipping_service($data, $dew);
@@ -1116,7 +1117,6 @@ class Shipment extends Page
             $data['LOCALCONTACT'] = $local_contact;
         if (!array_key_exists('LCEMAIL', $data))
             $data['LCEMAIL'] = '';
-        $data['ADDRESS'] = $data['ADDRESS'] . PHP_EOL . $country;
         $email->data = $data;
 
         if ($country != $facility_country && !is_null($dispatch_email_intl)) {
@@ -1425,7 +1425,7 @@ class Shipment extends Page
         if (!sizeof($ship))
             $this->_error('No such shipment');
 
-        $fields = array('SHIPPINGNAME', 'SAFETYLEVEL', 'COMMENTS', 'DELIVERYAGENT_AGENTNAME', 'DELIVERYAGENT_AGENTCODE', 'DELIVERYAGENT_SHIPPINGDATE', 'DELIVERYAGENT_DELIVERYDATE', 'SENDINGLABCONTACTID', 'RETURNLABCONTACTID', 'READYBYTIME', 'CLOSETIME', 'PHYSICALLOCATION');
+        $fields = array('SHIPPINGNAME', 'SAFETYLEVEL', 'COMMENTS', 'DELIVERYAGENT_AGENTNAME', 'DELIVERYAGENT_AGENTCODE', 'DELIVERYAGENT_FLIGHTCODE', 'DELIVERYAGENT_SHIPPINGDATE', 'DELIVERYAGENT_DELIVERYDATE', 'SENDINGLABCONTACTID', 'RETURNLABCONTACTID', 'READYBYTIME', 'CLOSETIME', 'PHYSICALLOCATION');
         foreach ($fields as $f) {
             if ($this->has_arg($f)) {
                 $fl = ':1';

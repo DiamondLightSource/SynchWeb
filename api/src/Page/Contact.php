@@ -143,6 +143,11 @@ class Contact extends Page
             }
             
             if (!$valid) $this->_error('Missing Fields');
+
+            $cont = $this->db->pq("SELECT c.labcontactid
+                FROM labcontact c
+                WHERE c.cardname=:1 and c.proposalid=:2", array($this->arg('CARDNAME'), $this->proposalid));
+            if (sizeof($cont)) $this->_error('The specified card name already exists');
             
             $this->db->pq("INSERT INTO laboratory (laboratoryid,name,address,city,postcode,country) 
                 VALUES (s_laboratory.nextval, :1, :2, :3, :4, :5) RETURNING laboratoryid INTO :id", 
