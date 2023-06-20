@@ -170,7 +170,7 @@ export default {
 
     singleSignOn: function () {
       if (this.sso) {
-        const tokenLocation = location.href.indexOf("code");
+        const tokenLocation = window.location.href.indexOf("code");
 
         // For some reason, this is executed BEFORE beforeRouteEnter. Cannot trust redirectUrl.
         const actualRedirectUrl = new URL(window.location.href).searchParams.get("redirect") || this.redirectUrl;
@@ -179,7 +179,7 @@ export default {
           this.$store.dispatch("auth/checkAuth").then((authenticated) => {
             console.log("Check Auth OK: " + authenticated);
             if (!authenticated) {
-              window.location.href = `${this.apiUrl}/authenticate/authorise`;
+              window.location.assign(`${this.apiUrl}/authenticate/authorise`);
             } else {
               this.$router.push(actualRedirectUrl);
             }
