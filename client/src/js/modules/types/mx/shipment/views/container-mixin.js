@@ -159,7 +159,7 @@ export default {
     },
     formatExperimentKindList() {
       let experimentKindList = []
-      for (const [key, value] of Object.entries(ExperimentKindsList.list)) {
+      for (const [key, value] of Object.entries(ExperimentKindsList.getList())) {
         experimentKindList.push({ value, text: key })
       }
 
