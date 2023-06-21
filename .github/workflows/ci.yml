@@ -79,6 +79,7 @@ jobs:
         # hack the output from the linting steps to avoid these stopping the builds - we are not going to get 
         # to a clean output without considerable effort, but it's useful to see the output
         run: |
+              node --version
               npm ci
               npm run build
               npm run test
