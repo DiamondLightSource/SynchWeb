@@ -71,10 +71,13 @@ jobs:
         uses: actions/checkout@v3
 
       - name: JavaScript build, lint and test
-        working-directory: ./client
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.x
+      - working-directory: ./client
         # hack the output from the linting steps to avoid these stopping the builds - we are not going to get 
         # to a clean output without considerable effort, but it's useful to see the output
-        run: |
+      - run: |
               npm ci
               npm run build
               npm run test
