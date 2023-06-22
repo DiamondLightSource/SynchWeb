@@ -1319,7 +1319,18 @@ class Sample extends Page
         if ($this->has_arg('collection')) {
             $this->db->start_transaction();
             $col = array();
+            $used = array();
             foreach ($this->arg('collection') as $s) {
+                $loc = $s['CONTAINERID'].'.'.$s['LOCATION'];
+                if (array_key_exists('SUBLOCATION', $s)) {
+                    $loc .= '.'.strval($s['SUBLOCATION']);
+                }
+                if (in_array($loc, $used)) {
+                    // LIMS-210 - dont throw an error, but dont create multiple samples in the same location
+                    error_log('Container location already in use: '.$loc);
+                    continue;
+                }
+                array_push($used, $loc);
                 $id = $this->_do_add_sample($this->_prepare_sample_args($s));
 
                 if ($id) {
