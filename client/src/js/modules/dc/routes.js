@@ -86,18 +86,18 @@ function lookupVisit(visit) {
 // The DC component handles the prefetching and proposal lookup in a cleaner method than using marionette wrapper directly
 let routes = [
   {
-    path: '/dc(/visit/)?:visit([a-zA-Z]{2}[0-9]+-[0-9]+)?(/dcg/)?:dcg([0-9]+)?(/page/)?:page([0-9]+)?:pathMatch(.*)*',
+    path: '/dc(/visit/)?:visit([a-zA-Z]{2}[0-9]+-[0-9]+)?:pathMatch(.*)*',
     name: 'dc-list',
     component: DCWrapper,
     props: route => ({
-        id: +route.params.id || null,
+        id: +RoutesUtil.getParamValue(route.params.pathMatch, 'id') || null,
         visit: route.params.visit || '',
-        dcg: +route.params.dcg || null,
-        page: +route.params.page || 1,
-        ty: RoutesUtil.getParamValue(route.params.pathMatch, "ty") ||  '',
-        search: RoutesUtil.getParamValue(route.params.pathMatch, "s") || '',
-        pjid: +RoutesUtil.getParamValue(route.params.pathMatch, "pjid") || null,
-        sgid: +RoutesUtil.getParamValue(route.params.pathMatch, "sgid") || null
+        dcg: +RoutesUtil.getParamValue(route.params.pathMatch, 'dcg') || null,
+        page: +RoutesUtil.getParamValue(route.params.pathMatch, 'page') || 1,
+        ty: RoutesUtil.getParamValue(route.params.pathMatch, 'ty') ||  '',
+        search: RoutesUtil.getParamValue(route.params.pathMatch, 's') || '',
+        pjid: +RoutesUtil.getParamValue(route.params.pathMatch, 'pjid') || null,
+        sgid: +RoutesUtil.getParamValue(route.params.pathMatch, 'sgid') || null
     }),
   },
   {
