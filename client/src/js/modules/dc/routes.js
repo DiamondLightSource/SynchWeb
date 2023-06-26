@@ -17,7 +17,7 @@ const QueueBuilder = import(/* webpackChunkName: "dc" */ 'modules/dc/views/queue
 // import DataCollection from 'models/datacollection'
 import DCCol from 'collections/datacollections'
 import Visit from 'models/visit'
-
+import RoutesUtil from 'utils/routes'
 // import store from 'app/store/store'
 
 // Initialize MarionetteApplication if not already existing
@@ -78,14 +78,15 @@ function lookupVisit(visit) {
 }
 
 // Dealing with multiple optional parameters is a pain.
-// Capturing multiple string type optional parameters is not as useful with vue-router than it was with marionette.
-// The path-to-regexp greedily matches text so optional paths can get merged. Using explicit regex conditions is more reliable.
-// Looks as though page is a red herring as its not added to the URL on pagination.
-// Search probably has no value with an id (i.e. individual data collection ) or probably dcg either.
+// Capturing multiple string type optional parameters is not as useful with vue-router than it was with marionette. Hence the
+//   pathmatch parameter beklow which contains the unorder values ty,s, pjid and sgid. The path-to-regexp greedily matches text 
+//   so optional paths can get merged. Using explicit regex conditions is more reliable.
+// Looks as though page is a red herring as its not added to the URL on pagination (but should be).
+// Search probably has no value with an id (i.e. individual data collection) or probably dcg either.
 // The DC component handles the prefetching and proposal lookup in a cleaner method than using marionette wrapper directly
 let routes = [
   {
-    path: '/dc(/visit/)?:visit([a-zA-Z]{2}[0-9]+-[0-9]+)?(/dcg/)?:dcg([0-9]+)?(/page/)?:page([0-9]+)?(/s/)?:search([a-zA-z0-9_-]+)?(/ty/)?:ty([a-zA-Z0-9_-]+)?(/id/)?:id([0-9]+)?(/pjid/)?:pjid([0-9]+)?(/sgid/)?:sgid([0-9]+)?',
+    path: '/dc(/visit/)?:visit([a-zA-Z]{2}[0-9]+-[0-9]+)?(/dcg/)?:dcg([0-9]+)?(/page/)?:page([0-9]+)?:pathMatch(.*)*',
     name: 'dc-list',
     component: DCWrapper,
     props: route => ({
@@ -93,25 +94,10 @@ let routes = [
         visit: route.params.visit || '',
         dcg: +route.params.dcg || null,
         page: +route.params.page || 1,
-        ty: route.params.ty || '',
-        search: route.params.search || '',
-        pjid: +route.params.pjid || null,
-        sgid: +route.params.sgid || null
-    }),
-  },
-  {
-    path: '/dc(/visit/)?:visit([a-zA-Z]{2}[0-9]+-[0-9]+)?(/dcg/)?:dcg([0-9]+)?(/page/)?:page([0-9]+)?(/ty/)?:ty([a-zA-Z0-9_-]+)?(/s/)?:search([a-zA-z0-9_-]+)?(/id/)?:id([0-9]+)?(/pjid/)?:pjid([0-9]+)?(/sgid/)?:sgid([0-9]+)?',
-    name: 'dc-list',
-    component: DCWrapper,
-    props: route => ({
-        id: +route.params.id || null,
-        visit: route.params.visit || '',
-        dcg: +route.params.dcg || null,
-        page: +route.params.page || 1,
-        ty: route.params.ty || '',
-        search: route.params.search || '',
-        pjid: +route.params.pjid || null,
-        sgid: +route.params.sgid || null
+        ty: RoutesUtil.getParamValue(route.params.pathMatch, "ty") ||  '',
+        search: RoutesUtil.getParamValue(route.params.pathMatch, "s") || '',
+        pjid: +RoutesUtil.getParamValue(route.params.pathMatch, "pjid") || null,
+        sgid: +RoutesUtil.getParamValue(route.params.pathMatch, "sgid") || null
     }),
   },
   {
