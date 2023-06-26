@@ -163,7 +163,7 @@ var MarionetteApplication = (function () {
             }
             // Define user permission method - hooked into store
             application.user_can = function(perm) {
-                console.log("CHECK USER PERMISSIONS LIST " + JSON.stringify(store.getters.permissions))
+                console.log("CHECK USER PERMISSIONS LIST " + JSON.stringify(store.getters['user/permissions']))
                 console.log("CHECK USER PERMISSIONS FOR " + perm)
                 return store.getters['user/permissions'].indexOf(perm) > -1
             }
