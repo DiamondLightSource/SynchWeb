@@ -102,18 +102,20 @@ The v-closable takes an object as argumnt with properties:
         </div>
       </div>
     </div>
+
     <div
       :ref="`select-items-${inputIndex}`"
       class="select-items select-hide"
       :class="{[`select-${inputIndex}`]: true}"
       v-if="multiple==true"
     >
-      <div class="items-list-multiple">
+      <div class="items-list-multiple tw-absolute">
         <div
           v-for="(option, optionIndex) in filteredOptions"
           :ref="`selectOption${inputIndex}${optionIndex}`"
           :key="`selectOptionIndex${optionIndex}`"
           class="tw-cursor-pointer tw-flex tw-w-full tw-justify-between item-multiple"
+          :class="valueArray.some(item => item[valueField] == option[valueField]) ? 'item-multiple-selected' : ''"
           :value="option[valueField]"
           @click="selectMultipleOption(option, optionIndex)"
         >
@@ -152,7 +154,6 @@ The v-closable takes an object as argumnt with properties:
         </div>
       </div>
     </div>
-
 
 
     <div
@@ -349,7 +350,7 @@ export default {
       // The ref element will be stored in an array because of the way Vue 2 handles ref used in a v-for
       const element = this.$refs[`selectOption${this.inputIndex}${optionIndex}`][0]
 
-      element.classList.toggle('item-multiple-selected')
+      // element.classList.toggle('item-multiple-selected')
 
       this.$emit('input', value)
       this.addOptionArray(value)
@@ -385,15 +386,15 @@ export default {
     },
     addOptionArray: function (val) {
 
-      if (this.valueArray.includes(val)) {
-        this.valueArray.splice(this.valueArray.indexOf(val), 1)
-        // this.searchArray.splice(this.searchArray.indexOf(val[this.textField]), 1)
+      if (this.valueArray.some(item => item[this.valueField] == val[this.valueField]) ) {
+        var index = this.valueArray.findIndex(item => item[this.valueField] == val[this.valueField])
+        this.valueArray.splice(this.valueArray[index], 1)
+
+        console.log('remove', this.valueArray)
       } else {
         this.valueArray.push(val)
-        // this.searchArray.push(val[this.textField])
+        console.log('add', this.valueArray)
       }
-
-      console.log('searcharray', this.searchArray)
 
 
     },

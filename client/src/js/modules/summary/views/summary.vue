@@ -9,13 +9,21 @@
             
         </div>
 
+        <!-- <div style="position:relative;border:1px solid blue;">
+            <div style="height: 100px; width: 100px; background: red; overflow: auto;">
+                if there is some really long content here, it will cause overflow, but the green box will not
+                <div style="position:absolute; z-index:1; left: 20px; top:0; height: 200px; width: 200px; background: green;">
+                </div>
+            </div>
+        </div> -->
+
 
         <div>
             <i class="tooltip fa fa-info-circle" aria-hidden="true">
                 <span class="tooltiptext">Use the Advanced Filter Search bar to filter your values</span>
             </i>
 
-            <expandable-sidebar class="sidebar-scroll" :isOpen="isOpen">
+            <expandable-sidebar class="sidebar-scroll" :isOpen="isOpen" style="position:relative;border:1px solid blue;">
                 <template v-slot:filter-bar-title> 
                     <div class="tw-grid tw-grid-cols-5">
                         <div class="tw-flex tw-col-span-1 tw-mt-3 tw-ml-3">
@@ -88,7 +96,14 @@
                                     :defaultText="value.title"
                                     ></combo-box>
 
-                                    <i class="tooltip fa fa-ellipsis-v tw-ml-1 tw-text-base tw-my-2" aria-hidden="true">
+                                    <span class="param-tooltip">
+                                        Input Param Values
+                                        <div class="param-preview">
+                                            <iframe src="https://en.wikipedia.org/wiki/Germany" style="border:0px #FFFFFF none;" name="test" scrolling="no" frameborder="0" marginheight="0px" marginwidth="0px" height="2000px" width="1000px"></iframe>
+                                        </div>
+                                    </span>
+
+                                    <i class="tooltip tooltip-position-relative fa fa-ellipsis-v tw-ml-1 tw-text-base tw-my-2" aria-hidden="true">
                                         <div class="description-options">
                                         <combo-box v-if="value.inputtype == 'combo-box' & value.title != 'Proposal'"
                                             class="combo-box-description tw-px-4 tw-my-5"
@@ -133,7 +148,7 @@
                                 <i class="button-plus-icon fa fa-plus"></i>
                                 </div>
 
-                                <i class="tooltip tooltip-position fa fa-info-circle tw-ml-6" v-if="filters.length < 3" aria-hidden="true">
+                                <i class="tooltip tooltip-position-absolute fa fa-info-circle tw-ml-6" v-if="filters.length < 3" aria-hidden="true">
                                     <span class="tooltiptext">Click to add filter options</span>
                                 </i>
 
@@ -419,6 +434,9 @@
         @page-changed="handlePageChange"
         />
 
+  
+    
+
 
     </div>
 
@@ -441,6 +459,7 @@ import BaseInputSelect from 'app/components/base-input-select.vue'
 import BaseInputText from '../../../app/components/base-input-text.vue'
 
 import ExpandableSidebar from '../../../app/components/expandable-sidebar.vue'
+import DialogModal from '../../../app/components/dialog-modal.vue'
 import CustomAccordian from '../../../app/components/custom-accordian.vue'
 
 
@@ -454,6 +473,7 @@ export default {
     'combo-box': ComboBox,
     'expandable-sidebar': ExpandableSidebar,
     'custom-accordian': CustomAccordian,
+    'dialog-modal': DialogModal,
     'base-input-select': BaseInputSelect,
     'base-input-text' : BaseInputText
     },
@@ -716,11 +736,11 @@ export default {
         this.isOpen = !this.isOpen;
         },
         createPropList() {
+            // creates seperate proposal object for selecting proposals
             this.propSelect = this.filters;
         },
         populateSelectedColumns() {
-            
-
+            // populates selectedColumns object with selected columns
             for (const value of Object.entries(this.summaryColumns)) {
                 this.selectedColumns.push(value[1].title);
             };
@@ -729,6 +749,7 @@ export default {
 
         },
         mapSummaryParameters() {
+            // adds extra keys to summaryParameters object
             this.summaryParameters = 
             this.summaryParameters.map((e) => {  
             return { ...e, 
@@ -740,10 +761,9 @@ export default {
                 "checked": true,
                 "data": [] };
         })
-        console.log(this.summaryParameters)
         },
         addFilterOption(event) {
-
+            // adds empty parameter filter option to filters object 
             if (this.filters.length < 18) {
                 this.filters.push(
                     {
@@ -765,9 +785,11 @@ export default {
 
         },
         popFilter(value) {
+            // removes selected filter option to filters object
             this.filters.splice(value, 1)
         },
         addFormatOption(event) {
+            // UNUSED - ready for future functionality. Add format parameter option to format object  
             if (this.format.length < 18) {
                 this.format.push(
                     {
@@ -792,11 +814,12 @@ export default {
 
         },
         popFormat(value) {
+            // UNUSED - ready for future functionality. Remove format parameter option to format object  
             this.format.splice(value, 1)
         },
         async searchProposal() {
 
-            // gets proposal list for combo box from proposal collection 
+            // gets proposal list from proposal endpoint for combo box from proposal collection 
             try {
 
                 this.isLoading = true;
@@ -823,7 +846,7 @@ export default {
 
         },
         async getSpaceGroups() {
-            // gets space group list for combo box from space group collection 
+            // gets space group list from spacegroup endpoint for combo box from space group collection 
             try {
                 this.isLoading = true;
 
@@ -847,7 +870,7 @@ export default {
             }
         },
         async getProcessingPipelines() {
-            // gets processing pipelines list for combo box from processing pipeline collection 
+            // gets processing pipelines list from processing pipeline endpoint for combo box from processing pipeline collection 
             try {
                 this.isLoading = true;
 
@@ -870,7 +893,7 @@ export default {
             }
         },
         async getBeamLine() {
-            // gets processing pipelines list for combo box from processing pipeline collection 
+            // gets beamline list from beamline endpoint for combo box from processing pipeline collection 
             try {
                 this.isLoading = true;
 
@@ -961,7 +984,11 @@ export default {
 
         },
         async orderBy(index) {
+          // orders column parameters, adds this to summary parameters object and calls results based on query params
+
             try {
+
+                // probably a better way to do this? messy
 
                 if (this.selectedColumns[index].order == '') {
                     this.selectedColumns[index].order = 'DESC'
@@ -1245,7 +1272,7 @@ export default {
                 };
         },
         checkedColumns(index) {
-
+            // add columns to selected or deselected object for pill display
             this.summaryParameters[index].checked = !this.summaryParameters[index].checked;
 
             if (this.summaryParameters[index].checked == false){
@@ -1291,7 +1318,7 @@ export default {
 
         },
         togglePills(value) {
-
+            // remove selected columns using pills x icon
             for (var index in this.summaryParameters) {
 
                 if (this.summaryParameters[index].title == value) {
@@ -1313,6 +1340,7 @@ export default {
 
         },
         renderIFrame(index) {
+            // renders datacollection iframe on icon hover, sets attribute src to render dc page
             var src = this.$refs.iframeref[index].srcdoc
 
             if (src) {
@@ -1331,8 +1359,8 @@ export default {
     },
     watch: {
         filters: {
+            // if empty filter combo box is populated with a parameter, then populate the keys with values attributed to the selected parameter
             handler(val){
-                console.log(this.filters)
                 for (var i in this.filters) {
 
                     let keyToCompare = this.filters[i].selected;
@@ -1485,7 +1513,7 @@ export default {
 
 .results-grid {
     display: grid;
-    grid-template-columns: repeat(20, 20fr);
+    grid-template-columns: 60fr 60fr repeat(18, 20fr);
     grid-auto-flow: column;
     grid-template-rows: 50px;
 }
@@ -1499,7 +1527,7 @@ export default {
 
 .results-content{
     overflow: visible; 
-    min-width:max-content;
+    /* min-width:max-content; */
     display:block;
     background-color: rgb(255, 255, 255);
 }
@@ -1519,7 +1547,10 @@ export default {
     white-space: nowrap;
     font-size:small;
     font-family: Arial, Helvetica, sans-serif;
+}
 
+.justify-end {
+    justify-content: flex-end;
 }
 
 
@@ -1607,8 +1638,8 @@ export default {
 
 /* Tooltip container */
 .tooltip {
-  position: relative;
-  display: inline-block;
+  /* position: relative;
+  display: inline-block; */
   color: rgb(104, 104, 104); /* If you want dots under the hoverable text */
 }
 
@@ -1620,7 +1651,12 @@ export default {
     color: rgb(104, 104, 104);
 }
 
-.tooltip-position {
+.tooltip-position-relative {
+    position: relative;
+    display: inline-block;
+}
+
+.tooltip-position-absolute {
     position: absolute;
 }
 
@@ -1674,7 +1710,7 @@ export default {
 
 .tiptext-preview {
     position: absolute;
-    left: 7.5%;
+    left: 7%;
     font-size:small;
     display: inline-block;
     margin: 2em;
@@ -1695,11 +1731,43 @@ export default {
 }
 
 
+.param-tooltip {
+  cursor:default;
+  /* position:relative; */
+  font-size:12px;
+
+  &:hover .param-preview {
+    opacity:1;
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+  
+  &:hover {
+    box-shadow: 0 1px 5px rgba(0,0,0,.1);
+    border-color: #333;
+  }
+}
 
 
+.param-preview {
+  transition:.2s ease-in-out opacity, .2s ease-in-out transform;
+  opacity:0;
+  position:absolute;
+  right:10%;
+  box-shadow:0 1px 5px rgba(0,0,0,.5);
+  width:230px;
+  height:10px;
+  border:4px solid #fff;
+  overflow-x:hidden;
+  overflow-y:auto;
+  transform-origin:center bottom;
+  transform: translateX(-50%) translateY(10px) scale(.9);
 
-
-
+  iframe {
+    transform:scale(.2);
+    transform-origin:0 0;
+  }
+  
+}
 
 
 

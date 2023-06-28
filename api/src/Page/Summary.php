@@ -16,36 +16,36 @@ class Summary extends Page
         'propid' => '(.*)',
 
         // visit
-        'com' => '(.*)', //comment
-        'PROPOSALID' => '(.*)',
+        'com' => '(\[[^\ \]]*\],(asc|desc))', //comment
+        'PROPOSALID' => '(\[[^\ \]]*\],(asc|desc))',
 
-        'BEAMLINENAME' => '(.*)',
-        'VISITNUMBER' => '(.*)',
+        'BEAMLINENAME' => '(\[[^\ \]]*\],(asc|desc))',
+        // 'VISITNUMBER' => '(\[[^\ \]]*\],(asc|desc))',
 
         // Filter Parameters - array of parameter orders e.g. ascending, descending and the comparison value
-        'sample' => '(.*)', //sample name
-        'filetemp' => '(.*)', //file template
-        'dcid' => '(.*)', //data collection id 
-        'pp' => '(.*)', // processing programs
-        'sg' => '(.*)', // space group
+        'sample' => '(^(\w+),(asc|desc|)+$)', //sample name
+        'filetemp' => '(^(\w+),(asc|desc|)+$)', //file template
+        // 'dcid' => '(.*)', //data collection id 
+        'pp' => '(\[[^\ \]]*\],(asc|desc))', // processing programs
+        'sg' => '(\[[^\ \]]*\],(asc|desc))', // space group
 
 
         // Filter Parameters - array of parameter operands and orders such as greater than, equal to, between, less than, like, ascending, descending and the comparison value.
         'STARTDATE' => '(.*)', // visit start date
-        'rca' => '(.*)', // refined cell type a
-        'rcb' => '(.*)', // refined cell type b
-        'rcc' => '(.*)', // refined cell type c
-        'rcal' => '(.*)', // refined cell type alpha
-        'rcbe' => '(.*)', // refined cell type beta
-        'rcga' => '(.*)', // refined cell type gamma
-        'rlho' => '(.*)', // resolution limit high outer
-        'rmpmi' => '(.*)', // rmeaswithiniplusiminus inner
-        'riso' => '(.*)', // resioversigi2 overall
-        'cci' => '(.*)', // ccanomalous inner
-        'cco' => '(.*)', // ccanomalous overall
-        'rfsi' => '(.*)', // rfreevaluestart inner
-        'rfei' => '(.*)', // rfreevalueend inner
-        'nobi' => '(.*)', //  noofblobs inner
+        'rca' => '(^(\d+),(.+),(asc|desc|)+$)', // refined cell type a
+        'rcb' => '(^(\d+),(.+),(asc|desc|)+$)', // refined cell type b
+        'rcc' => '(^(\d+),(.+),(asc|desc|)+$)', // refined cell type c
+        'rcal' => '(^(\d+),(.+),(asc|desc|)+$)', // refined cell type alpha
+        'rcbe' => '(^(\d+),(.+),(asc|desc|)+$)', // refined cell type beta
+        'rcga' => '(^(\d+),(.+),(asc|desc|)+$)', // refined cell type gamma
+        'rlho' => '(^(\d+),(.+),(asc|desc|)+$)', // resolution limit high outer
+        'rmpmi' => '(^(\d+),(.+),(asc|desc|)+$)', // rmeaswithiniplusiminus inner
+        'riso' => '(^(\d+),(.+),(asc|desc|)+$)', // resioversigi2 overall
+        'cci' => '(^(\d+),(.+),(asc|desc|)+$)', // ccanomalous inner
+        'cco' => '(^(\d+),(.+),(asc|desc|)+$)', // ccanomalous overall
+        'rfsi' => '(^(\d+),(.+),(asc|desc|)+$)', // rfreevaluestart inner
+        'rfei' => '(^(\d+),(.+),(asc|desc|)+$)', // rfreevalueend inner
+        'nobi' => '(^(\d+),(.+),(asc|desc|)+$)', //  noofblobs inner
 
 
     );
@@ -75,22 +75,45 @@ class Summary extends Page
         $order = '';
         $order_arr = array();
         $args = array();
-        $sg_where = '';
-        $pp_where = '';
-        $BEAMLINENAME_where = '';
+
+        $op_array = array(">", "LIKE", "=", "<");
         
         if (!$this->has_arg('propid')) $this->_error('No proposal defined');
-
-        // $args = array($this->arg('propid'));
-        // array_push($where_arr, 'pt.proposalid = ?');
-        // foreach ($args as $value) {
-        //     array_push($where_arr, 'pt.proposalid = ?');
-        // };
 
         // $propid_array  = explode(',', $this->arg('propid'));
         $propid_args = preg_split('/[,]+(?![^\[]*\])/', urldecode($this->arg('propid')));
         $propid_array = explode(',', implode(str_replace(array('[',']'),'', $propid_args)));
         array_push($order_arr, 'sf.autoProcIntegrationId DESC');
+
+
+        if (!$this->staff) {
+            $person_id = $this->user->personId;
+
+            $where_propid_personid_array = array();
+            
+
+            // # check user can see selected proposals and get all available visits if so
+            foreach ($propid_array as $value) {
+                array_push($where_propid_personid_array, '(sf.personid = ?');
+                array_push($where_propid_personid_array, 'AND pt.proposalid = ? )');
+                array_push($args, $person_id);
+                array_push($args, $value);
+            };
+
+            array_push($where_arr, '('.implode(' OR ', $where_propid_personid_array).')');
+
+
+        } else {
+            $where_propid_array = array();
+
+            foreach ($propid_array as $value) {
+                array_push($where_propid_array, 'pt.proposalid = ?');
+                array_push($args, $value);
+            };
+
+            array_push($where_arr, '('.implode(' OR ', $where_propid_array).')');
+
+        }
 
 
         // [VALUE, ORDER]
@@ -101,7 +124,7 @@ class Summary extends Page
             array_push($args, $sample_args[0]);
             array_push($where_arr, "lower(sf.name) LIKE lower(CONCAT(CONCAT('%',?),'%')) ESCAPE '$' ");
             
-            if (isset($sample_args[1]) != null) {
+            if (isset($sample_args[1]) == 'desc' || isset($sample_args[1]) == 'asc') {
                 array_push($order_arr, 'sf.name '.$sample_args[2]);
             }
 
@@ -114,24 +137,24 @@ class Summary extends Page
             array_push($args, $filetemp_args[0]);
             array_push($where_arr, "lower(sf.fileTemplate) LIKE lower(CONCAT(CONCAT('%',?),'%')) ESCAPE '$' ");
             
-            if (isset($filetemp_args[1]) != null) {
+            if (isset($filetemp_args[1]) == 'desc' || isset($filetemp_args[1]) == 'asc') {
                 array_push($order_arr, 'sf.fileTemplate '.$filetemp_args[1]);
             }
 
         }
 
 
-        if ($this->has_arg('dcid')) {
-            $dcid_args = explode(',', $this->arg('dcid'));
+        // if ($this->has_arg('dcid')) {
+        //     $dcid_args = explode(',', $this->arg('dcid'));
 
-            array_push($args, $dcid_args[0]);
-            array_push($where_arr, 'sf.dataCollectionId = ?');
+        //     array_push($args, $dcid_args[0]);
+        //     array_push($where_arr, 'sf.dataCollectionId = ?');
             
-            if (isset($dcid_args[1]) != null) {
-                array_push($order_arr, 'sf.dataCollectionId '.$dcid_args[1]);
-            }
+        //     if (isset($dcid_args[1]) == 'desc' || isset($dcid_args[1]) == 'asc') {
+        //         array_push($order_arr, 'sf.dataCollectionId '.$dcid_args[1]);
+        //     }
 
-        }
+        // }
 
         if ($this->has_arg('pp')) {
 
@@ -140,15 +163,15 @@ class Summary extends Page
             $pp_args  = preg_split('/[,]+(?![^\[]*\])/', urldecode($this->arg('pp')));
 
             $pp_values = explode(',', str_replace(array('[',']'),'', $pp_args[0]));
-            // $pp_args = explode(',', urldecode($this->arg('pp')));
 
             foreach ($pp_values as $value) {
-                array_push($pp_array, "lower(ppt.processingPrograms) LIKE lower(CONCAT(CONCAT('%','".$value."'),'%')) ESCAPE '$' ");
+                array_push($pp_array, "lower(ppt.processingPrograms) LIKE lower( ? ) ");
+                array_push($args, $value);
             }
 
-            $pp_where = ' AND ('.implode(" OR ", $pp_array).')';
+            array_push($where_arr, '('.implode(" OR ", $pp_array).')');
             
-            if (isset($pp_args[1]) != null) {
+            if (isset($pp_args[1]) == 'desc' || isset($pp_args[1]) == 'asc') {
                 array_push($order_arr, 'ppt.processingPrograms '.$pp_args[1]);
             }
 
@@ -163,12 +186,13 @@ class Summary extends Page
             $sg_values = explode(',', str_replace(array('[',']'),'', $sg_args[0]));
 
             foreach ($sg_values as $value) {
-                array_push($sg_array, "lower(sgt.spaceGroup) LIKE lower(CONCAT(CONCAT('%','".$value."'),'%')) ESCAPE '$' ");
+                array_push($sg_array, "lower(sgt.spaceGroup) LIKE lower( ? ) ");
+                array_push($args, $value);
             };
 
-            $sg_where = ' AND ('.implode(" OR ", $sg_array).')';
+            array_push($where_arr, '('.implode(" OR ", $sg_array).')');
             
-            if (isset($sg_args[1]) != null) {
+            if (isset($sg_args[1]) == 'desc' || isset($sg_args[1]) == 'asc') {
                 array_push($order_arr, 'sgt.spaceGroup '.$sg_args[1]);
             }
 
@@ -183,12 +207,13 @@ class Summary extends Page
             $BEAMLINENAME_values = explode(',', str_replace(array('[',']'),'', $BEAMLINENAME_args[0]));
 
             foreach ($BEAMLINENAME_values as $value) {
-                array_push($BEAMLINENAME_array, "lower(vt.beamLineName) LIKE lower(CONCAT(CONCAT('%','".$value."'),'%')) ESCAPE '$' ");
+                array_push($BEAMLINENAME_array, "lower(vt.beamLineName) LIKE lower( ? ) ");
+                array_push($args, $value);
             };
 
-            $BEAMLINENAME_where = ' AND ('.implode(" OR ", $BEAMLINENAME_array).')';
+            array_push($where_arr, '('.implode(" OR ", $BEAMLINENAME_array).')');
             
-            if (isset($BEAMLINENAME_args[1]) != null) {
+            if (isset($BEAMLINENAME_args[1]) == 'desc' || isset($BEAMLINENAME_args[1]) == 'asc') {
                 array_push($order_arr, 'vt.beamLineName '.$BEAMLINENAME_args[1]);
             }
 
@@ -200,9 +225,13 @@ class Summary extends Page
             $rca_args = explode(',', $this->arg('rca'));
 
             array_push($args, $rca_args[0]);
-            array_push($where_arr, 'sf.refinedCell_a '.$rca_args[1].' ?');
             
-            if (isset($rca_args[2]) != null) {
+            if (in_array($rca_args[1], $op_array) ) {
+                array_push($where_arr, 'sf.refinedCell_a '.$rca_args[1].' ?');
+            }
+
+            
+            if (isset($rca_args[2]) == 'desc' || isset($rca_args[2]) == 'asc') {
                 array_push($order_arr, 'sf.refinedCell_a '.$rca_args[2]);
             }
 
@@ -213,9 +242,13 @@ class Summary extends Page
             $rcb_args = explode(',', $this->arg('rcb'));
 
             array_push($args, $rcb_args[0]);
-            array_push($where_arr, 'sf.refinedCell_b '.$rcb_args[1].' ?');
             
-            if (isset($rcb_args[2]) != null) {
+            if (in_array($rcb_args[1], $op_array)) {
+                array_push($where_arr, 'sf.refinedCell_b '.$rcb_args[1].' ?');
+            }
+            
+            
+            if (isset($rcb_args[2]) == 'desc' || isset($rcb_args[2]) == 'asc') {
                 array_push($order_arr, 'sf.refinedCell_b '.$rcb_args[2]);
             }
 
@@ -226,9 +259,13 @@ class Summary extends Page
             $rcc_args = explode(',', $this->arg('rcc'));
 
             array_push($args, $rcc_args[0]);
-            array_push($where_arr, 'sf.refinedCell_c '.$rcc_args[1].' ?');
             
-            if (isset($rcc_args[2]) != null) {
+            if (in_array($rcc_args[1], $op_array)) {
+                array_push($where_arr, 'sf.refinedCell_c '.$rcc_args[1].' ?');
+            }
+            
+            
+            if (isset($rcc_args[2]) == 'desc' || isset($rcc_args[2]) == 'asc') {
                 array_push($order_arr, 'sf.refinedCell_c '.$rcc_args[2]);
             }
 
@@ -239,9 +276,13 @@ class Summary extends Page
             $rcal_args = explode(',', $this->arg('rcal'));
 
             array_push($args, $rcal_args[0]);
-            array_push($where_arr, 'sf.refinedCell_alpha '.$rcal_args[1].' ?');
             
-            if (isset($rcal_args[2]) != null) {
+            if (in_array($rcal_args[1], $op_array)) {
+                array_push($where_arr, 'sf.refinedCell_alpha '.$rcal_args[1].' ?');
+            }
+            
+            
+            if (isset($rcal_args[2]) == 'desc' || isset($rcal_args[2]) == 'asc') {
                 array_push($order_arr, 'sf.refinedCell_alpha '.$rcal_args[2]);
             }
 
@@ -251,9 +292,13 @@ class Summary extends Page
             $rcbe_args = explode(',', $this->arg('rcbe'));
 
             array_push($args, $rcbe_args[0]);
-            array_push($where_arr, 'sf.refinedCell_beta '.$rcbe_args[1].' ?');
             
-            if (isset($rcbe_args[2]) != null) {
+            if (in_array($rcbe_args[1], $op_array)) {
+                array_push($where_arr, 'sf.refinedCell_beta '.$rcbe_args[1].' ?');
+            }
+            
+            
+            if (isset($rcbe_args[2]) == 'desc' || isset($rcbe_args[2]) == 'asc') {
                 array_push($order_arr, 'sf.refinedCell_beta '.$rcbe_args[2]);
             }
 
@@ -263,9 +308,13 @@ class Summary extends Page
             $rcga_args = explode(',', $this->arg('rcga'));
 
             array_push($args, $rcga_args[0]);
-            array_push($where_arr, 'sf.refinedCell_gamma '.$rcga_args[1].' ?');
             
-            if (isset($rcga_args[2]) != null) {
+            if (in_array($rcga_args[1], $op_array)) {
+                array_push($where_arr, 'sf.refinedCell_gamma '.$rcga_args[1].' ?');
+            }
+            
+            
+            if (isset($rcga_args[2]) == 'desc' || isset($rcga_args[2]) == 'asc') {
                 array_push($order_arr, 'sf.refinedCell_gamma '.$rcga_args[2]);
             }
 
@@ -275,9 +324,13 @@ class Summary extends Page
             $rlho_args = explode(',', $this->arg('rlho'));
 
             array_push($args, $rlho_args[0]);
-            array_push($where_arr, 'sf.resolutionLimitHighOuter '.$rlho_args[1].' ?');
             
-            if (isset($rlho_args[2]) != null) {
+            if (in_array($rlho_args[1], $op_array)) {
+                array_push($where_arr, 'sf.resolutionLimitHighOuter '.$rlho_args[1].' ?');
+            }
+            
+            
+            if (isset($rlho_args[2]) == 'desc' || isset($rlho_args[2]) == 'asc') {
                 array_push($order_arr, 'sf.resolutionLimitHighOuter '.$rlho_args[2]);
             }
 
@@ -287,9 +340,13 @@ class Summary extends Page
             $rmpmi_args = explode(',', $this->arg('rmpmi'));
 
             array_push($args, $rmpmi_args[0]);
-            array_push($where_arr, 'sf.rMeasWithinIPlusIMinusInner '.$rmpmi_args[1].' ?');
             
-            if (isset($rmpmi_args[2]) != null) {
+            if (in_array($rmpmi_args[1], $op_array)) {
+                array_push($where_arr, 'sf.rMeasWithinIPlusIMinusInner '.$rmpmi_args[1].' ?');
+            }
+            
+            
+            if (isset($rmpmi_args[2]) == 'desc' || isset($rmpmi_args[2]) == 'asc') {
                 array_push($order_arr, 'sf.rMeasWithinIPlusIMinusInner '.$rmpmi_args[2]);
             }
 
@@ -299,9 +356,13 @@ class Summary extends Page
             $riso_args = explode(',', $this->arg('riso'));
 
             array_push($args, $riso_args[0]);
-            array_push($where_arr, 'sf.resIOverSigI2Overall '.$riso_args[1].' ?');
             
-            if (isset($riso_args[2]) != null) {
+            if (in_array($riso_args[1], $op_array)) {
+                array_push($where_arr, 'sf.resIOverSigI2Overall '.$riso_args[1].' ?');
+            }
+            
+            
+            if (isset($riso_args[2]) == 'desc' || isset($riso_args[2]) == 'asc') {
                 array_push($order_arr, 'sf.resIOverSigI2Overall '.$riso_args[2]);
             }
 
@@ -311,9 +372,13 @@ class Summary extends Page
             $cci_args = explode(',', $this->arg('cci'));
 
             array_push($args, $cci_args[0]);
-            array_push($where_arr, 'sf.ccAnomalousInner '.$cci_args[1].' ?');
             
-            if (isset($cci_args[2]) != null) {
+            if (in_array($cci_args[1], $op_array)) {
+                array_push($where_arr, 'sf.ccAnomalousInner '.$cci_args[1].' ?');
+            }
+            
+            
+            if (isset($cci_args[2]) == 'desc' || isset($cci_args[2]) == 'asc') {
                 array_push($order_arr, 'sf.ccAnomalousInner '.$cci_args[2]);
             }
 
@@ -323,9 +388,13 @@ class Summary extends Page
             $cco_args = explode(',', $this->arg('cco'));
 
             array_push($args, $cco_args[0]);
-            array_push($where_arr, 'sf.ccAnomalousOverall '.$cco_args[1].' ?');
             
-            if (isset($cco_args[2]) != null) {
+            if (in_array($cco_args[1], $op_array)) {
+                array_push($where_arr, 'sf.ccAnomalousOverall '.$cco_args[1].' ?');
+            }
+            
+            
+            if (isset($cco_args[2]) == 'desc' || isset($cco_args[2]) == 'asc') {
                 array_push($order_arr, 'sf.ccAnomalousOverall '.$cco_args[2]);
             }
 
@@ -335,9 +404,13 @@ class Summary extends Page
             $rfsi_args = explode(',', $this->arg('rfsi'));
 
             array_push($args, $rfsi_args[0]);
-            array_push($where_arr, 'sf.rFreeValueStartInner '.$rfsi_args[1].' ?');
             
-            if (isset($rfsi_args[2]) != null) {
+            if (in_array($rfsi_args[1], $op_array)) {
+                array_push($where_arr, 'sf.rFreeValueStartInner '.$rfsi_args[1].' ?');
+            }
+            
+            
+            if (isset($rfsi_args[2]) == 'desc' || isset($rfsi_args[2]) == 'asc') {
                 array_push($order_arr, 'sf.rFreeValueStartInner '.$rfsi_args[2]);
             }
 
@@ -347,9 +420,13 @@ class Summary extends Page
             $rfei_args = explode(',', $this->arg('rfei'));
 
             array_push($args, $rfei_args[0]);
-            array_push($where_arr, 'sf.rFreeValueEndInner '.$rfei_args[1].' ?');
             
-            if (isset($rfei_args[2]) != null) {
+            if (in_array($rfei_args[1], $op_array)) {
+                array_push($where_arr, 'sf.rFreeValueEndInner '.$rfei_args[1].' ?');
+            }
+            
+            
+            if (isset($rfei_args[2]) == 'desc' || isset($rfei_args[2]) == 'asc') {
                 array_push($order_arr, 'sf.rFreeValueEndInner '.$rfei_args[2]);
             }
 
@@ -359,9 +436,13 @@ class Summary extends Page
             $nobi_args = explode(',', $this->arg('nobi'));
 
             array_push($args, $nobi_args[0]);
-            array_push($where_arr, 'sf.noofblobs '.$nobi_args[1].' ?');
             
-            if (isset($nobi_args[2]) != null) {
+            if (in_array($nobi_args[1], $op_array)) {
+                array_push($where_arr, 'sf.noofblobs '.$nobi_args[1].' ?');
+            }
+            
+            
+            if (isset($nobi_args[2]) == 'desc' || isset($nobi_args[2]) == 'asc') {
                 array_push($order_arr, 'sf.noofblobs '.$nobi_args[2]);
             }
 
@@ -375,46 +456,9 @@ class Summary extends Page
             $order = implode(", ", $order_arr);
         }
 
-        if (!$this->staff) {
-            $person_id = $this->user->personId;
-            
-            $where_person_propid_array = array();
-
-            // #delete
-            // $person_id = 16565;
-
-            // # check user can see selected proposals and get all available visits if so
-            foreach ($propid_array as $value) {
-                array_push($where_person_propid_array, '(sf.personid = '.$person_id.' AND pt.proposalid = '.$value.')');
-            };
-
-            $where_person_propid = '('.implode(' OR ', $where_person_propid_array).')';
-
-            if (empty($where)) {
-                $where =  $where_person_propid;
-            } else {
-                $where =  $where_person_propid.' AND ('.$where.')';
-            }
-        } else {
-            $where_propid_array = array();
-
-            foreach ($propid_array as $value) {
-                array_push($where_propid_array, 'pt.proposalid = '.$value);
-            };
-
-            $where_propid = '('.implode(' OR ', $where_propid_array).')';
-
-            if (empty($where)) {
-                $where =  $where_propid;
-            } else {
-                $where =  $where_propid.' AND ('.$where.')';
-            }
-
-
-        }
 
         // add multiselect params to end of where clause. 
-        $where = $where.$pp_where.$sg_where.$BEAMLINENAME_where;
+        // $where = $where.$pp_where.$sg_where.$BEAMLINENAME_where;
 
         // get tot query
         $tot_args = $args;
@@ -494,7 +538,7 @@ class Summary extends Page
         
         // sql query output
 
-        // $this->_output(array('data' => $where));
+        // $this->_output(array('data' => $where, 'args' => $args));
         $this->_output(array('data' => $rows, 'total' => $tot ));
         // $this->_output(array('data' => $rows, 'where' => $where, 'order' => $order, 'args' => $args));
 
