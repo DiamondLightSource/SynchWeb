@@ -863,7 +863,7 @@ class Imaging extends Page
 
         $sc = $this->db->pq("SELECT sc.screenid 
               FROM screen sc 
-              WHERE sc.screenid = :1 and sc.proposalid= :2", array($this->arg('scid'), $this->proposalid));
+              WHERE sc.screenid = :1 and (sc.global=1 or sc.proposalid= :2)", array($this->arg('scid'), $this->proposalid));
 
         if (!sizeof($sc))
             $this->_error('No such screen');

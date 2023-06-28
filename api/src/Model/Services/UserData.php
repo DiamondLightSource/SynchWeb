@@ -63,16 +63,16 @@ class UserData
         $this->db->pq("DELETE FROM usergroup_has_permission WHERE usergroupid=:1 and permissionid=:2", array($userGroupId, $permisionId));
     }
 
-    private function addPersonOrProposalSearch($pid, $personId, &$args): string
+    private function addPersonOrProposalSearch($proposalid, $personId, &$args): string
     {
         $whereClause = ' AND (prhp.proposalid=:' . (sizeof($args) + 1) . ' OR lc.proposalid=:' . (sizeof($args) + 2) . ' OR p.personid=:' . (sizeof($args) + 3) . ')';
-        array_push($args, $pid);
-        array_push($args, $pid);
+        array_push($args, $proposalid);
+        array_push($args, $proposalid);
         array_push($args, $personId);
         return $whereClause;
     }
 
-    function getUsers($getCount, $isStaffMember, $stringMatch, $page, $sortBy = null, $pid = null, $personId = null, $isManager = false, $currentUserId = null, $gid = null, $sid = null, $pjid = null, $visitName = null, $perPage = 15, $isAscending = true, $isAll = false, $onlyLogins = false)
+    function getUsers($getCount, $isStaffMember, $stringMatch, $page, $sortBy = null, $pid=null,  $proposalid = null, $personId = null, $isManager = false, $currentUserId = null, $gid = null, $sid = null, $pjid = null, $visitName = null, $perPage = 15, $isAscending = true, $isAll = false, $onlyLogins = false)
     {
         $args = array();
 
@@ -96,16 +96,21 @@ class UserData
 
         if ($personId == "" && $stringMatch == "" && $gid == "" && $sid == "" && $visitName == "" && $pjid == "")
         {
-            return $this->getUsersForProposal($where, $getCount, $page, $sortBy, $pid, $currentUserId, $perPage, $isAscending, $start, $end);
+            //secured by making sure the user has access toproposalid
+            return $this->getUsersForProposal($where, $getCount, $page, $sortBy, $proposalid, $currentUserId, $perPage, $isAscending, $start, $end);
         }
 
         $join = '';
         $extc = '';
         $group = 'GROUP BY p.personid';
 
-        if (($personId && !$isManager) || $pid || (!$isStaffMember && !$visitName))
+        // This blocks means that non-staff can only see users on their proposal, except when they looking at a visit 
+        //  (i.e. the proposal that was checkin page.php is added to the where clause)
+        if ((($personId && !$isManager) // if you not a manager: you looking for a person 
+            || (!$isStaffMember && !$visitName)) // if you are not a staff member and not loking at a specific visit
+            || $pid) // if you are looking for user based on a proposal, but this 
         {
-            $where .= $this->addPersonOrProposalSearch($pid, $currentUserId, $args);
+            $where .= $this->addPersonOrProposalSearch($proposalid, $currentUserId, $args);
         }
 
         if ($personId)
@@ -206,15 +211,15 @@ class UserData
         return $rows;
     }
 
-    function getUsersForProposal($where, $getCount, $page, $sortBy, $pid, $currentUserId, $perPage, $isAscending, $start, $end)
+    function getUsersForProposal($where, $getCount, $page, $sortBy, $proposalid, $currentUserId, $perPage, $isAscending, $start, $end)
     {
         $args = array();
 
         $where1 = $where . ' AND prhp.proposalid=:1';
         $where2 = $where . ' AND (lc.proposalid=:2 OR p.personid=:3)';
 
-        array_push($args, $pid);
-        array_push($args, $pid);
+        array_push($args, $proposalid);
+        array_push($args, $proposalid);
         array_push($args, $currentUserId);
 
         if ($getCount)

@@ -22,7 +22,7 @@
     $jwt_key = '';
 
     # Auth type
-    # Can be cas, ldap
+    # Can be cas, ldap, oidc
     $authentication_type = 'cas';
 
     # CAS url (if using cas, assume https)
@@ -30,6 +30,12 @@
 
     # Follow CAS SSO
     $cas_sso = true;
+
+    // OIDC (or OAuth2) client ID and secret. Only useful if authentication_type is set to OIDC
+    $oidc_client_id = "oidcClientId";
+    $oidc_client_secret = "oidcClientSecret";
+    // Cookie key used for SSO/cookie based authentication
+    $cookie_key = "synchweb-auth";
 
     # CAS CA Cert (for SSO)
     $cacert = '/etc/certs/ca-bundle.crt';
@@ -138,6 +144,7 @@
     # Recipients for dewar Dispatch / Transfers Emails when users request dispatch or tranfser from the shipping page
     $dispatch_email = 'ehc@server.ac.uk, goods@server.ac.uk';
     $transfer_email = 'ehc@server.ac.uk';
+    $arrival_email = 'ehc@server.ac.uk';
 
     # and for RED experiments, 
     # email will be sent for shipments containing red level samples when "send to facility" is clicked
@@ -339,5 +346,7 @@
         'i03' => 'BL03I',
     );
 
-
+    # Dials server values
+    $dials_rest_url = "";
+    $dials_rest_jwt = "";
 ?>

@@ -148,7 +148,7 @@ define(['marionette',
             if (did == this.lastDewarID && !force) return
                 
             this.$el.find('.dewar_name').text(this.dewars.findWhere({ DEWARID: did }).get('CODE'))
-            if (app.proposal && app.proposal.get('ACTIVE') == '1') this.$el.find('.add_container').html('<a class="button" href="/containers/add/did/'+did+'"><i class="fa fa-plus"></i> Add Container</a>')
+            if (app.proposal && app.proposal.get('ACTIVE') == '1') this.$el.find('.add_container').html('<a class="button" data-testid="shipment-add-container" href="/containers/add/did/'+did+'"><i class="fa fa-plus"></i> Add Container</a>')
             this.dewarcontent.dewarID = did
             this.dewarcontent.fetch()
             this.dewarhistory.id = did
@@ -229,6 +229,8 @@ define(['marionette',
             edit.create("SCHEDULINGRESTRICTIONS", 'text')
             edit.create("LASTMINUTEBEAMTIME", 'select', { data: {'Yes': 'Yes', 'No': 'No'}})
             edit.create("DEWARGROUPING", 'select', { data: {'Yes': 'Yes', 'No': 'No', 'Don\'t mind': 'Don\'t mind'}})
+            edit.create("EXTRASUPPORTREQUIREMENT", 'text');
+            edit.create("MULTIAXISGONIOMETRY", 'select', { data: {'Yes': 'Yes', 'No': 'No'}})
 
             this.updateDynamic()
             this.listenTo(this.model, "change:DYNAMIC", this.updateDynamic)

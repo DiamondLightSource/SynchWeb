@@ -29,4 +29,11 @@ class Utils
     {
         return (isset($value)) ? $value : $default;
     }
+
+    public static function filterParamFromUrl($url, $param): string
+    {
+        // Removes search parameter from URL and returns encoded URL
+        $redirect_url = preg_replace('/(&|\?)'.preg_quote($param).'=[^&]*$/', '', $url);
+        return urlencode(preg_replace('/(&|\?)'.preg_quote($param).'=[^&]*&/', '$1', $redirect_url));
+    }
 }

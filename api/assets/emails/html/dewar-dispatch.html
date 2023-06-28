@@ -17,7 +17,7 @@
 						<tr>
 							<td style="padding: 1.5%; font-weight: bold">Air Waybill</td>
 							<td>Shipping service could not book the shipment.<br/>
-								Please book a shipment for this Dewar using the details below.</td>
+								Goods Handling, please book a shipment for this Dewar using the details below.</td>
 						</tr>
 					<?php endif; ?>
 				<?php endif; ?>
@@ -47,7 +47,10 @@
 					<td>
 						<?php echo $data['GIVENNAME'] ?> <?php echo $data['FAMILYNAME'] ?><br />
 						<?php echo $data['LABNAME'] ?> <br />
-						<?php echo nl2br($data['ADDRESS']) ?>
+						<?php echo nl2br($data['ADDRESS']) ?> <br />
+						<?php echo $data['CITY'] ?> <br />
+						<?php echo $data['POSTCODE'] ?> <br />
+						<?php echo $data['COUNTRY'] ?>
 					</td>
 				</tr>
 				<tr>
@@ -60,7 +63,7 @@
 					<td><?php echo $data['DELIVERYAGENT_AGENTNAME'] ?></td>
 				</tr>
 
-				<?php if (!$data['FACILITYCODE']): ?>
+				<?php if (!$data['TERMSACCEPTED']): ?>
 				<tr>
 					<td style="padding: 1.5%; font-weight: bold">Courier Account No.</td>
 					<td><?php echo $data['DELIVERYAGENT_AGENTCODE'] ?></td>
