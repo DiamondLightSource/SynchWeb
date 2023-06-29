@@ -8,9 +8,6 @@ use HTMLPurifier_Config;
 use ReflectionClass;
 use Slim\Slim;
 use SynchWeb\Database\DatabaseParent;
-use xmlrpc_client;
-use xmlrpcmsg;
-use xmlrpcval;
 
 use SynchWeb\Queue;
 use SynchWeb\Utils;
@@ -964,7 +961,7 @@ class Page
 
         $ret = array();
         $url_query = http_build_query($parameters);
-        $archive_query_url = $archive_url . $url_query;
+        $archive_query_url = $archive_url . "?". $url_query;
         $val = file_get_contents($archive_query_url);
 
         if ($val)
