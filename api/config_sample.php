@@ -144,6 +144,13 @@
     # and for shipment booked,
     $shipbooked_email = 'goods@server.ac.uk';
 
+    # dewar back in storage (complete)
+    $dewar_complete_email = '';
+
+    # Send a 'visit finished' email when a dewar moves from this beamline to this (regex) location
+    $dewar_complete_email_locations = array('i03' => '/tray-\w+/',
+                                           );
+
     # Industrial Contacts
     # - Industrial users get a personalised email with in contact details,
     #   template in assets/emails/dewar-stores-in-in.html
