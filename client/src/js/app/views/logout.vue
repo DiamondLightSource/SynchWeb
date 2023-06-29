@@ -1,8 +1,10 @@
 <template>
   <div id="vue-logout" class="content">
-
     <h1>Logout</h1>
-    <p class="tw-text-center tw-text-lg tw-mb-2">Successfully logged out. <a :href="logoutUrl">Log out of CAS too?</a></p>
+    <p class="tw-text-center tw-text-lg tw-mb-2">
+      Successfully logged out. You might not be logged out of your SSO provider yet.
+      <a :href="logoutUrl">Log out of it too?</a>
+    </p>
     <a href="/"><p class="tw-text-center tw-text-md">Go to home</p></a>
   </div>
 </template>

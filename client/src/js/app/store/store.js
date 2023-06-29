@@ -61,6 +61,7 @@ const store = new Vuex.Store({
       state.auth.type = options.get('authentication_type')
       state.auth.cas_sso = options.get('cas_sso')
       state.auth.cas_url = options.get('cas_url')
+      state.auth.sso_url = options.get('sso_url')
       state.appOptions = options.toJSON()
 
       state.motd = options.get('motd') || state.motd
@@ -359,7 +360,7 @@ const store = new Vuex.Store({
   },
   getters: {
     sso: state => state.auth.cas_sso,
-    sso_url: state => state.auth.cas_url,
+    sso_url: state => state.auth.sso_url,
     oidcId: state => state.auth.oidcId,
     apiUrl: state => state.apiUrl,
     appUrl: state => state.appUrl,
