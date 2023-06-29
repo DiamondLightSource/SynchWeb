@@ -415,7 +415,7 @@ class Shipment extends Page
         global $in_contacts, $arrival_email;
         global $dewar_complete_email, $dewar_complete_email_locations; // Email list to cc if dewar back from beamline
         # Flag to indicate we should e-mail users their dewar has returned from BL
-        $send_email = False;
+        $send_return_email = False;
 
         if (!$this->bcr())
             $this->_error('You need to be on the internal network to add history');
@@ -452,11 +452,12 @@ class Shipment extends Page
             // We only add data to dewar history in lower case from this method.
             // If that ever changes, update this to become case insensitive search
             $last_location = $last_history['STORAGELOCATION'];
-            if (array_key_exists($last_location, $dewar_complete_email_locations)) {
+            if (!isset($dewar_complete_email_locations) || !is_array($dewar_complete_email_locations)) {
+                $bls = $this->_get_beamlines_from_type('all');
+                $send_return_email = in_array($last_location, $bls);
+            } else if (array_key_exists($last_location, $dewar_complete_email_locations)) {
                 $email_location = $dewar_complete_email_locations[$last_location];
-                if (preg_match($email_location, strtolower($this->arg('LOCATION')))) {
-                    $send_email = True;
-                }
+                $send_return_email = preg_match($email_location, strtolower($this->arg('LOCATION')));
             }
         } else {
             // No history - could be a new dewar, so not necessarily an error...
@@ -516,7 +517,7 @@ class Shipment extends Page
             $email->send($dew['LCRETEMAIL']);
         }
 
-        if ($dew['LCRETEMAIL'] && $send_email) {
+        if ($dew['LCRETEMAIL'] && $send_return_email) {
             // Any data collections for this dewar's containers?
             // Note this counts data collection ids for containers and uses the DataCollection.SESSIONID to determine the session/visit
             // Should work for UDC (where container.sessionid is set) as well as any normal scheduled session (where container.sessionid is not set)
