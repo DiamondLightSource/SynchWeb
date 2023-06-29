@@ -110,7 +110,7 @@ The v-closable takes an object as argumnt with properties:
       :class="{[`select-${inputIndex}`]: true}"
       v-if="multiple==true"
     >
-      <div class="items-list-multiple tw-absolute">
+      <div class="items-list-multiple ">
         <div
           v-for="(option, optionIndex) in filteredOptions"
           :ref="`selectOption${inputIndex}${optionIndex}`"

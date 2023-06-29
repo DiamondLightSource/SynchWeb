@@ -23,7 +23,7 @@
                 <span class="tooltiptext">Use the Advanced Filter Search bar to filter your values</span>
             </i>
 
-            <expandable-sidebar class="sidebar-scroll" :isOpen="isOpen" style="position:relative;border:1px solid blue;">
+            <expandable-sidebar :isOpen="isOpen" style="position:relative;">
                 <template v-slot:filter-bar-title> 
                     <div class="tw-grid tw-grid-cols-5">
                         <div class="tw-flex tw-col-span-1 tw-mt-3 tw-ml-3">
@@ -31,18 +31,9 @@
                             <h> Filter </h>
                         </div>
                         <div class="tw-flex tw-col-span-2 tw-col-start-2 tw-mt-3 tw-ml-3">
-                            <combo-box
-                                class="combo-box tw-w-4/12 t-mr-1 tw-mb-2 tw-text-black"
-                                :data="propSelect"
-                                textField="title"
-                                valueField="valueField"
-                                size="small"
-                                :can-create-new-item="false"
-                                v-model="filters[0].selected"
-                                :defaultText="filters[0].title"
-                            ></combo-box>
+                            <p class="tw-mt-2 tw-text-sm">Select Proposals </p>
                             <combo-box v-if="filters[0].inputtype == 'combo-box'"
-                                class="combo-box tw-w-7/12 tw-mr-1 tw-mb-2"
+                                class="tw-w-7/12 tw-text-sm tw-ml-2 tw-mr-1 tw-mb-2"
                                 :data="filters[0].data"
                                 :textField="filters[0].textField"
                                 :valueField="filters[0].valueField"
@@ -96,16 +87,11 @@
                                     :defaultText="value.title"
                                     ></combo-box>
 
-                                    <span class="param-tooltip">
-                                        Input Param Values
-                                        <div class="param-preview">
-                                            <iframe src="https://en.wikipedia.org/wiki/Germany" style="border:0px #FFFFFF none;" name="test" scrolling="no" frameborder="0" marginheight="0px" marginwidth="0px" height="2000px" width="1000px"></iframe>
-                                        </div>
-                                    </span>
-
-                                    <i class="tooltip tooltip-position-relative fa fa-ellipsis-v tw-ml-1 tw-text-base tw-my-2" aria-hidden="true">
-                                        <div class="description-options">
-                                        <combo-box v-if="value.inputtype == 'combo-box' & value.title != 'Proposal'"
+                                    <div class="param-options-wrapper">
+                                        <div class="param-options-tooltip">
+                                            Add Values
+                                            <div class="param-preview">
+                                                <combo-box v-if="value.inputtype == 'combo-box' & value.title != 'Proposal'"
                                             class="combo-box-description tw-px-4 tw-my-5"
                                             :data="value.data"
                                             :textField="value.textField"
@@ -135,13 +121,24 @@
                                             class="input-description tw-mb-4 tw-mx-4"
                                             placeholder="Enter Value"
                                             >
+                                                
+                                            </div>
                                         </div>
-                                    </i>
+                                        <button v-if="value.textField != 'PROP'" v-on:click="popFilter(index+1)" 
+                                            class="fa fa-times-circle tw-text-red-600 tw-ml-2 tw-mb-3"></button>
+
+                                    </div>
+
+
+                                    <!-- <i class="tooltip tooltip-position-relative fa fa-ellipsis-v tw-ml-1 tw-text-base tw-my-2" aria-hidden="true">
+                                        <div class="description-options">
+  
+                                        </div>
+                                    </i> -->
 
 
 
-                                    <button v-if="value.textField != 'PROP'" v-on:click="popFilter(index+1)" 
-                                            class="fa fa-times-circle tw-text-red-600 tw-ml-2"></button>
+      
                                     
                                 </div>
                                 <div class="button_plus tw-h-3 tw-mt-2" v-if="filters.length < 18" v-on:click="addFilterOption($event)">
@@ -154,10 +151,10 @@
 
                         </div>
 
-                        <div class="format-options-grid">
+                        <!-- <div class="format-options-grid">
 
 
-                            <!-- <div class="tw-flex" v-for="value in format.slice(2)" :key="value.id">
+                            <div class="tw-flex" v-for="value in format.slice(2)" :key="value.id">
                                     <combo-box
                                     v-if="value.title!='Proposal'"
                                     class="combo-box tw-w-7/12 t-mx-2 tw-text-black"
@@ -183,9 +180,9 @@
 
                             <div class="button_plus tw-h-3 tw-mt-2" v-if="format.length < 6" v-on:click="addFormatOption($event)">
                             <i class="button-plus-icon fa fa-plus"></i>
-                            </div> -->
+                            </div>
                             
-                        </div>
+                        </div> -->
 
                     </div>
                     
@@ -300,10 +297,9 @@
 
 
 
-        <div class="results-wrapper tw-bg-table-header-background tw-text-table-header-color tw-mt-2 tw-overflow-x-scroll tw-scrolling-touch">
+        <div class="results-wrapper tw-bg-table-header-background tw-text-table-header-color tw-mt-2 tw-overflow-x-scroll tw-scrolling-touch tw-relative">
 
             <div class="results-grid tw-font-bold ">
-                <!-- <div></div> -->
                 <div class="results-item tw-px-5 tw-my-3"> File Template</div>
                 <div class="results-item tw-px-5 tw-my-3"> Sample Name</div>
                 
@@ -363,18 +359,16 @@
             v-else v-for="(value,index) in summaryData" :key="value.id">
                 <template v-slot:filter-bar-title >
 
-
-                        <a class="tiptext-preview fa fa-eye" @mouseover="renderIFrame(index)">
-                            <iframe ref='iframeref' class="description" :srcdoc='baseUrl+"/dc/visit/" + value.PROP + "-" + value.VISIT_NUMBER
-                                    + "/id/" + value.DATACOLLECTIONID'></iframe>
-                        </a>
-
-
                         <div class="dc-nav tw-ra ">
-                                <a :href="'/dc/visit/' + value.PROP + '-' + value.VISIT_NUMBER
-                                + '/id/' + value.DATACOLLECTIONID" class="tw-button tw-button-notext tw-dll" title="Go to Data Collection">
-                                <i class="search-icon  fa fa-search"></i>
-                                </a>
+                            <a :href="'/dc/visit/' + value.PROP + '-' + value.VISIT_NUMBER
+                            + '/id/' + value.DATACOLLECTIONID" class="tw-button tw-button-notext tw-dll tw-mt-3" title="Go to Data Collection">
+                            <i class="search-icon  fa fa-search"></i>
+                            </a>
+
+                            <a class="tiptext-preview fa fa-eye" @mouseover="renderIFrame(index)">
+                                <iframe ref='iframeref' class="description" :srcdoc='baseUrl+"/dc/visit/" + value.PROP + "-" + value.VISIT_NUMBER
+                                        + "/id/" + value.DATACOLLECTIONID'></iframe>
+                            </a>
 
                         </div>
 
@@ -413,7 +407,6 @@
 
                 <template v-slot:filter-bar-content> 
                     <div v-for="(col, index) in getProcRow(value, 'FILETEMPLATE', 'text') " :key="index" class="results-grid  tw-divide-y tw-text-black">
-                        <!-- <div></div> -->
                         <div class="results-item results-content-child tw-px-3 tw-mt-2 tw-my-2"> {{ getProcRow(value, "FILETEMPLATE", 'text')[index] }}</div>
                         <div class="results-item results-content-child tw-px-3 tw-mt-2 tw-my-2"> {{ getProcRow(value, "SAMPLENAME", 'text')[index] }}</div>
                         <div class="results-item results-content-child tw-px-3 tw-mt-2 tw-my-2" v-for="data in selectedColumns" :key="data.id">{{ getProcRow(value, data.textField, 'text')[index] }}</div>
@@ -503,7 +496,6 @@ export default {
             beamLines: [],
             searchedSamplePrefix: [],
             selectedColumns: [],
-            deselectedColumns: [],
             operands: [
                 {   
                     "title": "greater than",
@@ -716,11 +708,11 @@ export default {
         this.getSpaceGroups()
         this.getProcessingPipelines() 
         this.getBeamLine()
-        this.populateSelectedColumns()
         this.addFilterOption()
         this.addFormatOption()
         this.toggleSidebar()
-        this.populateSelectedColumns()
+        // this.populateSelectedColumns()
+        this.popSelectedColumns()
     },
     mounted() {
         window.onerror = (msg) => {
@@ -739,13 +731,11 @@ export default {
             // creates seperate proposal object for selecting proposals
             this.propSelect = this.filters;
         },
-        populateSelectedColumns() {
-            // populates selectedColumns object with selected columns
-            for (const value of Object.entries(this.summaryColumns)) {
-                this.selectedColumns.push(value[1].title);
-            };
+        popSelectedColumns() {
 
-            this.selectedColumns.reverse();
+            this.selectedColumns = this.summaryParameters.filter( (e) => {
+                return e.checked === true;
+            })
 
         },
         mapSummaryParameters() {
@@ -1275,46 +1265,36 @@ export default {
             // add columns to selected or deselected object for pill display
             this.summaryParameters[index].checked = !this.summaryParameters[index].checked;
 
-            if (this.summaryParameters[index].checked == false){
-
-            this.deselectedColumns.push(this.summaryParameters[index]);
-            this.selectedColumns = this.selectedColumns.filter(item => item !== this.summaryParameters[index]);
-            }
-            else {
-            this.selectedColumns.push(this.summaryParameters[index]);
-            this.deselectedColumns = this.deselectedColumns.filter(item => item !== this.summaryParameters[index]);
-
-            }
+            this.popSelectedColumns()
 
 
         },
         resizePills() {
             // change number of pills visible based on width of window
 
-            if (this.windowWidth > 1000 ) {
-                this.pillIndex = 1;
-            }
-
-            if (this.windowWidth > 1200 ) {
-                this.pillIndex = 2;
-            }
-
-            if (this.windowWidth > 1600 ) {
-                this.pillIndex = 3;
-            }
-
-            if (this.windowWidth > 1800 ) {
-                this.pillIndex = 4;
-            }
-
-            if (this.windowWidth > 2200 ) {
-                this.pillIndex = 5;
-            }
-
             if (this.windowWidth > 2800 ) {
                 this.pillIndex = 6;
             }
 
+            else if (this.windowWidth > 2200 ) {
+                this.pillIndex = 5;
+            }
+
+            else if (this.windowWidth > 1800 ) {
+                this.pillIndex = 4;
+            }
+
+            else if (this.windowWidth > 1600 ) {
+                this.pillIndex = 3;
+            }
+
+            else if (this.windowWidth > 1200 ) {
+                this.pillIndex = 2;
+            }
+
+            else if (this.windowWidth > 1000 ) {
+                this.pillIndex = 1;
+            }
 
         },
         togglePills(value) {
@@ -1323,20 +1303,11 @@ export default {
 
                 if (this.summaryParameters[index].title == value) {
                     this.summaryParameters[index].checked = false;
-                    this.deselectedColumns.push(this.summaryParameters[index]);
-                    this.selectedColumns = this.selectedColumns.filter(item => item !== this.summaryParameters[index]);
+
+                    this.popSelectedColumns()
                 }
    
             }
-
-        },
-        populateSelectedColumns() {
-            
-
-            for (const value of Object.entries(this.summaryParameters)) {
-                this.selectedColumns.push(value[1]);
-            };
-
 
         },
         renderIFrame(index) {
@@ -1358,6 +1329,11 @@ export default {
 
     },
     watch: {
+        windowWidth: {
+            handler() {
+                this.resizePills()
+            }
+        },
         filters: {
             // if empty filter combo box is populated with a parameter, then populate the keys with values attributed to the selected parameter
             handler(val){
@@ -1414,6 +1390,8 @@ export default {
 
 .combo-box {
     font-size: small;
+    position: absolute;
+    width: 15%
 }
 
 .combo-box-description {
@@ -1526,8 +1504,8 @@ export default {
 
 
 .results-content{
+    width: 100%;
     overflow: visible; 
-    /* min-width:max-content; */
     display:block;
     background-color: rgb(255, 255, 255);
 }
@@ -1547,6 +1525,7 @@ export default {
     white-space: nowrap;
     font-size:small;
     font-family: Arial, Helvetica, sans-serif;
+    
 }
 
 .justify-end {
@@ -1704,16 +1683,12 @@ export default {
 
 .dc-nav {
     position: absolute;
-    left: 9%;
-    margin-bottom: 2px;
+    display: flex;
 }
 
 .tiptext-preview {
     position: absolute;
-    left: 7%;
     font-size:small;
-    display: inline-block;
-    margin: 2em;
     cursor:pointer;
 }
 
@@ -1730,14 +1705,23 @@ export default {
     display:block;
 }
 
+.param-options-wrapper {
+    display:flex;
+    margin-left: 65%;
+    margin-top: 5px;
+}
 
-.param-tooltip {
+
+.param-options-tooltip {
   cursor:default;
-  /* position:relative; */
   font-size:12px;
+  font-weight: bold;
+  margin-top: 2px;
+  color: blue;
 
   &:hover .param-preview {
     opacity:1;
+    display: inline;
     transform: translateX(-50%) translateY(0) scale(1);
   }
   
@@ -1747,25 +1731,28 @@ export default {
   }
 }
 
-
 .param-preview {
+  display: none;
   transition:.2s ease-in-out opacity, .2s ease-in-out transform;
   opacity:0;
+  z-index: 1;
   position:absolute;
-  right:10%;
   box-shadow:0 1px 5px rgba(0,0,0,.5);
   width:230px;
-  height:10px;
+  height:150px;
   border:4px solid #fff;
+  background-color: #fff;
+  color: black;
+  font-weight: normal;
   overflow-x:hidden;
   overflow-y:auto;
   transform-origin:center bottom;
   transform: translateX(-50%) translateY(10px) scale(.9);
 
-  iframe {
+  /* iframe {
     transform:scale(.2);
     transform-origin:0 0;
-  }
+  } */
   
 }
 
