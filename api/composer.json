@@ -19,7 +19,6 @@
     "firebase/php-jwt": "2.2.0",
     "jdorn/sql-formatter": "1.2.9",
     "mpdf/mpdf": "8.1.2",
-    "phpxmlrpc/phpxmlrpc": "3.1.2",
     "ralouphie/getallheaders": "2.0.5",
     "slim/slim": "2.6.2",
     "stomp-php/stomp-php": "3.0.6",
