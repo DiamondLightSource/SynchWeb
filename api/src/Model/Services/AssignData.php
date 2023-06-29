@@ -21,7 +21,7 @@ class AssignData
                                 INNER JOIN shipping s ON s.shippingid = d.shippingid
                                 INNER JOIN blsession bl ON bl.proposalid = s.proposalid
                                 INNER JOIN proposal p ON s.proposalid = p.proposalid
-                                WHERE CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), bl.visit_number) LIKE :1 
+                                WHERE CONCAT(p.proposalcode, p.proposalnumber, '-', bl.visit_number) LIKE :1
                                     AND c.containerid=:2", array($visitId, $containerId));
     }
 
@@ -65,7 +65,7 @@ class AssignData
         $arg = $proposalId;
         if ($visitId)
         {
-            $where = "CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), bl.visit_number) LIKE :1";
+            $where = "CONCAT(p.proposalcode, p.proposalnumber, '-', bl.visit_number) LIKE :1";
             $arg = $visitId;
         }
 

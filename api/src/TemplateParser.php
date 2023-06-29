@@ -64,7 +64,7 @@ class TemplateParser
             }
 
             if (array_key_exists('VISIT', $options)) {
-                $where = "WHERE CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) LIKE :1";
+                $where = "WHERE CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) LIKE :1";
                 array_push($args, $options['VISIT']);
             }
 
@@ -73,7 +73,7 @@ class TemplateParser
                 array_push($args, $options['DCID']);
             }
 
-            $visit = $this->db->pq("SELECT CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as visit, TO_CHAR(s.startdate, 'YYYY') as year, s.beamlinename, pe.login as pilogin, dc.imagedirectory
+            $visit = $this->db->pq("SELECT CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) as visit, TO_CHAR(s.startdate, 'YYYY') as year, s.beamlinename, pe.login as pilogin, dc.imagedirectory
                 FROM blsession s 
                 INNER JOIN proposal p ON p.proposalid = s.proposalid
                 INNER JOIN person pe ON pe.personid = p.personid
