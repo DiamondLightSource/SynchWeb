@@ -156,7 +156,8 @@ class DC extends Page
             } else if ($this->arg('t') == "scrystal" || $this->arg('t') == "nscrystal") {
                 // Single crystal or explicitly non-single-crystal fields
                 $where = ($this->arg('t') == "nscrystal") ? ' AND NOT ' : ' AND ';
-                $where .= '(dcg.experimentType IS NOT NULL AND dcg.experimentType in ("OSC", "Diamond Anvil High Pressure"))';
+                // This IS NOT NULL is not redundant; this condition always evalutes to TRUE with AND NOT without it
+                $where .= 'dcg.experimentType in ("OSC", "Diamond Anvil High Pressure")';
             }
         }
 
@@ -990,8 +991,6 @@ class DC extends Page
 
                 if ($dc['DCT'] == 'Mesh')
                     $dc['DCT'] = 'Grid Scan';
-                if ($dc['DCT'] == 'OSC' || $dc['DCT'] == 'Diamond Anvil High Pressure') 
-                    $dc['DCT'] = 'Single Crystal';
                 if ($dc['DCT'] != 'Serial Fixed' && $dc['DCT'] != 'Serial Jet' && $dc['AXISRANGE'] == 0 && $dc['NI'] > 1) {
                     $dc['TYPE'] = 'grid';
                 }

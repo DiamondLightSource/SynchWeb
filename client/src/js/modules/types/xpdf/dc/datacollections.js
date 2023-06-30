@@ -12,7 +12,7 @@ define([
   var XpdfDCList = DCList.extend({
     dcViews: {
       data: DCItemView,
-      collectionTypeSpecific: { "Single Crystal": MXView },
+      collectionTypeSpecific: { "OSC": MXView, "Diamond Anvil High Pressure": MXView },
     },
     apStatus: true,
   });
@@ -30,7 +30,7 @@ define([
         collection: options.collection,
         filters: [
           { id: "nscrystal", name: "Standard" },
-          { id: "scrystal", name: "Single Crystal" }
+          { id: "scrystal", name: "Single Crystal" },
         ],
       });
     },

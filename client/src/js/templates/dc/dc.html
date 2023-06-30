@@ -26,7 +26,7 @@
         <li data-testid="dc-resolution">Resolution: <%-RESOLUTION%>&#197;</li>
         <li data-testid="dc-wavelength">Wavelength: <%-WAVELENGTH%>&#197;</li>
         <li data-testid="dc-exposure-time">Exposure: <%-EXPOSURETIME%>s</li>
-        <% if (DCT == 'SAD' || DCT == 'Data Collection') { %>
+        <% if (DCT == 'SAD' || DCT == 'OSC' || DCT == 'Diamond Anvil High Pressure') { %>
             <%if (TOTALABSDOSE) { %>
                 <%if (DCC > 1) { %>
                 <li data-testid="dc-dose">Total Dose:  <%-TOTALABSDOSE * DCC%>MGy</li>
