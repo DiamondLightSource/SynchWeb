@@ -157,7 +157,7 @@ class DC extends Page
                 // Single crystal or explicitly non-single-crystal fields
                 $where = ($this->arg('t') == "nscrystal") ? ' AND NOT ' : ' AND ';
                 // This IS NOT NULL is not redundant; this condition always evalutes to TRUE with AND NOT without it
-                $where .= 'dcg.experimentType in ("OSC", "Diamond Anvil High Pressure")';
+                $where .= '(dcg.experimentType IS NOT NULL AND dcg.experimentType in ("OSC", "Diamond Anvil High Pressure"))';
             }
         }
 
