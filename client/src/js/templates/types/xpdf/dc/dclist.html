@@ -4,6 +4,8 @@
         <% if (IS_VISIT) { %>for <%-VISIT%> on <%-BEAMLINENAME%><% } %>
     </h1>
 
+    <div class="filter type"></div>
+
     <% if (IS_VISIT && !IS_SINGLE) { %>
     <div>
         <a class="button"  href="/stats/visit/<%-VISIT%>" title="Visit Statistics"><i class="fa fa-pie-chart"></i> <span>Visit Stats</span></a>
