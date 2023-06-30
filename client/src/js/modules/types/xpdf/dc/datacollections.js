@@ -29,7 +29,7 @@ define([
         value: options.params.type,
         collection: options.collection,
         filters: [
-          { id: "nscrystal", name: "Default" },
+          { id: "nscrystal", name: "Standard" },
           { id: "scrystal", name: "Single Crystal" }
         ],
       });
