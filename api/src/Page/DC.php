@@ -153,6 +153,10 @@ class DC extends Page
                         LEFT OUTER JOIN processingjob pj ON dc.datacollectionid = pj.datacollectionid
                         LEFT OUTER JOIN autoprocprogram app ON (app.autoprocprogramid = api.autoprocprogramid OR dc.datacollectionid = pj.datacollectionid)
                         INNER JOIN autoprocprogrammessage appm ON appm.autoprocprogramid = app.autoprocprogramid";
+            } else if ($this->arg('t') == "scrystal" || $this->arg('t') == "nscrystal") {
+                // Single crystal or explicitly non-single-crystal fields
+                $where = ($this->arg('t') == "nscrystal") ? ' AND NOT ' : ' AND ';
+                $where .= '(dcg.experimentType IS NOT NULL AND dcg.experimentType in ("OSC", "Diamond Anvil High Pressure"))';
             }
         }
 
@@ -986,8 +990,8 @@ class DC extends Page
 
                 if ($dc['DCT'] == 'Mesh')
                     $dc['DCT'] = 'Grid Scan';
-                if ($dc['DCT'] == 'OSC')
-                    $dc['DCT'] = 'Data Collection';
+                if ($dc['DCT'] == 'OSC' || $dc['DCT'] == 'Diamond Anvil High Pressure') 
+                    $dc['DCT'] = 'Single Crystal';
                 if ($dc['DCT'] != 'Serial Fixed' && $dc['DCT'] != 'Serial Jet' && $dc['AXISRANGE'] == 0 && $dc['NI'] > 1) {
                     $dc['TYPE'] = 'grid';
                 }
