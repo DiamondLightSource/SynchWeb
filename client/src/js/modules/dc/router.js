@@ -4,7 +4,6 @@ define(['utils/lazyrouter'], function(LazyRouter) {
     var Router = LazyRouter.extend({
         appRoutes: {
             'dc': 'dc_list',
-            
             'dc/view/id/:id': 'di_viewer',
             'dc/map/id/:id/aid/:aid': 'mapmodelviewer',
             'dc/rsv/id/:id': 'rsviewer',
