@@ -24,6 +24,7 @@ use SynchWeb\Database\DatabaseConnectionFactory;
 use SynchWeb\Database\DatabaseParent;
 use SynchWeb\ImagingShared;
 use SynchWeb\Dispatch;
+use SynchWeb\Options;
 
 require 'vendor/autoload.php';
 
@@ -71,8 +72,9 @@ function setupApplication($mode): Slim
             $dhl_enable, $dhl_link, $scale_grid, $scale_grid_end_date, $preset_proposal, $timezone,
             $valid_components, $enabled_container_types;
         $app->contentType('application/json');
+        $options = $app->container['options'];
         $app->response()->body(json_encode(array(
-            'motd' => $motd,
+            'motd' => $options->get('motd', $motd),
             'authentication_type' => $authentication_type,
             'cas_url' => $cas_url,
             'cas_sso' => $cas_sso,
@@ -135,5 +137,9 @@ function setupDependencyInjectionContainer($app)
 
     $app->container->singleton('dispatch', function () use ($app) {
         return new Dispatch($app, $app->container['db'], $app->container['user']);
+    });
+
+    $app->container->singleton('options', function () use ($app) {
+        return new Options($app->container['db']);
     });
 }
