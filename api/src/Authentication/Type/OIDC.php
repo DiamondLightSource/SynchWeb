@@ -2,7 +2,6 @@
 
 namespace SynchWeb\Authentication\Type;
 
-use phpCAS;
 use SynchWeb\Authentication\AuthenticationInterface;
 use SynchWeb\Authentication\AuthenticationParent;
 use SynchWeb\Utils;
@@ -35,9 +34,7 @@ class OIDC extends AuthenticationParent implements AuthenticationInterface
     }
 
     private function getUser($token)
-    {
-        global $cacert;
-        
+    {        
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $this->providerConfig->userinfo_endpoint);
         curl_setopt($ch, CURLOPT_HEADER, 0);
