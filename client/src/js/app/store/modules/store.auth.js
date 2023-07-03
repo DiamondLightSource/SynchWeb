@@ -8,6 +8,7 @@ const auth = {
     type: 'cas',
     cas_sso: false,
     cas_url: '',
+    sso_url: '',
     token: '',
   },
   mutations: {

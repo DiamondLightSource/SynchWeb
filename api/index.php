@@ -66,7 +66,7 @@ function setupApplication($mode): Slim
     });
 
     $app->get('/options', function () use ($app) {
-        global $motd, $authentication_type, $cas_url, $cas_sso, $package_description,
+        global $motd, $authentication_type, $cas_url, $cas_sso, $sso_url, $package_description,
             $facility_courier_countries, $facility_courier_countries_nde,
             $dhl_enable, $dhl_link, $scale_grid, $scale_grid_end_date, $preset_proposal, $timezone,
             $valid_components, $enabled_container_types;
@@ -76,6 +76,7 @@ function setupApplication($mode): Slim
             'authentication_type' => $authentication_type,
             'cas_url' => $cas_url,
             'cas_sso' => $cas_sso,
+            'sso_url' => $sso_url,
             'package_description' => $package_description,
             'facility_courier_countries' => $facility_courier_countries,
             'facility_courier_countries_nde' => $facility_courier_countries_nde,
