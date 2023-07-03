@@ -4,7 +4,7 @@ define(['utils/lazyrouter'], function(LazyRouter) {
     var Router = LazyRouter.extend({
         appRoutes: {
             'dc': 'dc_list',
-            'dc(/visit/:visit)(:pathmatch)': 'dc_list',
+            
             'dc/view/id/:id': 'di_viewer',
             'dc/map/id/:id/aid/:aid': 'mapmodelviewer',
             'dc/rsv/id/:id': 'rsviewer',
@@ -12,6 +12,7 @@ define(['utils/lazyrouter'], function(LazyRouter) {
             'dc/apstatussummary/visit/:visit(/ty/:ty)': 'apstatussummary',
             'dc/sc/visit/:visit': 'sampleChanger',
             'dc/queue/visit/:visit': 'queue',
+            'dc(/visit/:visit)(:pathmatch)': 'dc_list',
         },
         
         loadEvents: ['dclist:show', 'dc:show'],
