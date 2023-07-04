@@ -57,7 +57,7 @@ class OIDC extends AuthenticationParent implements AuthenticationInterface
     {
         global $cookie_key;
 
-        if (array_key_exists("cookie_key", $_COOKIE)) {
+        if (array_key_exists($cookie_key, $_COOKIE)) {
             return($this->getUser($_COOKIE[$cookie_key]));
         }
 
