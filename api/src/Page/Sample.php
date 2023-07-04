@@ -1054,7 +1054,7 @@ class Sample extends Page
             else
                 $info = $info[0];
 
-            $where .= " AND d.dewarstatus='processing' AND c.beamlinelocation LIKE :" . (sizeof($args) + 1) . " AND c.samplechangerlocation is NOT NULL";
+            $where .= " AND d.dewarstatus='processing' AND c.beamlinelocation LIKE :" . (sizeof($args) + 1) . " AND c.samplechangerlocation is NOT NULL AND c.samplechangerlocation != ''";
             array_push($args, $info['BL']);
         }
 
