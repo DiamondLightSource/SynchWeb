@@ -14,3 +14,4 @@ spec:
   owner: group:lims
   dependsOn: 
     - component:dials-rest
+    - resource:ispyb-database
