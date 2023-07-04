@@ -36,7 +36,7 @@ const auth = {
       },
   },
   actions: {
-    checkAuth({state, rootState, commit }) {
+    checkAuth({state, rootState, commit, dispatch }) {
       return new Promise( (resolve) => {
         // If we have a token return
         if (state.token) {
@@ -52,7 +52,7 @@ const auth = {
                 console.log("Store checkAuth success: " + JSON.stringify(response))
                 const token = response.jwt
                 commit('authSuccess', token)
-                resolve(true)
+                dispatch("user/getUser", {}, {root: true}).then(() => resolve(true))
               },
               error: function() {
                 console.log("Store check auth warning - no previous session")
@@ -86,7 +86,7 @@ const auth = {
       })
     },
 
-    login({state, commit, rootState}, credentials) {
+    login({ commit, rootState }, credentials) {
       return new Promise((resolve, reject) => {
         commit('loading', true, { root: true })
 
@@ -105,6 +105,29 @@ const auth = {
             commit('authError')
             commit('loading', false, { root: true })
             reject(error)
+          }})
+        })
+    },
+
+    getToken({ commit, rootState, dispatch }, code) {
+      return new Promise((resolve, reject) => {
+        commit('loading', true, { root: true })
+
+        Backbone.ajax({
+          url: rootState.apiUrl+'/authenticate/token',
+          data: {code},
+          type: 'POST',
+          success: function(resp) {
+            const token = resp.jwt
+            commit('authSuccess', token)
+            dispatch("user/getUser", {}, {root: true}).then(() => resolve(true))
+          },
+          error: function(req, status, error) {
+            commit('authError')
+            reject(error)
+          }, 
+          complete: function() {
+            commit('loading', false, { root: true })
           }})
         })
     },

@@ -153,7 +153,7 @@ var MarionetteApplication = (function () {
             application.appurl = store.state.appUrl
 
             application.cookie = function(prop, callbackFn) {
-                console.log("Saving proposal from legacy cookie fn")
+                console.log("Saving proposal from legacy cookie fn:", prop)
 
                 store.dispatch('proposal/setProposal', prop)
 

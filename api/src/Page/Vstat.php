@@ -945,10 +945,10 @@ class Vstat extends Page
         $bls = implode('\', \'', $beamlines);
 
         $types = array(
-            'energy' => array('unit' => 'eV', 'st' => 1000, 'en' => 25000, 'bin_size' => 200, 'col' => '(1.98644568e-25/(dc.wavelength*1e-10))/1.60217646e-19', 'count' => 'dc.wavelength'),
-            'beamsizex' => array('unit' => 'um', 'st' => 0, 'en' => 150, 'bin_size' => 5, 'col' => 'dc.beamsizeatsamplex*1000', 'count' => 'dc.beamsizeatsamplex'),
-            'beamsizey' => array('unit' => 'um', 'st' => 0, 'en' => 150, 'bin_size' => 5, 'col' => 'dc.beamsizeatsampley*1000', 'count' => 'dc.beamsizeatsampley'),
-            'exposuretime' => array('unit' => 'ms', 'st' => 0, 'en' => 5000, 'bin_size' => 50, 'col' => 'dc.exposuretime*1000', 'count' => 'dc.exposuretime'),
+            'energy' => array('unit' => 'eV', 'bin_size' => 200, 'col' => '(1.98644568e-25/(dc.wavelength*1e-10))/1.60217646e-19', 'count' => 'dc.wavelength'),
+            'beamsizex' => array('unit' => 'um', 'bin_size' => 5, 'col' => 'dc.beamsizeatsamplex*1000', 'count' => 'dc.beamsizeatsamplex'),
+            'beamsizey' => array('unit' => 'um', 'bin_size' => 5, 'col' => 'dc.beamsizeatsampley*1000', 'count' => 'dc.beamsizeatsampley'),
+            'exposuretime' => array('unit' => 'ms', 'bin_size' => 5, 'col' => 'dc.exposuretime*1000', 'count' => 'dc.exposuretime'),
         );
 
         $k = 'energy';
@@ -975,9 +975,9 @@ class Vstat extends Page
 
         $col = $t['col'];
         $ct = $t['count'];
-        $bs = $t['bin_size'];
+        $binSize = $t['bin_size'];
 
-        $hist = $this->db->pq("SELECT ($col div $bs) * $bs as x, count($ct) as y, s.beamlinename
+        $hist = $this->db->pq("SELECT ($col div $binSize) * $binSize as x, count($ct) as y, s.beamlinename
                 FROM datacollection dc 
                 INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
                 INNER JOIN blsession s ON s.sessionid = dcg.sessionid
@@ -987,9 +987,15 @@ class Vstat extends Page
                 GROUP BY s.beamlinename,x
                 ORDER BY s.beamlinename", $args);
 
+        $min = null;
+        $max = null;
         $bls = array();
-        foreach ($hist as $h)
+        foreach ($hist as $h) {
             $bls[$h['BEAMLINENAME']] = 1;
+            if (is_null($max) || $h['X'] > $max) $max = $h['X'];
+            if (is_null($min) || $h['X'] < $min) $min = $h['X'];
+        }
+        $min = is_null($min) ? 0 : intval(floor($min/$binSize) * $binSize); // make min align with bin size, or 0 for no data
 
         $data = array();
         foreach ($bls as $bl => $y) {
@@ -1001,7 +1007,7 @@ class Vstat extends Page
             }
 
             $gram = array();
-            for ($bin = $t['st']; $bin <= $t['en']; $bin += $t['bin_size']) {
+            for ($bin = $min; $bin <= $max; $bin += $binSize) {
                 $gram[$bin] = array_key_exists($bin, $ha) ? $ha[$bin] : 0;
             }
 

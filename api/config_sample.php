@@ -19,7 +19,7 @@
     $jwt_key = '';
 
     # Auth type
-    # Can be cas, ldap
+    # Can be cas, ldap, oidc
     $authentication_type = 'cas';
 
     # CAS url (if using cas, assume https)
@@ -27,6 +27,12 @@
 
     # Follow CAS SSO
     $cas_sso = true;
+
+    // OIDC (or OAuth2) client ID and secret. Only useful if authentication_type is set to OIDC
+    $oidc_client_id = "oidcClientId";
+    $oidc_client_secret = "oidcClientSecret";
+    // Cookie key used for SSO/cookie based authentication
+    $cookie_key = "synchweb-auth";
 
     # CAS CA Cert (for SSO)
     $cacert = '/etc/certs/ca-bundle.crt';
