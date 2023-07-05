@@ -951,7 +951,9 @@ class Shipment extends Page
             "shipper_contact_email" => $facility_email,
             "internal_contact_name" => $this->has_arg('LOCALCONTACT') ? $this->args['LOCALCONTACT'] : null,
             "shipment_reference" =>  $dispatch_info['VISIT'],
-            "external_id" => (int) $dispatch_info['DEWARID']
+            "external_id" => (int) $dispatch_info['DEWARID'],
+            "journey_type" => "FROM_FACILITY",
+            "packages" => array(array("external_id" => $dispatch_info['DEWARID']))
         );
 
         # Split up address. Necessary as address is a single field in ispyb
@@ -970,8 +972,8 @@ class Shipment extends Page
             if ($create === true) {
                 $response = $this->shipping_service->create_shipment($shipment_data);
             } else {
-                $this->shipping_service->update_shipment($dispatch_info['DEWARID'], $shipment_data);
-                $response = $this->shipping_service->get_shipment($dispatch_info['DEWARID']);
+                $this->shipping_service->update_shipment($dispatch_info['DEWARID'], $shipment_data, "FROM_FACILITY");
+                $response = $this->shipping_service->get_shipment($dispatch_info['DEWARID'], "FROM_FACILITY");
             }
             $shipment_id = $response['shipmentId'];
             $this->shipping_service->dispatch_shipment($shipment_id);
