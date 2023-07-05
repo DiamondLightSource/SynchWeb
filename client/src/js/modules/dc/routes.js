@@ -111,21 +111,6 @@ let routes = [
     }),
   },
   {
-    path: '/dc(/visit/)?:visit([a-zA-Z]{2}[0-9]+-[0-9]+)?:pathMatch(.*)*',
-    name: 'dc-list',
-    component: DCWrapper,
-    props: route => ({
-        id: +RoutesUtil.getParamValue(route.params.pathMatch, 'id') || null,
-        visit: route.params.visit || '',
-        dcg: +RoutesUtil.getParamValue(route.params.pathMatch, 'dcg') || null,
-        page: +RoutesUtil.getParamValue(route.params.pathMatch, 'page') || 1,
-        ty: RoutesUtil.getParamValue(route.params.pathMatch, 'ty') ||  '',
-        search: RoutesUtil.getParamValue(route.params.pathMatch, 's') || '',
-        pjid: +RoutesUtil.getParamValue(route.params.pathMatch, 'pjid') || null,
-        sgid: +RoutesUtil.getParamValue(route.params.pathMatch, 'sgid') || null
-    }),
-  },
-  {
     path: '/dc/summary/visit/:visit([a-zA-Z]{2}[0-9]+-[0-9]+)',
     name: 'dc-summary',
     component: MarionetteView,
@@ -251,6 +236,21 @@ let routes = [
         next('/notfound')
       })
     }
+  },
+  {
+    path: '/dc(/visit/)?:visit([a-zA-Z]{2}[0-9]+-[0-9]+)?:pathMatch(.*)*',
+    name: 'dc-list',
+    component: DCWrapper,
+    props: route => ({
+        id: +RoutesUtil.getParamValue(route.params.pathMatch, 'id') || null,
+        visit: route.params.visit || '',
+        dcg: +RoutesUtil.getParamValue(route.params.pathMatch, 'dcg') || null,
+        page: +RoutesUtil.getParamValue(route.params.pathMatch, 'page') || 1,
+        ty: RoutesUtil.getParamValue(route.params.pathMatch, 'ty') ||  '',
+        search: RoutesUtil.getParamValue(route.params.pathMatch, 's') || '',
+        pjid: +RoutesUtil.getParamValue(route.params.pathMatch, 'pjid') || null,
+        sgid: +RoutesUtil.getParamValue(route.params.pathMatch, 'sgid') || null
+    }),
   },
 ]
 
