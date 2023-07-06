@@ -43,6 +43,7 @@
 
             <div v-show="plateType === 'puck'">
               <base-input-select
+                dataTestId="add-container-registered-container"
                 v-model="CONTAINERREGISTRYID"
                 outer-class="tw-mb-2 tw-py-2"
                 label="Registered Container"
@@ -219,6 +220,7 @@
               name="owner"
             >
               <base-input-select
+                dataTestId="add-container-owner"
                 v-model="PERSONID"
                 outer-class="tw-flex tw-w-full tw-items-center"
                 label="Owner"
@@ -318,6 +320,7 @@
             type="submit"
             :class="['button submit tw-text-base tw-px-4 tw-py-2', invalid ? 'tw-border tw-border-red-500 tw-bg-red-500': '']"
             @click.prevent="onSubmit"
+            data-testid="add-container-submit-button"
           >
             <i class="fa fa-plus" />
             Add Container

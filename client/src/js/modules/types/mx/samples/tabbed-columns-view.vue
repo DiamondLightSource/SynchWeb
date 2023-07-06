@@ -55,6 +55,7 @@
             :disabled="!canEditRow(sample['LOCATION'], currentEditingRow)"
             input-class="tw-w-full tw-h-8"
             @value-changed="inputChanged"
+            dataTestId="add-container-sample-comment"
           />
         </template>
       </extended-validation-provider>

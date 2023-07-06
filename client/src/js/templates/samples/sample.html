@@ -1,4 +1,4 @@
-<h1>Sample Details</h1>
+<h1 data-testid="sample-header">Sample Details</h1>
 
 <p class="help">This pages shows details and history for the selected sample</p>
 
@@ -11,26 +11,26 @@
             <span><%-PARENTSAMPLE%> <a href="/samples/sid/<%-PARENTSAMPLEID%>" class="button"><i class="fa fa-search"></i> View</a></span>
         </li>
         <% } %>
-        
+
         <li>
             <span class="label">Name</span>
-            <span class="NAME"><%-NAME%></span>
+            <span class="NAME" data-testid="sample-name"><%-NAME%></span>
         </li>
-        
+
         <li>
             <span class="label">Protein Acronym</span>
-            <span class="ACRONYM"><%-ACRONYM%></span> 
+            <span class="ACRONYM" data-testid="sample-acronym"><%-ACRONYM%></span>
             <a href="/proteins/pid/<%-PROTEINID%>" class="button tw-ml-2 tw-py-2"><i class="fa fa-search"></i> View All</a>
         </li>
 
         <li>
             <span class="label">User Path</span>
-            <span class="USERPATH"><%-USERPATH%></span> 
+            <span class="USERPATH" data-testid="sample-userpath"><%-USERPATH%></span>
         </li>
 
         <li>
             <span class="label">Abundance</span>
-            <span class="ABUNDANCE"><%-ABUNDANCE%></span><%-SYMBOL%>
+            <span class="ABUNDANCE" data-testid="sample-abundance"><%-ABUNDANCE%></span><%-SYMBOL%>
         </li>
 
         <li class="clearfix">
@@ -39,22 +39,22 @@
             </span>
             <span class="components floated"></span>
         </li>
-        
+
         <li>
             <span class="label">Volume</span>
-            <span class="VOLUME"><%-VOLUME%></span>
+            <span class="VOLUME" data-testid="sample-volume"><%-VOLUME%></span>
         </li>
 
         <li>
             <span class="label">Spacegroup</span>
-            <span class="SPACEGROUP"><%-SPACEGROUP%></span>
+            <span class="SPACEGROUP" data-testid="sample-spacegroup"><%-SPACEGROUP%></span>
         </li>
 
         <li>
             <span class="label">Unit Cell</span>
             <div class="text_table table tw-inline-block tw-w-1/3">
-                <table class="reflow cell">      
-                    <thead>            
+                <table class="reflow cell">
+                    <thead>
                         <tr>
                             <th>A</th>
                             <th>B</th>
@@ -65,61 +65,61 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>                                
-                            <td><span class="CELL_A"><%-CELL_A%></span></td>
-                            <td><span class="CELL_B"><%-CELL_B%></span></td>
-                            <td><span class="CELL_C"><%-CELL_C%></span></td>
-                            <td><span class="CELL_ALPHA"><%-CELL_ALPHA%></span></td>
-                            <td><span class="CELL_BETA"><%-CELL_BETA%></span></td> 
-                            <td><span class="CELL_GAMMA"><%-CELL_GAMMA%></span></td>
-                        </tr> 
-                    </tbody>    
+                        <tr>
+                            <td><span class="CELL_A" data-testid="sample-cell-a"><%-CELL_A%></span></td>
+                            <td><span class="CELL_B" data-testid="sample-cell-b"><%-CELL_B%></span></td>
+                            <td><span class="CELL_C" data-testid="sample-cell-c"><%-CELL_C%></span></td>
+                            <td><span class="CELL_ALPHA" data-testid="sample-cell-alpha"><%-CELL_ALPHA%></span></td>
+                            <td><span class="CELL_BETA" data-testid="sample-cell-beta"><%-CELL_BETA%></span></td>
+                            <td><span class="CELL_GAMMA" data-testid="sample-cell-gamma"><%-CELL_GAMMA%></span></td>
+                        </tr>
+                    </tbody>
                 </table>
             </div>
         </li>
 
         <li>
             <span class="label">Anomalous Scatterer</span>
-            <span class="ANOMALOUSSCATTERER"><%-ANOMALOUSSCATTERER%></span>
+            <span class="ANOMALOUSSCATTERER" data-testid="sample-anomalous-scatterer"><%-ANOMALOUSSCATTERER%></span>
         </li>
 
         <li>
             <span class="label">Required Resolution</span>
-            <span class="REQUIREDRESOLUTION"><%-REQUIREDRESOLUTION%></span>
+            <span class="REQUIREDRESOLUTION" data-testid="sample-required-resolution"><%-REQUIREDRESOLUTION%></span>
         </li>
-    
+
 
         <li>
             <span class="label">Comment</span>
-            <span class="COMMENTS"><%-COMMENTS%></span>
+            <span class="COMMENTS" data-testid="sample-comments"><%-COMMENTS%></span>
         </li>
 
         <li>
             <span class="label">Barcode</span>
-            <span class="CODE"><%-CODE%></span>
+            <span class="CODE" data-testid="sample-barcode"><%-CODE%></span>
         </li>
-        
+
         <% if (CONTAINERID) { %>
         <li>
             <span class="label">Container</span>
             <span class="cont"><a href="/containers/cid/<%-CONTAINERID%>"><%-CONTAINER%></a></span>
         </li>
         <% } %>
-        
+
         <% if (DEWAR) { %>
         <li>
             <span class="label">Dewar</span>
             <span class="dew"><%-DEWAR%></span>
         </li>
         <% } %>
-        
+
         <% if (SHIPPINGID) { %>
         <li>
             <span class="label">Shipment</span>
             <span class="ship"><a href="/shipments/sid/<%-SHIPPINGID%>"><%-SHIPMENT%></a></span>
         </li>
         <% } %>
-        
+
         <li>
             <span class="label">Snapshots</span>
             <span class="snapshots sample"></span>
@@ -154,7 +154,7 @@
             <span class="RADIATIONSENSITIVITY"><%-RADIATIONSENSITIVITYNAME%></span>
         </li>
         <% } %>
-        
+
     </ul>
 </div>
 
