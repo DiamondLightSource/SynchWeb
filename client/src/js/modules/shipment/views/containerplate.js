@@ -256,6 +256,7 @@ define(['marionette',
             adh: 'span.adhoc',
             que: 'div.queue',
             ss: 'input[name=sample_status]',
+            ssm: 'input[name=sample_status_max]',
 
             param: 'select[name=param]',
             rank: 'input[name=rank]',
@@ -281,6 +282,7 @@ define(['marionette',
             'click a.adhoc': 'requestAdhoc',
             'click a.return': 'requestReturn',
             'change @ui.ss': 'toggleSampleStatus',
+            'change @ui.ssm': 'toggleSampleStatusMax',
 
             'click @ui.rank': 'setRankStatus',
             'change @ui.param': 'setRankStatus',
@@ -296,9 +298,20 @@ define(['marionette',
         },
 
         toggleSampleStatus: function() {
+            this.ui.ssm.prop('checked', false)
             this.ui.auto.prop('checked', false)
             this.plateView.setAutoStatus(false)
-            this.plateView.setShowSampleStatus(this.ui.ss.is(':checked'))
+            sampleStatus = this.ui.ss.is(':checked')
+            this.plateView.setShowSampleStatus(sampleStatus, !sampleStatus, false)
+        },
+
+        toggleSampleStatusMax: function() {
+            this.ui.ss.prop('checked', false)
+            this.ui.auto.prop('checked', false)
+            this.ui.rank.prop('checked', false)
+            this.plateView.setAutoStatus(false)
+            showMaxScore = this.ui.ssm.is(':checked')
+            this.plateView.setShowSampleStatus(false, !showMaxScore, showMaxScore)
         },
 
         setRankStatus: function() {
@@ -323,8 +336,9 @@ define(['marionette',
 
         setAutoStatus: function() {
             this.ui.ss.prop('checked', false)
+            this.ui.ssm.prop('checked', false)
             this.ui.rank.prop('checked', false)
-            this.plateView.setShowSampleStatus(false)
+            this.plateView.setShowSampleStatus(false, true, false)
 
             var enabled = this.ui.auto.is(':checked')
             console.log('setAutoStatus', enabled, this.ui.class.val(), enabled && this.ui.class.val())
