@@ -391,8 +391,8 @@ export default {
     },
     addOptionArray: function (val) {
 
-      if (this.valueArray.some(item => item[this.valueField] == val[this.valueField]) ) {
-        var index = this.valueArray.findIndex(item => item[this.valueField] == val[this.valueField])
+      const index = this.valueArray.findIndex(item => item[this.valueField] == val[this.valueField])
+      if (index >= 0) {
         this.valueArray.splice(this.valueArray[index], 1)
 
         console.log('remove', this.valueArray)
