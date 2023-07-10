@@ -25,7 +25,7 @@ class DatabaseConnectionFactory
             $conn = new \mysqli($host, $isb['user'], $isb['pass'], $dbn, $port);
             $conn->set_charset("utf8mb4");
         }
-        if ($databaseType == 'PureMySQL') {
+        elseif ($databaseType == 'PureMySQL') {
             $port = array_key_exists('port', $summarydbconfig) ? $summarydbconfig['port'] : null;
             if (!$port) {
                 $port = ini_get("mysqli.default_port");
