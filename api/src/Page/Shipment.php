@@ -976,7 +976,7 @@ class Shipment extends Page
                 $response = $this->shipping_service->get_shipment($dispatch_info['DEWARID'], "FROM_FACILITY");
             }
             $shipment_id = $response['shipmentId'];
-            $this->shipping_service->dispatch_shipment($shipment_id);
+            $this->shipping_service->dispatch_shipment($shipment_id, false);
         } catch (Exception $e) {
             throw new Exception("Error returned from shipping service: " . $e . "\nShipment data: " . $shipment_data);
         }

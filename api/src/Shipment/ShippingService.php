@@ -99,10 +99,11 @@ class ShippingService
     }
 
 
-    function dispatch_shipment($shipment_id)
+    function dispatch_shipment($shipment_id, $pickup_requested)
     {
+        $pickup_requested_str = ($pickup_requested) ? "true" : "false";
         return $this->_send_request(
-            $this->shipping_api_url . '/shipments/' . $shipment_id . '/dispatch?pickup_requested=false',
+            $this->shipping_api_url . '/shipments/' . $shipment_id . '/dispatch?pickup_requested=' . $pickup_requested_str,
             "POST",
             null,
             201
