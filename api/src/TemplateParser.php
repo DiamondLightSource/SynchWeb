@@ -21,7 +21,6 @@ class TemplateParser
 
         function __construct($db) {
 
-            print "In BaseClass constructor\n";
             $this->db = $db;
         }
         
