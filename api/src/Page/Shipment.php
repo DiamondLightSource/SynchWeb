@@ -568,7 +568,7 @@ class Shipment extends Page
         $args = array($this->proposalid);
         $where = 'p.proposalid=:1';
 
-        $fields = "r.dewarregistryid, max(CONCAT(p.proposalcode, p.proposalnumber)) as prop, r.facilitycode, TO_CHAR(r.purchasedate, 'DD-MM-YYYY') as purchasedate, ROUND(TIMESTAMPDIFF('DAY',r.purchasedate, CURRENT_TIMESTAMP)/30.42,1) as age, r.labcontactid, count(d.dewarid) as dewars, GROUP_CONCAT(distinct CONCAT(p.proposalcode,p.proposalnumber) SEPARATOR ', ') as proposals, r.bltimestamp, TO_CHAR(max(d.bltimestamp),'DD-MM-YYYY') as lastuse, count(dr.dewarreportid) as reports";
+        $fields = "r.dewarregistryid, max(CONCAT(p.proposalcode, p.proposalnumber)) as prop, r.facilitycode, TO_CHAR(r.purchasedate, 'DD-MM-YYYY') as purchasedate, ROUND(TIMESTAMPDIFF('DAY',r.purchasedate, CURRENT_TIMESTAMP)/30.42,1) as age, r.labcontactid, count(distinct d.dewarid) as dewars, GROUP_CONCAT(distinct CONCAT(p.proposalcode,p.proposalnumber) SEPARATOR ', ') as proposals, r.bltimestamp, TO_CHAR(max(d.bltimestamp),'DD-MM-YYYY') as lastuse, count(dr.dewarreportid) as reports";
         $group = "r.facilitycode";
 
         if ($this->has_arg('all') && $this->staff) {
