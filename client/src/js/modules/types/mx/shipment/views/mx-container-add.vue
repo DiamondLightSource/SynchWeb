@@ -559,30 +559,7 @@ export default {
     QUEUEFORUDC: {
       immediate: true,
       handler: function(newVal) {
-        let samples
-        if (newVal) {
-          samples = this.samples.map(sample => {
-            if (!sample.CENTRINGMETHOD) {
-              sample.CENTRINGMETHOD = 'diffraction'
-            }
-
-            if (!sample.EXPERIMENTKIND) {
-              sample.EXPERIMENTKIND = 'Ligand binding'
-            }
-
-            if (!sample.SCREENINGMETHOD) {
-              sample.SCREENINGMETHOD = 'none'
-            }
-
-            return sample
-          })
-
-          this.AUTOMATED = 1
-        } else {
-          this.AUTOMATED = ''
-        }
-
-        this.$store.commit('samples/set', samples)
+        this.selectQueueForUDC(newVal)
       }
     },
     SPACEGROUP: {
@@ -692,9 +669,13 @@ export default {
         // On success, reset because we will want to start with a clean slate
         this.$store.commit('samples/reset')
 
-        // Reset container - we may want to add more containers so just reset the name and barcode
+        // Reset container - we may want to add more containers so reset the name, barcode and registered container
         this.NAME = ''
         this.BARCODE = ''
+        this.CONTAINERREGISTRYID = ''
+        // Trigger default setting of UDC fields if selected
+        this.selectQueueForUDC(this.AUTOMATED)
+
         // Reset state of form
         this.$refs.containerForm.reset()
       } catch (error) {
@@ -705,6 +686,32 @@ export default {
       } finally {
         window.scrollTo(0,0);
       }
+    },
+    selectQueueForUDC(newVal) {
+      let samples
+      if (newVal) {
+        samples = this.samples.map(sample => {
+          if (!sample.CENTRINGMETHOD) {
+            sample.CENTRINGMETHOD = 'diffraction'
+          }
+
+          if (!sample.EXPERIMENTKIND) {
+            sample.EXPERIMENTKIND = 'Ligand binding'
+          }
+
+          if (!sample.SCREENINGMETHOD) {
+            sample.SCREENINGMETHOD = 'none'
+          }
+
+          return sample
+        })
+
+        this.AUTOMATED = 1
+      } else {
+        this.AUTOMATED = ''
+      }
+
+      this.$store.commit('samples/set', samples)
     },
     resetSamples(capacity) {
       this.$store.commit('samples/reset', capacity)
