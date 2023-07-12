@@ -45,6 +45,7 @@
                                 :valueArray="filters[0].selectedArr"
                                 :searchArray="filters[0].selectedArr"
                                 ></combo-box>
+                                <button class="sidebar-button tw-mr-1 tw-mb-2" @click="getStarted()">Get Started</button>
                         </div>
                         <div class="tw-col-span-1 tw-col-start-6 tw-mt-2 tw-mr-3 ">
 
@@ -885,6 +886,19 @@ export default {
             } finally {
                 this.isLoading = false;
             }
+        },
+        async getStarted() {
+
+            this.isLoading = true;
+
+            this.currentPage = 1;
+
+            const index = this.filters.findIndex((dict) => dict["textField"] == "PROP");
+
+            this.filters[index].selectedArr.push(this.filters[index].data[0])
+
+            this.searchFilterParams()
+
         },
         async searchFilterParams() {
           // searches for results with filter parameters applied which is in getQueryParams
