@@ -16,7 +16,6 @@ define([], function() {
         admin: {
             'dewars/overview': { title: 'Logistics', icon: 'fa-truck', permission: 'all_dewars' },
             faults: { title: 'Fault Reports', icon: 'fa-tasks' },
-
         },
     }
 })

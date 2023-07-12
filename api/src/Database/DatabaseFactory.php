@@ -40,7 +40,6 @@ class DatabaseFactory
             $full_class_name = 'SynchWeb\\Database\\Type\\' . $dbType["dbClassName"];;
 
             if (class_exists($full_class_name)) {
-                error_log($dbType["dataConnectionName"]);
                 $conn = $this->databaseConnectionFactory->get($dbType["dataConnectionName"]);
                 return new $full_class_name($conn);
             }
