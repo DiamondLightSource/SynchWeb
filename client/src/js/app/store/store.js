@@ -43,6 +43,7 @@ const store = new Vuex.Store({
 
     isLoading: false,
     motd: '',
+    ifsummary: false,
     help: false, // Global help flag used to denote if we should display inline help on pages
     skipHomePage: config.skipHome || false,
     models: {},
@@ -64,6 +65,8 @@ const store = new Vuex.Store({
       state.appOptions = options.toJSON()
 
       state.motd = options.get('motd') || state.motd
+
+      state.ifsummary = options.get('ifsummary') || state.ifsummary
 
       app.options = options
     },

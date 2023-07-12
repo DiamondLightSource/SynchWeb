@@ -26,8 +26,8 @@ class Summary extends Page
         'sample' => '(^(\w+),(asc|desc|)+$)', //sample name
         'filetemp' => '(^(\w+),(asc|desc|)+$)', //file template
         // 'dcid' => '(.*)', //data collection id 
-        'pp' => '(\[[^\ \]]*\],(asc|desc))', // processing programs
-        'sg' => '(\[[^\ \]]*\],(asc|desc))', // space group
+        'pp' => '(\[[^\ \]]*\],(asc|desc|))', // processing programs
+        'sg' => '(\[[^\ \]]*\],(asc|desc|))', // space group
 
 
         // Filter Parameters - array of parameter operands and orders such as greater than, equal to, between, less than, like, ascending, descending and the comparison value.
@@ -51,25 +51,65 @@ class Summary extends Page
     );
 
     public static $dispatch = array(
-        array('/results', 'get', '_get_results'),
-        array('/proposal', 'get', '_get_proposal'),
-        array('/spacegroup', 'get', '_get_spacegroup'),
-        array('/procprogram', 'get', '_get_processingprogram'),
-        array('/bl', 'get', '_get_beamline')
+            array('/results', 'get', '_get_results'),
+            array('/proposal', 'get', '_get_proposal'),
+            array('/spacegroup', 'get', '_get_spacegroup'),
+            array('/procprogram', 'get', '_get_processingprogram'),
+            array('/bl', 'get', '_get_beamline')
+        );
+
+    public $string_arg_types = array(
+        'pp' => ["order" =>'ppt.processingPrograms ', "where" => 'lower(ppt.processingPrograms) = lower( ? ) '],
+        'sg' => ["order" =>'sgt.spaceGroup ', "where" => 'lower(sgt.spaceGroup) = lower( ? ) '],
+        'BEAMLINENAME' => ["order" =>'vt.beamLineName ', "where" => 'lower(vt.beamLineName) LIKE lower( ? ) ']
     );
+
+
+    public $val_arg_types = array(
+        'rca' => ["arg" => 'sf.refinedCell_a '],
+        'rcb' => ["arg" => 'sf.refinedCell_b '],
+        'rcc' => ["arg" => 'sf.refinedCell_c '],
+        'rcal' => ["arg" => 'sf.refinedCell_alpha '],
+        'rcbe' => ["arg" => 'sf.refinedCell_beta '],
+        'rcga' => ["arg" => 'sf.refinedCell_gamma '],
+        'rlho' => ["arg" => 'sf.resolutionLimitHighOuter '],
+        'rmpmi' => ["arg" => 'sf.rMeasWithinIPlusIMinusInner '],
+        'riso' => ["arg" => 'sf.resIOverSigI2Overall '],
+        'cci' => ["arg" => 'sf.ccAnomalousInner '],
+        'cco' => ["arg" => 'sf.ccAnomalousOverall '],
+        'rfsi' => ["arg" => 'sf.rFreeValueStartInner '],
+        'rfei' => ["arg" => 'sf.rFreeValueEndInner '],
+        'nobi' => ["arg" => 'sf.noofblobs ']
+
+    );
+
 
     private $summarydb;
 
 
     function __construct(Slim $app, $db, $user)
     {   
+        global $summarydbconfig;
+
         parent::__construct($app, $db, $user);
-        $dbFactory = new DatabaseFactory(new DatabaseConnectionFactory());
-        $db = $dbFactory->get("summary");
-        $this->summarydb = $db;
+
+        if ($summarydbconfig) {
+            $dbFactory = new DatabaseFactory(new DatabaseConnectionFactory());
+            $db = $dbFactory->get("summary");
+            $this->summarydb = $db;
+        }
+
+    }
+
+    private function error_on_no_summary_db(){
+        global $summarydbconfig;
+        if (!$summarydbconfig) {
+            $this->_error("Not valid when summary database not configured.");
+        }
     }
 
     function _get_results() {
+        $this->error_on_no_summary_db();
         $where = '';
         $where_arr = array();
         $order = '';
@@ -144,307 +184,49 @@ class Summary extends Page
         }
 
 
-        // if ($this->has_arg('dcid')) {
-        //     $dcid_args = explode(',', $this->arg('dcid'));
+        foreach ($this->string_arg_types as $key => $value) {
 
-        //     array_push($args, $dcid_args[0]);
-        //     array_push($where_arr, 'sf.dataCollectionId = ?');
-            
-        //     if (isset($dcid_args[1]) == 'desc' || isset($dcid_args[1]) == 'asc') {
-        //         array_push($order_arr, 'sf.dataCollectionId '.$dcid_args[1]);
-        //     }
+            if ($this->has_arg($key)) {
 
-        // }
-
-        if ($this->has_arg('pp')) {
-
-            $pp_array = array();
-
-            $pp_args  = preg_split('/[,]+(?![^\[]*\])/', urldecode($this->arg('pp')));
-
-            $pp_values = explode(',', str_replace(array('[',']'),'', $pp_args[0]));
-
-            foreach ($pp_values as $value) {
-                array_push($pp_array, "lower(ppt.processingPrograms) LIKE lower( ? ) ");
-                array_push($args, $value);
+                $temp_array = array();
+    
+                $temp_args  = preg_split('/[,]+(?![^\[]*\])/', urldecode($this->arg($key)));
+    
+                $temp_values = explode(',', str_replace(array('[',']'),'', $temp_args[0]));
+    
+                foreach ($temp_values as $temp_value) {
+                    array_push($temp_array, $value['where']);
+                    array_push($args, $temp_value);
+                }
+    
+                array_push($where_arr, '('.implode(" OR ", $temp_array).')');
+                
+                if (isset($temp_args[1]) == 'desc' || isset($temp_args[1]) == 'asc') {
+                    array_push($order_arr, $value['order'].$temp_args[1]);
+                }
             }
-
-            array_push($where_arr, '('.implode(" OR ", $pp_array).')');
-            
-            if (isset($pp_args[1]) == 'desc' || isset($pp_args[1]) == 'asc') {
-                array_push($order_arr, 'ppt.processingPrograms '.$pp_args[1]);
-            }
-
         }
 
-        if ($this->has_arg('sg')) {
-
-            $sg_array = array();
-
-            $sg_args  = preg_split('/[,]+(?![^\[]*\])/', urldecode($this->arg('sg')));
-
-            $sg_values = explode(',', str_replace(array('[',']'),'', $sg_args[0]));
-
-            foreach ($sg_values as $value) {
-                array_push($sg_array, "lower(sgt.spaceGroup) LIKE lower( ? ) ");
-                array_push($args, $value);
-            };
-
-            array_push($where_arr, '('.implode(" OR ", $sg_array).')');
-            
-            if (isset($sg_args[1]) == 'desc' || isset($sg_args[1]) == 'asc') {
-                array_push($order_arr, 'sgt.spaceGroup '.$sg_args[1]);
-            }
-
-        }
-
-        if ($this->has_arg('BEAMLINENAME')) {
-
-            $BEAMLINENAME_array = array();
-
-            $BEAMLINENAME_args = preg_split('/[,]+(?![^\[]*\])/', urldecode($this->arg('BEAMLINENAME')));
-
-            $BEAMLINENAME_values = explode(',', str_replace(array('[',']'),'', $BEAMLINENAME_args[0]));
-
-            foreach ($BEAMLINENAME_values as $value) {
-                array_push($BEAMLINENAME_array, "lower(vt.beamLineName) LIKE lower( ? ) ");
-                array_push($args, $value);
-            };
-
-            array_push($where_arr, '('.implode(" OR ", $BEAMLINENAME_array).')');
-            
-            if (isset($BEAMLINENAME_args[1]) == 'desc' || isset($BEAMLINENAME_args[1]) == 'asc') {
-                array_push($order_arr, 'vt.beamLineName '.$BEAMLINENAME_args[1]);
-            }
-
-        }
 
         // [VALUE, OPERAND, ORDER]
 
-        if ($this->has_arg('rca')) {
-            $rca_args = explode(',', $this->arg('rca'));
+        foreach ($this->val_arg_types as $key => $value) {
 
-            array_push($args, $rca_args[0]);
-            
-            if (in_array($rca_args[1], $op_array) ) {
-                array_push($where_arr, 'sf.refinedCell_a '.$rca_args[1].' ?');
-            }
-
-            
-            if (isset($rca_args[2]) == 'desc' || isset($rca_args[2]) == 'asc') {
-                array_push($order_arr, 'sf.refinedCell_a '.$rca_args[2]);
-            }
-
-        }
-
-
-        if ($this->has_arg('rcb')) {
-            $rcb_args = explode(',', $this->arg('rcb'));
-
-            array_push($args, $rcb_args[0]);
-            
-            if (in_array($rcb_args[1], $op_array)) {
-                array_push($where_arr, 'sf.refinedCell_b '.$rcb_args[1].' ?');
-            }
-            
-            
-            if (isset($rcb_args[2]) == 'desc' || isset($rcb_args[2]) == 'asc') {
-                array_push($order_arr, 'sf.refinedCell_b '.$rcb_args[2]);
-            }
-
-        }
-
-
-        if ($this->has_arg('rcc')) {
-            $rcc_args = explode(',', $this->arg('rcc'));
-
-            array_push($args, $rcc_args[0]);
-            
-            if (in_array($rcc_args[1], $op_array)) {
-                array_push($where_arr, 'sf.refinedCell_c '.$rcc_args[1].' ?');
-            }
-            
-            
-            if (isset($rcc_args[2]) == 'desc' || isset($rcc_args[2]) == 'asc') {
-                array_push($order_arr, 'sf.refinedCell_c '.$rcc_args[2]);
-            }
-
-        }
-
-
-        if ($this->has_arg('rcal')) {
-            $rcal_args = explode(',', $this->arg('rcal'));
-
-            array_push($args, $rcal_args[0]);
-            
-            if (in_array($rcal_args[1], $op_array)) {
-                array_push($where_arr, 'sf.refinedCell_alpha '.$rcal_args[1].' ?');
-            }
-            
-            
-            if (isset($rcal_args[2]) == 'desc' || isset($rcal_args[2]) == 'asc') {
-                array_push($order_arr, 'sf.refinedCell_alpha '.$rcal_args[2]);
-            }
-
-        }
-
-        if ($this->has_arg('rcbe')) {
-            $rcbe_args = explode(',', $this->arg('rcbe'));
-
-            array_push($args, $rcbe_args[0]);
-            
-            if (in_array($rcbe_args[1], $op_array)) {
-                array_push($where_arr, 'sf.refinedCell_beta '.$rcbe_args[1].' ?');
-            }
-            
-            
-            if (isset($rcbe_args[2]) == 'desc' || isset($rcbe_args[2]) == 'asc') {
-                array_push($order_arr, 'sf.refinedCell_beta '.$rcbe_args[2]);
-            }
-
-        }
-
-        if ($this->has_arg('rcga')) {
-            $rcga_args = explode(',', $this->arg('rcga'));
-
-            array_push($args, $rcga_args[0]);
-            
-            if (in_array($rcga_args[1], $op_array)) {
-                array_push($where_arr, 'sf.refinedCell_gamma '.$rcga_args[1].' ?');
-            }
-            
-            
-            if (isset($rcga_args[2]) == 'desc' || isset($rcga_args[2]) == 'asc') {
-                array_push($order_arr, 'sf.refinedCell_gamma '.$rcga_args[2]);
-            }
-
-        }
-
-        if ($this->has_arg('rlho')) {
-            $rlho_args = explode(',', $this->arg('rlho'));
-
-            array_push($args, $rlho_args[0]);
-            
-            if (in_array($rlho_args[1], $op_array)) {
-                array_push($where_arr, 'sf.resolutionLimitHighOuter '.$rlho_args[1].' ?');
-            }
-            
-            
-            if (isset($rlho_args[2]) == 'desc' || isset($rlho_args[2]) == 'asc') {
-                array_push($order_arr, 'sf.resolutionLimitHighOuter '.$rlho_args[2]);
-            }
-
-        }
-
-        if ($this->has_arg('rmpmi')) {
-            $rmpmi_args = explode(',', $this->arg('rmpmi'));
-
-            array_push($args, $rmpmi_args[0]);
-            
-            if (in_array($rmpmi_args[1], $op_array)) {
-                array_push($where_arr, 'sf.rMeasWithinIPlusIMinusInner '.$rmpmi_args[1].' ?');
-            }
-            
-            
-            if (isset($rmpmi_args[2]) == 'desc' || isset($rmpmi_args[2]) == 'asc') {
-                array_push($order_arr, 'sf.rMeasWithinIPlusIMinusInner '.$rmpmi_args[2]);
-            }
-
-        }
-
-        if ($this->has_arg('riso')) {
-            $riso_args = explode(',', $this->arg('riso'));
-
-            array_push($args, $riso_args[0]);
-            
-            if (in_array($riso_args[1], $op_array)) {
-                array_push($where_arr, 'sf.resIOverSigI2Overall '.$riso_args[1].' ?');
-            }
-            
-            
-            if (isset($riso_args[2]) == 'desc' || isset($riso_args[2]) == 'asc') {
-                array_push($order_arr, 'sf.resIOverSigI2Overall '.$riso_args[2]);
-            }
-
-        }
-
-        if ($this->has_arg('cci')) {
-            $cci_args = explode(',', $this->arg('cci'));
-
-            array_push($args, $cci_args[0]);
-            
-            if (in_array($cci_args[1], $op_array)) {
-                array_push($where_arr, 'sf.ccAnomalousInner '.$cci_args[1].' ?');
-            }
-            
-            
-            if (isset($cci_args[2]) == 'desc' || isset($cci_args[2]) == 'asc') {
-                array_push($order_arr, 'sf.ccAnomalousInner '.$cci_args[2]);
-            }
-
-        }
-
-        if ($this->has_arg('cco')) {
-            $cco_args = explode(',', $this->arg('cco'));
-
-            array_push($args, $cco_args[0]);
-            
-            if (in_array($cco_args[1], $op_array)) {
-                array_push($where_arr, 'sf.ccAnomalousOverall '.$cco_args[1].' ?');
-            }
-            
-            
-            if (isset($cco_args[2]) == 'desc' || isset($cco_args[2]) == 'asc') {
-                array_push($order_arr, 'sf.ccAnomalousOverall '.$cco_args[2]);
-            }
-
-        }
-
-        if ($this->has_arg('rfsi')) {
-            $rfsi_args = explode(',', $this->arg('rfsi'));
-
-            array_push($args, $rfsi_args[0]);
-            
-            if (in_array($rfsi_args[1], $op_array)) {
-                array_push($where_arr, 'sf.rFreeValueStartInner '.$rfsi_args[1].' ?');
-            }
-            
-            
-            if (isset($rfsi_args[2]) == 'desc' || isset($rfsi_args[2]) == 'asc') {
-                array_push($order_arr, 'sf.rFreeValueStartInner '.$rfsi_args[2]);
-            }
-
-        }
-
-        if ($this->has_arg('rfei')) {
-            $rfei_args = explode(',', $this->arg('rfei'));
-
-            array_push($args, $rfei_args[0]);
-            
-            if (in_array($rfei_args[1], $op_array)) {
-                array_push($where_arr, 'sf.rFreeValueEndInner '.$rfei_args[1].' ?');
-            }
-            
-            
-            if (isset($rfei_args[2]) == 'desc' || isset($rfei_args[2]) == 'asc') {
-                array_push($order_arr, 'sf.rFreeValueEndInner '.$rfei_args[2]);
-            }
-
-        }
-
-        if ($this->has_arg('nobi')) {
-            $nobi_args = explode(',', $this->arg('nobi'));
-
-            array_push($args, $nobi_args[0]);
-            
-            if (in_array($nobi_args[1], $op_array)) {
-                array_push($where_arr, 'sf.noofblobs '.$nobi_args[1].' ?');
-            }
-            
-            
-            if (isset($nobi_args[2]) == 'desc' || isset($nobi_args[2]) == 'asc') {
-                array_push($order_arr, 'sf.noofblobs '.$nobi_args[2]);
-            }
+            if ($this->has_arg($key)) {
+                $temp_args = explode(',', $this->arg($key));
+    
+                array_push($args, $temp_args[0]);
+                
+                if (in_array($temp_args[1], $op_array) ) {
+                    array_push($where_arr, $value['arg'].$temp_args[1].' ?');
+                }
+    
+                
+                if (isset($temp_args[2]) == 'desc' || isset($temp_args[2]) == 'asc') {
+                    array_push($order_arr, $value['arg'].$temp_args[2]);
+                }
+    
+            }  
 
         }
         
@@ -533,8 +315,6 @@ class Summary extends Page
         if (!$rows) {
         $this->_error($this->arg('TITLE') . ' could not be found anywhere!', 404);
         }
-
-        
         
         // sql query output
 
@@ -547,7 +327,7 @@ class Summary extends Page
     }
 
     function _get_proposal() {
-
+        $this->error_on_no_summary_db();
         $args = array();
         $where = "WHERE 1=1";
 
@@ -607,7 +387,7 @@ class Summary extends Page
     }
 
     function _get_spacegroup() {
-
+        $this->error_on_no_summary_db();
         $rows = $this->summarydb->pq(
             "SELECT spaceGroup
             FROM SpaceGroupDimension sgt");
@@ -617,7 +397,7 @@ class Summary extends Page
     }
 
     function _get_processingprogram() {
-
+        $this->error_on_no_summary_db();
         $rows = $this->summarydb->pq(
             "SELECT processingPrograms
             FROM ProcessingProgramDimension ppt");
@@ -627,7 +407,7 @@ class Summary extends Page
     }
 
     function _get_beamline() {
-
+        $this->error_on_no_summary_db();
         $rows = $this->summarydb->pq(
             "SELECT beamLineName
             FROM VisitDimension vt");

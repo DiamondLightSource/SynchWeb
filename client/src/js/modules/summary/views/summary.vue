@@ -124,7 +124,7 @@
                                                 
                                             </div>
                                         </div>
-                                        <button v-if="value.textField != 'PROP'" v-on:click="popFilter(index+1)" 
+                                        <button v-if="value.textField != 'PROP'" v-on:click="popArr(filters, index+1)" 
                                             class="fa fa-times-circle tw-text-red-600 tw-ml-2 tw-mb-3"></button>
 
                                     </div>
@@ -250,12 +250,21 @@
                         :class="isHidden ? 'select-columns-dropdown-hide' : 'select-columns-dropdown-show'">
                         
                             <ul class="tw-py-1 tw-text-sm tw=text-gray-700" aria-labelledby="dropdownInformationButton">
-                            <li> 
+                            <li v-if="!isHidden"> 
+                                <div class="tw-flex tw-items-center tw-ml-2">
+                                    <input checked
+                                    id="default-checkbox" type="checkbox" value="" 
+                                    class="select-columns-checkbox focus:tw-ring-blue-500 focus:tw-ring-2"
+                                    @click="selectAllColumns()">
+                                    <a class="tw-block tw-text-xs tw-py-2 tw-px-4 hover:tw-bg-gray-100"> 
+                                        <p v-if="isSelectAll">Deselect All </p>
+                                        <p v-else>Select All </p>
+                                    </a>
+                                </div>
                                 <div v-for="(value, index) in summaryParameters" :key="value.id" 
                                 class="tw-flex tw-items-center tw-ml-2">
                                     <input checked
                                     v-model="value.checked"
-                                    v-if="!isHidden"
                                     @click="checkedColumns(index)"
                                     id="default-checkbox" type="checkbox" value="" 
                                     class="select-columns-checkbox focus:tw-ring-blue-500 focus:tw-ring-2">
@@ -297,7 +306,7 @@
 
 
 
-        <div class="results-wrapper tw-bg-table-header-background tw-text-table-header-color tw-mt-2 tw-overflow-x-scroll tw-scrolling-touch tw-relative">
+        <div class="results-wrapper tw-bg-table-header-background tw-text-table-header-color tw-mt-2">
 
             <div class="results-grid tw-font-bold ">
                 <div class="results-item tw-px-5 tw-my-3"> File Template</div>
@@ -348,10 +357,8 @@
 
 
 
-            <div class="results-content tw-text-black tw-text-center tw-pt-3 tw-px-5 tw-text-xl tw-bg-content-sub-header-hover-background" v-if="summaryData.length == 0">
+            <div class="no-results tw-text-black tw-text-center tw-pt-3 tw-px-5 tw-text-xl tw-bg-content-sub-header-hover-background" v-if="summaryData.length == 0">
                     No Results</div>
-
-                                
 
             <expandable-sidebar
             class="results-content tw-flex" v-click="true"
@@ -439,21 +446,21 @@
 <script>
 
 import SummaryCollection from 'modules/summary/collections/summaryresults.js'
-import ProposalCollection from 'collections/proposals'
 import SpaceGroups from 'collections/spacegroups'
+import ProposalCollection from 'collections/proposals'
 import ProcessingPipelines from 'collections/processingpipelines'
 
 import Pagination from 'app/components/pagination.vue'
 
+import BaseInputSelect from 'app/components/base-input-select.vue'
+import BaseInputText from 'app/components/base-input-text.vue'
 import CustomTableComponent from 'app/components/custom-table-component.vue'
 import CustomTableRow from 'app/components/custom-table-row.vue'
 import ComboBox from 'app/components/combo-box.vue'
-import BaseInputSelect from 'app/components/base-input-select.vue'
-import BaseInputText from '../../../app/components/base-input-text.vue'
+import DialogModal from 'app/components/dialog-modal.vue'
+import ExpandableSidebar from 'app/components/expandable-sidebar.vue'
 
-import ExpandableSidebar from '../../../app/components/expandable-sidebar.vue'
-import DialogModal from '../../../app/components/dialog-modal.vue'
-import CustomAccordian from '../../../app/components/custom-accordian.vue'
+import { popArr, convertToCSV, exportCSV } from 'modules/summary/utils/utils.js'
 
 
 export default {
@@ -465,7 +472,6 @@ export default {
     'pagination-panel': Pagination,
     'combo-box': ComboBox,
     'expandable-sidebar': ExpandableSidebar,
-    'custom-accordian': CustomAccordian,
     'dialog-modal': DialogModal,
     'base-input-select': BaseInputSelect,
     'base-input-text' : BaseInputText
@@ -474,13 +480,13 @@ export default {
 
     },
     data() {
-        
         return {
             windowWidth: window.innerWidth,
             baseUrl: window.location.origin,
             isLoading : false,
             isHidden: true,
             isOpen: true,
+            isSelectAll: true,
             showFavourites: false,
             totalRecords:  10,
             pageSize: 15,
@@ -491,7 +497,6 @@ export default {
             proposalCollection : null,
             proposals : [],
             spaceGroups : [],
-            propSelect: [],
             processingProgram : [],
             beamLines: [],
             searchedSamplePrefix: [],
@@ -703,7 +708,6 @@ export default {
     },
     created() {
         this.mapSummaryParameters()
-        this.createPropList()
         this.searchProposal()
         this.getSpaceGroups()
         this.getProcessingPipelines() 
@@ -711,7 +715,6 @@ export default {
         this.addFilterOption()
         this.addFormatOption()
         this.toggleSidebar()
-        // this.populateSelectedColumns()
         this.popSelectedColumns()
     },
     mounted() {
@@ -724,20 +727,6 @@ export default {
         })
     },
     methods: {
-        toggleSidebar() {
-        this.isOpen = !this.isOpen;
-        },
-        createPropList() {
-            // creates seperate proposal object for selecting proposals
-            this.propSelect = this.filters;
-        },
-        popSelectedColumns() {
-
-            this.selectedColumns = this.summaryParameters.filter( (e) => {
-                return e.checked === true;
-            })
-
-        },
         mapSummaryParameters() {
             // adds extra keys to summaryParameters object
             this.summaryParameters = 
@@ -774,10 +763,6 @@ export default {
             } 
 
         },
-        popFilter(value) {
-            // removes selected filter option to filters object
-            this.filters.splice(value, 1)
-        },
         addFormatOption(event) {
             // UNUSED - ready for future functionality. Add format parameter option to format object  
             if (this.format.length < 18) {
@@ -803,10 +788,6 @@ export default {
             } 
 
         },
-        popFormat(value) {
-            // UNUSED - ready for future functionality. Remove format parameter option to format object  
-            this.format.splice(value, 1)
-        },
         async searchProposal() {
 
             // gets proposal list from proposal endpoint for combo box from proposal collection 
@@ -823,14 +804,14 @@ export default {
                 this.filters[index].data = results;
 
 
-                this.isLoading = false;
-
             } catch(e) {
 
                 window.onerror('Cannot get Proposals Collection: ' + e);
-                this.isLoading = false;
+
                 return ;
 
+            } finally {
+                this.isLoading = false;
             }
 
 
@@ -847,16 +828,15 @@ export default {
 
                 const index = this.summaryParameters.findIndex((dict) => dict["textField"] == "SPACEGROUP");
                 this.summaryParameters[index].data = results;                
-
-                this.isLoading = false;
                  
             } catch (e) {
 
                 window.onerror('Cannot get space group collection: ' + e);
-                this.isLoading = false;
+
                 return ;
 
-
+            } finally {
+                this.isLoading = false;
             }
         },
         async getProcessingPipelines() {
@@ -872,14 +852,14 @@ export default {
                 const index = this.summaryParameters.findIndex((dict) => dict["textField"] == "PROCESSINGPROGRAMS");
                 this.summaryParameters[index].data = results;  
 
-                this.isLoading = false;
                  
             } catch (e) {
 
                 window.onerror('Cannot get processing pipeline collection: ' + e);
-                this.isLoading = false;
                 return ;
 
+            } finally {
+                this.isLoading = false;
             }
         },
         async getBeamLine() {
@@ -895,14 +875,15 @@ export default {
                 const index = this.summaryParameters.findIndex((dict) => dict["textField"] == "BEAMLINENAME");
                 this.summaryParameters[index].data = results;  
 
-                this.isLoading = false;
                  
             } catch (e) {
 
                 window.onerror('Cannot get processing pipeline collection: ' + e);
-                this.isLoading = false;
+
                 return ;
 
+            } finally {
+                this.isLoading = false;
             }
         },
         async searchFilterParams() {
@@ -916,27 +897,19 @@ export default {
 
                 const queryParams = this.getQueryParams(false);
 
-                console.log(encodeURI(queryParams))
-
-                const results = await this.$store.dispatch('fetchDataFromApi', {
-                  url: '/summary/results?'+encodeURI(queryParams),
-                  requestType: 'fetching beamlinename'
-                })
-
-                console.log('results', results)
+                const results = await this.requestResults(queryParams, 'search filter parameters')
 
                 this.totalRecords = results.total;
                 this.summaryData = results.data;
 
 
-                this.isLoading = false;
-
             } catch(e) {
 
                 window.onerror('Cannot get filtered results: ' + e);
-                this.isLoading = false;
                 return ;
 
+            } finally {
+                this.isLoading = false;
             }
 
         },
@@ -951,25 +924,20 @@ export default {
                 this.pageSize = data['page-size'];
 
                 const queryParams = this.getQueryParams(false);
-
-                const results = await this.$store.dispatch('fetchDataFromApi', {
-                  url: '/summary/results?'+encodeURI(queryParams),
-                  requestType: 'fetching beamlinename'
-                })
-
-                console.log('results', results)
+                
+                const results = await this.requestResults(queryParams, 'handle page change')
 
                 this.summaryData = results.data;
 
 
-                this.isLoading = false;
-
             } catch(e) {
 
                 window.onerror('Cannot go to selected page: ' + e);
-                this.isLoading = false;
+
                 return ;
                 
+            } finally {
+                this.isLoading = false;
             }
 
         },
@@ -980,7 +948,7 @@ export default {
 
                 // probably a better way to do this? messy
 
-                if (this.selectedColumns[index].order == '') {
+                if (this.selectedColumns[index].order === '') {
                     this.selectedColumns[index].order = 'DESC'
                 } else if (this.selectedColumns[index].order == 'DESC') {
                     this.selectedColumns[index].order = 'ASC'
@@ -992,23 +960,18 @@ export default {
 
                 const queryParams = this.getQueryParams(false);
 
-                const results = await this.$store.dispatch('fetchDataFromApi', {
-                url: '/summary/results?'+encodeURI(queryParams),
-                requestType: 'fetching beamlinename'
-                })
-
-                console.log('results', results)
+                const results = await this.requestResults(queryParams, 'order by results')
 
                 this.summaryData = results.data;
 
 
-                this.isLoading = false;
             } catch(e) {
 
                 window.onerror('Cannot order selected parameter: ' + e);
-                this.isLoading = false;
                 return ;
 
+            } finally {
+                this.isLoading = false;
             }
         },
         async downloadFile() {
@@ -1019,16 +982,12 @@ export default {
 
                     const queryParams = this.getQueryParams(true);
 
-
-                    const results = await this.$store.dispatch('fetchDataFromApi', {
-                        url: '/summary/results?'+encodeURI(queryParams),
-                        requestType: 'fetching beamlinename'
-                        })
+                    const results = await this.requestResults(queryParams, 'download file')
 
                     this.summaryExport = results.data;
 
-                    const csv = this.convertToCSV(this.summaryExport);
-                    this.exportCSV(csv);
+                    const csv = convertToCSV(this.summaryExport);
+                    exportCSV(csv);
 
                     this.summaryExport = [];
 
@@ -1040,6 +999,15 @@ export default {
             }
 
         },
+        async requestResults(queryParams, requestType) {
+            // function querying results based on defined parameters
+            
+            return await this.$store.dispatch('fetchDataFromApi', {
+                        url: '/summary/results?'+encodeURI(queryParams),
+                        requestType: requestType
+                        }) 
+
+        },  
         async favourite(result) {
             // adds favourites by adding a _FLAG_ comment to DataCollection comments table. updatetype is always specified as a 'POST' rather than 'PATCH' due to some errors in 
             // api not pushing data to 'patch' endpoint. if patching the endpoint we point to dc/patchcomments, which will patch (UPDATE) through sql code. 
@@ -1146,12 +1114,7 @@ export default {
 
 
 
-                if (this.filters[i].selected || this.filters[i].selectedArr.length !== 0) {
-
-                    console.log('filters', this.filters[i].selected)
-                    console.log('filters', this.filters[i].selectedArr)
-
-                    console.log('this-filters', this.filters[i])
+                if (this.filters[i].selected || this.filters[i].selectedArr.length !== 0 || this.filters[i].value) {
 
                     queryParams.push('&')
 
@@ -1172,7 +1135,10 @@ export default {
 
                     if (this.filters[i].order) {
                         queryParams.push(","+this.filters[i].order)
+                    } else {
+                        queryParams.push(",")
                     }
+            
                 }
 
             }
@@ -1212,30 +1178,6 @@ export default {
             this.searchFilterParams();
 
         },  
-        convertToCSV(data) {
-
-            const result = [
-                // headers
-                Object.keys(data['0']),
-                // values
-                ...Object.values(data).map(item => Object.values(item))
-            ]
-                .reduce((string, item) => {
-                    string += item.join(',') + '\n';
-                    return string;
-            }, '');
-
-            return result;
-        },
-        exportCSV(csv) {
-
-            const anchor = document.createElement('a');
-            anchor.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
-            anchor.target = '_blank';
-            anchor.download = 'summary_export.csv';
-            anchor.click();
-
-        },
         getProcRow(result, field, type) {
             // return an array for results, also change decimal places for floats
                 if (result[field]) {
@@ -1261,6 +1203,16 @@ export default {
                     return [];
                 };
         },
+        selectAllColumns() {
+            this.isSelectAll = !this.isSelectAll
+
+            for (var index in this.summaryParameters) {
+                this.summaryParameters[index].checked = this.isSelectAll;
+            }
+
+            this.popSelectedColumns()
+
+        },
         checkedColumns(index) {
             // add columns to selected or deselected object for pill display
             this.summaryParameters[index].checked = !this.summaryParameters[index].checked;
@@ -1272,28 +1224,16 @@ export default {
         resizePills() {
             // change number of pills visible based on width of window
 
-            if (this.windowWidth > 2800 ) {
-                this.pillIndex = 6;
-            }
+            if (this.windowWidth > 1000 & this.windowWidth < 2900) {
 
-            else if (this.windowWidth > 2200 ) {
-                this.pillIndex = 5;
-            }
+                const windWidthRounded = Math.ceil(this.windowWidth/100)*100;
 
-            else if (this.windowWidth > 1800 ) {
-                this.pillIndex = 4;
-            }
+                if( windWidthRounded % 200 === 0) {
 
-            else if (this.windowWidth > 1600 ) {
-                this.pillIndex = 3;
-            }
+                    this.pillIndex = (windWidthRounded - 1000)/200;
 
-            else if (this.windowWidth > 1200 ) {
-                this.pillIndex = 2;
-            }
+                }
 
-            else if (this.windowWidth > 1000 ) {
-                this.pillIndex = 1;
             }
 
         },
@@ -1308,6 +1248,19 @@ export default {
                 }
    
             }
+
+        },
+        toggleSidebar() {
+        this.isOpen = !this.isOpen;
+        },
+        popArr(obj, value) {
+            obj.splice(value, 1);
+        },
+        popSelectedColumns() {
+
+        this.selectedColumns = this.summaryParameters.filter( (e) => {
+            return e.checked === true;
+        })
 
         },
         renderIFrame(index) {
@@ -1371,6 +1324,7 @@ export default {
 
 .results-content .content-format {
     background-color: rgb(217, 217, 217);
+
 }
 
 
@@ -1384,58 +1338,27 @@ export default {
 
 <style scoped>
 
-.search-icon {
-    font-size: 12px;
-}
+    .search-icon {
+        font-size: 12px;
+    }
 
-.combo-box {
-    font-size: small;
-    position: absolute;
-    width: 15%
-}
+    .combo-box {
+        font-size: small;
+        position: absolute;
+        width: 15%
+    }
 
-.combo-box-description {
-    width: 200px;
-    font-size: small;
-}
+    .combo-box-description {
+        width: 200px;
+        font-size: small;
+    }
 
-.input-description {
-    width: 170px;
-    font-size: small;
-}
+    .input-description {
+        width: 170px;
+        font-size: small;
+    }
 
-
-.copied {
-    height: 125px;
-    width: 75px;
-    justify-content: center;
-    align-items: center;
-    display: flex;
-    position: fixed;
-    top: 20%;
-    left: 50%;
-}
-
-.status {
-    height: 125px;
-    width: 75px;
-    justify-content: center;
-    align-items: center;
-    display: flex;
-    position: fixed;
-    top: 45%;
-    left: 50%;
-    color: rgb(111, 213, 111);
-}
-
-.proposal-select {
-    color: black;
-    height: 10px;
-}
-
-
-
-.button_plus {
+    .button_plus {
   width: 25px;
   height: 25px;
   background: #fff;
@@ -1474,15 +1397,11 @@ export default {
   font-size: small;
 }
 
-:-ms-input-placeholder { /* Internet Explorer 10-11 */
-  color: black;
-  font-size: small;
-}
-
 ::-ms-input-placeholder { /* Microsoft Edge */
   color: black;
   font-size: small;
 }
+
 
 .results-wrapper{
     overflow-x: scroll;
@@ -1504,6 +1423,13 @@ export default {
 
 
 .results-content{
+    width:fit-content;
+    overflow: visible; 
+    display:block;
+    background-color: rgb(255, 255, 255);
+}
+
+.no-results {
     width: 100%;
     overflow: visible; 
     display:block;
@@ -1538,224 +1464,6 @@ export default {
     white-space: normal;
     height:auto; 
 }
-
-.order-by {
-  cursor: pointer;
-  position: relative;
-  /* top: 60%; */
-  content: "";
-  width: 15px;
-  height: 20px;
-}
-
-
-.sidebar-button {
-    @apply tw-text-center tw-bg-content-active tw-border-content-active tw-text-xs tw-border-4 tw-text-black tw-py-1 tw-px-1 tw-rounded
-}
-.sidebar-button:hover {
-    @apply tw-border-teal-700 tw-bg-teal-700
-}
-
-.clear-button {
-    @apply tw-flex tw-text-black tw-text-center tw-text-xs tw-py-2 tw-px-1 tw-ml-2
-}
-
-.clear-button:focus {
-    @apply tw-text-content-active tw-text-content-active
-}
-
-.filter-grid {
-    @apply tw-grid tw-grid-rows-1 tw-grid-cols-4 tw-grid-flow-col 
-}
-
-.filter-options-grid {
-    @apply tw-grid tw-grid-rows-6 tw-grid-cols-3 tw-grid-flow-col tw-mb-2
-}
-
-.format-options-grid {
-    @apply tw-grid tw-grid-rows-6 tw-grid-cols-1 tw-grid-flow-col tw-mb-2
-
-}
-
-.select-column-button {
-    @apply tw-h-8 tw-text-white tw-rounded tw-text-xs tw-px-4 tw-text-center tw-inline-flex tw-items-center 
-            tw-bg-content-sub-header-background tw-border-content-sub-header-background tw-border-4 
-            tw-text-black tw-py-1 tw-px-5
-}
-
-.select-columns-dropdown {
-    @apply tw-absolute tw-bg-white tw-rounded tw-shadow
-            tw-transition tw-ease-out tw-duration-100
-}
-
-.select-columns-dropdown-show{
-    @apply tw-transform tw-opacity-100 tw-scale-100 tw-z-50
-}
-
-.select-columns-dropdown-hide {
-    z-index: -1;
-    @apply tw-transform tw-opacity-0 tw-scale-95
-}
-
-.select-columns-checkbox {
-    @apply tw-w-4 tw-h-4 tw-text-blue-600 tw-bg-gray-100 tw-rounded tw-border-gray-300
-}
-
-.download-file {
-    @apply tw-mt-10 tw-items-center tw-block tw-pl-5 tw-pr-5 tw-h-6 tw-ml-2 tw-mr-2 
-                    tw-text-white tw-bg-content-sub-header-background tw-shadow tw-text-xs
-                    tw-rounded tw-shadow
-}
-
-.simple-search {
-    @apply tw-pl-6 tw-px-4 tw-border
-}
-
-.simple-search:focus {
-    @apply tw-outline-none tw-shadow-outline
-}
-
-/* Tooltip container */
-.tooltip {
-  /* position: relative;
-  display: inline-block; */
-  color: rgb(104, 104, 104); /* If you want dots under the hoverable text */
-}
-
-.add-white {
-    color: white; 
-}
-
-.add-gray {
-    color: rgb(104, 104, 104);
-}
-
-.tooltip-position-relative {
-    position: relative;
-    display: inline-block;
-}
-
-.tooltip-position-absolute {
-    position: absolute;
-}
-
-
-/* Tooltip text */
-.tooltip .tooltiptext {
-  font-family: Arial, Helvetica, sans-serif;
-  visibility: hidden;
-  opacity: 0.9;
-  width: 120px;
-  background-color: rgb(25, 24, 24);
-  color: #fff;
-  text-align: center;
-  padding: 5px 0;
-  border-radius: 6px;
- 
-  /* Position the tooltip text - see examples below! */
-  position: absolute;
-  z-index: 1;
-}
-
-/* Show the tooltip text when you mouse over the tooltip container */
-.tooltip:hover .tooltiptext {
-  visibility: visible;
-}
-
-.description-options {
-    display:none;
-    position:absolute;
-    border:1px solid #828282;
-    font-family: Arial, Helvetica, sans-serif;
-    overflow-x:visible;
-    overflow-y:visible;
-
-}
-
-.tooltip:hover .description-options {
-    display:block;
-    min-width:100px;
-    min-height:50px;
-    background-color: white;
-    left:40%;
-    top: 50%
-}
-
-.dc-nav {
-    position: absolute;
-    display: flex;
-}
-
-.tiptext-preview {
-    position: absolute;
-    font-size:small;
-    cursor:pointer;
-}
-
-.description {
-    display:none;
-    position:absolute;
-    left: 50%;
-    border:1px solid #000;
-    width:400px;
-    height:400px;
-}
-
-.tiptext-preview:hover .description {
-    display:block;
-}
-
-.param-options-wrapper {
-    display:flex;
-    margin-left: 65%;
-    margin-top: 5px;
-}
-
-
-.param-options-tooltip {
-  cursor:default;
-  font-size:12px;
-  font-weight: bold;
-  margin-top: 2px;
-  color: blue;
-
-  &:hover .param-preview {
-    opacity:1;
-    display: inline;
-    transform: translateX(-50%) translateY(0) scale(1);
-  }
-  
-  &:hover {
-    box-shadow: 0 1px 5px rgba(0,0,0,.1);
-    border-color: #333;
-  }
-}
-
-.param-preview {
-  display: none;
-  transition:.2s ease-in-out opacity, .2s ease-in-out transform;
-  opacity:0;
-  z-index: 1;
-  position:absolute;
-  box-shadow:0 1px 5px rgba(0,0,0,.5);
-  width:230px;
-  height:150px;
-  border:4px solid #fff;
-  background-color: #fff;
-  color: black;
-  font-weight: normal;
-  overflow-x:hidden;
-  overflow-y:auto;
-  transform-origin:center bottom;
-  transform: translateX(-50%) translateY(10px) scale(.9);
-
-  /* iframe {
-    transform:scale(.2);
-    transform-origin:0 0;
-  } */
-  
-}
-
 
 
 </style>

@@ -14,13 +14,13 @@
                 }"
                 >
 
-            <div>
-                <div v-if="loadContent"
+            <div v-if="loadContent">
+                <div 
                 :class="loadContent ? 'tw-h-3' : 'tw-h-0'">
 
                 </div>
 
-                <div v-if="loadContent" class="tw-mt-2 tw-ml-3 tw-text-black ">
+                <div class="tw-mt-2 tw-ml-3 tw-text-black ">
                     <slot name="filter-bar-content" />
                 </div>
             
@@ -51,15 +51,9 @@
         default: true
     }
     },
-    data() {
-        return {
-        };
-    },
     methods: {
         toggleSidebar() {
         this.isOpen = !this.isOpen;
-
-        this.contentDelay()
         },
         contentDelay() {
  

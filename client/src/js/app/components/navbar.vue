@@ -12,7 +12,7 @@
     <!-- List proposals item -->
     <keep-alive>
       <router-link
-        v-if="isStaff"
+        v-if="isStaff & ifSummary"
         to="/summary"
         class="navbar-item"
         data-testid="summary-link"
@@ -178,6 +178,7 @@ export default {
         },
         isStaff : function(){ return this.$store.getters['user/isStaff']},
         // Only render extra menu if we have a valid proposal
+        ifSummary : function() { return this.$store.state.ifsummary },
         extras: function() {
             if (this.proposal) return this.extrasMenu
         },

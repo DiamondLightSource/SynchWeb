@@ -69,7 +69,7 @@ function setupApplication($mode): Slim
         global $motd, $authentication_type, $cas_url, $cas_sso, $package_description,
             $facility_courier_countries, $facility_courier_countries_nde,
             $dhl_enable, $dhl_link, $scale_grid, $scale_grid_end_date, $preset_proposal, $timezone,
-            $valid_components, $enabled_container_types;
+            $valid_components, $enabled_container_types, $ifsummary;
         $app->contentType('application/json');
         $app->response()->body(json_encode(array(
             'motd' => $motd,
@@ -86,7 +86,8 @@ function setupApplication($mode): Slim
             'preset_proposal' => $preset_proposal,
             'timezone' => $timezone,
             'valid_components' => $valid_components,
-            'enabled_container_types' => $enabled_container_types
+            'enabled_container_types' => $enabled_container_types,
+            'ifsummary' => $ifsummary
         )));
     });
     return $app;
