@@ -388,7 +388,7 @@
       <extended-validation-provider
         :ref="`sample_${sampleIndex}_required_resolution`"
         class-names="tw-px-2 tw-w-24"
-        :rules="sample['PROTEINID'] > -1 ? `required_if:sample ${sampleIndex + 1} screening method,none|positive_decimal:6` : ''"
+        :rules="sample['PROTEINID'] > -1 && queueForUDC ? `required_if:sample ${sampleIndex + 1} screening method,none,|positive_decimal:6` : ''"
         :name="`Sample ${sampleIndex + 1} Required Resolution`"
         :vid="`sample ${sampleIndex + 1} required resolution`"
       >
