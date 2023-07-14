@@ -2648,9 +2648,65 @@ class Shipment extends Page
     }
 
 
+    function _book_shipment_in_shipping_service($user, $shipment, $dewars, $journey_type) {
+        $address_lines = explode(PHP_EOL, rtrim($user["address"]));
+        $contact = array(
+            "company_name" => $user["company"],
+            "address_line1" => isset($address_lines[0]) ? $address_lines[0] : null,
+            "address_line2" => isset($address_lines[1]) ? $address_lines[1] : null,
+            "address_line3" => isset($address_lines[2]) ? $address_lines[2] : null,
+            "city" => $user["city"],
+            "country" => $user["country"],
+            "post_code" => $user["postcode"],
+            "contact_name" => $user["name"],
+            "contact_phone_number" => $user["phone"],
+            "contact_email" => $user["email"]
+        );
+        $shipment_data = array(
+            "shipment_reference" => $shipment["PROP"],
+            "external_id" => $shipment['SHIPPINGID'],
+            "packages" => array_map(
+                fn($dewar) => array("external_id" => $dewar["DEWARID"]),
+                $dewars
+            )
+        );
+
+        // Create or update shipment in shipping service
+        try {
+            $response = $this->shipping_service->get_shipment($shipment['SHIPPINGID'], $journey_type);
+            $user_shipment_role = $this->has_arg('RETURN') ? "consignee" : "shipper";
+            $shipment_data = array_merge(
+                $shipment_data,
+                array_combine(array_map(fn($key) => $user_shipment_role."_".$key, array_keys($contact)), $contact)
+            );
+            $shipment_data = array_merge($response, $shipment_data);
+            $this->shipping_service->update_shipment($shipment["SHIPPINGID"], $shipment_data, "TO_FACILITY");
+        } catch (\Exception $e) {
+            $shipment_data["contact"] = $contact;
+            $response = $this->shipping_service->create_shipment_by_journey_type($shipment_data, $journey_type);
+        }
+
+        // Dispatch shipment in shipping service
+        $shipmentId = $response["shipmentId"];
+        $dispatch_details = $this->shipping_service->dispatch_shipment($shipmentId, false);
+
+        $awb_pieces = array_map(
+            fn($package, $index) => array("piecenumber" => $index+1, "licenceplate" => $package["tracking_number"]),
+            $dispatch_details["packages"],
+            array_keys($dispatch_details["packages"])
+        );
+
+        return array(
+            "awb" => $dispatch_details["tracking_number"],
+            "label" => $dispatch_details["air_waybill"],
+            "pieces" => $awb_pieces
+        );
+    }
+
+
     function _create_awb()
     {
-        global $dhl_service, $dhl_service_eu, $dhl_acc, $dhl_acc_import, $facility_courier_countries, $facility_courier_countries_nde;
+        global $dhl_service, $dhl_service_eu, $dhl_acc, $dhl_acc_import, $facility_courier_countries, $facility_courier_countries_nde, $use_shipping_service_incoming_shipments;
 
         if (!$this->has_arg('prop'))
             $this->_error('No proposal specified');
@@ -2766,22 +2822,27 @@ class Shipment extends Page
         $awb = null;
         if (!$ship['DELIVERYAGENT_FLIGHTCODE']) {
             try {
-                $awb = $this->dhl->create_awb(array(
-                    'payee' => $payee,
-                    'accountnumber' => $accno,
-                    'shipperid' => $ship['PROP'],
-                    'service' => $product,
-                    'date' => $ship['DELIVERYAGENT_SHIPPINGDATE'],
-                    'declaredvalue' => $this->arg('DECLAREDVALUE'),
-                    'description' => $this->arg('DESCRIPTION'),
+                if (Utils::getValueOrDefault($use_shipping_service_incoming_shipments)) {
+                    $journey_type = $this->has_arg('RETURN') ? "FROM_FACILITY" : "TO_FACILITY";
+                    $awb = $this->_book_shipment_in_shipping_service($user, $ship, $dewars, $journey_type);
+                } else {
+                    $awb = $this->dhl->create_awb(array(
+                        'payee' => $payee,
+                        'accountnumber' => $accno,
+                        'shipperid' => $ship['PROP'],
+                        'service' => $product,
+                        'date' => $ship['DELIVERYAGENT_SHIPPINGDATE'],
+                        'declaredvalue' => $this->arg('DECLAREDVALUE'),
+                        'description' => $this->arg('DESCRIPTION'),
 
-                    'sender' => $this->has_arg('RETURN') ? $facility : $user,
-                    'receiver' => $this->has_arg('RETURN') ? $user : $facility,
+                        'sender' => $this->has_arg('RETURN') ? $facility : $user,
+                        'receiver' => $this->has_arg('RETURN') ? $user : $facility,
 
-                    'pieces' => $pieces,
-                    'notification' => implode(';', $emails),
-                    'message' => $facility_company . ': Shipment booked from ISPyB for ' . $ship['PROP'] . ' ' . $ship['SHIPPINGNAME'] . ' containing ' . implode(',', $names)
-                ));
+                        'pieces' => $pieces,
+                        'notification' => implode(';', $emails),
+                        'message' => $facility_company . ': Shipment booked from ISPyB for ' . $ship['PROP'] . ' ' . $ship['SHIPPINGNAME'] . ' containing ' . implode(',', $names)
+                    ));
+                }
 
                 $this->db->pq("UPDATE shipping 
                     SET deliveryagent_flightcode=:1, deliveryagent_flightcodetimestamp=CURRENT_TIMESTAMP, deliveryagent_label=:2, deliveryagent_productcode=:3, deliveryagent_flightcodepersonid=:4, shippingstatus='awb created', deliveryagent_agentname='DHL'

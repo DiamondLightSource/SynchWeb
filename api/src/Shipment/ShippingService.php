@@ -77,6 +77,17 @@ class ShippingService
     }
 
 
+    function create_shipment_by_journey_type($shipment_data, $journey_type)
+    {
+        return $this->_send_request(
+            $this->shipping_api_url . '/shipments/' . $journey_type,
+            "POST",
+            $shipment_data,
+            201
+        );
+    }
+
+
     function get_shipment($external_id, $journey_type)
     {
         return $this->_send_request(
