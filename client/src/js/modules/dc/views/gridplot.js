@@ -25,9 +25,11 @@ define(['jquery', 'marionette',
             hmt: 'input[name=heatmap]',
             ty: 'select[name=type]',
             ty2: 'select[name=type2]',
+            ty3: 'select[name=type3]',
             xfm: '.xfm',
             flu: 'input[name=fluo]',
             el: 'select[name=element]',
+            sns: 'a[name=snapshots]',
         },
 
         events: {
@@ -36,6 +38,7 @@ define(['jquery', 'marionette',
 
             'change @ui.ty': 'setType',
             'change @ui.ty2': 'loadAttachment',
+            'change @ui.ty3': 'loadImage',
             'change @ui.hmt': 'setHM',
 
             'change @ui.flu': 'toggleFluo',
@@ -97,6 +100,7 @@ define(['jquery', 'marionette',
             this.offset_h = 0
             this.scale = 1
             this.current = -1
+            this.image_1_width = -1
 
             this.heatmapToggle = false
 
@@ -144,6 +148,28 @@ define(['jquery', 'marionette',
             }
         },
 
+        populateImageSelect: function() {
+            opts = []
+            for (n=1; n<=4; n++) {
+                if (this.getOption('parent').get('X'+n)) {
+                    opts.push('<option value='+n+'>Image '+n+'</option>')
+                    if (n == 1) {
+                        // show button to view image full size
+                        this.ui.sns.append('<a class="button" href="'+app.apiurl+'/image/id/'+this.getOption('ID')+'/f/1/n/'+n+'"><i class="fa fa-arrows"></a>')
+                    } else {
+                        this.ui.sns.append('<a class="hidden" href="'+app.apiurl+'/image/id/'+this.getOption('ID')+'/f/1/n/'+n+'"></a>')
+                    }
+                }
+            }
+            if (opts.length > 1) {
+                this.ui.ty3.html(opts).show()
+            }
+        },
+
+        loadImage: function() {
+            var n = this.ui.ty3.val()
+            this.snapshot.load(app.apiurl+'/image/id/'+this.getOption('ID')+'/f/1/n/'+n)
+        },
 
         toggleFluo: function() {
             if (this.ui.flu.is(':checked')) {
@@ -242,11 +268,18 @@ define(['jquery', 'marionette',
             this.hasSnapshot = true
             this.$el.removeClass('loading')
             this.draw()
+            if (this.ui.ty3.val() == 1) {
+                this.image_1_width = this.snapshot.width
+            }
+            var n = this.ui.ty3.val()
+            this.ui.sns.magnificPopup({ type: 'image', delegate: 'a', gallery: { enabled:true } })
         },
 
         onRender: function() {
             this.ui.xfm.hide()
             this.ui.ty2.hide()
+            this.ui.ty3.hide()
+            this.populateImageSelect()
         },
 
 
@@ -313,6 +346,17 @@ define(['jquery', 'marionette',
 
                     w *= scalef
                     h *= scalef
+                }
+
+                if (this.image_1_width > 0 && this.snapshot.width != this.image_1_width) {
+                    // Image size is different to image 1, so hide PIA results as they would be in the wrong location
+                    this.ui.ty.val(-1)
+                    this.ui.ty2.val('')
+                    this.ui.ty.prop('disabled', true)
+                    this.ui.ty2.prop('disabled', true)
+                } else {
+                    this.ui.ty.prop('disabled', false)
+                    this.ui.ty2.prop('disabled', false)
                 }
 
                 var cvratio = this.perceivedw / this.perceivedh
