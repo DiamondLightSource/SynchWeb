@@ -2657,10 +2657,10 @@ class Shipment extends Page
             "address_line3" => isset($address_lines[2]) ? $address_lines[2] : null,
             "city" => $user["city"],
             "country" => $user["country"],
-            "post_code" => $user["postcode"],
+            "post_code" => rtrim($user["postcode"]),
             "contact_name" => $user["name"],
             "contact_phone_number" => $user["phone"],
-            "contact_email" => $user["email"]
+            "contact_email" => rtrim($user["email"])
         );
         $shipment_data = array(
             "shipment_reference" => $shipment["PROP"],
