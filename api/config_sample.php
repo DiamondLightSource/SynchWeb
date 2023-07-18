@@ -62,6 +62,12 @@
     # URL to access the PV archiver
     $archive_url = '';
 
+    # URL to access elog logbook
+    $elog_base_url = '';
+    $elog_callouts_page = '';
+    $elog_ehc_page = '';
+
+
     # Valid Components
     #   Denotes that only staff may create proteins, otherwise they must come from replication 
     #   with a valid `externalid`, users may still clone proteins
@@ -298,7 +304,8 @@
         array(
             'name' => 'i03',
             'group' => 'mx',
-            'archived' => False
+            'archived' => False,
+            'logbook' => 'BLI03'
         ),
         array(
             'name' => 'i04',
