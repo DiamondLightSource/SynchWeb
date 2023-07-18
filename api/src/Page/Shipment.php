@@ -978,7 +978,7 @@ class Shipment extends Page
             $shipment_id = $response['shipmentId'];
             $this->shipping_service->dispatch_shipment($shipment_id, false);
         } catch (Exception $e) {
-            throw new Exception("Error returned from shipping service: " . $e . "\nShipment data: " . $shipment_data);
+            throw new Exception("Error returned from shipping service: " . $e . "\nShipment data: " . json_encode($shipment_data));
         }
 
         return $shipment_id;
