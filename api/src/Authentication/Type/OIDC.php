@@ -19,16 +19,18 @@ class OIDC extends AuthenticationParent implements AuthenticationInterface
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         $response = curl_exec($ch);
         curl_close($ch);
-
         $newProviderConfig = json_decode($response);
-        $newProviderConfig->b64ClientCreds = base64_encode(
-            $oidc_client_id . ":" . $oidc_client_secret
-        );
 
-        if($newProviderConfig == null) {
+        if(!$newProviderConfig
+            || !isset($newProviderConfig->userinfo_endpoint)
+            || !isset($newProviderConfig->authorization_endpoint) 
+            || !isset($newProviderConfig->token_endpoint)) {
             error_log("OIDC Authentication provider replied with invalid JSON body");
             return;
         }
+        $newProviderConfig->b64ClientCreds = base64_encode(
+            $oidc_client_id . ":" . $oidc_client_secret
+        );
 
         $this->providerConfig = $newProviderConfig;
     }
@@ -43,9 +45,12 @@ class OIDC extends AuthenticationParent implements AuthenticationInterface
         $response = curl_exec($ch);
         curl_close($ch);
         
-        $fedid = json_decode($response)->id;
+        $response_json = json_decode($response);
+        if (!$response_json || !isset($response_json->id)) {
+            return false;
+        }
 
-        return $fedid;
+        return $response_json->id;
     }
 
     function authenticate($login, $password) 
@@ -92,8 +97,14 @@ class OIDC extends AuthenticationParent implements AuthenticationInterface
         curl_setopt($ch, CURLOPT_HTTPHEADER, array('Authorization: Basic ' . $this->providerConfig->b64ClientCreds));
         $response = curl_exec($ch);
         curl_close($ch);
-
-        $token = json_decode($response)->access_token;
+   
+        $response_json = json_decode($response);
+        if (!$response_json || !isset($response_json->access_token)) {
+            error_log("Invalid authentication attempt, provider returned invalid response");
+            return false;
+        }        
+        
+        $token = $response_json->access_token;
 
         if(!$token) {
             error_log("Invalid authentication attempt, provider returned no access token");
