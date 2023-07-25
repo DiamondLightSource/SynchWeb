@@ -39,7 +39,9 @@
         class="tw-w-full tw-mx-auto"
       >
         <!-- Using the full route as key forces refresh when sharing the same component -->
-        <router-view :key="$route.fullPath" />
+      <keep-alive :include="['Summary']">
+          <router-view :key="$route.fullPath" />
+      </keep-alive>
       </div>
     </div>
 
