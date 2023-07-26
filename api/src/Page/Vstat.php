@@ -373,22 +373,18 @@ class Vstat extends Page
         }
 
         // Beam status 
-        //$bs = $this->_get_archive('SR-DI-DCCT-01:SIGNAL', strtotime($info['ST']), strtotime($info['EN']), 200);
-        $bs = $this->_get_archive('CS-CS-MSTAT-01:MODE', strtotime($info['ST']), strtotime($info['EN']), 2000);
+        $bs = $this->_get_archive('CS-CS-MSTAT-01:MODE', strtotime($info['ST']), strtotime($info['EN']));
 
-        if (!$bs)
-            $bs = array();
 
         $lastv = 0;
         $ex = 3600 * 1000;
-        $bd = False;
+        $st = $this->jst($info['ST']);
+
         foreach ($bs as $i => $b) {
-            //$v = $b[1] < 5 ? 1 : 0;
             $v = $b[1] != 4;
             $c = $b[0] * 1000;
 
             if (($v != $lastv) && $v) {
-                $bd = True;
                 $st = $c;
             }
 
@@ -397,12 +393,18 @@ class Vstat extends Page
                     array($st + $ex, 5, $st + $ex),
                     array($c + $ex, 5, $st + $ex)
                 ), 'color' => 'black', 'status' => ' Beam Dump', 'type' => 'nobeam'));
-                $bd = False;
             }
 
             $lastv = $v;
         }
 
+        // in case visit ends with no beam
+        if ($lastv && $this->jst($info['EN']) > $st + $ex) {
+            array_push($data, array('data' => array(
+                array($st + $ex, 5, $st + $ex),
+                array($this->jst($info['EN']), 5, $st + $ex)
+            ), 'color' => 'black', 'status' => ' Beam Dump', 'type' => 'nobeam'));
+        }
 
         $first = $info['ST'];
         $last = $info['EN'];
@@ -514,30 +516,30 @@ class Vstat extends Page
                 $d['FAULT'] = 0;
 
             // Beam status
-            $bs = $this->_get_archive('CS-CS-MSTAT-01:MODE', strtotime($d['ST']), strtotime($d['EN']), 2000);
-            if (!$bs)
-                $bs = array();
+            $bs = $this->_get_archive('CS-CS-MSTAT-01:MODE', strtotime($d['ST']), strtotime($d['EN']));
 
             $lastv = 0;
             $ex = 3600 * 1000;
-            $bd = False;
+            $st = $this->jst($d['ST']);
             $total_no_beam = 0;
             foreach ($bs as $i => $b) {
-                //$v = $b[1] < 5 ? 1 : 0;
                 $v = $b[1] != 4;
                 $c = $b[0] * 1000;
 
                 if (($v != $lastv) && $v) {
-                    $bd = True;
                     $st = $c;
                 }
 
                 if ($lastv && ($v != $lastv)) {
                     $total_no_beam += ($c - $st) / 1000;
-                    $bd = False;
                 }
 
                 $lastv = $v;
+            }
+
+            // in case visit ends with no beam
+            if ($lastv && $this->jst($d['EN']) > ($ex + $st)) {
+                $total_no_beam += ($this->jst($d['EN']) - ($ex + $st)) / 1000;
             }
 
             $d['NOBEAM'] = $total_no_beam / 3600;

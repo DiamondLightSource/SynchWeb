@@ -61,7 +61,9 @@ define(['marionette', 'backbone', 'backgrid', 'views/table', 'views/filter',
         updatePositions: function(e) {
             var pos = []
             _.each(_.range(this.model.get('CAPACITY')), function(i) {
-                pos.push({ id: i+1, name: i+1 })
+                row = String.fromCharCode(parseInt(i/12)+65)
+                col = (i%12)+1
+                pos.push({ id: i+1, name: row+col })
             }, this)
             this.positions = pos
         },
@@ -90,7 +92,7 @@ define(['marionette', 'backbone', 'backgrid', 'views/table', 'views/filter',
             this.groupview = new GroupView({ components: this.components, editable: app.prop == this.model.get('PROP') })
             this.group.show(this.groupview)
 
-            this.filterview = new FilterView({ filters: this.positions, url: false, className: 'fixed' })
+            this.filterview = new FilterView({ filters: this.positions, url: false, className: 'plate-12-wide' })
             this.listenTo(this.filterview, 'selected:change', this.setGroup, this)
             this.plate.show(this.filterview)
         },

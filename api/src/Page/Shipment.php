@@ -417,9 +417,9 @@ class Shipment extends Page
     function _add_history()
     {
         global $in_contacts, $arrival_email;
-        global $dewar_complete_email; // Email list to cc if dewar back from beamline
+        global $dewar_complete_email, $dewar_complete_email_locations; // Email list to cc if dewar back from beamline
         # Flag to indicate we should e-mail users their dewar has returned from BL
-        $from_beamline = False;
+        $send_return_email = False;
 
         if (!$this->bcr())
             $this->_error('You need to be on the internal network to add history');
@@ -456,16 +456,12 @@ class Shipment extends Page
             // We only add data to dewar history in lower case from this method.
             // If that ever changes, update this to become case insensitive search
             $last_location = $last_history['STORAGELOCATION'];
-
-            // Why don't we have beamline names in the database...?
-            // Currently grabbing them from the config object
-            // Not particularly efficient, but this is not a time critical operation so
-            // this approach covers all beamlines for future proofing.
-            // Stop/break if we find a match
-            $bls = $this->_get_beamlines_from_type('all');
-
-            if (in_array($last_location, $bls)) {
-                $from_beamline = True;
+            if (!isset($dewar_complete_email_locations) || !is_array($dewar_complete_email_locations)) {
+                $bls = $this->_get_beamlines_from_type('all');
+                $send_return_email = in_array($last_location, $bls);
+            } else if (array_key_exists($last_location, $dewar_complete_email_locations)) {
+                $email_location = $dewar_complete_email_locations[$last_location];
+                $send_return_email = preg_match($email_location, strtolower($this->arg('LOCATION')));
             }
         } else {
             // No history - could be a new dewar, so not necessarily an error...
@@ -525,10 +521,7 @@ class Shipment extends Page
             $email->send($dew['LCRETEMAIL']);
         }
 
-        // Change this so it checks if the boolean flag "from_beamline" is set
-        // The old version assumed rack-<word>-from-bl
-        //if (preg_match('/rack-\w+-from-bl/', strtolower($this->arg('LOCATION'))) && $dew['LCRETEMAIL']) {
-        if ($from_beamline && $dew['LCRETEMAIL']) {
+        if ($dew['LCRETEMAIL'] && $send_return_email) {
             // Any data collections for this dewar's containers?
             // Note this counts data collection ids for containers and uses the DataCollection.SESSIONID to determine the session/visit
             // Should work for UDC (where container.sessionid is set) as well as any normal scheduled session (where container.sessionid is not set)
