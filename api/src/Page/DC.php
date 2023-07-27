@@ -47,7 +47,6 @@ class DC extends Page
         array('/chi', 'post', '_chk_image'),
         array('/imq/:id', 'get', '_image_qi'),
         array('/grid/:id', 'get', '_grid_info'),
-        array('/grid/xrc/:id', 'get', '_grid_xrc'),
         array('/grid/map', 'get', '_grid_map'),
         array('/ed/:id', 'get', '_edge', array('id' => '\d+'), 'edge'),
         array('/mca/:id', 'get', '_mca', array('id' => '\d+'), 'mca'),
@@ -153,6 +152,11 @@ class DC extends Page
                         LEFT OUTER JOIN processingjob pj ON dc.datacollectionid = pj.datacollectionid
                         LEFT OUTER JOIN autoprocprogram app ON (app.autoprocprogramid = api.autoprocprogramid OR dc.datacollectionid = pj.datacollectionid)
                         INNER JOIN autoprocprogrammessage appm ON appm.autoprocprogramid = app.autoprocprogramid";
+            } else if ($this->arg('t') == "scrystal" || $this->arg('t') == "nscrystal") {
+                // Single crystal or explicitly non-single-crystal fields
+                $where = ($this->arg('t') == "nscrystal") ? ' AND NOT ' : ' AND ';
+                // This IS NOT NULL is not redundant; this condition always evalutes to TRUE with AND NOT without it
+                $where .= '(dcg.experimentType IS NOT NULL AND dcg.experimentType in ("OSC", "Diamond Anvil High Pressure"))';
             }
         }
 
@@ -986,8 +990,6 @@ class DC extends Page
 
                 if ($dc['DCT'] == 'Mesh')
                     $dc['DCT'] = 'Grid Scan';
-                if ($dc['DCT'] == 'OSC')
-                    $dc['DCT'] = 'Data Collection';
                 if ($dc['DCT'] != 'Serial Fixed' && $dc['DCT'] != 'Serial Jet' && $dc['AXISRANGE'] == 0 && $dc['NI'] > 1) {
                     $dc['TYPE'] = 'grid';
                 }
@@ -1472,27 +1474,6 @@ class DC extends Page
         $this->_output($map);
     }
 
-
-    # XRC
-    function _grid_xrc()
-    {
-        $info = $this->db->pq("SELECT dc.datacollectiongroupid, dc.datacollectionid, xrc.method, xrc.x, xrc.y
-                FROM gridinfo g
-                INNER JOIN datacollection dc ON dc.datacollectiongroupid = g.datacollectiongroupid
-                INNER JOIN xraycentringresult xrc ON xrc.gridinfoid = g.gridinfoid
-                WHERE dc.datacollectionid = :1 ", array($this->arg('id')));
-
-        if (!sizeof($info))
-            $this->_output(array());
-        else {
-            foreach ($info[0] as $k => &$v) {
-                if ($k == 'METHOD')
-                    continue;
-                $v = floatval($v);
-            }
-            $this->_output($info[0]);
-        }
-    }
 
     # ------------------------------------------------------------------------
     # Fluorescence Map Info

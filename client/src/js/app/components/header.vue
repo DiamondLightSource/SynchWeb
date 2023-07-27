@@ -103,9 +103,6 @@ export default {
         sso: function() {
           return this.$store.getters.sso;
         },
-        ssoUrl: function() {
-          return this.$store.getters.sso_url + '/cas/login?service='+encodeURIComponent(window.location.href)
-        }, 
         validStaffMenus: function() {
           // filter the list of staff menus based on their permissions
           let menus = this.staff_menus.filter( item => {

@@ -32,11 +32,12 @@
 
     # Follow CAS SSO
     $cas_sso = true;
+    $sso_url = "sso.server.ac.uk";
 
-    // OIDC (or OAuth2) client ID and secret. Only useful if authentication_type is set to OIDC
+    # OIDC (or OAuth2) client ID and secret. Only useful if authentication_type is set to OIDC
     $oidc_client_id = "oidcClientId";
     $oidc_client_secret = "oidcClientSecret";
-    // Cookie key used for SSO/cookie based authentication
+    # Cookie key used for SSO/cookie based authentication
     $cookie_key = "synchweb-auth";
 
     # CAS CA Cert (for SSO)
@@ -62,6 +63,9 @@
 
     # Timezone
     $timezone = 'Europe/London';
+
+    # URL to access the PV archiver
+    $archive_url = '';
 
     # Valid Components
     #   Denotes that only staff may create proteins, otherwise they must come from replication 
@@ -154,6 +158,13 @@
 
     # and for shipment booked,
     $shipbooked_email = 'goods@server.ac.uk';
+
+    # dewar back in storage (complete)
+    $dewar_complete_email = '';
+
+    # Send a 'visit finished' email when a dewar moves from this beamline to this (regex) location
+    $dewar_complete_email_locations = array('i03' => '/tray-\w+/',
+                                           );
 
     # Industrial Contacts
     # - Industrial users get a personalised email with in contact details,

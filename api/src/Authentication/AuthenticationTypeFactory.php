@@ -12,7 +12,8 @@ class AuthenticationTypeFactory {
         'dummy' => 'Dummy',
         'ldap' => 'LDAP',
         'simple' => 'Simple',
-        'oidc' => 'OIDC'
+        'oidc' => 'OIDC',
+        'combined' => 'Combined',
     );
 
     // Return instance of authentication class corresponding to $authentication_type.
