@@ -31,7 +31,7 @@
                             <h> Filter </h>
                         </div>
                         <div class="tw-flex tw-col-span-2 tw-col-start-2 tw-mt-3 tw-ml-3">
-                            <p class="tw-mt-2 tw-text-sm">Select Proposals </p>
+                            <p class="tw-mt-2 tw-text-sm tw-whitespace-no-wrap">Select Proposals </p>
                             <combo-box v-if="filters[0].inputtype == 'combo-box'"
                                 class="tw-w-7/12 tw-text-sm tw-ml-2 tw-mr-1 tw-mb-2"
                                 :data="filters[0].data"
@@ -45,12 +45,12 @@
                                 :valueArray="filters[0].selectedArr"
                                 :searchArray="filters[0].selectedArr"
                                 ></combo-box>
-                                <button class="sidebar-button tw-mr-1 tw-mb-2" @click="getStarted()">Get Started</button>
+                                <button class="sidebar-button tw-mr-1 tw-mb-3 tw-whitespace-no-wrap" @click="getStarted()">Get Started</button>
                         </div>
-                        <div class="tw-col-span-1 tw-col-start-6 tw-mt-2 tw-mr-3 ">
+                        <div class="tw-col-span-1 tw-col-start-6 tw-mr-3 ">
 
-                            <div class="tw-flex tw-mb-2">
-                                <button class="sidebar-button tw-mr-1" @click="toggleSidebar()">Advanced Filter</button>
+                            <div class="tw-flex tw-mb-3 tw-mt-3">
+                                <button class="sidebar-button tw-mr-1 " @click="toggleSidebar()">Advanced Filter</button>
                                 <button class="sidebar-button" @click="searchFilterParams" >
                                 Search
                                 </button>
@@ -1351,6 +1351,7 @@ export default {
 </style>
 
 <style scoped>
+    @import "../styles/_summary.scss";
 
     .search-icon {
         font-size: 12px;
