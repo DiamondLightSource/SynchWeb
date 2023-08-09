@@ -953,7 +953,7 @@ class Shipment extends Page
             "shipment_reference" =>  $dispatch_info['VISIT'],
             "external_id" => (int) $dispatch_info['DEWARID'],
             "journey_type" => "FROM_FACILITY",
-            "packages" => array(array("external_id" => $dispatch_info['DEWARID']))
+            "packages" => array(array("external_id" => (int) $dispatch_info['DEWARID']))
         );
 
         # Split up address. Necessary as address is a single field in ispyb
