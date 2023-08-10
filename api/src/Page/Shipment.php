@@ -2666,7 +2666,7 @@ class Shipment extends Page
             "shipment_reference" => $shipment["PROP"],
             "external_id" => $shipment['SHIPPINGID'],
             "packages" => array_map(
-                fn($dewar) => array("external_id" => $dewar["DEWARID"]),
+                function($dewar) {return array("external_id" => $dewar["DEWARID"]);},
                 $dewars
             )
         );
@@ -2675,11 +2675,11 @@ class Shipment extends Page
         try {
             $response = $this->shipping_service->get_shipment($shipment['SHIPPINGID'], $journey_type);
             $user_shipment_role = $this->has_arg('RETURN') ? "consignee" : "shipper";
-            $shipment_data = array_merge(
-                $shipment_data,
-                array_combine(array_map(fn($key) => $user_shipment_role."_".$key, array_keys($contact)), $contact)
-            );
-            $shipment_data = array_merge($response, $shipment_data);
+            $relabelled_contact = array_combine(
+                array_map(function($key) use ($user_shipment_role) {return $user_shipment_role."_".$key;}, 
+                    array_keys($contact)), 
+                $contact);
+            $shipment_data = array_merge($response, $shipment_data, $relabelled_contact);
             $this->shipping_service->update_shipment($shipment["SHIPPINGID"], $shipment_data, "TO_FACILITY");
         } catch (\Exception $e) {
             $shipment_data["contact"] = $contact;
@@ -2691,7 +2691,7 @@ class Shipment extends Page
         $dispatch_details = $this->shipping_service->dispatch_shipment($shipmentId, false);
 
         $awb_pieces = array_map(
-            fn($package, $index) => array("piecenumber" => $index+1, "licenceplate" => $package["tracking_number"]),
+            function($package, $index) {return array("piecenumber" => $index+1, "licenseplate" => $package["tracking_number"]);},
             $dispatch_details["packages"],
             array_keys($dispatch_details["packages"])
         );
