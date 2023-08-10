@@ -952,7 +952,7 @@ class Shipment extends Page
             "internal_contact_name" => $this->has_arg('LOCALCONTACT') ? $this->args['LOCALCONTACT'] : null,
             "shipment_reference" =>  $dispatch_info['VISIT'],
             "external_id" => (int) $dispatch_info['DEWARID'],
-            "journey_type" => "FROM_FACILITY",
+            "journey_type" => ShippingService::JOURNEY_FROM_FACILITY,
             "packages" => array(array("external_id" => (int) $dispatch_info['DEWARID']))
         );
 
@@ -972,8 +972,8 @@ class Shipment extends Page
             if ($create === true) {
                 $response = $this->shipping_service->create_shipment($shipment_data);
             } else {
-                $this->shipping_service->update_shipment($dispatch_info['DEWARID'], $shipment_data, "FROM_FACILITY");
-                $response = $this->shipping_service->get_shipment($dispatch_info['DEWARID'], "FROM_FACILITY");
+                $this->shipping_service->update_shipment($dispatch_info['DEWARID'], $shipment_data, ShippingService::JOURNEY_FROM_FACILITY);
+                $response = $this->shipping_service->get_shipment($dispatch_info['DEWARID'], ShippingService::JOURNEY_FROM_FACILITY);
             }
             $shipment_id = $response['shipmentId'];
             $this->shipping_service->dispatch_shipment($shipment_id, false);
@@ -2680,7 +2680,7 @@ class Shipment extends Page
                     array_keys($contact)), 
                 $contact);
             $shipment_data = array_merge($response, $shipment_data, $relabelled_contact);
-            $this->shipping_service->update_shipment($shipment["SHIPPINGID"], $shipment_data, "TO_FACILITY");
+            $this->shipping_service->update_shipment($shipment["SHIPPINGID"], $shipment_data, ShippingService::JOURNEY_TO_FACILITY);
         } catch (\Exception $e) {
             $shipment_data["contact"] = $contact;
             $response = $this->shipping_service->create_shipment_by_journey_type($shipment_data, $journey_type);
@@ -2823,7 +2823,7 @@ class Shipment extends Page
         if (!$ship['DELIVERYAGENT_FLIGHTCODE']) {
             try {
                 if (Utils::getValueOrDefault($use_shipping_service_incoming_shipments)) {
-                    $journey_type = $this->has_arg('RETURN') ? "FROM_FACILITY" : "TO_FACILITY";
+                    $journey_type = $this->has_arg('RETURN') ? ShippingService::JOURNEY_FROM_FACILITY : ShippingService::JOURNEY_TO_FACILITY;
                     $awb = $this->_book_shipment_in_shipping_service($user, $ship, $dewars, $journey_type);
                 } else {
                     $awb = $this->dhl->create_awb(array(

@@ -10,6 +10,8 @@ class ShippingService
 {
     private $shipping_api_url;
     private $headers;
+    public const JOURNEY_TO_FACILITY = "TO_FACILITY";
+    public const JOURNEY_FROM_FACILITY = "FROM_FACILITY";
 
     function __construct()
     {
