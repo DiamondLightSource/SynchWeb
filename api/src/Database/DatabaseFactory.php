@@ -22,9 +22,10 @@ class DatabaseFactory
 
     public function get($databaseType = null)
     {   
+        global $dbtype;
+            
         if ( $databaseType == null) {
             // Global variable is named $dbtype in config.php.
-            global $dbtype;
             $databaseType = $dbtype;
         }
 
@@ -37,7 +38,7 @@ class DatabaseFactory
         if (key_exists(strtolower($databaseType), $this->database_types)) {
             $dbType = $this->database_types[strtolower($databaseType)];
 
-            $full_class_name = 'SynchWeb\\Database\\Type\\' . $dbType["dbClassName"];;
+            $full_class_name = 'SynchWeb\\Database\\Type\\' . $dbType["dbClassName"];
 
             if (class_exists($full_class_name)) {
                 $conn = $this->databaseConnectionFactory->get($dbType["dataConnectionName"]);
