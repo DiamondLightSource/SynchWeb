@@ -2822,10 +2822,11 @@ class Shipment extends Page
         $awb = null;
         if (!$ship['DELIVERYAGENT_FLIGHTCODE']) {
             try {
-                if (Utils::getValueOrDefault($use_shipping_service_incoming_shipments)) {
+                if (Utils::getValueOrDefault($use_shipping_service_incoming_shipments) && $accno === $dhl_acc) {
                     $journey_type = $this->has_arg('RETURN') ? ShippingService::JOURNEY_FROM_FACILITY : ShippingService::JOURNEY_TO_FACILITY;
                     $awb = $this->_book_shipment_in_shipping_service($user, $ship, $dewars, $journey_type);
                 } else {
+                    error_log("Not using shipping service for: {$ship['SHIPPINGID']}");
                     $awb = $this->dhl->create_awb(array(
                         'payee' => $payee,
                         'accountnumber' => $accno,
