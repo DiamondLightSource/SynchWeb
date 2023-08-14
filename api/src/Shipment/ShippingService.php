@@ -10,6 +10,8 @@ class ShippingService
 {
     private $shipping_api_url;
     private $headers;
+    public const JOURNEY_TO_FACILITY = "TO_FACILITY";
+    public const JOURNEY_FROM_FACILITY = "FROM_FACILITY";
 
     function __construct()
     {
@@ -70,6 +72,17 @@ class ShippingService
     {
         return $this->_send_request(
             $this->shipping_api_url . '/shipments/',
+            "POST",
+            $shipment_data,
+            201
+        );
+    }
+
+
+    function create_shipment_by_journey_type($shipment_data, $journey_type)
+    {
+        return $this->_send_request(
+            $this->shipping_api_url . '/shipments/' . $journey_type,
             "POST",
             $shipment_data,
             201
