@@ -40,6 +40,7 @@ import StatsRoutes from 'modules/stats/routes.js'
 import EMRoutes from 'modules/types/em/routes.js'
 import SubmissionRoutes from 'modules/submission/routes.js'
 import VisitsRoutes from 'modules/visits/routes.js'
+import SummaryRoutes from 'modules/summary/routes.js'
 import { resolve } from 'promise'
 
 
@@ -111,6 +112,7 @@ router.addRoutes(FaultRoutes)
 router.addRoutes(StatsRoutes)
 router.addRoutes(SubmissionRoutes)
 router.addRoutes(VisitsRoutes)
+router.addRoutes(SummaryRoutes)
 
 
 // Hook the marionette navigation methods into vue-router methods

@@ -16,7 +16,8 @@ class Dimple extends DownstreamPlugin {
         return $this->db->pq(
             "SELECT view1, view2, view3, filepath 
             FROM mxmrrunblob
-            WHERE mxmrrunid = :1",
+            WHERE mxmrrunid = :1
+            AND filepath is not NULL",
             array($this->_mrrun["MXMRRUNID"])
         );
     }

@@ -9,6 +9,7 @@ class DatabaseConnectionFactory
     public function get($databaseType)
     {
         global $isb;
+        global $summarydbconfig;
 
         if (!$databaseType) {
             error_log('Database type variable, dbtype, is not specified in config.php - defaulting to MySql.');
@@ -24,6 +25,16 @@ class DatabaseConnectionFactory
             $conn = new \mysqli($host, $isb['user'], $isb['pass'], $dbn, $port);
             $conn->set_charset("utf8mb4");
         }
+        elseif ($databaseType == 'PureMySQL') {
+            $port = array_key_exists('port', $summarydbconfig) ? $summarydbconfig['port'] : null;
+            if (!$port) {
+                $port = ini_get("mysqli.default_port");
+            }
+            list($host, $dbn) = explode('/', $summarydbconfig['db']);
+            $conn = new \mysqli($host, $summarydbconfig['user'], $summarydbconfig['pass'], $dbn, $port);
+            $conn->set_charset("utf8mb4");
+        }
+
 
         if ($conn == null) {
             Utils::returnError("Database Configuration Error", "Database connection for type '$databaseType' does not exist.");

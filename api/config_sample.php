@@ -13,6 +13,11 @@
     $isb  = array('user' => 'user', 'pass' => 'pass', 'db' => 'localhost/ispyb');
     $dbtype = 'mysql';
 
+    # Summary Database credentials 
+    ######### DELETE if not using connection. 
+    $summarydbconfig = array('user' => 'user', 'pass' => 'pass', 'db' => 'localhost/ispyb');
+    $ifsummary = true;
+
     # Encoded JWT key, used to sign and check validaty of jwt tokens
     # - Create one of these using /api/authenticate/key
     #   This can be changed to invalidate all currently active tokens

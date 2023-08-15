@@ -20,6 +20,7 @@ class TemplateParser
         var $params = array();
 
         function __construct($db) {
+
             $this->db = $db;
         }
         

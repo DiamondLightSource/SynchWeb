@@ -47,7 +47,6 @@ class DC extends Page
         array('/chi', 'post', '_chk_image'),
         array('/imq/:id', 'get', '_image_qi'),
         array('/grid/:id', 'get', '_grid_info'),
-        array('/grid/xrc/:id', 'get', '_grid_xrc'),
         array('/grid/map', 'get', '_grid_map'),
         array('/ed/:id', 'get', '_edge', array('id' => '\d+'), 'edge'),
         array('/mca/:id', 'get', '_mca', array('id' => '\d+'), 'mca'),
@@ -1475,27 +1474,6 @@ class DC extends Page
         $this->_output($map);
     }
 
-
-    # XRC
-    function _grid_xrc()
-    {
-        $info = $this->db->pq("SELECT dc.datacollectiongroupid, dc.datacollectionid, xrc.method, xrc.x, xrc.y
-                FROM gridinfo g
-                INNER JOIN datacollection dc ON dc.datacollectiongroupid = g.datacollectiongroupid
-                INNER JOIN xraycentringresult xrc ON xrc.gridinfoid = g.gridinfoid
-                WHERE dc.datacollectionid = :1 ", array($this->arg('id')));
-
-        if (!sizeof($info))
-            $this->_output(array());
-        else {
-            foreach ($info[0] as $k => &$v) {
-                if ($k == 'METHOD')
-                    continue;
-                $v = floatval($v);
-            }
-            $this->_output($info[0]);
-        }
-    }
 
     # ------------------------------------------------------------------------
     # Fluorescence Map Info

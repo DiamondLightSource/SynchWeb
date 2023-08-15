@@ -90,8 +90,7 @@ class Processing extends Page {
             "SELECT xrc.status as xrcstatus, dc.datacollectionid
             FROM datacollection dc 
             INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
-            INNER JOIN gridinfo gr ON (gr.datacollectionid = dc.datacollectionid OR gr.datacollectiongroupid = dc.datacollectiongroupid)
-            LEFT OUTER JOIN xraycentringresult xrc ON xrc.gridinfoid = gr.gridinfoid
+            LEFT OUTER JOIN xraycentring xrc ON xrc.datacollectiongroupid = dc.datacollectiongroupid
             INNER JOIN blsession s ON s.sessionid = dcg.sessionid 
             INNER JOIN proposal p ON p.proposalid = s.proposalid
             WHERE $where",
