@@ -1,3 +1,5 @@
+**NOTE**: (PR title should be of the form ticket:short description, e.g. TICKET-123: Add more templates)
+
 **JIRA ticket**: [TICKET-123](https://link.to.jira)
 
 **Summary**:
