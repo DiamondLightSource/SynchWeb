@@ -153,7 +153,7 @@ var MarionetteApplication = (function () {
             application.appurl = store.state.appUrl
 
             application.cookie = function(prop, callbackFn) {
-                console.log("Saving proposal from legacy cookie fn")
+                console.log("Saving proposal from legacy cookie fn:", prop)
 
                 store.dispatch('proposal/setProposal', prop)
 
@@ -163,7 +163,7 @@ var MarionetteApplication = (function () {
             }
             // Define user permission method - hooked into store
             application.user_can = function(perm) {
-                console.log("CHECK USER PERMISSIONS LIST " + JSON.stringify(store.getters.permissions))
+                console.log("CHECK USER PERMISSIONS LIST " + JSON.stringify(store.getters['user/permissions']))
                 console.log("CHECK USER PERMISSIONS FOR " + perm)
                 return store.getters['user/permissions'].indexOf(perm) > -1
             }

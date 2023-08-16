@@ -55,6 +55,7 @@
             :disabled="!canEditRow(sample['LOCATION'], currentEditingRow)"
             input-class="tw-w-full tw-h-8"
             @value-changed="inputChanged"
+            dataTestId="add-container-sample-comment"
           />
         </template>
       </extended-validation-provider>
@@ -126,7 +127,7 @@
           <extended-validation-provider
             :ref="`sample_${sampleIndex}_cell_a`"
             class-names="tw-pb-1 tw-px-2"
-            :rules="sample['PROTEINID'] > -1 ? 'positive_decimal:2' : ''"
+            :rules="sample['PROTEINID'] > -1 ? 'positive_decimal:6' : ''"
             :name="`Sample ${sampleIndex + 1} CELL-A`"
             :vid="`sample ${sampleIndex + 1} cell-a`"
           >
@@ -149,7 +150,7 @@
           <extended-validation-provider
             :ref="`sample_${sampleIndex}_cell_b`"
             class-names="tw-pb-1 tw-px-2"
-            :rules="sample['PROTEINID'] > -1 ? 'positive_decimal:2' : ''"
+            :rules="sample['PROTEINID'] > -1 ? 'positive_decimal:6' : ''"
             :name="`Sample ${sampleIndex + 1} CELL-B`"
             :vid="`sample ${sampleIndex + 1} cell-b`"
           >
@@ -172,7 +173,7 @@
           <extended-validation-provider
             :ref="`sample_${sampleIndex}_cell_c`"
             class-names="tw-pb-1 tw-px-2"
-            :rules="sample['PROTEINID'] > -1 ? 'positive_decimal:2' : ''"
+            :rules="sample['PROTEINID'] > -1 ? 'positive_decimal:6' : ''"
             :name="`Sample ${sampleIndex + 1} CELL-C`"
             :vid="`sample ${sampleIndex + 1} cell-c`"
           >
@@ -198,7 +199,7 @@
           <extended-validation-provider
             :ref="`sample_${sampleIndex}_cell_alpha`"
             class-names="tw-pb-1 tw-px-2"
-            :rules="sample['PROTEINID'] > -1 ? 'positive_decimal:2' : ''"
+            :rules="sample['PROTEINID'] > -1 ? 'positive_decimal:6' : ''"
             :name="`Sample ${sampleIndex + 1} CELL-ALPHA`"
             :vid="`sample ${sampleIndex + 1} cell-alpha`"
           >
@@ -221,7 +222,7 @@
           <extended-validation-provider
             :ref="`sample_${sampleIndex}_cell_beta`"
             class-names="tw-pb-1 tw-px-2"
-            :rules="sample['PROTEINID'] > -1 ? 'positive_decimal:2' : ''"
+            :rules="sample['PROTEINID'] > -1 ? 'positive_decimal:6' : ''"
             :name="`Sample ${sampleIndex + 1} CELL-BETA`"
             :vid="`sample ${sampleIndex + 1} cell-beta`"
           >
@@ -244,7 +245,7 @@
           <extended-validation-provider
             :ref="`sample_${sampleIndex}_cell_gamma`"
             class-names="tw-pb-1 tw-px-2"
-            :rules="sample['PROTEINID'] > -1 ? 'positive_decimal:2' : ''"
+            :rules="sample['PROTEINID'] > -1 ? 'positive_decimal:6' : ''"
             :name="`Sample ${sampleIndex + 1} CELL-GAMMA`"
             :vid="`sample ${sampleIndex + 1} cell-gamma`"
           >
@@ -365,7 +366,6 @@
       <extended-validation-provider
         :ref="`sample_${sampleIndex}_screening_method`"
         class-names="tw-px-2 tw-w-24"
-        :rules="sample['PROTEINID'] > -1 && queueForUDC ? 'required' : ''"
         :name="`Sample ${sampleIndex + 1} Screening Method`"
         :vid="`sample ${sampleIndex + 1} screening method`"
       >
@@ -388,7 +388,7 @@
       <extended-validation-provider
         :ref="`sample_${sampleIndex}_required_resolution`"
         class-names="tw-px-2 tw-w-24"
-        :rules="sample['PROTEINID'] > -1 ? `required_if:sample ${sampleIndex + 1} screening method,none|positive_decimal:4` : ''"
+        :rules="sample['PROTEINID'] > -1 && queueForUDC ? `required_if:sample ${sampleIndex + 1} screening method,none,|positive_decimal:6` : ''"
         :name="`Sample ${sampleIndex + 1} Required Resolution`"
         :vid="`sample ${sampleIndex + 1} required resolution`"
       >
@@ -411,7 +411,7 @@
         :ref="`sample_${sampleIndex}_minimum_resolution`"
         class="tw-px-2 tw-w-24"
         :name="`Sample ${sampleIndex + 1} Minimum Resolution`"
-        :rules="sample['PROTEINID'] > -1 ? `required_if:sample ${sampleIndex + 1} screening method,all|positive_decimal:4` : ''"
+        :rules="sample['PROTEINID'] > -1 ? `required_if:sample ${sampleIndex + 1} screening method,all|positive_decimal:6` : ''"
         :vid="`sample ${sampleIndex + 1} minimum resolution`"
       >
         <template #default="{ errors, inputChanged }">

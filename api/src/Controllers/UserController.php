@@ -167,6 +167,11 @@ class UserController extends Page
 
     function _get_users()
     {
+        // remove this after successfully completing LIMS-742 ticket
+        if($this->has_arg('pid')){
+            error_log("pid used (for ticket: https://jira.diamond.ac.uk/browse/LIMS-742)");
+        }
+        
         $rows = $this->userData->getUsers(
             false,
             $this->staff,
@@ -174,6 +179,7 @@ class UserController extends Page
             $this->argOrEmptyString('page'),
             $this->argOrEmptyString('sort_by'),
             $this->argOrEmptyString('pid'),
+            $this->proposalid,        
             $this->argOrEmptyString('PERSONID'),
             $this->user->hasPermission('manage_users'),
             $this->user->personId,
@@ -203,6 +209,7 @@ class UserController extends Page
                 $this->argOrEmptyString('page'),
                 $this->argOrEmptyString('sort_by'),
                 $this->argOrEmptyString('pid'),
+                $this->proposalid,
                 $this->argOrEmptyString('PERSONID'),
                 $this->user->hasPermission('manage_users'),
                 $this->user->personId,

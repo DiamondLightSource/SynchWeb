@@ -66,16 +66,17 @@ function setupApplication($mode): Slim
     });
 
     $app->get('/options', function () use ($app) {
-        global $motd, $authentication_type, $cas_url, $cas_sso, $package_description,
+        global $motd, $authentication_type, $cas_url, $cas_sso, $sso_url, $package_description,
             $facility_courier_countries, $facility_courier_countries_nde,
             $dhl_enable, $dhl_link, $scale_grid, $scale_grid_end_date, $preset_proposal, $timezone,
-            $valid_components, $enabled_container_types;
+            $valid_components, $enabled_container_types, $ifsummary;
         $app->contentType('application/json');
         $app->response()->body(json_encode(array(
             'motd' => $motd,
             'authentication_type' => $authentication_type,
             'cas_url' => $cas_url,
             'cas_sso' => $cas_sso,
+            'sso_url' => $sso_url,
             'package_description' => $package_description,
             'facility_courier_countries' => $facility_courier_countries,
             'facility_courier_countries_nde' => $facility_courier_countries_nde,
@@ -86,7 +87,8 @@ function setupApplication($mode): Slim
             'preset_proposal' => $preset_proposal,
             'timezone' => $timezone,
             'valid_components' => $valid_components,
-            'enabled_container_types' => $enabled_container_types
+            'enabled_container_types' => $enabled_container_types,
+            'ifsummary' => $ifsummary
         )));
     });
     return $app;
@@ -97,6 +99,13 @@ function setupDependencyInjectionContainer($app)
     $app->container->singleton('db', function () use ($app): DatabaseParent {
         $dbFactory = new DatabaseFactory(new DatabaseConnectionFactory());
         $db = $dbFactory->get();
+        $db->set_app($app);
+        return $db;
+    });
+
+    $app->container->singleton('dbsummary', function () use ($app): DatabaseParent {
+        $dbFactory = new DatabaseFactory(new DatabaseConnectionFactory());
+        $db = $dbFactory->get("summary");
         $db->set_app($app);
         return $db;
     });

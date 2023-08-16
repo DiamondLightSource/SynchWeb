@@ -43,7 +43,7 @@ define(['backbone', 'collections/components',
                     this.set('SAMPLEGROUP', option.sample_group)
                     this.set('STRATEGYOPTION', null)
                 }
-            } else if (this.get('BLSAMPLEID') && !this.get('SCREENINGMETHOD')) {
+            } else if (this.get('BLSAMPLEID') && !this.get('SCREENINGMETHOD') && this.get('REQUIREDRESOLUTION')) {
                 this.set('SCREENINGMETHOD', 'none')
             }
         },

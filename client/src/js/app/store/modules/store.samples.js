@@ -89,23 +89,32 @@ const samplesModule = {
     // Proposal and visit information
     //
     reset(state, capacity) {
-      // If capacity is not set, we don't change length just reset the data
       let samplesLength = capacity || state.samples.length
-
-      const  samples = Array.from({ length: samplesLength }, (_, i) => new LocationSample({
+      samplesModule.mutations.setAllSamples(state, {capacity: samplesLength})
+    },
+    setSample(state, { data, index }) {
+      if (index < state.samples.length) state.samples.splice(index, 1, data)
+    },
+    // For each sample put it in the correct place, based on location, in the capacity array
+    setAllSamples(state, {capacity, samples}) {
+      
+      const state_samples = Array.from({ length: capacity }, (_, i) => new LocationSample({
         BLSAMPLEID: null,
         LOCATION: (i + 1).toString(),
         PROTEINID: -1,
         CRYSTALID: -1,
         new: true
       }))
-
-      state.samplesCollection.reset(samples)
-
+      if (samples) {
+        for (let sample of samples) {
+          const index = Number(sample.LOCATION)-1
+          if (index < capacity) {
+            state_samples[index] = sample
+          }
+        }
+      }
+      state.samplesCollection.reset(state_samples)
       state.samples = state.samplesCollection.toJSON().filter(() => { return true })
-    },
-    setSample(state, { data, index }) {
-      if (index < state.samples.length) state.samples.splice(index, 1, data)
     },
     clearSample(state, index) {
       if (index < state.samples.length) state.samples.splice(index, 1, {

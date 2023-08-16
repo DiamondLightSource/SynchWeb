@@ -8,9 +8,6 @@ use HTMLPurifier_Config;
 use ReflectionClass;
 use Slim\Slim;
 use SynchWeb\Database\DatabaseParent;
-use xmlrpc_client;
-use xmlrpcmsg;
-use xmlrpcval;
 
 use SynchWeb\Queue;
 use SynchWeb\Utils;
@@ -275,7 +272,7 @@ class Page
             }
             else
             {
-                $rows = $this->db->pq("SELECT CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as vis
+                $rows = $this->db->pq("SELECT CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) as vis
                         FROM proposal p
                         INNER JOIN blsession s ON p.proposalid = s.proposalid
                         INNER JOIN session_has_person shp ON shp.sessionid = s.sessionid
@@ -318,7 +315,7 @@ class Page
 
                         if ($table == 'datacollectiongroup')
                         {
-                            $vis = $this->db->pq("SELECT p.proposalid, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as vis 
+                            $vis = $this->db->pq("SELECT p.proposalid, CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) as vis
                                     FROM blsession s 
                                     INNER JOIN proposal p ON (p.proposalid = s.proposalid) 
                                     INNER JOIN datacollectiongroup dcg ON s.sessionid = dcg.sessionid
@@ -326,7 +323,7 @@ class Page
                         }
                         else
                         {
-                            $vis = $this->db->pq("SELECT p.proposalid, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as vis 
+                            $vis = $this->db->pq("SELECT p.proposalid, CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) as vis
                                     FROM blsession s 
                                     INNER JOIN proposal p ON (p.proposalid = s.proposalid) 
                                     INNER JOIN $table dc ON s.sessionid = dc.sessionid WHERE dc.$col = :1", array($this->arg('id')));
@@ -342,7 +339,7 @@ class Page
                     {
                         $vis = $this->arg('visit');
 
-                        $visp = $this->db->pq("SELECT p.proposalid FROM blsession s INNER JOIN proposal p ON (p.proposalid = s.proposalid) WHERE CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) LIKE :1", array($this->arg('visit')));
+                        $visp = $this->db->pq("SELECT p.proposalid FROM blsession s INNER JOIN proposal p ON (p.proposalid = s.proposalid) WHERE CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) LIKE :1", array($this->arg('visit')));
 
                         if (sizeof($visp))
                             $this->proposalid = $visp[0]['PROPOSALID'];
@@ -351,7 +348,7 @@ class Page
                     }
                     else if ($this->has_arg('prop'))
                     {
-                        $viss = $this->db->pq("SELECT p.proposalid, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as vis FROM blsession s INNER JOIN proposal p ON (p.proposalid = s.proposalid) WHERE CONCAT(p.proposalcode, p.proposalnumber) LIKE :1", array($this->arg('prop')));
+                        $viss = $this->db->pq("SELECT p.proposalid, CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) as vis FROM blsession s INNER JOIN proposal p ON (p.proposalid = s.proposalid) WHERE CONCAT(p.proposalcode, p.proposalnumber) LIKE :1", array($this->arg('prop')));
 
                         $vis = array();
                         foreach ($viss as $v)
@@ -783,8 +780,8 @@ class Page
         if (!$b)
             return array();
 
-        $visits = $this->db->pq("SELECT CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as visit, TO_CHAR(s.startdate, 'DD-MM-YYYY HH24:MI') as st, TO_CHAR(s.enddate, 'DD-MM-YYYY HH24:MI') as en,s.beamlinename as bl FROM blsession s INNER JOIN proposal p ON (p.proposalid = s.proposalid) WHERE TIMESTAMPDIFF('DAY', s.startdate, CURRENT_TIMESTAMP) < 1 AND TIMESTAMPDIFF('DAY', CURRENT_TIMESTAMP, s.enddate) < 2 AND s.beamlinename LIKE :1 ORDER BY s.startdate", array($b));
-        $v = $this->db->paginate("SELECT CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as visit, TO_CHAR(s.startdate, 'DD-MM-YYYY HH24:MI') as st, TO_CHAR(s.enddate, 'DD-MM-YYYY HH24:MI') as en,s.beamlinename as bl FROM blsession s INNER JOIN proposal p ON (p.proposalid = s.proposalid) WHERE p.proposalcode LIKE 'cm' AND s.beamlinename LIKE :1 AND s.enddate <= CURRENT_TIMESTAMP ORDER BY s.startdate DESC", array($b, 0, 1));
+        $visits = $this->db->pq("SELECT CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) as visit, TO_CHAR(s.startdate, 'DD-MM-YYYY HH24:MI') as st, TO_CHAR(s.enddate, 'DD-MM-YYYY HH24:MI') as en,s.beamlinename as bl FROM blsession s INNER JOIN proposal p ON (p.proposalid = s.proposalid) WHERE TIMESTAMPDIFF('DAY', s.startdate, CURRENT_TIMESTAMP) < 1 AND TIMESTAMPDIFF('DAY', CURRENT_TIMESTAMP, s.enddate) < 2 AND s.beamlinename LIKE :1 ORDER BY s.startdate", array($b));
+        $v = $this->db->paginate("SELECT CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) as visit, TO_CHAR(s.startdate, 'DD-MM-YYYY HH24:MI') as st, TO_CHAR(s.enddate, 'DD-MM-YYYY HH24:MI') as en,s.beamlinename as bl FROM blsession s INNER JOIN proposal p ON (p.proposalid = s.proposalid) WHERE p.proposalcode LIKE 'cm' AND s.beamlinename LIKE :1 AND s.enddate <= CURRENT_TIMESTAMP ORDER BY s.startdate DESC", array($b, 0, 1));
         $visits = array_merge($visits, $v);
         return $visits;
     }
@@ -948,47 +945,43 @@ class Page
 
     # ------------------------------------------------------------------------
     # Talk to channel archiver to get a pv
-    function _get_archive($pv, $s, $e, $n = 100)
+    function _get_archive($pv, $s, $e)
     {
         global $timezone;
+        global $archive_url;
 
-        $m = new xmlrpcmsg('archiver.values', array(
-            new xmlrpcval(1000, 'int'),
-            new xmlrpcval(array(new xmlrpcval($pv, 'string')), 'array'),
-            new xmlrpcval($s, 'int'),
-            new xmlrpcval(0, 'int'),
-            new xmlrpcval($e, 'int'),
-            new xmlrpcval(0, 'int'),
-            new xmlrpcval($n, 'int'),
-            new xmlrpcval(0, 'int'),
-        ));
-        $c = new xmlrpc_client("/archive/cgi/ArchiveDataServer.cgi", "archiver.pri.diamond.ac.uk", 80);
+        if (empty($archive_url))
+            return array();
 
-        $r = $c->send($m);
-        $val = $r->value();
+        $parameters = array(
+            'pv' => $pv,
+            'from' => date("Y-m-d\TH:i:s", $s).'Z',
+            'to' => date("Y-m-d\TH:i:s", $e).'Z',
+        );
+
+        $ret = array();
+        $url_query = http_build_query($parameters);
+        $archive_query_url = $archive_url . "?". $url_query;
+        $val = file_get_contents($archive_query_url);
 
         if ($val)
         {
-            $str = $val->arrayMem(0);
-            $vals = $str->structMem('values');
+            $str = json_decode($val)[0];
+            $vals = $str->data;
 
-            $ret = array();
-            for ($i = 0; $i < $vals->arraySize(); $i++)
+            for ($i = 0; $i < sizeof($vals); $i++)
             {
-                $vs = $vals->arrayMem($i);
-                $v = $vs->structMem('value')->arrayMem(0)->scalarVal();
-                $t = $vs->structMem('secs')->scalarVal() - 3600;
-
+                $vs = $vals[$i];
+                $v = $vs->val;
+                $t = $vs->secs - 3600;
                 $inputTZ = new \DateTimeZone($timezone);
                 $transitions = $inputTZ->getTransitions($t, $t);
                 if ($transitions[0]['isdst'])
                     $t += 3600;
-
                 array_push($ret, array($t, $v));
             }
-
-            return $ret;
         }
+        return $ret;
     }
 
 
