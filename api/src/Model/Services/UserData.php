@@ -154,7 +154,7 @@ class UserData
                      INNER JOIN proposal pr ON pr.proposalid = s.proposalid
                      LEFT OUTER JOIN session_has_person shp2 ON p.personid = shp2.personid
                      LEFT OUTER JOIN blsession ses ON ses.sessionid = shp2.sessionid AND ses.startdate < s.startdate';
-            $where .= " AND shp.remote IS NOT NULL AND CONCAT(CONCAT(CONCAT(pr.proposalcode,pr.proposalnumber), '-'), s.visit_number) LIKE :" . (sizeof($args) + 1);
+            $where .= " AND shp.remote IS NOT NULL AND CONCAT(pr.proposalcode, pr.proposalnumber, '-', s.visit_number) LIKE :" . (sizeof($args) + 1);
             $group = 'GROUP BY p.personid, p.givenname, p.familyname, p.login';
             array_push($args, $visitName);
         }
@@ -162,7 +162,7 @@ class UserData
         {
             $join = 'INNER JOIN project_has_person php ON p.personid = php.personid';
             $where .= ' AND php.projectid=:' . (sizeof($args) + 1);
-            $extc = "CONCAT(CONCAT(p.personid, '-'), php.projectid) as ppid,";
+            $extc = "CONCAT(p.personid, '-', php.projectid) as ppid,";
             array_push($args, $pjid);
         }
 
@@ -192,7 +192,7 @@ class UserData
             }
         }
 
-        $rows = $this->db->paginate("SELECT $extc p.personid, p.givenname, p.familyname, CONCAT(CONCAT(p.givenname, ' '), p.familyname) as fullname, p.login, p.emailaddress, p.phonenumber, l.name as labname, l.address, l.city, '' as postcode, l.country
+        $rows = $this->db->paginate("SELECT $extc p.personid, p.givenname, p.familyname, CONCAT(p.givenname, ' ', p.familyname) as fullname, p.login, p.emailaddress, p.phonenumber, l.name as labname, l.address, l.city, '' as postcode, l.country
                                FROM person p
                                LEFT OUTER JOIN proposalhasperson prhp ON prhp.personid = p.personid
                                LEFT OUTER JOIN labcontact lc ON lc.personid = p.personid
@@ -253,7 +253,7 @@ class UserData
             }
         }
 
-        $extc = "p.personid, p.givenname, p.familyname, CONCAT(CONCAT(p.givenname, ' '), p.familyname) as fullname, p.login, p.emailaddress, p.phonenumber, l.name as labname, l.address, l.city, '' as postcode, l.country";
+        $extc = "p.personid, p.givenname, p.familyname, CONCAT(p.givenname, ' ', p.familyname) as fullname, p.login, p.emailaddress, p.phonenumber, l.name as labname, l.address, l.city, '' as postcode, l.country";
         $rows = $this->db->paginate("(SELECT $extc
                                FROM person p
                                LEFT OUTER JOIN ProposalHasPerson prhp ON prhp.personid = p.personid

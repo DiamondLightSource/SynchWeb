@@ -402,7 +402,7 @@ class Shipment extends Page
         array_push($args, $start);
         array_push($args, $end);
 
-        $rows = $this->db->paginate("SELECT s.shippingid, s.shippingname as shipment, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), b.visit_number) as visit, b.beamlinename as bl, b.beamlineoperator as localcontact, h.dewarid, h.dewarstatus,h.storagelocation,TO_CHAR(h.arrivaldate, 'DD-MM-YYYY HH24:MI') as arrival, d.comments
+        $rows = $this->db->paginate("SELECT s.shippingid, s.shippingname as shipment, CONCAT(p.proposalcode, p.proposalnumber, '-', b.visit_number) as visit, b.beamlinename as bl, b.beamlineoperator as localcontact, h.dewarid, h.dewarstatus,h.storagelocation,TO_CHAR(h.arrivaldate, 'DD-MM-YYYY HH24:MI') as arrival, d.comments
               FROM dewartransporthistory h 
               INNER JOIN dewar d ON d.dewarid = h.dewarid 
               INNER JOIN shipping s ON d.shippingid = s.shippingid 
@@ -429,7 +429,7 @@ class Shipment extends Page
         if (!$this->has_arg('LOCATION'))
             $this->_error('No location specified');
 
-        $dew = $this->db->pq("SELECT CONCAT(CONCAT(pe.givenname, ' '), pe.familyname) as lcout, pe.emailaddress as lcoutemail, CONCAT(CONCAT(pe2.givenname, ' '), pe2.familyname) as lcret, pe2.emailaddress as lcretemail, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), e.visit_number) as firstexp, TO_CHAR(e.startdate, 'DD-MM-YYYY HH24:MI') as firstexpst, e.beamlinename, e.beamlineoperator, d.dewarid, d.trackingnumberfromsynchrotron, s.shippingid, s.shippingname, p.proposalcode, CONCAT(p.proposalcode, p.proposalnumber) as prop, d.barcode, d.facilitycode, d.firstexperimentid, d.dewarstatus
+        $dew = $this->db->pq("SELECT CONCAT(pe.givenname, ' ', pe.familyname) as lcout, pe.emailaddress as lcoutemail, CONCAT(CONCAT(pe2.givenname, ' '), pe2.familyname) as lcret, pe2.emailaddress as lcretemail, CONCAT(p.proposalcode, p.proposalnumber, '-', e.visit_number) as firstexp, TO_CHAR(e.startdate, 'DD-MM-YYYY HH24:MI') as firstexpst, e.beamlinename, e.beamlineoperator, d.dewarid, d.trackingnumberfromsynchrotron, s.shippingid, s.shippingname, p.proposalcode, CONCAT(p.proposalcode, p.proposalnumber) as prop, d.barcode, d.facilitycode, d.firstexperimentid, d.dewarstatus
               FROM dewar d 
               INNER JOIN shipping s ON s.shippingid = d.shippingid
               LEFT OUTER JOIN labcontact c ON s.sendinglabcontactid = c.labcontactid 
@@ -792,7 +792,7 @@ class Shipment extends Page
         if (!$this->has_arg('FACILITYCODE'))
             $this->_error('No dewar specified');
 
-        $last_visits = $this->db->pq("SELECT s.beamlineoperator as localcontact, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as visit, TO_CHAR(s.startdate, 'YYYY') as year, s.beamlinename
+        $last_visits = $this->db->pq("SELECT s.beamlineoperator as localcontact, CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) as visit, TO_CHAR(s.startdate, 'YYYY') as year, s.beamlinename
               FROM dewar d
               INNER JOIN blsession s ON d.firstexperimentid = s.sessionid
               INNER JOIN shipping sh ON sh.shippingid = d.shippingid
@@ -1335,7 +1335,7 @@ class Shipment extends Page
                 $order = $cols[$this->arg('sort_by')] . ' ' . $dir;
         }
 
-        $dewars = $this->db->paginate("SELECT CONCAT(p.proposalcode, p.proposalnumber) as prop, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), se.visit_number) as firstexperiment, r.labcontactid, se.beamlineoperator as localcontact, se.beamlinename, TO_CHAR(se.startdate, 'HH24:MI DD-MM-YYYY') as firstexperimentst, d.firstexperimentid, s.shippingid, s.shippingname, d.facilitycode, count(c.containerid) as ccount, (case when se.visit_number > 0 then (CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), se.visit_number)) else '' end) as exp, d.code, d.barcode, d.storagelocation, d.dewarstatus, d.dewarid,  d.trackingnumbertosynchrotron, d.trackingnumberfromsynchrotron, s.deliveryagent_agentname, d.weight, d.deliveryagent_barcode, GROUP_CONCAT(c.code SEPARATOR ', ') as containers, s.sendinglabcontactid, s.returnlabcontactid
+        $dewars = $this->db->paginate("SELECT CONCAT(p.proposalcode, p.proposalnumber) as prop, CONCAT(p.proposalcode, p.proposalnumber, '-', se.visit_number) as firstexperiment, r.labcontactid, se.beamlineoperator as localcontact, se.beamlinename, TO_CHAR(se.startdate, 'HH24:MI DD-MM-YYYY') as firstexperimentst, d.firstexperimentid, s.shippingid, s.shippingname, d.facilitycode, count(c.containerid) as ccount, (case when se.visit_number > 0 then (CONCAT(p.proposalcode, p.proposalnumber, '-', se.visit_number)) else '' end) as exp, d.code, d.barcode, d.storagelocation, d.dewarstatus, d.dewarid,  d.trackingnumbertosynchrotron, d.trackingnumberfromsynchrotron, s.deliveryagent_agentname, d.weight, d.deliveryagent_barcode, GROUP_CONCAT(c.code SEPARATOR ', ') as containers, s.sendinglabcontactid, s.returnlabcontactid
               FROM dewar d 
               LEFT OUTER JOIN container c ON c.dewarid = d.dewarid 
               INNER JOIN shipping s ON d.shippingid = s.shippingid 
@@ -1343,7 +1343,7 @@ class Shipment extends Page
               LEFT OUTER JOIN blsession se ON d.firstexperimentid = se.sessionid 
               LEFT OUTER JOIN dewarregistry r ON r.facilitycode = d.facilitycode
               WHERE $where 
-              GROUP BY CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), se.visit_number), r.labcontactid, se.beamlineoperator, TO_CHAR(se.startdate, 'HH24:MI DD-MM-YYYY'), (case when se.visit_number > 0 then (CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), se.visit_number)) else '' end),s.shippingid, s.shippingname, d.code, d.barcode, d.storagelocation, d.dewarstatus, d.dewarid,  d.trackingnumbertosynchrotron, d.trackingnumberfromsynchrotron, d.facilitycode, d.firstexperimentid
+              GROUP BY CONCAT(p.proposalcode, p.proposalnumber, '-', se.visit_number), r.labcontactid, se.beamlineoperator, TO_CHAR(se.startdate, 'HH24:MI DD-MM-YYYY'), (case when se.visit_number > 0 then (CONCAT(p.proposalcode, p.proposalnumber, '-', se.visit_number)) else '' end),s.shippingid, s.shippingname, d.code, d.barcode, d.storagelocation, d.dewarstatus, d.dewarid,  d.trackingnumbertosynchrotron, d.trackingnumberfromsynchrotron, d.facilitycode, d.firstexperimentid
               ORDER BY $order", $args);
 
         if ($this->has_arg('did')) {
@@ -1488,7 +1488,7 @@ class Shipment extends Page
                     $sessionId = !empty($experimentId) ? $this->arg('FIRSTEXPERIMENTID') : NULL;
                     $this->db->pq("UPDATE dewar SET $f=:1 WHERE dewarid=:2", array($sessionId, $this->arg('did')));
 
-                    $visit = $this->db->pq("SELECT CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as visit
+                    $visit = $this->db->pq("SELECT CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) as visit
                           FROM blsession s
                           INNER JOIN proposal p ON p.proposalid = s.proposalid
                           WHERE s.sessionid=:1", array($sessionId));
@@ -1654,7 +1654,7 @@ class Shipment extends Page
         if ($this->has_arg('visit')) {
             $join = " INNER JOIN blsession ses2 ON ses2.proposalid = p.proposalid";
             $args = array($this->arg('visit'));
-            $where = "CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), ses2.visit_number) LIKE :1";
+            $where = "CONCAT(p.proposalcode, p.proposalnumber, '-', ses2.visit_number) LIKE :1";
         } else if ($this->has_arg('all') && $this->staff) {
             $join = '';
             $args = array();
@@ -1812,7 +1812,7 @@ class Shipment extends Page
                 $order = $cols[$this->arg('sort_by')] . ' ' . $dir;
         }
         // $this->db->set_debug(True);
-        $rows = $this->db->paginate("SELECT round(TIMESTAMPDIFF('HOUR', min(ci.bltimestamp), CURRENT_TIMESTAMP)/24,1) as age, case when count(ci2.containerinspectionid) > 1 then 0 else 1 end as allow_adhoc, sch.name as schedule, c.scheduleid, c.screenid, sc.name as screen, c.imagerid, i.temperature as temperature, i.name as imager, TO_CHAR(max(ci.bltimestamp), 'HH24:MI DD-MM-YYYY') as lastinspection, round(TIMESTAMPDIFF('HOUR', max(ci.bltimestamp), CURRENT_TIMESTAMP)/24,1) as lastinspectiondays, count(distinct ci.containerinspectionid) as inspections, CONCAT(p.proposalcode, p.proposalnumber) as prop, c.bltimestamp, c.samplechangerlocation, c.beamlinelocation, d.dewarstatus, c.containertype, c.capacity, c.containerstatus, c.containerid, c.code as name, d.code as dewar, sh.shippingname as shipment, d.dewarid, sh.shippingid, count(distinct s.blsampleid) as samples, cq.containerqueueid, TO_CHAR(cq.createdtimestamp, 'DD-MM-YYYY HH24:MI') as queuedtimestamp, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), ses.visit_number) as visit, ses.beamlinename, c.requestedreturn, c.requestedimagerid, i2.name as requestedimager, c.comments, c.experimenttype, c.storagetemperature, c.barcode, reg.barcode as registry, reg.containerregistryid, 
+        $rows = $this->db->paginate("SELECT round(TIMESTAMPDIFF('HOUR', min(ci.bltimestamp), CURRENT_TIMESTAMP)/24,1) as age, case when count(ci2.containerinspectionid) > 1 then 0 else 1 end as allow_adhoc, sch.name as schedule, c.scheduleid, c.screenid, sc.name as screen, c.imagerid, i.temperature as temperature, i.name as imager, TO_CHAR(max(ci.bltimestamp), 'HH24:MI DD-MM-YYYY') as lastinspection, round(TIMESTAMPDIFF('HOUR', max(ci.bltimestamp), CURRENT_TIMESTAMP)/24,1) as lastinspectiondays, count(distinct ci.containerinspectionid) as inspections, CONCAT(p.proposalcode, p.proposalnumber) as prop, c.bltimestamp, c.samplechangerlocation, c.beamlinelocation, d.dewarstatus, c.containertype, c.capacity, c.containerstatus, c.containerid, c.code as name, d.code as dewar, sh.shippingname as shipment, d.dewarid, sh.shippingid, count(distinct s.blsampleid) as samples, cq.containerqueueid, TO_CHAR(cq.createdtimestamp, 'DD-MM-YYYY HH24:MI') as queuedtimestamp, CONCAT(p.proposalcode, p.proposalnumber, '-', ses.visit_number) as visit, ses.beamlinename, c.requestedreturn, c.requestedimagerid, i2.name as requestedimager, c.comments, c.experimenttype, c.storagetemperature, c.barcode, reg.barcode as registry, reg.containerregistryid,
                 count(distinct ss.blsubsampleid) as subsamples, 
                 ses3.beamlinename as firstexperimentbeamline,
                 pp.name as pipeline,
@@ -2073,7 +2073,7 @@ class Shipment extends Page
         array_push($args, $start);
         array_push($args, $end);
 
-        $rows = $this->db->paginate("SELECT h.containerhistoryid, s.shippingid, s.shippingname as shipment, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), b.visit_number) as visit, b.beamlinename as bl, b.beamlineoperator as localcontact, h.containerid, h.status,h.location,TO_CHAR(h.bltimestamp, 'DD-MM-YYYY HH24:MI') as bltimestamp, h.beamlinename
+        $rows = $this->db->paginate("SELECT h.containerhistoryid, s.shippingid, s.shippingname as shipment, CONCAT(p.proposalcode, p.proposalnumber, '-', b.visit_number) as visit, b.beamlinename as bl, b.beamlineoperator as localcontact, h.containerid, h.status,h.location,TO_CHAR(h.bltimestamp, 'DD-MM-YYYY HH24:MI') as bltimestamp, h.beamlinename
               FROM containerhistory h 
               INNER JOIN container c ON c.containerid = h.containerid
               INNER JOIN dewar d ON d.dewarid = c.dewarid 
@@ -2379,7 +2379,7 @@ class Shipment extends Page
         if (!$this->has_arg('CONTAINERREGISTRYID'))
             $this->_error('No container specified');
 
-        $last_visits = $this->db->pq("SELECT CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as visit, TO_CHAR(s.startdate, 'YYYY') as year, s.beamlinename, s.beamlineoperator as localcontact, pe.emailaddress, r.containerregistryid, r.barcode, CONCAT(p.proposalcode, p.proposalnumber) as prop
+        $last_visits = $this->db->pq("SELECT CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) as visit, TO_CHAR(s.startdate, 'YYYY') as year, s.beamlinename, s.beamlineoperator as localcontact, pe.emailaddress, r.containerregistryid, r.barcode, CONCAT(p.proposalcode, p.proposalnumber) as prop
               FROM containerregistry r
               INNER JOIN container c ON c.containerregistryid = r.containerregistryid
               LEFT OUTER JOIN person pe ON pe.personid = c.ownerid
@@ -2605,7 +2605,7 @@ class Shipment extends Page
         if (!$this->has_arg('visit'))
             $this->_error('No visit specified');
 
-        $sids = $this->db->pq("SELECT s.sessionid FROM blsession s INNER JOIN proposal p ON p.proposalid = s.proposalid WHERE CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) LIKE :1 AND p.proposalid=:2", array($this->arg('visit'), $this->proposalid));
+        $sids = $this->db->pq("SELECT s.sessionid FROM blsession s INNER JOIN proposal p ON p.proposalid = s.proposalid WHERE CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) LIKE :1 AND p.proposalid=:2", array($this->arg('visit'), $this->proposalid));
 
         if (!sizeof($sids))
             $this->_error('No such visit');
