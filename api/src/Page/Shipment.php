@@ -1750,7 +1750,8 @@ class Shipment extends Page
             array_push($args, $this->user->personId);
         }
 
-        $tot = $this->db->pq("SELECT count(distinct c.containerid) as tot 
+        $tot = $this->db->pq("SELECT count(distinct c.containerid) as tot,
+                count(distinct ss.blsubsampleid) as subsamples
                 FROM container c 
                 INNER JOIN dewar d ON d.dewarid = c.dewarid 
                 INNER JOIN shipping sh ON sh.shippingid = d.shippingid
