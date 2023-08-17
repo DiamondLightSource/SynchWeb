@@ -10,6 +10,7 @@ define([], function() {
             proteins: 'Components',
             contacts: 'Lab Contacts',
             stats: 'Statistics',
+            migrate: 'Migrate',
         },
         
         extra: {

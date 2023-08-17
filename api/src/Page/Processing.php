@@ -90,8 +90,7 @@ class Processing extends Page {
             "SELECT xrc.status as xrcstatus, dc.datacollectionid
             FROM datacollection dc 
             INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
-            INNER JOIN gridinfo gr ON (gr.datacollectionid = dc.datacollectionid OR gr.datacollectiongroupid = dc.datacollectiongroupid)
-            LEFT OUTER JOIN xraycentringresult xrc ON xrc.gridinfoid = gr.gridinfoid
+            LEFT OUTER JOIN xraycentring xrc ON xrc.datacollectiongroupid = dc.datacollectiongroupid
             INNER JOIN blsession s ON s.sessionid = dcg.sessionid 
             INNER JOIN proposal p ON p.proposalid = s.proposalid
             WHERE $where",
@@ -401,7 +400,7 @@ class Processing extends Page {
                     app.processingstatus, app.processingmessage,
                     app.processingstarttime, app.processingendtime, pj.recipe, pj.comments as processingcomments,
                     dc.imageprefix as dcimageprefix, dc.imagedirectory as dcimagedirectory, 
-                    CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as visit,
+                    CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) as visit,
                     GROUP_CONCAT(CONCAT(pjp.parameterkey, '=', pjp.parametervalue)) as parameters
                 FROM datacollection dc 
                 INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
@@ -413,7 +412,7 @@ class Processing extends Page {
                 INNER JOIN proposal p ON p.proposalid = s.proposalid
                 WHERE api.autoprocintegrationid IS NULL AND p.proposalid=:1 $where
                     AND app.processingprograms NOT IN ('$filter')
-                GROUP BY pj.processingjobid",
+                GROUP BY app.autoprocprogramid",
             $args
         );
 

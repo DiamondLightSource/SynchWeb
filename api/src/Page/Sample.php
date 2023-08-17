@@ -1047,14 +1047,14 @@ class Sample extends Page
 
         # For a visit
         if ($this->has_arg('visit')) {
-            $info = $this->db->pq("SELECT s.beamlinename as bl FROM blsession s INNER JOIN proposal p ON p.proposalid = s.proposalid WHERE CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) LIKE :1", array($this->arg('visit')));
+            $info = $this->db->pq("SELECT s.beamlinename as bl FROM blsession s INNER JOIN proposal p ON p.proposalid = s.proposalid WHERE CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) LIKE :1", array($this->arg('visit')));
 
             if (!sizeof($info))
                 $this->_error('No such visit');
             else
                 $info = $info[0];
 
-            $where .= " AND d.dewarstatus='processing' AND c.beamlinelocation LIKE :" . (sizeof($args) + 1) . " AND c.samplechangerlocation is NOT NULL";
+            $where .= " AND d.dewarstatus='processing' AND c.beamlinelocation LIKE :" . (sizeof($args) + 1) . " AND c.samplechangerlocation is NOT NULL AND c.samplechangerlocation != ''";
             array_push($args, $info['BL']);
         }
 
@@ -2734,7 +2734,7 @@ class Sample extends Page
             b.blsampleid,
             cr.crystalid,
             cr.name as crystal,
-            CONCAT(CONCAT(bshg.blsamplegroupid, '-'), b.blsampleid) as blsamplegroupsampleid,
+            CONCAT(bshg.blsamplegroupid, '-', b.blsampleid) as blsamplegroupsampleid,
             c.containerid,
             IF(c.code IS NOT NULL, c.code, c.barcode) as container,
             c.capacity

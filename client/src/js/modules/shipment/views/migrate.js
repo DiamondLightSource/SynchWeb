@@ -80,8 +80,16 @@ define(['marionette',
             }, this)
 
             var self = this
-            $.when.apply($, ready).done(function() {
+            $.when.apply($, ready)
+            .done(function() {
                 app.alert({ message: 'Lab Contact(s) copied to: '+self.ui.prop.val() })
+            })
+            .fail(function(resp) {
+                var message = 'Something went wrong copying this lab contact'
+                if (resp && resp.responseJSON && resp.responseJSON.message) {
+                    message += ': '+resp.responseJSON.message
+                }
+                app.alert({ message: message })
             })
         },
 

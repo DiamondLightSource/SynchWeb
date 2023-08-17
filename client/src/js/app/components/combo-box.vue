@@ -14,8 +14,10 @@ The v-closable takes an object as argumnt with properties:
     }"
     class="custom-select-input tw-relative"
     :class="`combo-${inputIndex}`"
+    :data-testid="dataTestId"
   >
     <div
+      v-if="multiple==false"
       v-show="!searching"
       :class="{
         'select-selected': true,
@@ -29,9 +31,30 @@ The v-closable takes an object as argumnt with properties:
       {{ selectedItemText ? selectedItemText : defaultText }}
     </div>
     <div
+      v-if="multiple==true"
+      v-show="!searching"
+      class="tw-overflow-x-auto"
+      :class="{
+        'select-selected': true,
+        ['tw-px-2']: true,
+        [`select-${inputIndex}`]: true,
+        [size]: true,
+        'disabled': isDisabled
+      }"
+      @click="openComboBox(inputIndex, $event)"
+    >
+      {{ searchArray.length==0 ? defaultText : '' }}
+      <div class="tw-flex" v-if="searchArray.length!==0" >
+        <div v-for="value in searchArray" :key="value.id" class="pill-input">
+        <p>{{ value[textField] }}</p></div>
+        
+      </div>
+    </div>
+    <div
       :ref="`select-items-${inputIndex}`"
       class="select-items select-hide"
       :class="{[`select-${inputIndex}`]: true}"
+      v-if="multiple==false"
     >
       <div class="items-list">
         <div
@@ -64,7 +87,7 @@ The v-closable takes an object as argumnt with properties:
             v-else
             class="tw-text-sm"
           >
-            No more data
+            No more data 
           </p>
         </div>
         <div
@@ -80,11 +103,66 @@ The v-closable takes an object as argumnt with properties:
         </div>
       </div>
     </div>
+
+    <div
+      :ref="`select-items-${inputIndex}`"
+      class="select-items select-hide"
+      :class="{[`select-${inputIndex}`]: true}"
+      v-if="multiple==true"
+    >
+      <div class="items-list-multiple ">
+        <div
+          v-for="(option, optionIndex) in filteredOptions"
+          :ref="`selectOption${inputIndex}${optionIndex}`"
+          :key="`selectOptionIndex${optionIndex}`"
+          class="tw-cursor-pointer tw-flex tw-w-full tw-justify-between item-multiple"
+          :class="valueArray.some(item => item[valueField] == option[valueField]) ? 'item-multiple-selected' : ''"
+          :value="option[valueField]"
+          @click="selectMultipleOption(option, optionIndex)"
+        >
+          <slot :option="option">
+            {{ option[textField] }}
+          </slot>
+        </div>
+        <div
+          v-if="filteredOptions.length > 0"
+          class="tw-w-full tw-flex tw-flex-row tw-justify-center custom-add"
+        >
+          <button
+            v-if="loadMore"
+            class="button custom-add"
+            @click.stop="handleMoreData"
+          >
+            Load More...
+          </button>
+          <p
+            v-else
+            class="tw-text-sm"
+          >
+            No more data 
+          </p>
+        </div>
+        <div
+          v-if="canCreateNewItem && filteredOptions.length < 1 && searchText.length > 0"
+          class="tw-w-full tw-flex tw-flex-row tw-justify-center custom-add"
+        >
+          <button
+            class="button custom-add"
+            @click.stop="createNewOption"
+          >
+            Create New
+          </button>
+        </div>
+      </div>
+    </div>
+
+
     <div
       v-show="searching"
       class="search-select"
     >
       <input
+        v-if="multiple==false"
         v-model="searchText"
         type="text"
         class="tw-w-full select-search-input"
@@ -92,6 +170,19 @@ The v-closable takes an object as argumnt with properties:
         :class="{[size]: true}"
         @focus="openOptionsList($event)"
       >
+      <div 
+        tabindex="1"
+        contenteditable
+        v-if="multiple==true"
+        class="tw-w-full tw-bg-white select-search-input"
+        :disabled="isDisabled"
+        :class="{[size]: true}"
+        @focus="openOptionsList($event)"
+        @input="onInput">
+        <div class="something"></div>
+        
+
+      </div>
     </div>
   </div>
 </template>
@@ -122,9 +213,23 @@ export default {
       type: String,
       required: true
     },
+    valueArray: {
+      type: Array,
+      default: () => ([]),
+      required: true
+    },
+    searchArray: {
+      type: Array,
+      default: () => ([]),
+      required: true
+    },
     defaultText: {
       type: String,
       default: 'Select an Item'
+    },
+    dataTestId: {
+      type: String,
+      required: false
     },
     inputIndex: {
       // InputIndex is used for keeping track of  how many combo-box elements we have on the current page
@@ -155,6 +260,10 @@ export default {
     canCreateNewItem: {
       type: Boolean,
       default: true
+    },
+    multiple: {
+      type: Boolean,
+      default: false
     }
   },
   data() {
@@ -242,6 +351,17 @@ export default {
       this.searching = false
       this.searchText = ''
     },
+    selectMultipleOption(value, optionIndex) {
+      // The ref element will be stored in an array because of the way Vue 2 handles ref used in a v-for
+      const element = this.$refs[`selectOption${this.inputIndex}${optionIndex}`][0]
+
+      // element.classList.toggle('item-multiple-selected')
+
+      this.$emit('input', value)
+      this.addOptionArray(value)
+      this.searching = false
+
+    },
     closeComboBox(force = true) {
       // Loop through all the combobox elements and close every dropdown list
       const dropDownList = []
@@ -269,8 +389,23 @@ export default {
         }
       }
     },
+    addOptionArray: function (val) {
+
+      const index = this.valueArray.findIndex(item => item[this.valueField] == val[this.valueField])
+      if (index >= 0) {
+        this.valueArray.splice(this.valueArray[index], 1)
+
+        console.log('remove', this.valueArray)
+      } else {
+        this.valueArray.push(val)
+        console.log('add', this.valueArray)
+      }
+
+
+    },
     openOptionsList(event) {
       event.stopPropagation()
+      console.log('classlist', event.target.parentElement.previousElementSibling.classList)
       event.target.parentElement.previousElementSibling.classList.remove('select-hide')
       this.searching = true
     },
@@ -286,6 +421,9 @@ export default {
     },
     createNewOption() {
       this.$emit('create-new-option', this.searchText)
+    },
+    onInput(e) {
+      this.searchText=e.target.innerText
     }
   }
 }
@@ -293,6 +431,10 @@ export default {
 
 <style scoped>
 .select-selected {
+  @apply tw-bg-white tw-h-8 tw-rounded tw-border tw-border-content-dark-background tw-flex tw-items-center tw-cursor-pointer
+}
+
+.select-selected-multiple {
   @apply tw-bg-white tw-h-8 tw-rounded tw-border tw-border-content-dark-background tw-flex tw-items-center tw-cursor-pointer
 }
 .select-selected.disabled {
@@ -345,6 +487,9 @@ export default {
 .items-list > div {
   @apply tw-py-2 tw-px-2 tw-cursor-pointer tw-text-black;
 }
+.items-list-multiple > div {
+  @apply tw-py-2 tw-px-2 tw-cursor-pointer tw-text-black;
+}
 /* Style items (options): */
 .select-items {
   @apply tw-absolute tw-bg-white;
@@ -369,10 +514,31 @@ export default {
 .items-list .item:hover, .same-as-selected {
   @apply tw-bg-content-active tw-text-white;
 }
+
+.items-list-multiple .item-multiple:hover {
+  @apply tw-bg-content-active tw-text-white;
+}
+
+.item-multiple-selected {
+  @apply tw-bg-content-active tw-text-white;
+}
 .select-search-input.small {
   @apply tw-h-8;
 }
 .select-search-input {
-  @apply tw-h-10;
+  @apply tw-h-12;
 }
+
+.pill-input {
+  white-space: nowrap;
+  @apply tw-rounded-full tw-h-6 tw-max-w-xs tw-ml-1 tw-px-2 tw-py-1 tw-bg-content-active tw-text-sm
+}
+
+::-webkit-scrollbar {
+  height: 2px;
+  width: 2px;
+  background-color: rgb(77, 118, 255);
+}
+
+
 </style>

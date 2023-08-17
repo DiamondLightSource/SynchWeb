@@ -10,6 +10,8 @@ class ShippingService
 {
     private $shipping_api_url;
     private $headers;
+    public const JOURNEY_TO_FACILITY = "TO_FACILITY";
+    public const JOURNEY_FROM_FACILITY = "FROM_FACILITY";
 
     function __construct()
     {
@@ -77,10 +79,21 @@ class ShippingService
     }
 
 
-    function get_shipment($external_id)
+    function create_shipment_by_journey_type($shipment_data, $journey_type)
     {
         return $this->_send_request(
-            $this->shipping_api_url . '/shipments/external_id/' . $external_id,
+            $this->shipping_api_url . '/shipments/' . $journey_type,
+            "POST",
+            $shipment_data,
+            201
+        );
+    }
+
+
+    function get_shipment($external_id, $journey_type)
+    {
+        return $this->_send_request(
+            $this->shipping_api_url . '/shipments/external_id/' . $external_id . '?journey_type=' . $journey_type,
             "GET",
             null,
             200
@@ -88,10 +101,10 @@ class ShippingService
     }
 
 
-    function update_shipment($external_id, $shipment_data)
+    function update_shipment($external_id, $shipment_data, $journey_type)
     {
         return $this->_send_request(
-            $this->shipping_api_url . '/shipments/external_id/' . $external_id,
+            $this->shipping_api_url . '/shipments/external_id/' . $external_id . '?journey_type=' . $journey_type,
             "PUT",
             $shipment_data,
             204
@@ -99,12 +112,13 @@ class ShippingService
     }
 
 
-    function dispatch_shipment($shipment_id)
+    function dispatch_shipment($shipment_id, $pickup_requested)
     {
+        $pickup_requested_str = ($pickup_requested) ? "true" : "false";
         return $this->_send_request(
-            $this->shipping_api_url . '/shipments/' . $shipment_id . '/dispatch',
+            $this->shipping_api_url . '/shipments/' . $shipment_id . '/dispatch?pickup_requested=' . $pickup_requested_str,
             "POST",
-            array(),
+            null,
             201
         );
     }

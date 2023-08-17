@@ -440,7 +440,7 @@ class Imaging extends Page
         }
 
         $inspections = $this->db->paginate("SELECT ROUND(TIMESTAMPDIFF('HOUR', i.bltimestamp, CURRENT_TIMESTAMP)/24,1) as age, ROUND(TIMESTAMPDIFF('MINUTE', i.scheduledtimestamp, i.bltimestamp)/(24*60),2) as dwell, c.code as container, CONCAT(p.proposalcode, p.proposalnumber) as prop, TO_CHAR(min(im.modifiedtimestamp), 'DD-MM-YYYY HH24:MI') as imagesscoredtimestamp, case when count(im.blsampleimageid) > 0 then 1 else 0 end as imagesscored,
-                TO_CHAR(i.scheduledtimestamp, 'DD-MM-YYYY HH24:MI') as scheduledtimestamp, sc.offset_hours, i.priority, i.state, i.schedulecomponentid, i.manual, img.name as imager, it.name as inspectiontype, i.containerinspectionid, i.containerid, i.inspectiontypeid, i.temperature, TO_CHAR(i.bltimestamp, 'DD-MM-YYYY HH24:MI') as bltimestamp, i.imagerid, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), ses.visit_number) as visit, ses.visit_number, TIMESTAMPDIFF('MINUTE', i.bltimestamp, i.completedtimestamp) as duration $extc
+                TO_CHAR(i.scheduledtimestamp, 'DD-MM-YYYY HH24:MI') as scheduledtimestamp, sc.offset_hours, i.priority, i.state, i.schedulecomponentid, i.manual, img.name as imager, it.name as inspectiontype, i.containerinspectionid, i.containerid, i.inspectiontypeid, i.temperature, TO_CHAR(i.bltimestamp, 'DD-MM-YYYY HH24:MI') as bltimestamp, i.imagerid, CONCAT(p.proposalcode, p.proposalnumber, '-', ses.visit_number) as visit, ses.visit_number, TIMESTAMPDIFF('MINUTE', i.bltimestamp, i.completedtimestamp) as duration $extc
                 FROM containerinspection i
                 LEFT OUTER JOIN schedulecomponent sc ON sc.schedulecomponentid = i.schedulecomponentid
                 LEFT OUTER JOIN blsampleimage im ON im.containerinspectionid = i.containerinspectionid AND im.blsampleimagescoreid IS NOT NULL
@@ -863,7 +863,7 @@ class Imaging extends Page
 
         $sc = $this->db->pq("SELECT sc.screenid 
               FROM screen sc 
-              WHERE sc.screenid = :1 and sc.proposalid= :2", array($this->arg('scid'), $this->proposalid));
+              WHERE sc.screenid = :1 and (sc.global=1 or sc.proposalid= :2)", array($this->arg('scid'), $this->proposalid));
 
         if (!sizeof($sc))
             $this->_error('No such screen');

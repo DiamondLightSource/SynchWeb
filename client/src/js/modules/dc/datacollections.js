@@ -142,7 +142,9 @@ function(Marionette, Pages, DCListView,
         this.pages.show(this.paginator)
         this.pages2.show(this.paginator2)
         this.search.show(this.filter)
-        if (this.getOption('filters')) this.type.show(this.ty)
+        if (this.getOption('filters')) {
+            this.type.show(this.ty)
+        }
         
         if (this.options.params.visit) {
             this.use.show(new StackView({ visit: this.options.params.visit }))

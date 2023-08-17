@@ -405,7 +405,6 @@ export default {
     },
     // Reset Backbone Samples Collection
     async resetSamples(capacity) {
-      this.$store.commit('samples/reset', capacity)
       const samples = this.samplesCollection.toJSON()
 
       for (let sample of samples) {
@@ -416,13 +415,10 @@ export default {
           if (Number(sample[t]) > 0) status = t
         })
         sample['STATUS'] = status
-        const payload = await this.populateInitialSampleGroupValue(sample)
-        this.$store.commit('samples/setSample', {
-          index: Number(sample['LOCATION']) - 1,
-          data: { ...payload, VALID: 1 }
-        })
-
+        sample.VALID = 1
       }
+      this.$store.commit('samples/setAllSamples', {capacity, samples})
+
       this.$nextTick(() => {
         this.$refs.containerForm.reset()
       })

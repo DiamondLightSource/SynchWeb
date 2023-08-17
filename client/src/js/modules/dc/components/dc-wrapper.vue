@@ -72,6 +72,8 @@ let dc_views = {
   b22: GenProcDCList,
   b23: GenProcDCList,
   i21: GenProcDCList,
+  p99: GenProcDCList,
+  p45: GenProcDCList,
 }
 
 export default {

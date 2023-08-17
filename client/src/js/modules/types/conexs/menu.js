@@ -10,6 +10,7 @@ define([], function() {
             visits: 'Visits',
             contacts: 'Lab Contacts',
             conexs: 'Conexs Submission',
+            migrate: 'Migrate',
         },
 
         extra: {

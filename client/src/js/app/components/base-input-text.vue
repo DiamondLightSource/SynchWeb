@@ -40,6 +40,7 @@ https://eslint.vuejs.org/rules/no-v-html.html
       :disabled="disabled"
       :class="classObject"
       :step="step"
+      :data-testid="dataTestId"
       @keyup="onEnter"
       @input="updateValue"
       @blur="onBlur"
@@ -91,6 +92,10 @@ export default {
     },
     name: {
       type: String,
+    },
+    dataTestId: {
+      type: String,
+      required: false
     },
     type: { // Allows a user to override the type so it could be password, number etc.
       type: String,
