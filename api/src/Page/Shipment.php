@@ -3,6 +3,7 @@
 namespace SynchWeb\Page;
 
 use Exception;
+use SynchWeb\Database\DatabaseQueryBuilder;
 use SynchWeb\Page;
 use SynchWeb\Shipment\Courier\DHL;
 use SynchWeb\Shipment\ShippingService;
@@ -1641,13 +1642,6 @@ class Shipment extends Page
         $this->_output($cont[0]);
     }
 
-    function _add_to_array($array, $value)
-    {
-        if (!in_array($value, $array))
-            array_push($array, $value);
-        return $array;
-    }
-
     function _get_all_containers()
     {
         //$this->db->set_debug(True);
@@ -1656,16 +1650,16 @@ class Shipment extends Page
 
         $having = '';
         $subsamplesInTotal = "";
-        $join_arr = array();
+        $totalQuery = new DatabaseQueryBuilder($this->db);
 
         if ($this->has_arg('visit')) {
             $join = " INNER JOIN blsession ses2 ON ses2.proposalid = p.proposalid";
             $args = array($this->arg('visit'));
             $where = "CONCAT(p.proposalcode, p.proposalnumber, '-', ses2.visit_number) LIKE :1";
-            $join_arr = $this->_add_to_array($join_arr, "INNER JOIN blsession ses2 ON ses2.proposalid = p.proposalid");
-            $join_arr = $this->_add_to_array($join_arr, "INNER JOIN dewar d ON d.dewarid = c.dewarid");
-            $join_arr = $this->_add_to_array($join_arr, "INNER JOIN shipping sh ON sh.shippingid = d.shippingid");
-            $join_arr = $this->_add_to_array($join_arr, "INNER JOIN proposal p ON p.proposalid = sh.proposalid");
+            $totalQuery->joinClause("INNER JOIN blsession ses2 ON ses2.proposalid = p.proposalid");
+            $totalQuery->joinClause("INNER JOIN dewar d ON d.dewarid = c.dewarid");
+            $totalQuery->joinClause("INNER JOIN shipping sh ON sh.shippingid = d.shippingid");
+            $totalQuery->joinClause("INNER JOIN proposal p ON p.proposalid = sh.proposalid");
         } else if ($this->has_arg('all') && $this->staff) {
             $join = '';
             $args = array();
@@ -1674,8 +1668,8 @@ class Shipment extends Page
             $join = '';
             $args = array($this->proposalid);
             $where = 'sh.proposalid=:1';
-            $join_arr = $this->_add_to_array($join_arr, "INNER JOIN dewar d ON d.dewarid = c.dewarid");
-            $join_arr = $this->_add_to_array($join_arr, "INNER JOIN shipping sh ON sh.shippingid = d.shippingid");
+            $totalQuery->joinClause("INNER JOIN dewar d ON d.dewarid = c.dewarid");
+            $totalQuery->joinClause("INNER JOIN shipping sh ON sh.shippingid = d.shippingid");
         }
 
 
@@ -1689,13 +1683,13 @@ class Shipment extends Page
             } else if ($this->arg('ty') == 'todispose') {
                 $where .= " AND c.imagerid IS NOT NULL";
                 $having .= " HAVING (TIMESTAMPDIFF('HOUR', min(ci.bltimestamp), CURRENT_TIMESTAMP)/24) > 42";
-                $join_arr = $this->_add_to_array($join_arr, "LEFT OUTER JOIN containerinspection ci ON ci.containerid = c.containerid AND ci.state = 'Completed'");
+                $totalQuery->joinClause("LEFT OUTER JOIN containerinspection ci ON ci.containerid = c.containerid AND ci.state = 'Completed'");
             } else if ($this->arg('ty') == 'queued') {
                 $where .= " AND cq.containerqueueid IS NOT NULL";
-                $join_arr = $this->_add_to_array($join_arr, "LEFT OUTER JOIN containerqueue cq ON cq.containerid = c.containerid AND cq.completedtimestamp IS NULL");
+                $totalQuery->joinClause("LEFT OUTER JOIN containerqueue cq ON cq.containerid = c.containerid AND cq.completedtimestamp IS NULL");
             } else if ($this->arg('ty') == 'completed') {
                 $where .= " AND cq2.completedtimestamp IS NOT NULL";
-                $join_arr = $this->_add_to_array($join_arr, "LEFT OUTER JOIN containerqueue cq2 ON cq2.containerid = c.containerid AND cq2.completedtimestamp IS NOT NULL");
+                $totalQuery->joinClause("LEFT OUTER JOIN containerqueue cq2 ON cq2.containerid = c.containerid AND cq2.completedtimestamp IS NOT NULL");
                 $this->args['sort_by'] = 'COMPLETEDTIMESTAMP';
                 $this->args['order'] = 'desc';
             } else if ($this->arg('ty') == 'processing') {
@@ -1703,8 +1697,8 @@ class Shipment extends Page
             } else if ($this->arg('ty') == 'subsamples') {
                 $having .= " HAVING subsamples > 0";
                 $subsamplesInTotal = ", count(distinct ss.blsubsampleid) as subsamples";
-                $join_arr = $this->_add_to_array($join_arr, "LEFT OUTER JOIN blsample s ON s.containerid = c.containerid");
-                $join_arr = $this->_add_to_array($join_arr, "LEFT OUTER JOIN blsubsample ss ON s.blsampleid = ss.blsampleid AND ss.source='manual'");
+                $totalQuery->joinClause("LEFT OUTER JOIN blsample s ON s.containerid = c.containerid");
+                $totalQuery->joinClause("LEFT OUTER JOIN blsubsample ss ON s.blsampleid = ss.blsampleid AND ss.source='manual'");
             }
         }
 
@@ -1716,13 +1710,13 @@ class Shipment extends Page
 
         if ($this->has_arg('did')) {
             $where .= ' AND d.dewarid=:' . (sizeof($args) + 1);
-            $join_arr = $this->_add_to_array($join_arr, "INNER JOIN dewar d ON d.dewarid = c.dewarid");
+            $totalQuery->joinClause("INNER JOIN dewar d ON d.dewarid = c.dewarid");
             array_push($args, $this->arg('did'));
         }
         if ($this->has_arg('sid')) {
             $where .= ' AND sh.shippingid=:' . (sizeof($args) + 1);
-            $join_arr = $this->_add_to_array($join_arr, "INNER JOIN dewar d ON d.dewarid = c.dewarid");
-            $join_arr = $this->_add_to_array($join_arr, "INNER JOIN shipping sh ON sh.shippingid = d.shippingid");
+            $totalQuery->joinClause("INNER JOIN dewar d ON d.dewarid = c.dewarid");
+            $totalQuery->joinClause("INNER JOIN shipping sh ON sh.shippingid = d.shippingid");
             array_push($args, $this->arg('sid'));
         }
         if ($this->has_arg('cid')) {
@@ -1734,15 +1728,15 @@ class Shipment extends Page
             // $this->db->set_debug(True);
             $join .= ' LEFT OUTER JOIN crystal cr ON cr.crystalid = s.crystalid LEFT OUTER JOIN protein pr ON pr.proteinid = cr.proteinid';
             $where .= ' AND pr.proteinid=:' . (sizeof($args) + 1);
-            $join_arr = $this->_add_to_array($join_arr, "LEFT OUTER JOIN blsample s ON s.containerid = c.containerid");
-            $join_arr = $this->_add_to_array($join_arr, "LEFT OUTER JOIN crystal cr ON cr.crystalid = s.crystalid");
-            $join_arr = $this->_add_to_array($join_arr, "LEFT OUTER JOIN protein pr ON pr.proteinid = cr.proteinid");
+            $totalQuery->joinClause("LEFT OUTER JOIN blsample s ON s.containerid = c.containerid");
+            $totalQuery->joinClause("LEFT OUTER JOIN crystal cr ON cr.crystalid = s.crystalid");
+            $totalQuery->joinClause("LEFT OUTER JOIN protein pr ON pr.proteinid = cr.proteinid");
             array_push($args, $this->arg('pid'));
         }
 
         if ($this->has_arg('assigned')) {
             $where .= " AND d.dewarstatus LIKE 'processing' AND c.samplechangerlocation > 0";
-            $join_arr = $this->_add_to_array($join_arr, "INNER JOIN dewar d ON d.dewarid = c.dewarid");
+            $totalQuery->joinClause("INNER JOIN dewar d ON d.dewarid = c.dewarid");
         }
 
         if ($this->has_arg('bl')) {
@@ -1754,8 +1748,8 @@ class Shipment extends Page
             $where .= " AND c.containerid NOT IN (SELECT c.containerid FROM container c INNER JOIN dewar d ON d.dewarid = c.dewarid WHERE d.dewarstatus LIKE 'processing' AND c.samplechangerlocation > 0 AND c.beamlinelocation=:" . (sizeof($args) + 1) . ")";
 
             array_push($args, $this->arg('unassigned'));
-            $join_arr = $this->_add_to_array($join_arr, "INNER JOIN dewar d ON d.dewarid = c.dewarid");
-            $join_arr = $this->_add_to_array($join_arr, "INNER JOIN shipping sh ON sh.shippingid = d.shippingid");
+            $totalQuery->joinClause("INNER JOIN dewar d ON d.dewarid = c.dewarid");
+            $totalQuery->joinClause("INNER JOIN shipping sh ON sh.shippingid = d.shippingid");
             $this->args['sort_by'] = 'SHIPPINGID';
             $this->args['order'] = 'desc';
         }
@@ -1783,12 +1777,10 @@ class Shipment extends Page
             array_push($args, $this->user->personId);
         }
 
-        $join_str = implode(" ", $join_arr);
-
         $tot = $this->db->pq("SELECT count(distinct c.containerid) as tot 
                 $subsamplesInTotal
                 FROM container c 
-                $join_str
+                {$totalQuery->getJoins()}
                 WHERE $where
                 $having", $args);
         $tot = sizeof($tot) ? intval($tot[0]['TOT']) : 0;
