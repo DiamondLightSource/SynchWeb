@@ -78,7 +78,7 @@ class Projects extends Page
         array_push($args, $start);
         array_push($args, $end);
 
-        $rows = $this->db->paginate("SELECT p.title, p.projectid, p.acronym, p.personid, CONCAT(CONCAT(pe.givenname, ' '), pe.familyname) as person 
+        $rows = $this->db->paginate("SELECT p.title, p.projectid, p.acronym, p.personid, CONCAT(pe.givenname, ' ', pe.familyname) as person
                 FROM project p 
                 INNER JOIN person pe ON p.personid = pe.personid
                 LEFT OUTER JOIN project_has_person php ON php.projectid = p.projectid $where 
@@ -219,7 +219,7 @@ class Projects extends Page
             $this->_error('No such project');
         $proj = $proj[0];
 
-        $person = $this->db->pq("SELECT CONCAT(CONCAT(givenname, ' '), familyname) as fullname FROM person WHERE personid=:1", array($this->arg('PERSONID')));
+        $person = $this->db->pq("SELECT CONCAT(givenname, ' ', familyname) as fullname FROM person WHERE personid=:1", array($this->arg('PERSONID')));
         if (!sizeof($person))
             $this->_error('No such person');
         $person = $person[0];

@@ -55,13 +55,13 @@ class Cal extends Page
                 array_push($args, $hash['CKEY']);
             }
             
-            $visits = $this->db->pq("SELECT s.beamlineoperator as lc, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as vis, CONCAT(p.proposalcode, p.proposalnumber) as prop, s.beamlinename as bl, TO_CHAR(s.startdate, 'DD-MM-YYYY') as d, TO_CHAR(s.enddate, 'DD-MM-YYYY') as e, TO_CHAR(s.startdate, 'HH24:MI') as st, TO_CHAR(s.enddate, 'HH24:MI') as en, s.sessionid 
+            $visits = $this->db->pq("SELECT s.beamlineoperator as lc, CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) as vis, CONCAT(p.proposalcode, p.proposalnumber) as prop, s.beamlinename as bl, TO_CHAR(s.startdate, 'DD-MM-YYYY') as d, TO_CHAR(s.enddate, 'DD-MM-YYYY') as e, TO_CHAR(s.startdate, 'HH24:MI') as st, TO_CHAR(s.enddate, 'HH24:MI') as en, s.sessionid
                 FROM blsession s 
                 INNER JOIN proposal p ON (p.proposalid = s.proposalid) 
                 WHERE s.startdate > TO_DATE(:1,'YYYY') $where ORDER BY s.startdate, s.beamlinename", $args);
             
 
-            $user_tmp = $this->db->pq("SELECT s.sessionid, pe.login, CONCAT(CONCAT(pe.givenname, ' '), pe.familyname) as fullname, shp.role
+            $user_tmp = $this->db->pq("SELECT s.sessionid, pe.login, CONCAT(pe.givenname, ' ', pe.familyname) as fullname, shp.role
                 FROM person pe
                 INNER JOIN session_has_person shp ON shp.personid = pe.personid
                 INNER JOIN blsession s ON s.sessionid = shp.sessionid

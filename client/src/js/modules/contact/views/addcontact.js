@@ -46,8 +46,12 @@ define(['views/form',
         },
 
         failure: function(model, response, options) {
-            console.log('failure from shipadd')
-            app.alert({ message: 'Something went wrong registering this lab contact, please try again'})
+            console.log('failure from contact add')
+            var message = 'Something went wrong registering this lab contact'
+            if (response && response.responseJSON && response.responseJSON.message) {
+                message += ': '+response.responseJSON.message
+            }
+            app.alert({ message: message })
         },
     })
 

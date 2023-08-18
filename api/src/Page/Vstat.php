@@ -199,7 +199,7 @@ class Vstat extends Page
             $ctf = array();
             $missed = array();
 
-            $sched = $this->db->pq("SELECT CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as visit, TO_CHAR(s.enddate, 'DD-MM-YYYY HH24:MI:SS') as en, TO_CHAR(s.startdate, 'DD-MM-YYYY HH24:MI:SS') as st, p.title, s.scheduled, p.proposalcode
+            $sched = $this->db->pq("SELECT CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) as visit, TO_CHAR(s.enddate, 'DD-MM-YYYY HH24:MI:SS') as en, TO_CHAR(s.startdate, 'DD-MM-YYYY HH24:MI:SS') as st, p.title, s.scheduled, p.proposalcode
                     FROM blsession s
                     INNER JOIN proposal p ON p.proposalid = s.proposalid
                     INNER JOIN v_run vr ON s.startdate BETWEEN vr.startdate AND vr.enddate
@@ -373,22 +373,18 @@ class Vstat extends Page
         }
 
         // Beam status 
-        //$bs = $this->_get_archive('SR-DI-DCCT-01:SIGNAL', strtotime($info['ST']), strtotime($info['EN']), 200);
-        $bs = $this->_get_archive('CS-CS-MSTAT-01:MODE', strtotime($info['ST']), strtotime($info['EN']), 2000);
+        $bs = $this->_get_archive('CS-CS-MSTAT-01:MODE', strtotime($info['ST']), strtotime($info['EN']));
 
-        if (!$bs)
-            $bs = array();
 
         $lastv = 0;
         $ex = 3600 * 1000;
-        $bd = False;
+        $st = $this->jst($info['ST']);
+
         foreach ($bs as $i => $b) {
-            //$v = $b[1] < 5 ? 1 : 0;
             $v = $b[1] != 4;
             $c = $b[0] * 1000;
 
             if (($v != $lastv) && $v) {
-                $bd = True;
                 $st = $c;
             }
 
@@ -397,12 +393,18 @@ class Vstat extends Page
                     array($st + $ex, 5, $st + $ex),
                     array($c + $ex, 5, $st + $ex)
                 ), 'color' => 'black', 'status' => ' Beam Dump', 'type' => 'nobeam'));
-                $bd = False;
             }
 
             $lastv = $v;
         }
 
+        // in case visit ends with no beam
+        if ($lastv && $this->jst($info['EN']) > $st + $ex) {
+            array_push($data, array('data' => array(
+                array($st + $ex, 5, $st + $ex),
+                array($this->jst($info['EN']), 5, $st + $ex)
+            ), 'color' => 'black', 'status' => ' Beam Dump', 'type' => 'nobeam'));
+        }
 
         $first = $info['ST'];
         $last = $info['EN'];
@@ -514,30 +516,30 @@ class Vstat extends Page
                 $d['FAULT'] = 0;
 
             // Beam status
-            $bs = $this->_get_archive('CS-CS-MSTAT-01:MODE', strtotime($d['ST']), strtotime($d['EN']), 2000);
-            if (!$bs)
-                $bs = array();
+            $bs = $this->_get_archive('CS-CS-MSTAT-01:MODE', strtotime($d['ST']), strtotime($d['EN']));
 
             $lastv = 0;
             $ex = 3600 * 1000;
-            $bd = False;
+            $st = $this->jst($d['ST']);
             $total_no_beam = 0;
             foreach ($bs as $i => $b) {
-                //$v = $b[1] < 5 ? 1 : 0;
                 $v = $b[1] != 4;
                 $c = $b[0] * 1000;
 
                 if (($v != $lastv) && $v) {
-                    $bd = True;
                     $st = $c;
                 }
 
                 if ($lastv && ($v != $lastv)) {
                     $total_no_beam += ($c - $st) / 1000;
-                    $bd = False;
                 }
 
                 $lastv = $v;
+            }
+
+            // in case visit ends with no beam
+            if ($lastv && $this->jst($d['EN']) > ($ex + $st)) {
+                $total_no_beam += ($this->jst($d['EN']) - ($ex + $st)) / 1000;
             }
 
             $d['NOBEAM'] = $total_no_beam / 3600;
@@ -730,7 +732,7 @@ class Vstat extends Page
             $this->_error('No visit specified');
 
         $args = array($this->arg('visit'));
-        $where = "WHERE CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) LIKE :1";
+        $where = "WHERE CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) LIKE :1";
 
         if (!$this->staff) {
             if (!$this->has_arg('prop'))
@@ -945,10 +947,10 @@ class Vstat extends Page
         $bls = implode('\', \'', $beamlines);
 
         $types = array(
-            'energy' => array('unit' => 'eV', 'st' => 1000, 'en' => 25000, 'bin_size' => 200, 'col' => '(1.98644568e-25/(dc.wavelength*1e-10))/1.60217646e-19', 'count' => 'dc.wavelength'),
-            'beamsizex' => array('unit' => 'um', 'st' => 0, 'en' => 150, 'bin_size' => 5, 'col' => 'dc.beamsizeatsamplex*1000', 'count' => 'dc.beamsizeatsamplex'),
-            'beamsizey' => array('unit' => 'um', 'st' => 0, 'en' => 150, 'bin_size' => 5, 'col' => 'dc.beamsizeatsampley*1000', 'count' => 'dc.beamsizeatsampley'),
-            'exposuretime' => array('unit' => 'ms', 'st' => 0, 'en' => 5000, 'bin_size' => 50, 'col' => 'dc.exposuretime*1000', 'count' => 'dc.exposuretime'),
+            'energy' => array('unit' => 'eV', 'bin_size' => 200, 'col' => '(1.98644568e-25/(dc.wavelength*1e-10))/1.60217646e-19', 'count' => 'dc.wavelength'),
+            'beamsizex' => array('unit' => 'um', 'bin_size' => 5, 'col' => 'dc.beamsizeatsamplex*1000', 'count' => 'dc.beamsizeatsamplex'),
+            'beamsizey' => array('unit' => 'um', 'bin_size' => 5, 'col' => 'dc.beamsizeatsampley*1000', 'count' => 'dc.beamsizeatsampley'),
+            'exposuretime' => array('unit' => 'ms', 'bin_size' => 5, 'col' => 'dc.exposuretime*1000', 'count' => 'dc.exposuretime'),
         );
 
         $k = 'energy';
@@ -975,9 +977,9 @@ class Vstat extends Page
 
         $col = $t['col'];
         $ct = $t['count'];
-        $bs = $t['bin_size'];
+        $binSize = $t['bin_size'];
 
-        $hist = $this->db->pq("SELECT ($col div $bs) * $bs as x, count($ct) as y, s.beamlinename
+        $hist = $this->db->pq("SELECT ($col div $binSize) * $binSize as x, count($ct) as y, s.beamlinename
                 FROM datacollection dc 
                 INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
                 INNER JOIN blsession s ON s.sessionid = dcg.sessionid
@@ -987,9 +989,15 @@ class Vstat extends Page
                 GROUP BY s.beamlinename,x
                 ORDER BY s.beamlinename", $args);
 
+        $min = null;
+        $max = null;
         $bls = array();
-        foreach ($hist as $h)
+        foreach ($hist as $h) {
             $bls[$h['BEAMLINENAME']] = 1;
+            if (is_null($max) || $h['X'] > $max) $max = $h['X'];
+            if (is_null($min) || $h['X'] < $min) $min = $h['X'];
+        }
+        $min = is_null($min) ? 0 : intval(floor($min/$binSize) * $binSize); // make min align with bin size, or 0 for no data
 
         $data = array();
         foreach ($bls as $bl => $y) {
@@ -1001,7 +1009,7 @@ class Vstat extends Page
             }
 
             $gram = array();
-            for ($bin = $t['st']; $bin <= $t['en']; $bin += $t['bin_size']) {
+            for ($bin = $min; $bin <= $max; $bin += $binSize) {
                 $gram[$bin] = array_key_exists($bin, $ha) ? $ha[$bin] : 0;
             }
 

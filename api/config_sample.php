@@ -13,13 +13,18 @@
     $isb  = array('user' => 'user', 'pass' => 'pass', 'db' => 'localhost/ispyb');
     $dbtype = 'mysql';
 
+    # Summary Database credentials 
+    ######### DELETE if not using connection. 
+    $summarydbconfig = array('user' => 'user', 'pass' => 'pass', 'db' => 'localhost/ispyb');
+    $ifsummary = true;
+
     # Encoded JWT key, used to sign and check validaty of jwt tokens
     # - Create one of these using /api/authenticate/key
     #   This can be changed to invalidate all currently active tokens
     $jwt_key = '';
 
     # Auth type
-    # Can be cas, ldap
+    # Can be cas, ldap, oidc
     $authentication_type = 'cas';
 
     # CAS url (if using cas, assume https)
@@ -27,6 +32,13 @@
 
     # Follow CAS SSO
     $cas_sso = true;
+    $sso_url = "sso.server.ac.uk";
+
+    # OIDC (or OAuth2) client ID and secret. Only useful if authentication_type is set to OIDC
+    $oidc_client_id = "oidcClientId";
+    $oidc_client_secret = "oidcClientSecret";
+    # Cookie key used for SSO/cookie based authentication
+    $cookie_key = "synchweb-auth";
 
     # CAS CA Cert (for SSO)
     $cacert = '/etc/certs/ca-bundle.crt';
@@ -51,6 +63,9 @@
 
     # Timezone
     $timezone = 'Europe/London';
+
+    # URL to access the PV archiver
+    $archive_url = '';
 
     # Valid Components
     #   Denotes that only staff may create proteins, otherwise they must come from replication 
@@ -144,6 +159,13 @@
     # and for shipment booked,
     $shipbooked_email = 'goods@server.ac.uk';
 
+    # dewar back in storage (complete)
+    $dewar_complete_email = '';
+
+    # Send a 'visit finished' email when a dewar moves from this beamline to this (regex) location
+    $dewar_complete_email_locations = array('i03' => '/tray-\w+/',
+                                           );
+
     # Industrial Contacts
     # - Industrial users get a personalised email with in contact details,
     #   template in assets/emails/dewar-stores-in-in.html
@@ -225,6 +247,7 @@
 
     # Shipping service details
     $use_shipping_service = null;
+    $use_shipping_service_incoming_shipments = null;
     $shipping_service_url = null;
     $shipping_service_links_in_emails = null;
 

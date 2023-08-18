@@ -57,7 +57,10 @@ define(['marionette', 'views/form',
             'change @ui.lc': 'getlcdetails',    
             'change @ui.exp': 'updateLC',
             'click @ui.useAnotherCourierAccount': 'toggleCourierAccountEditing',
-            'click @ui.facc': 'showTerms'
+            'click @ui.facc': 'showTerms',
+            'blur @ui.postCode': 'stripPostCode',
+            'blur @ui.addr': 'formatAddress',
+            'change @ui.country': 'checkPostCodeRequired'
         },
         
         ui: {
@@ -70,6 +73,8 @@ define(['marionette', 'views/form',
             gn: 'input[name=GIVENNAME]',
             fn: 'input[name=FAMILYNAME]',
             addr: 'textarea[name=ADDRESS]',
+            city: 'input[name=CITY]',
+            postCode: 'input[name=POSTCODE]',
             country: 'select[name=COUNTRY]',
             em: 'input[name=EMAILADDRESS]',
             ph: 'input[name=PHONENUMBER]',
@@ -143,6 +148,8 @@ define(['marionette', 'views/form',
             this.ui.exp.html(this.visits.opts()).val(this.model.get('VISIT'))
             this.updateLC()
             this.populateCountries()
+            this.stripPostCode()
+            this.formatAddress()
         },
 
         populateCountries: function() {
@@ -223,9 +230,12 @@ define(['marionette', 'views/form',
                 this.ui.em.val(lc.get('EMAILADDRESS'))
                 this.ui.ph.val(lc.get('PHONENUMBER'))
                 this.ui.lab.val(lc.get('LABNAME'))
-                this.ui.addr.val([lc.get('ADDRESS'), lc.get('CITY'), lc.get('POSTCODE')].join('\n'))
+                this.ui.addr.val(lc.get('ADDRESS'))
+                this.ui.city.val(lc.get('CITY'))
+                this.ui.postCode.val(lc.get('POSTCODE'))
                 this.labContactCountry = lc.get('COUNTRY')
                 this.ui.country.val(this.labContactCountry)
+                this.checkPostCodeRequired()
             }
         },
 
@@ -255,6 +265,23 @@ define(['marionette', 'views/form',
             this.ui.courierDetails.hide()
             this.ui.facilityCourier.show()
             this.model.courierDetailsRequired = false
+        },
+
+        checkPostCodeRequired: function() {
+            if (this.ui.country.val() === "United Kingdom"){
+                this.model.postCodeRequired = true
+            } else {
+                this.model.postCodeRequired = false
+            }
+        },
+
+        stripPostCode: function() {
+            this.ui.postCode.val(this.ui.postCode.val().trim())
+        },
+
+        formatAddress: function() {
+            // Remove duplicate new lines and whitespace or commas before/after each line
+            this.ui.addr.val(this.ui.addr.val().replace(/([,\s]*\n[,\s]*)+/g, "\n").trim())
         }
     })
 

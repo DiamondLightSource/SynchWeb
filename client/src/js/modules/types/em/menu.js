@@ -8,6 +8,7 @@ define([], function() {
             contacts: 'Lab Contacts',
             'dewars/registry': 'Registered Dewars',
             stats: 'Statistics',
+            migrate: 'Migrate',
         },
         extra: {
             //projects: 'Projects',

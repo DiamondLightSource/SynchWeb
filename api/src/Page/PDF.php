@@ -202,10 +202,10 @@ class PDF extends Page
             $this->_error('No visit specified', 'You need to specify a visit to view this page');
         }
 
-        $info = $this->db->pq("SELECT TIMESTAMPDIFF('MINUTE', s.startdate, s.enddate)/60 as len, s.sessionid as sid, s.beamlinename, s.beamlineoperator as lc, TO_CHAR(s.startdate, 'DD-MM-YYYY HH24:MI') as st, TO_CHAR(s.enddate, 'DD-MM-YYYY HH24:MI') as en, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as visit, CONCAT(p.proposalcode, p.proposalnumber) as prop 
+        $info = $this->db->pq("SELECT TIMESTAMPDIFF('MINUTE', s.startdate, s.enddate)/60 as len, s.sessionid as sid, s.beamlinename, s.beamlineoperator as lc, TO_CHAR(s.startdate, 'DD-MM-YYYY HH24:MI') as st, TO_CHAR(s.enddate, 'DD-MM-YYYY HH24:MI') as en, CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) as visit, CONCAT(p.proposalcode, p.proposalnumber) as prop
                 FROM blsession s 
                 INNER JOIN proposal p ON p.proposalid = s.proposalid 
-                WHERE CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) LIKE :1", array($this->arg('visit')));
+                WHERE CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) LIKE :1", array($this->arg('visit')));
 
         if (!sizeof($info))
             $this->_error('No such visit', 'The specified visit doesnt exist');

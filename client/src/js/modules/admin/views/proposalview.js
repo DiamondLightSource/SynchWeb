@@ -1,11 +1,10 @@
 define(['marionette', 'backbone',
         'utils/editable',
         'collections/visits',
-        'modules/proposal/visit_list',
         'utils/table',
         'templates/admin/proposalview.html'
     ], function(Marionette, Backbone, Editable,
-        Visits, VisitsList, table, template) {
+        Visits, table, template) {
 
     var ClickableRow = table.ClickableRow.extend({
         event: 'visit:show',
