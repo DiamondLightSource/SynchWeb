@@ -970,7 +970,7 @@ class Shipment extends Page
 
         try {
             if ($create === true) {
-                $shipment_data["proposal"] = $dispatch_info["prop"];
+                $shipment_data["proposal"] = $dewar["PROPOSAL"];
                 $response = $this->shipping_service->create_shipment($shipment_data);
             } else {
                 $this->shipping_service->update_shipment($dispatch_info['DEWARID'], $shipment_data, ShippingService::JOURNEY_FROM_FACILITY);
@@ -1007,7 +1007,7 @@ class Shipment extends Page
         }
 
         $dew = $this->db->pq(
-            "SELECT d.dewarid, d.barcode, d.storagelocation, d.dewarstatus, s.shippingid
+            "SELECT d.dewarid, d.barcode, d.storagelocation, d.dewarstatus, s.shippingid, CONCAT(p.proposalcode, p.proposalnumber) as proposal
                 FROM dewar d 
                 INNER JOIN shipping s ON s.shippingid = d.shippingid 
                 INNER JOIN proposal p ON p.proposalid = s.proposalid
@@ -2680,8 +2680,8 @@ class Shipment extends Page
                 array_map(function($key) use ($user_shipment_role) {return $user_shipment_role."_".$key;}, 
                     array_keys($contact)), 
                 $contact);
-            $shipment_data = array_merge($response, $shipment_data, $relabelled_contact);
-            $this->shipping_service->update_shipment($shipment["SHIPPINGID"], $shipment_data, ShippingService::JOURNEY_TO_FACILITY);
+            $shipment_update_data = array_merge($response, $shipment_data, $relabelled_contact);
+            $this->shipping_service->update_shipment($shipment["SHIPPINGID"], $shipment_update_data, ShippingService::JOURNEY_TO_FACILITY);
         } catch (\Exception $e) {
             $shipment_data["proposal"] = $shipment["PROP"];
             $shipment_data["contact"] = $contact;
