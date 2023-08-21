@@ -131,7 +131,12 @@ define(['marionette',
     },
 
     showXRC: function() {
-        this.ui.holder.prepend('Method: '+this.xrc.get('METHOD')+' - X Pos: '+this.xrc.get('X')+' Y Pos: '+this.xrc.get('Y'))
+        var xrcs = this.xrc.get('data')
+        var t = ''
+        for (var i = 0; i < xrcs.length; i++) {
+            t += ' - Crystal '+(i+1)+': X Pos '+xrcs[i]['X']+' Y Pos '+xrcs[i]['Y']+' Z Pos '+xrcs[i]['Z']
+        }
+        this.ui.holder.prepend('Method: '+xrcs[0]['METHOD']+t)
     },
                                       
     onDestroy: function() {

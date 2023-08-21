@@ -47,6 +47,7 @@ class DC extends Page
         array('/chi', 'post', '_chk_image'),
         array('/imq/:id', 'get', '_image_qi'),
         array('/grid/:id', 'get', '_grid_info'),
+        array('/grid/xrc/:id', 'get', '_grid_xrc'),
         array('/grid/map', 'get', '_grid_map'),
         array('/ed/:id', 'get', '_edge', array('id' => '\d+'), 'edge'),
         array('/mca/:id', 'get', '_mca', array('id' => '\d+'), 'mca'),
@@ -1472,6 +1473,32 @@ class DC extends Page
                 WHERE datacollectionid=:1", array($this->arg('id')));
 
         $this->_output($map);
+    }
+
+
+    # XRC
+    function _grid_xrc()
+    {
+        $info = $this->db->pq("SELECT dc.datacollectiongroupid, dc.datacollectionid,
+                xrc.xraycentringtype as method, xrcr.xraycentringresultid,
+                xrcr.centreofmassx as x, xrcr.centreofmassy as y, xrcr.centreofmassz as z
+                FROM datacollection dc
+                INNER JOIN xraycentring xrc ON xrc.datacollectiongroupid = dc.datacollectiongroupid
+                INNER JOIN xraycentringresult xrcr ON xrcr.xraycentringid = xrc.xraycentringid
+                WHERE dc.datacollectionid = :1 ", array($this->arg('id')));
+
+        if (!sizeof($info))
+            $this->_output(array());
+        else {
+            foreach ($info as &$i) {
+                foreach ($i as $k => &$v) {
+                    if ($k == 'METHOD')
+                        continue;
+                    $v = round(floatval($v), 2);
+                }
+            }
+            $this->_output(array('total' => sizeof($info), 'data' => $info));
+        }
     }
 
 

@@ -87,7 +87,7 @@ class Processing extends Page {
 
     function _xrc_status($where, $ids) {
         $dcs = $this->db->pq(
-            "SELECT xrc.status as xrcstatus, dc.datacollectionid
+            "SELECT xrc.status as xrcstatus, dc.datacollectionid, xrc.xrayCentringType as method
             FROM datacollection dc 
             INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
             LEFT OUTER JOIN xraycentring xrc ON xrc.datacollectiongroupid = dc.datacollectiongroupid
@@ -104,13 +104,15 @@ class Processing extends Page {
             }
 
             $statuses[$dc['DATACOLLECTIONID']]['XrayCentring'] =
-                $dc['XRCSTATUS'] === null
-                    ? 0
-                    : ($dc['XRCSTATUS'] === 'pending'
-                        ? 1
-                        : ($dc['XRCSTATUS'] === 'success'
-                            ? 2
-                            : 3));
+                $dc['METHOD'] !== '3d'
+                    ? -1
+                    : ($dc['XRCSTATUS'] === null
+                        ? 0
+                        : ($dc['XRCSTATUS'] === 'pending'
+                            ? 1
+                            : ($dc['XRCSTATUS'] === 'success'
+                                ? 2
+                                : 3)));
         }
 
         return $statuses;
