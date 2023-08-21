@@ -1488,7 +1488,7 @@ class DC extends Page
                 WHERE dc.datacollectionid = :1 ", array($this->arg('id')));
 
         if (!sizeof($info))
-            $this->_output(array());
+            $this->_output(array('total' => 0, 'data' => array()));
         else {
             foreach ($info as &$i) {
                 foreach ($i as $k => &$v) {
