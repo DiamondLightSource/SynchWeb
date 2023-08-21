@@ -970,6 +970,7 @@ class Shipment extends Page
 
         try {
             if ($create === true) {
+                $shipment_data["proposal"] = $dispatch_info["prop"];
                 $response = $this->shipping_service->create_shipment($shipment_data);
             } else {
                 $this->shipping_service->update_shipment($dispatch_info['DEWARID'], $shipment_data, ShippingService::JOURNEY_FROM_FACILITY);
@@ -2682,6 +2683,7 @@ class Shipment extends Page
             $shipment_data = array_merge($response, $shipment_data, $relabelled_contact);
             $this->shipping_service->update_shipment($shipment["SHIPPINGID"], $shipment_data, ShippingService::JOURNEY_TO_FACILITY);
         } catch (\Exception $e) {
+            $shipment_data["proposal"] = $shipment["PROP"];
             $shipment_data["contact"] = $contact;
             $response = $this->shipping_service->create_shipment_by_journey_type($shipment_data, $journey_type);
         }
