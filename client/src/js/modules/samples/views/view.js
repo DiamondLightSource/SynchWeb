@@ -103,6 +103,11 @@ define(['marionette',
             edit.create('EXPERIMENTKIND', 'select', { data: EXP.obj() })
             edit.create('RADIATIONSENSITIVITY', 'select', { data: RS.obj() })
             edit.create('ENERGY', 'text')
+            edit.create('DIMENSION1', 'text')
+            edit.create('DIMENSION2', 'text')
+            edit.create('DIMENSION3', 'text')
+            edit.create('SHAPE', 'text')
+            edit.create('COLOR', 'text')
 
             if (!this.model.get('HASDATA')) {
                 edit.create('CODE', 'text')
