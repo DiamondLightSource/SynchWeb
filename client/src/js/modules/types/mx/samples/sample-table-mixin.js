@@ -209,7 +209,7 @@ export default {
     editRow(row) {
       this.editingSample = row;
       this.editingSample.CONTAINERID = this.containerId;
-      this.$emit('update-editing-row', row.LOCATION)
+      this.$emit('update-editing-row', row.INDEX)
     },
     formatSelectData(selectData, data, property) {
       const matchedSelectData = selectData.find(select => select.value === data[property])
