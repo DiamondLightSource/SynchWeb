@@ -65,11 +65,6 @@ define(['backbone'], function(Backbone) {
                 }
             },
 
-            DELIVERYAGENT_SHIPPINGDATE: {
-                pattern: 'edate',
-                required: true,
-            },
-
         },
             
     })
