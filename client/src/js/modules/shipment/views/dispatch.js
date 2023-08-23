@@ -165,6 +165,7 @@ define(['marionette', 'views/form',
 
             var self = this
             this.visits = new VVisits(null, { state: { pageSize: 9999 } })
+            this.visits.queryParams.notnull = 1
             this.ready = []
             this.ready.push(this.visits.fetch())
 
