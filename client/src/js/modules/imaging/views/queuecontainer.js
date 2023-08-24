@@ -567,27 +567,16 @@ define(['marionette',
             e.preventDefault()
 
             var self = this
-            var sids = _.map(this.subsamples.fullCollection.filter(function(ss) { return (!ss.get('QUEUECOMPLETED'))  }), function(ss) {return ss.get('BLSUBSAMPLEID')})
 
-            // cannot send >1000 at once
-            const chunkSize = 500;
-            for (let i = 0; i < Math.ceil(sids.length / chunkSize); i++) {
-                var chunk = sids.slice(i*chunkSize, (i+1)*chunkSize);
-
-                Backbone.ajax({
-                    type: 'post',
-                    url: app.apiurl+'/sample/sub/queue',
-                    data: {
-                        BLSUBSAMPLEID: chunk,
-                    },
-                    success: function(resp) {
-                        _.each(resp, function (r) {
-                            var ss = self.subsamples.fullCollection.findWhere({ BLSUBSAMPLEID: r.BLSUBSAMPLEID })
-                            ss.set({ READYFORQUEUE: '1' })
-                        })
-                    },
-                })
-            }
+            Backbone.ajax({
+                url: app.apiurl+'/sample/sub/queue/cid/'+this.model.get('CONTAINERID'),
+                success: function(resp) {
+                    _.each(resp, function (r) {
+                        var ss = self.subsamples.fullCollection.findWhere({ BLSUBSAMPLEID: r.BLSUBSAMPLEID })
+                        ss.set({ READYFORQUEUE: '1' })
+                    })
+                },
+            })
 
             setTimeout(function() {
                 self.refreshQSubSamples.bind(self)
