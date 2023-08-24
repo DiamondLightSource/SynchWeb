@@ -600,7 +600,7 @@ define(['marionette',
             e.preventDefault()
 
             var p = this.plans.findWhere({ DIFFRACTIONPLANID: this.ui.preset.val() })
-            if (p) this.applyModelAll(p, true)
+            if (p) this.applyModel(p, true)
         },
 
         applyModel: function(p, all) {
