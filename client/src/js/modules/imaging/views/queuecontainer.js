@@ -567,20 +567,22 @@ define(['marionette',
             e.preventDefault()
 
             var self = this
-
+            this.$el.addClass('loading');
             Backbone.ajax({
                 url: app.apiurl+'/sample/sub/queue/cid/'+this.model.get('CONTAINERID'),
+                method: "post",
+                data: {},
                 success: function(resp) {
                     _.each(resp, function (r) {
                         var ss = self.subsamples.fullCollection.findWhere({ BLSUBSAMPLEID: r.BLSUBSAMPLEID })
                         ss.set({ READYFORQUEUE: '1' })
                     })
                 },
-            })
-
-            setTimeout(function() {
-                self.refreshQSubSamples.bind(self)
-            }, 1000)
+                complete: function(resp, status) {
+                    self.$el.removeClass('loading')
+                    self.refreshQSubSamples(self)
+                }
+            })            
         },
 
 
