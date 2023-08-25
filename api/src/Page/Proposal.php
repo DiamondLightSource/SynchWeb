@@ -24,6 +24,7 @@ class Proposal extends Page
         'started' => '\d',
         'scheduled' => '\d',
         'current' => '\d',
+        'notnull' => '\d+',
 
         'COMMENTS' => '(\w|\s|-)+',
 
@@ -338,6 +339,10 @@ class Proposal extends Page
 
             $args = array($p);
             $where = 'WHERE s.proposalid = :1';
+        }
+
+        if ($this->has_arg('notnull')) {
+            $where .= ' AND s.visit_number is not NULL';
         }
 
         if ($this->has_arg('year')) {
