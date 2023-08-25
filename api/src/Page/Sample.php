@@ -168,6 +168,7 @@ class Sample extends Page
         array('/sub/:ssid', 'put', '_update_sub_sample_full'),
         array('/sub', 'post', '_add_sub_sample'),
         array('/sub/:ssid', 'delete', '_delete_sub_sample'),
+        array('/sub/queue/cid/:cid', 'post', '_queue_all_sub_samples'),
         array('/sub/queue(/:BLSUBSAMPLEID)', 'get', '_pre_q_sub_sample'),
 
         array('/plan', 'get', '_get_diffraction_plans'),
@@ -585,6 +586,33 @@ class Sample extends Page
         $this->_output(1);
     }
 
+    function _queue_all_sub_samples()
+    {
+        if (!$this->has_arg('cid')) {
+            $this->_error('No containerid specified');
+        }
+
+        $args = array($this->proposalid, $this->arg('cid'), $this->arg('cid'), $this->arg('cid'));
+        $where = ' AND c.containerid=:2 AND cq2.completedtimestamp IS NULL';
+        $first_inner_select_where = ' AND s.containerid=:3';
+        $second_inner_select_where = ' AND s.containerid=:4';
+
+        $this->db->wait_rep_sync(true);
+        $ss_query_string = $this->get_sub_samples_query($where, $first_inner_select_where, $second_inner_select_where);
+        $this->db->set_debug(True);
+        $subs = $this->db->pq($ss_query_string, $args);
+        $this->db->set_debug(False);
+
+        $this->db->wait_rep_sync(false);
+
+        $ret = array();
+        foreach ($subs as $sub) {
+            array_push($ret, array(
+                'BLSUBSAMPLEID' => $sub['BLSUBSAMPLEID'], 
+                'CONTAINERQUEUESAMPLEID' => $this->_do_pre_q_sample(array('BLSUBSAMPLEID' => $sub['BLSUBSAMPLEID']))));
+        }
+        $this->_output($ret);
+    }
 
     function _sub_samples()
     {
