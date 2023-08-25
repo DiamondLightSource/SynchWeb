@@ -9,7 +9,11 @@
             </span>
             <a href="#" class="comments button button-notext" title="Comments"><i class="fa fa-comments"></i> <b class="DCCC"><%-DCCC%></b> <span>Comment(s)</span></a>
 
-            <a href="#" class="button attach"><i class="fa fa-file"></i> <b class="DCAC"><%-DCAC%></b></a>
+            <% if (RECIP == "1") { %>
+                <a href="#" class="button attach" title="Reciprocal Space Viewer"><i class="fa fa-snowflake-o"></i> <b class="DCAC"><%-DCAC%></b></a>
+            <% } else { %>
+                <a href="#" class="button attach" title="Attachments"><i class="fa fa-file"></i> <b class="DCAC"><%-DCAC%></b></a>
+            <% } %>
 
             <span class="extra"></span>
         </span>
