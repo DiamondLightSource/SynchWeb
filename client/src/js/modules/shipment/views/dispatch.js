@@ -148,6 +148,8 @@ define(['marionette', 'views/form',
             this.ui.exp.html(this.visits.opts()).val(this.model.get('VISIT'))
             this.updateLC()
             this.populateCountries()
+            this.stripPostCode()
+            this.formatAddress()
         },
 
         populateCountries: function() {

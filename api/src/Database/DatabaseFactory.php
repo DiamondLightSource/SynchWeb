@@ -22,25 +22,26 @@ class DatabaseFactory
 
     public function get($databaseType = null)
     {   
+        global $dbtype;
+            
         if ( $databaseType == null) {
             // Global variable is named $dbtype in config.php.
-            global $dbtype;
             $databaseType = $dbtype;
         }
 
         if (!$databaseType) {
             error_log('Database type variable, dbtype, is not specified in config.php - defaulting to MySql.');
-            $database_type = 'MySQL';
+            $databaseType = 'MySQL';
         }
 
         // Determine fully-qualified class name of database class corresponding to $database_type.
         if (key_exists(strtolower($databaseType), $this->database_types)) {
-            $dbType = $this->database_types[strtolower($databaseType)];
+            $selectedDBConfig = $this->database_types[strtolower($databaseType)];
 
-            $full_class_name = 'SynchWeb\\Database\\Type\\' . $dbType["dbClassName"];;
+            $full_class_name = 'SynchWeb\\Database\\Type\\' . $selectedDBConfig["dbClassName"];
 
             if (class_exists($full_class_name)) {
-                $conn = $this->databaseConnectionFactory->get($dbType["dataConnectionName"]);
+                $conn = $this->databaseConnectionFactory->get($selectedDBConfig["dataConnectionName"]);
                 return new $full_class_name($conn);
             }
             else {

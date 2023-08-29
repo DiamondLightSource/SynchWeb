@@ -247,6 +247,7 @@
 
     # Shipping service details
     $use_shipping_service = null;
+    $use_shipping_service_incoming_shipments = null;
     $shipping_service_url = null;
     $shipping_service_links_in_emails = null;
 
