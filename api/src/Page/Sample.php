@@ -599,9 +599,7 @@ class Sample extends Page
 
         $this->db->wait_rep_sync(true);
         $ss_query_string = $this->get_sub_samples_query($where, $first_inner_select_where, $second_inner_select_where);
-        $this->db->set_debug(True);
         $subs = $this->db->pq($ss_query_string, $args);
-        $this->db->set_debug(False);
 
         $this->db->wait_rep_sync(false);
 
