@@ -593,36 +593,36 @@ define(['marionette',
             e.preventDefault()
 
             var p = this.plans.findWhere({ DIFFRACTIONPLANID: this.ui.preset.val() })
-            if (p) this.applyModel(p, false)
+            if (p) this.applyModel(p, true)
         },
 
         applyPresetAll:function(e) {
             e.preventDefault()
 
             var p = this.plans.findWhere({ DIFFRACTIONPLANID: this.ui.preset.val() })
-            if (p) this.applyModel(p, true)
+            if (p) this.applyModel(p, false)
         },
 
-        applyModel: function(p, all) {
-            if (all) {
-                var models = this.qsubsamples.fullCollection.filter(function(ss) { return true })
-            } else {
+        applyModel: function(modelParameter, isLimitedToSelected) {
+            if (isLimitedToSelected) {
                 var models = this.qsubsamples.where({ isGridSelected: true })
+            } else {
+                var models = this.qsubsamples.fullCollection.toArray()
             }
-            _.each(models, function(m) {
-                if (p.get('EXPERIMENTKIND') !== m.get('EXPERIMENTKIND')) return
+            _.each(models, function(model) {
+                if (modelParameter.get('EXPERIMENTKIND') !== model.get('EXPERIMENTKIND')) return
                     
                 _.each(['REQUIREDRESOLUTION', 'PREFERREDBEAMSIZEX', 'PREFERREDBEAMSIZEY', 'EXPOSURETIME', 'BOXSIZEX', 'BOXSIZEY', 'AXISSTART', 'AXISRANGE', 'NUMBEROFIMAGES', 'TRANSMISSION', 'ENERGY', 'MONOCHROMATOR'], function(k) {
-                    if (p.get(k) !== null) m.set(k, p.get(k))
+                    if (modelParameter.get(k) !== null) model.set(k, modelParameter.get(k))
                 }, this)
-                m.save()
-                m.trigger('refresh')
+                model.save()
+                model.trigger('refresh')
             }, this)
         },
 
         cloneModel: function(m) {
             console.log('cloning', m)
-            this.applyModel(m, false)
+            this.applyModel(m, true)
         },
 
         queueContainer: function(e) {
