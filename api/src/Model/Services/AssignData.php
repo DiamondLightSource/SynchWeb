@@ -2,6 +2,8 @@
 
 namespace SynchWeb\Model\Services;
 
+use SynchWeb\Utils;
+
 class AssignData
 {
     private $db;
@@ -100,9 +102,10 @@ class AssignData
         $st = $status;
         if ($additionalStatusDetail)
             $st .= ' (' . $additionalStatusDetail . ')';
+        $loc = Utils::getValueOrDefault($beamline, '');
         $this->db->pq("INSERT INTO dewartransporthistory 
                         (dewarid, dewarstatus, storagelocation, arrivaldate) 
-                        VALUES (:1, :2, :3, CURRENT_TIMESTAMP)", array($did, $st, $beamline));
+                        VALUES (:1, :2, :3, CURRENT_TIMESTAMP)", array($did, $st, $loc));
 
         $this->updateDewar($did, $status);
     }

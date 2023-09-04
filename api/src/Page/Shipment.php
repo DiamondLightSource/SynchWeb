@@ -864,6 +864,8 @@ class Shipment extends Page
         global $transfer_email;
         if (!$this->has_arg('DEWARID'))
             $this->_error('No dewar specified');
+        if (!$this->has_arg('LOCATION'))
+            $this->_error('No location specified');
 
         $dew = $this->db->pq("SELECT d.dewarid,s.shippingid
               FROM dewar d
@@ -1049,7 +1051,7 @@ class Shipment extends Page
                 $dewar_location = $last_history['STORAGELOCATION'];
             } else {
                 // Use the current location of the dewar instead if no history
-                $dewar_location = $dew['STORAGELOCATION'];
+                $dewar_location = Utils::getValueOrDefault($dew['STORAGELOCATION'], '');
             }
         }
         // Check if the last history storage location is an EBIC prefix or not
@@ -3111,10 +3113,11 @@ class Shipment extends Page
 
             foreach ($dewars as $i => $d) {
                 $this->db->pq("UPDATE dewar SET dewarstatus='pickup cancelled' WHERE dewarid=:1", array($d['DEWARID']));
+                $loc = Utils::getValueOrDefault($d['STORAGELOCATION'], '');
                 $this->db->pq(
                     "INSERT INTO dewartransporthistory (dewarid,dewarstatus,storagelocation,arrivaldate)
                     VALUES (:1,'pickup cancelled',:2,CURRENT_TIMESTAMP)",
-                    array($d['DEWARID'], $d['STORAGELOCATION'])
+                    array($d['DEWARID'], $loc)
                 );
             }
         } catch (\Exception $e) {
