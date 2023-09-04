@@ -321,11 +321,10 @@ export default {
       try {
         this.$store.commit('loading', true)
         const result = await this.$refs.containerForm.validate()
-
         if (result) {
-          await this.saveSample(location)
           const samplesRef = this.$refs.samples
           samplesRef.$refs[`sample-row-${location}`][0].closeSampleEditing()
+          await this.saveSample(location)
           this.$refs.containerForm.reset()
         }
         else {
