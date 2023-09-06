@@ -318,14 +318,16 @@ export default {
     // Save the sample to the server via backbone model
     // Location should be the sample LOCATION
     async onSaveSample(location) {
-      try {
+      if (this.$store.getters.isLoading) { // avoid double click
+          return
+      }
+      try {        
         this.$store.commit('loading', true)
         const result = await this.$refs.containerForm.validate()
-
         if (result) {
           await this.saveSample(location)
           const samplesRef = this.$refs.samples
-          samplesRef.$refs[`sample-row-${location}`][0].closeSampleEditing()
+          samplesRef.$refs[`sample-row-${location}`][0].closeSampleEditing()          
           this.$refs.containerForm.reset()
         }
         else {

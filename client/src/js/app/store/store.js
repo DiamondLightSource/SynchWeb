@@ -367,7 +367,8 @@ const store = new Vuex.Store({
     oidcId: state => state.auth.oidcId,
     apiUrl: state => state.apiUrl,
     appUrl: state => state.appUrl,
-    getAppOptions: state => state.appOptions
+    getAppOptions: state => state.appOptions,
+    isLoading: state => state.isLoading,
   }
 })
 
