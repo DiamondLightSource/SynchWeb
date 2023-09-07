@@ -145,8 +145,13 @@ define(['backbone',
                     this.ui.terms.show()
                     this.shipment.validation.DELIVERYAGENT_AGENTCODE.required = false
                 } else {
-                    this.ui.facc.show()
-
+                    industrial_codes = ['in', 'sw']
+                    industrial_visit = industrial_codes.includes(app.prop.slice(0,2))
+                    if (industrial_visit) {
+                        this.ui.facc.hide()
+                    } else {
+                        this.ui.facc.show()
+                    }
                 }
             } else {
                 this.ui.facc.hide()                
