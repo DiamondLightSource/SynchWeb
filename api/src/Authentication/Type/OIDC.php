@@ -18,6 +18,12 @@ class OIDC extends AuthenticationParent implements AuthenticationInterface
         curl_setopt($ch, CURLOPT_HEADER, 0);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         $response = curl_exec($ch);
+
+        if (curl_errno($ch) || curl_getinfo($ch, CURLINFO_HTTP_CODE != 200)) {
+            error_log("Failed to connect to OIDC discovery endpoint");
+            return;
+        }
+
         curl_close($ch);
         $newProviderConfig = json_decode($response);
 
@@ -25,7 +31,7 @@ class OIDC extends AuthenticationParent implements AuthenticationInterface
             || !isset($newProviderConfig->userinfo_endpoint)
             || !isset($newProviderConfig->authorization_endpoint) 
             || !isset($newProviderConfig->token_endpoint)) {
-            error_log("OIDC Authentication provider replied with invalid JSON body");
+            error_log("OIDC Authentication provider replied with invalid JSON discovery body");
             return;
         }
         $newProviderConfig->b64ClientCreds = base64_encode(
