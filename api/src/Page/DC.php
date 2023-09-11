@@ -394,6 +394,7 @@ class DC extends Page
         # Data collection group
         if ($this->has_arg('dcg') || $this->has_arg('PROCESSINGJOBID')) {
             $fields = "count(distinct dca.datacollectionfileattachmentid) as dcac,
+                    if(dca.fileType='recip',1,0) as recip,
                     count(distinct dcc.datacollectioncommentid) as dccc,
                     1 as dcc,
                     smp.name as sample,
@@ -527,6 +528,7 @@ class DC extends Page
             }
         } else {
             $fields = "count(distinct dca.datacollectionfileattachmentid) as dcac,
+                    if(dca.fileType='recip',1,0) as recip,
                     count(distinct dcc.datacollectioncommentid) as dccc,
                     count(distinct dc.datacollectionid) as dcc,
                     min(smp.name) as sample,
@@ -677,6 +679,7 @@ class DC extends Page
                 SELECT
                     $extc
                     1 as dcac,
+                    0 as recip,
                     1 as dccc,
                     1 as dcc,
                     smp.name as sample,
@@ -769,6 +772,7 @@ class DC extends Page
             SELECT
                 $extc
                 1 as dcac,
+                0 as recip,
                 1 as dccc,
                 1 as dcc,
                 smp.name as sample,
@@ -861,6 +865,7 @@ class DC extends Page
             SELECT
                 $extc
                 1 as dcac,
+                0 as recip,
                 1 as dccc,
                 1 as dcc,
                 smp.name as sample,
