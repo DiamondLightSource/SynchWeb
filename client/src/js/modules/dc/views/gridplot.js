@@ -150,14 +150,14 @@ define(['jquery', 'marionette',
 
         populateImageSelect: function() {
             opts = []
-            for (n=1; n<=4; n++) {
-                if (this.getOption('parent').get('X'+n)) {
-                    opts.push('<option value='+n+'>Image '+n+'</option>')
-                    if (n == 1) {
+            for (let i=1; i<=4; i++) {
+                if (this.getOption('parent').get('X'+i)) {
+                    opts.push('<option value='+i+'>Image '+i+'</option>')
+                    if (i === 1) {
                         // show button to view image full size
-                        this.ui.sns.append('<a class="button" href="'+app.apiurl+'/image/id/'+this.getOption('ID')+'/f/1/n/'+n+'"><i class="fa fa-arrows"></a>')
+                        this.ui.sns.append('<a class="button" href="'+app.apiurl+'/image/id/'+this.getOption('ID')+'/f/1/n/'+i+'"><i class="fa fa-arrows"></a>')
                     } else {
-                        this.ui.sns.append('<a class="hidden" href="'+app.apiurl+'/image/id/'+this.getOption('ID')+'/f/1/n/'+n+'"></a>')
+                        this.ui.sns.append('<a class="hidden" href="'+app.apiurl+'/image/id/'+this.getOption('ID')+'/f/1/n/'+i+'"></a>')
                     }
                 }
             }
