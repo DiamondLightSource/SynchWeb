@@ -131,7 +131,7 @@ define(['marionette',
                 this.hasXRC = true
             }
 
-            if (state == 2) {
+            if (state >= 2) {
                 this.xrc = new GridXRC({ id: this.model.get('ID') })
                 this.xrc.fetch({
                     success: this.showXRC.bind(this)
@@ -141,7 +141,16 @@ define(['marionette',
     },
 
     showXRC: function() {
-        this.ui.holder.prepend('Method: '+this.xrc.get('METHOD')+' - X Pos: '+this.xrc.get('X')+' Y Pos: '+this.xrc.get('Y'))
+        var xrcs = this.xrc.get('data')
+        var t = ''
+        for (var i = 0; i < xrcs.length; i++) {
+            t += ' - Crystal '+(i+1)+': X Pos '+xrcs[i]['X']+' Y Pos '+xrcs[i]['Y']+' Z Pos '+xrcs[i]['Z']
+        }
+        if (xrcs.length > 0) {
+            this.ui.holder.prepend('Method: '+xrcs[0]['METHOD']+t)
+        } else {
+            this.ui.holder.prepend('Found no diffraction')
+        }
     },
                                       
     onDestroy: function() {
