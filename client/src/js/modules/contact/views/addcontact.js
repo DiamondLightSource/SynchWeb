@@ -53,10 +53,8 @@ define(['views/form',
         initialize: function() {
             this.countries = new Countries()
             this.countries.state.pageSize = 9999
-            this.ready = this.countries.fetch()
             this.users = new Users()
             this.users.queryParams.login = 1
-            this.ready2 = this.users.fetch()
         },
 
         createModel: function() {
@@ -64,8 +62,10 @@ define(['views/form',
         },
 
         onRender: function() {
-            $.when(this.ready).done(this.populateCountries.bind(this))
-            $.when(this.ready2).done(this.populateUsers.bind(this))
+            Promise.all([this.countries.fetch(), this.users.fetch()]).then(() => {
+                this.populateCountries();
+                this.populateUsers();
+            })
         },
 
         populateCountries: function() {
