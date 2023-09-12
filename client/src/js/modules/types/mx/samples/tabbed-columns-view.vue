@@ -14,7 +14,7 @@
         <template #default="{ errors, inputChanged }">
           <base-input-select
             v-model="ANOMALOUSSCATTERER"
-            :is-disabled="!canEditRow(sample['LOCATION'], currentEditingRow)"
+            :is-disabled="!canEditRow(sample['INDEX'], currentEditingRow)"
             :options="anomalousOptionsList"
             input-class="tw-w-full tw-h-8"
             option-value-key="value"
@@ -36,7 +36,7 @@
         <template #default="{ errors, inputChanged }">
           <base-input-text
             v-model="CODE"
-            :disabled="!canEditRow(sample['LOCATION'], currentEditingRow)"
+            :disabled="!canEditRow(sample['INDEX'], currentEditingRow)"
             input-class="tw-w-full tw-h-8"
             @value-changed="inputChanged"
           />
@@ -52,7 +52,7 @@
         <template #default="{ errors, inputChanged }">
           <base-input-text
             v-model="COMMENTS"
-            :disabled="!canEditRow(sample['LOCATION'], currentEditingRow)"
+            :disabled="!canEditRow(sample['INDEX'], currentEditingRow)"
             input-class="tw-w-full tw-h-8"
             @value-changed="inputChanged"
             dataTestId="add-container-sample-comment"
@@ -89,7 +89,7 @@
         <template #default="{ errors, inputChanged }">
           <base-input-text
             v-model="USERPATH"
-            :disabled="!canEditRow(sample['LOCATION'], currentEditingRow)"
+            :disabled="!canEditRow(sample['INDEX'], currentEditingRow)"
             input-class="tw-w-full tw-h-8"
             :error-message="errors[0]"
             :quiet="true"
@@ -108,7 +108,7 @@
         <template #default="{errors, inputChanged}">
           <base-input-select
             v-model="SPACEGROUP"
-            :is-disabled="!canEditRow(sample['LOCATION'], currentEditingRow)"
+            :is-disabled="!canEditRow(sample['INDEX'], currentEditingRow)"
             :options="spaceGroupList"
             option-value-key="value"
             option-text-key="text"
@@ -134,7 +134,7 @@
             <template #default="{errors, inputChanged}">
               <base-input-text
                 v-model="CELL_A"
-                :disabled="!canEditRow(sample['LOCATION'], currentEditingRow)"
+                :disabled="!canEditRow(sample['INDEX'], currentEditingRow)"
                 placeholder-text="A"
                 :quiet="true"
                 type="number"
@@ -157,7 +157,7 @@
             <template #default="{ errors, inputChanged }">
               <base-input-text
                 v-model="CELL_B"
-                :disabled="!canEditRow(sample['LOCATION'], currentEditingRow)"
+                :disabled="!canEditRow(sample['INDEX'], currentEditingRow)"
                 placeholder-text="B"
                 :quiet="true"
                 type="number"
@@ -180,7 +180,7 @@
             <template #default="{errors, inputChanged}">
               <base-input-text
                 v-model="CELL_C"
-                :disabled="!canEditRow(sample['LOCATION'], currentEditingRow)"
+                :disabled="!canEditRow(sample['INDEX'], currentEditingRow)"
                 placeholder-text="C"
                 input-class="tw-w-12 tw-h-8 tabbed-sample-column"
                 type="number"
@@ -206,7 +206,7 @@
             <template #default="{errors, inputChanged}">
               <base-input-text
                 v-model="CELL_ALPHA"
-                :disabled="!canEditRow(sample['LOCATION'], currentEditingRow)"
+                :disabled="!canEditRow(sample['INDEX'], currentEditingRow)"
                 placeholder-text="α"
                 input-class="tw-w-12 tw-h-8 tabbed-sample-column"
                 :quiet="true"
@@ -229,7 +229,7 @@
             <template #default="{ errors, inputChanged }">
               <base-input-text
                 v-model="CELL_BETA"
-                :disabled="!canEditRow(sample['LOCATION'], currentEditingRow)"
+                :disabled="!canEditRow(sample['INDEX'], currentEditingRow)"
                 placeholder-text="β"
                 input-class="tw-w-12 tw-h-8 tabbed-sample-column"
                 type="number"
@@ -252,7 +252,7 @@
             <template #default="{errors, inputChanged}">
               <base-input-text
                 v-model="CELL_GAMMA"
-                :disabled="!canEditRow(sample['LOCATION'], currentEditingRow)"
+                :disabled="!canEditRow(sample['INDEX'], currentEditingRow)"
                 placeholder-text="γ"
                 input-class="tw-w-12 tw-h-8 tabbed-sample-column"
                 type="number"
@@ -282,7 +282,7 @@
         <template #default="{errors, inputChanged }">
           <base-input-select
             v-model="CENTRINGMETHOD"
-            :is-disabled="!canEditRow(sample['LOCATION'], currentEditingRow)"
+            :is-disabled="!canEditRow(sample['INDEX'], currentEditingRow)"
             :options="centringMethodList"
             option-value-key="value"
             option-text-key="text"
@@ -305,7 +305,7 @@
         <template #default="{errors, inputChanged}">
           <base-input-select
             v-model="EXPERIMENTKIND"
-            :is-disabled="!canEditRow(sample['LOCATION'], currentEditingRow)"
+            :is-disabled="!canEditRow(sample['INDEX'], currentEditingRow)"
             :options="experimentKindList"
             input-class="tw-w-full tw-h-8"
             option-value-key="value"
@@ -328,7 +328,7 @@
         <template #default="{errors, inputChanged }">
           <base-input-text
             v-model="ENERGY"
-            :disabled="!canEditRow(sample['LOCATION'], currentEditingRow)"
+            :disabled="!canEditRow(sample['INDEX'], currentEditingRow)"
             input-class="tw-w-full tw-h-8 tabbed-sample-column"
             type="number"
             :step="1"
@@ -350,7 +350,7 @@
         <template #default="{ errors, inputChanged }">
           <base-input-select
             v-model="ANOMALOUSSCATTERER"
-            :is-disabled="!canEditRow(sample['LOCATION'], currentEditingRow)"
+            :is-disabled="!canEditRow(sample['INDEX'], currentEditingRow)"
             :options="anomalousOptionsList"
             option-value-key="value"
             input-class="tw-w-full tw-h-8"
@@ -372,7 +372,7 @@
         <template #default="{ errors, inputChanged }">
           <base-input-select
             v-model="SCREENINGMETHOD"
-            :is-disabled="!canEditRow(sample['LOCATION'], currentEditingRow)"
+            :is-disabled="!canEditRow(sample['INDEX'], currentEditingRow)"
             :options="screeningMethodList"
             option-value-key="value"
             option-text-key="text"
@@ -395,7 +395,7 @@
         <template #default="{ errors, inputChanged}">
           <base-input-text
             v-model="REQUIREDRESOLUTION"
-            :disabled="!canEditRow(sample['LOCATION'], currentEditingRow) || sample['SCREENINGMETHOD'] !== 'none'"
+            :disabled="!canEditRow(sample['INDEX'], currentEditingRow) || sample['SCREENINGMETHOD'] !== 'none'"
             type="number"
             :step="1"
             input-class="tw-w-full tw-h-8 tabbed-sample-column"
@@ -417,7 +417,7 @@
         <template #default="{ errors, inputChanged }">
           <base-input-text
             v-model="MINIMUMRESOLUTION"
-            :disabled="!canEditRow(sample['LOCATION'], currentEditingRow) || sample['SCREENINGMETHOD'] !== 'all'"
+            :disabled="!canEditRow(sample['INDEX'], currentEditingRow) || sample['SCREENINGMETHOD'] !== 'all'"
             type="number"
             :step="1"
             input-class="tw-w-full tw-h-8 tabbed-sample-column"
@@ -439,7 +439,7 @@
         <template #default="{ errors, inputChanged}">
           <base-input-text
             v-model="SCREENINGCOLLECTVALUE"
-            :disabled="!canEditRow(sample['LOCATION'], currentEditingRow) || sample['SCREENINGMETHOD'] !== 'best'"
+            :disabled="!canEditRow(sample['INDEX'], currentEditingRow) || sample['SCREENINGMETHOD'] !== 'best'"
             type="number"
             :step="1"
             input-class="tw-w-full tw-h-8 tabbed-sample-column"
