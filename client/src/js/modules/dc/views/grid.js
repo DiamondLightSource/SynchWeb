@@ -37,6 +37,8 @@ define(['marionette',
       bx: '.boxx',
       by: '.boxy',
       zoom: 'a.zoom',
+      warning: '.warning',
+      warningli: '.warning-li',
 
       holder: '.holder h1',
     },
@@ -68,6 +70,7 @@ define(['marionette',
 
       this.gridplot = new GridPlot({ BL: this.model.get('BL'), ID: this.model.get('ID'), NUMIMG: this.model.get('NUMIMG'), parent: this.model, imagestatuses: this.getOption('imagestatuses') })
       this.listenTo(this.gridplot, 'current', this.loadImage, this)
+      this.listenTo(this.gridplot, 'warning', this.loadWarning, this)
     },
 
     // should be an event
@@ -81,11 +84,18 @@ define(['marionette',
       this.ui.val.text(val)
       this.ui.img.text(number+1)
     },
+
+    loadWarning: function(val) {
+      console.log('set warning', arguments)
+      this.ui.warning.text(val)
+      this.ui.warningli.show()
+    },
       
 
     onShow: function() {
       this.ui.holder.hide()
       this.ui.zoom.hide()
+      this.ui.warningli.hide()
 
       this.diviewer = new ImageViewer({ model: this.model, embed: true, readyText: 'Click on the grid to load a diffraction image' })      
       this.ui.di.append(this.diviewer.render().$el)

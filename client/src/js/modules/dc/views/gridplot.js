@@ -223,6 +223,15 @@ define(['jquery', 'marionette',
                     this.loadAttachment()
                 }
             }
+            var xrcstatus = this.grid.get('XRCSTATUS')
+            var result = this.grid.get('XRAYCENTRINGRESULTID')
+            if (xrcstatus == 'success' && result == 0) {
+                this.trigger('warning', 'No diffraction found');
+            } else if (xrcstatus == 'failed') {
+                this.trigger('warning', 'Xray Centring has failed');
+            } else if (xrcstatus == 'pending') {
+                this.trigger('warning', 'Xray Centring analysis pending');
+            }
         },
 
 
