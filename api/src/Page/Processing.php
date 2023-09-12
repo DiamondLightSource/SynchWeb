@@ -87,10 +87,11 @@ class Processing extends Page {
 
     function _xrc_status($where, $ids) {
         $dcs = $this->db->pq(
-            "SELECT xrc.status as xrcstatus, dc.datacollectionid
+            "SELECT xrc.status as xrcstatus, dc.datacollectionid, xrc.xrayCentringType as method, xrcr.xraycentringresultid as xrcresults
             FROM datacollection dc 
             INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
             LEFT OUTER JOIN xraycentring xrc ON xrc.datacollectiongroupid = dc.datacollectiongroupid
+            LEFT OUTER JOIN XrayCentringResult xrcr ON xrc.xrayCentringId = xrcr.xrayCentringId
             INNER JOIN blsession s ON s.sessionid = dcg.sessionid 
             INNER JOIN proposal p ON p.proposalid = s.proposalid
             WHERE $where",
@@ -104,13 +105,15 @@ class Processing extends Page {
             }
 
             $statuses[$dc['DATACOLLECTIONID']]['XrayCentring'] =
-                $dc['XRCSTATUS'] === null
-                    ? 0
-                    : ($dc['XRCSTATUS'] === 'pending'
-                        ? 1
-                        : ($dc['XRCSTATUS'] === 'success'
-                            ? 2
-                            : 3));
+                $dc['METHOD'] !== '3d'
+                    ? -1
+                    : ($dc['XRCSTATUS'] === null
+                        ? 0
+                        : ($dc['XRCSTATUS'] === 'pending'
+                            ? 1
+                            : ($dc['XRCSTATUS'] === 'success' && $dc['XRCRESULTS'] !== null
+                                ? 2
+                                : 3)));
         }
 
         return $statuses;
@@ -400,7 +403,7 @@ class Processing extends Page {
                     app.processingstatus, app.processingmessage,
                     app.processingstarttime, app.processingendtime, pj.recipe, pj.comments as processingcomments,
                     dc.imageprefix as dcimageprefix, dc.imagedirectory as dcimagedirectory, 
-                    CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as visit,
+                    CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) as visit,
                     GROUP_CONCAT(CONCAT(pjp.parameterkey, '=', pjp.parametervalue)) as parameters
                 FROM datacollection dc 
                 INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid

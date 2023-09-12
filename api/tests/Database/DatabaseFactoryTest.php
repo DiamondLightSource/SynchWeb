@@ -64,7 +64,7 @@ final class DatabaseFactoryTest extends TestCase
     {
         global $dbtype;
         $dbtype = "obscure-db2";
-        $this->dbFactory->database_types[$dbtype] = $dbtype;
+        $this->dbFactory->database_types[$dbtype] = ["dbClassName" =>$dbtype, "dataConnectionName" => 'MySQL'];        
 
         $log = $this->getFunctionMock(__NAMESPACE__, "error_log");
         $log->expects($this->once())->with("Database class 'SynchWeb\Database\Type\obscure-db2' does not exist.");

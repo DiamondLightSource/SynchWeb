@@ -80,12 +80,6 @@ define(['marionette', 'views/form',
         },
         
         onRender: function() {
-            this.date('input[name=DELIVERYAGENT_SHIPPINGDATE]')
-
-            var d = new Date()
-            var today = (d.getDate() < 10 ? '0'+d.getDate() : d.getDate()) + '-' + (d.getMonth() < 9 ? '0'+(d.getMonth()+1) : d.getMonth()+1) + '-' + d.getFullYear()
-            this.$el.find('input[name=DELIVERYAGENT_SHIPPINGDATE]').val(today)
-
             var self = this
             this.ready.done(function() {
                 self.ui.exp.html(self.visits.opts()).val(self.model.get('VISIT'))

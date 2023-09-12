@@ -119,7 +119,7 @@ class Fault extends Page
 
         if ($this->has_arg('visit'))
         {
-            array_push($where, "CONCAT(CONCAT(CONCAT(p.proposalcode,p.proposalnumber),'-'),bl.visit_number) LIKE :" . (sizeof($args) + 1));
+            array_push($where, "CONCAT(p.proposalcode, p.proposalnumber, '-', bl.visit_number) LIKE :" . (sizeof($args) + 1));
             array_push($args, $this->arg('visit'));
         }
 
@@ -202,7 +202,7 @@ class Fault extends Page
         array_push($args, $start);
         array_push($args, $end);
 
-        $rows = $this->db->paginate("SELECT $ext_columns f.personid, f.assigneeid, CONCAT(CONCAT(pe.givenname, ' '), pe.familyname) as name, CONCAT(CONCAT(asi.givenname, ' '), asi.familyname) as assignee, f.faultid, f.sessionid, f.elogid, f.attachment, CONCAT(CONCAT(CONCAT(p.proposalcode,p.proposalnumber),'-'),bl.visit_number) as visit, bl.beamlinename as beamline, s.systemid, s.name as system, c.componentid, c.name as component, f.subcomponentid, sc.name as subcomponent, TO_CHAR(f.starttime, 'DD-MM-YYYY HH24:MI') as starttime, TO_CHAR(f.endtime, 'DD-MM-YYYY HH24:MI') as endtime, f.beamtimelost, round(TIMESTAMPDIFF('MINUTE',f.beamtimelost_starttime, f.beamtimelost_endtime)/60,2) as lost, f.title, f.resolved, TO_CHAR(f.beamtimelost_endtime, 'DD-MM-YYYY HH24:MI') as beamtimelost_endtime, TO_CHAR(f.beamtimelost_starttime, 'DD-MM-YYYY HH24:MI') as beamtimelost_starttime
+        $rows = $this->db->paginate("SELECT $ext_columns f.personid, f.assigneeid, CONCAT(pe.givenname, ' ', pe.familyname) as name, CONCAT(asi.givenname, ' ',  asi.familyname) as assignee, f.faultid, f.sessionid, f.elogid, f.attachment, CONCAT(p.proposalcode, p.proposalnumber, '-', bl.visit_number) as visit, bl.beamlinename as beamline, s.systemid, s.name as system, c.componentid, c.name as component, f.subcomponentid, sc.name as subcomponent, TO_CHAR(f.starttime, 'DD-MM-YYYY HH24:MI') as starttime, TO_CHAR(f.endtime, 'DD-MM-YYYY HH24:MI') as endtime, f.beamtimelost, round(TIMESTAMPDIFF('MINUTE',f.beamtimelost_starttime, f.beamtimelost_endtime)/60,2) as lost, f.title, f.resolved, TO_CHAR(f.beamtimelost_endtime, 'DD-MM-YYYY HH24:MI') as beamtimelost_endtime, TO_CHAR(f.beamtimelost_starttime, 'DD-MM-YYYY HH24:MI') as beamtimelost_starttime
                 FROM bf_fault f
                 INNER JOIN person pe ON pe.personid = f.personid
                 LEFT OUTER JOIN person asi ON asi.personid = f.assigneeid
@@ -280,7 +280,7 @@ class Fault extends Page
 
                 if ($f == 'SESSIONID')
                 {
-                    $v = $this->db->pq("SELECT CONCAT(CONCAT(CONCAT(p.proposalcode,p.proposalnumber),'-'),bl.visit_number) as visit FROM blsession bl INNER JOIN proposal p ON bl.proposalid = p.proposalid WHERE bl.sessionid=:1", array($this->arg($f)));
+                    $v = $this->db->pq("SELECT CONCAT(p.proposalcode, p.proposalnumber, '-', bl.visit_number) as visit FROM blsession bl INNER JOIN proposal p ON bl.proposalid = p.proposalid WHERE bl.sessionid=:1", array($this->arg($f)));
                     if (sizeof($v))
                     {
                         $this->_output(array('VISIT' => $v[0]['VISIT']));
@@ -628,7 +628,7 @@ class Fault extends Page
 
         $newid = $this->db->id();
 
-        $info = $this->db->pq("SELECT CONCAT(CONCAT(pe.givenname, ' '), pe.familyname) as name, CONCAT(CONCAT(CONCAT(p.proposalcode,p.proposalnumber),'-'),bl.visit_number) as visit, bl.beamlinename as beamline, s.name as system, c.name as component, sc.name as subcomponent, TO_CHAR(f.starttime, 'DD-MM-YYYY HH24:MI') as starttime, TO_CHAR(f.endtime, 'DD-MM-YYYY HH24:MI') as endtime, f.beamtimelost, round(TIMESTAMPDIFF('MINUTE', f.beamtimelost_starttime, f.beamtimelost_endtime)/60,2) as lost, f.title, f.resolved, f.resolution, f.description, TO_CHAR(f.beamtimelost_endtime, 'DD-MM-YYYY HH24:MI') as beamtimelost_endtime, TO_CHAR(f.beamtimelost_starttime, 'DD-MM-YYYY HH24:MI') as beamtimelost_starttime, f.owner
+        $info = $this->db->pq("SELECT CONCAT(pe.givenname, ' ', pe.familyname) as name, CONCAT(p.proposalcode, p.proposalnumber, '-', bl.visit_number) as visit, bl.beamlinename as beamline, s.name as system, c.name as component, sc.name as subcomponent, TO_CHAR(f.starttime, 'DD-MM-YYYY HH24:MI') as starttime, TO_CHAR(f.endtime, 'DD-MM-YYYY HH24:MI') as endtime, f.beamtimelost, round(TIMESTAMPDIFF('MINUTE', f.beamtimelost_starttime, f.beamtimelost_endtime)/60,2) as lost, f.title, f.resolved, f.resolution, f.description, TO_CHAR(f.beamtimelost_endtime, 'DD-MM-YYYY HH24:MI') as beamtimelost_endtime, TO_CHAR(f.beamtimelost_starttime, 'DD-MM-YYYY HH24:MI') as beamtimelost_starttime, f.owner
                 FROM bf_fault f
                 INNER JOIN bf_subcomponent sc ON f.subcomponentid = sc.subcomponentid
                 INNER JOIN bf_component c ON sc.componentid = c.componentid

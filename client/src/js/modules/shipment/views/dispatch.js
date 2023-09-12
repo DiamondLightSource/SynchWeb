@@ -148,6 +148,8 @@ define(['marionette', 'views/form',
             this.ui.exp.html(this.visits.opts()).val(this.model.get('VISIT'))
             this.updateLC()
             this.populateCountries()
+            this.stripPostCode()
+            this.formatAddress()
         },
 
         populateCountries: function() {
@@ -165,6 +167,7 @@ define(['marionette', 'views/form',
 
             var self = this
             this.visits = new VVisits(null, { state: { pageSize: 9999 } })
+            this.visits.queryParams.notnull = 1
             this.ready = []
             this.ready.push(this.visits.fetch())
 

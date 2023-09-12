@@ -43,6 +43,8 @@ const menuStore = {
         'b22': GenProcMenu,
         'b23': GenProcMenu,
         'i21': GenProcMenu,
+        'p99': GenProcMenu,
+        'p45': GenProcMenu,
       }
     }),
 

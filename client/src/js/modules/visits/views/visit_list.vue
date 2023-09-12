@@ -45,6 +45,15 @@
                                        v-model="visit.edited_comment"
                                        v-on:keyup.enter="onEnter(visit)" />
 
+                                <div data-testid="visit-table-dewars" v-if="value.key === 'DEWARS'">
+                                    <div v-for="(dewar) in dewars">
+                                        <span v-if="dewar.FIRSTEXPERIMENTID === visit.SESSIONID">
+                                        <a :href="'shipments/sid/'+dewar.SHIPPINGID">
+                                            {{dewar.FACILITYCODE || dewar.CODE}}
+                                        </a> - {{dewar.GIVENNAME}} {{dewar.FAMILYNAME}} - {{dewar.STORAGELOCATION || dewar.DEWARSTATUS}}
+                                        </span>
+                                    </div>
+                                </div>
                                 <a v-if="value.key == 'LINKS' && visit.DCCOUNT>0" class="button button-notext" title="View Statistics" id="STATS"><i class="fa fa-pie-chart"></i></a>
                                 <a v-if="value.key == 'LINKS' && visit.DCCOUNT>0" class="button button-notext" title="Download PDF Report" id="PDF"><i class="fa fa-list"></i></a>
                                 <a v-if="value.key == 'LINKS' && visit.DCCOUNT>0" class="button button-notext" title="Export Data Collections to CSV" id="CSV"><i class="fa fa-file-o"></i></a>
@@ -79,7 +88,7 @@
 
 <script>
 import VisitCollection from 'collections/visits'
-import VisitModel from 'models/visit'
+import DewarCollection from 'collections/dewars'
 
 import Pagination from 'app/components/pagination.vue'
 import CustomTableComponent from 'app/components/custom-table-component.vue'
@@ -106,6 +115,7 @@ export default {
             isArchived: app.prop.includes("in") ? "deleted" : "archived",
             visitCollection: [],
             visits: [],
+            dewars: [],
             searchVisit : '',
             headers: [
                 {
@@ -125,7 +135,11 @@ export default {
                     title: 'Beamline'
                 },
                 {
-                    key: "LC",
+                    key: "DEWARS",
+                    title: 'Dewar(s)'
+                },
+                {
+                    key: "UNIQUELCS",
                     title: 'Local Contact'
                 },
                 {
@@ -159,17 +173,28 @@ export default {
             // fetches visit data based on prop
     
             this.visitCollection = new VisitCollection()
-            this.visitCollection.queryParams = { page: this.currentPage, per_page: this.pageSize };
-
-            this.visitCollection.queryParams.prop = this.proposal;
-            this.visitCollection.queryParams.s = this.searchVisit;
+            this.visitCollection.queryParams = {
+                page: this.currentPage,
+                per_page: this.pageSize,
+                prop: this.proposal,
+                s: this.searchVisit,
+            };
 
             const results = await this.$store.dispatch('getCollection', this.visitCollection);
             this.visits = results.toJSON().map((e) => {
-                return { ...e, clicked: false , edited_comment: e.COMMENTS};
+                return { ...e,
+                         clicked: false,
+                         edited_comment: e.COMMENTS,
+                         // get a unique list of local contacts
+                         UNIQUELCS: e.LC ? e.LC.split(", ").filter((x, i, a) => a.indexOf(x) == i).join(", ") : "",
+                       };
             });
 
             this.totalRecords = results.state.totalRecords;
+            this.dewarCollection = new DewarCollection();
+            this.dewarCollection.queryParams = { prop: this.proposal, per_page: 9999 };
+            const dewarResults = await this.$store.dispatch('getCollection', this.dewarCollection);
+            this.dewars = dewarResults.toJSON();
 
         },
         handlePageChange(data) {

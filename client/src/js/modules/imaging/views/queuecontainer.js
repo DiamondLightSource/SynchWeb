@@ -523,7 +523,9 @@ define(['marionette',
         events: {
             'click button.submit': 'queueContainer',
             'click a.apply': 'applyPreset',
+            'click a.applyall': 'applyPresetAll',
             'click a.unqueue': 'unqueueContainer',
+            'click a.addpage': 'queuePageSamples',
             'click a.addall': 'queueAllSamples',
             'change @ui.nodata': 'refreshSubSamples',
             'change @ui.notcompleted': 'refreshSubSamples',
@@ -538,7 +540,7 @@ define(['marionette',
         },
 
 
-        queueAllSamples: function(e) {
+        queuePageSamples: function(e) {
             e.preventDefault()
 
             var self = this
@@ -560,6 +562,28 @@ define(['marionette',
             setTimeout(function() {
                 self.refreshQSubSamples.bind(self)
             }, 200)
+        },
+
+        queueAllSamples: function(e) {
+            e.preventDefault()
+
+            var self = this
+            this.$el.addClass('loading');
+            Backbone.ajax({
+                url: app.apiurl+'/sample/sub/queue/cid/'+this.model.get('CONTAINERID'),
+                method: "post",
+                data: {},
+                success: function(resp) {
+                    _.each(resp, function (r) {
+                        var ss = self.subsamples.fullCollection.findWhere({ BLSUBSAMPLEID: r.BLSUBSAMPLEID })
+                        ss.set({ READYFORQUEUE: '1' })
+                    })
+                },
+                complete: function(resp, status) {
+                    self.$el.removeClass('loading')
+                    self.refreshQSubSamples(self)
+                }
+            })            
         },
 
 
@@ -592,25 +616,36 @@ define(['marionette',
             e.preventDefault()
 
             var p = this.plans.findWhere({ DIFFRACTIONPLANID: this.ui.preset.val() })
-            if (p) this.applyModel(p)
+            if (p) this.applyModel(p, true)
         },
 
-        applyModel: function(p) {
-            var models = this.qsubsamples.where({ isGridSelected: true })
-            _.each(models, function(m) {
-                if (p.get('EXPERIMENTKIND') !== m.get('EXPERIMENTKIND')) return
+        applyPresetAll:function(e) {
+            e.preventDefault()
+
+            var p = this.plans.findWhere({ DIFFRACTIONPLANID: this.ui.preset.val() })
+            if (p) this.applyModel(p, false)
+        },
+
+        applyModel: function(modelParameter, isLimitedToSelected) {
+            if (isLimitedToSelected) {
+                var models = this.qsubsamples.where({ isGridSelected: true })
+            } else {
+                var models = this.qsubsamples.fullCollection.toArray()
+            }
+            _.each(models, function(model) {
+                if (modelParameter.get('EXPERIMENTKIND') !== model.get('EXPERIMENTKIND')) return
                     
                 _.each(['REQUIREDRESOLUTION', 'PREFERREDBEAMSIZEX', 'PREFERREDBEAMSIZEY', 'EXPOSURETIME', 'BOXSIZEX', 'BOXSIZEY', 'AXISSTART', 'AXISRANGE', 'NUMBEROFIMAGES', 'TRANSMISSION', 'ENERGY', 'MONOCHROMATOR'], function(k) {
-                    if (p.get(k) !== null) m.set(k, p.get(k))
+                    if (modelParameter.get(k) !== null) model.set(k, modelParameter.get(k))
                 }, this)
-                m.save()
-                m.trigger('refresh')
+                model.save()
+                model.trigger('refresh')
             }, this)
         },
 
         cloneModel: function(m) {
             console.log('cloning', m)
-            this.applyModel(m)
+            this.applyModel(m, true)
         },
 
         queueContainer: function(e) {

@@ -189,6 +189,11 @@ export default {
           className: 'location-column'
         },
         {
+          key: 'SUBLOCATION',
+          title: 'Sub',
+          className: 'sublocation-column'
+        },
+        {
           key: 'ACRONYM',
           title: 'Protein Acronym',
           className: 'protein-column'
