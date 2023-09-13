@@ -149,19 +149,62 @@ class Contact extends Page
                 WHERE c.cardname=:1 and c.proposalid=:2", array($this->arg('CARDNAME'), $this->proposalid));
             if (sizeof($cont)) $this->_error('The specified card name already exists');
             
-            $this->db->pq("INSERT INTO laboratory (laboratoryid,name,address,city,postcode,country) 
-                VALUES (s_laboratory.nextval, :1, :2, :3, :4, :5) RETURNING laboratoryid INTO :id", 
-                array($this->arg('LABNAME'), $this->arg('ADDRESS'), $this->arg('CITY'), $this->arg('POSTCODE'), $this->arg('COUNTRY')));
-            $lid = $this->db->id();
+            if ($this->has_arg('PERSONID')) {
+                $pid = $this->arg('PERSONID');
+
+                $check = $this->db->pq("SELECT c.labcontactid
+                    FROM labcontact c
+                    WHERE c.personid=:1 and c.proposalid=:2", array($pid, $this->proposalid));
+                if (sizeof($check)) $this->_error('The specified login already has a lab contact for this proposal');
+
+                $lab = $this->db->pq("SELECT l.laboratoryid FROM laboratory l
+                    INNER JOIN person p ON l.laboratoryid = p.laboratoryid
+                    WHERE p.personid=:1", array($pid));
+
+                if (sizeof($lab)) {
+                    # Update laboratory
+                    $lfields = array('LABNAME', 'ADDRESS', 'CITY', 'COUNTRY', 'POSTCODE');
+                    foreach ($lfields as $i => $f) {
+                        if ($this->has_arg($f)) {
+                            $c = $f == 'LABNAME' ? 'NAME' : $f;
+                            $this->db->pq('UPDATE laboratory SET '.$c.'=:1 WHERE laboratoryid=:2', array($this->arg($f), $lab['LABORATORYID']));
+                        }
+                    }
+                }
+                else {
+                    # Create laboratory
+                    $this->db->pq("INSERT INTO laboratory (laboratoryid,name,address,city,postcode,country)
+                        VALUES (s_laboratory.nextval, :1, :2, :3, :4, :5) RETURNING laboratoryid INTO :id",
+                        array($this->arg('LABNAME'), $this->arg('ADDRESS'), $this->arg('CITY'), $this->arg('POSTCODE'), $this->arg('COUNTRY')));
+                    $lid = $this->db->id();
+                    $this->db->pq('UPDATE person SET laboratoryid=:1 WHERE personid=:2', array($lid, $pid));
+                }
+
+                # Update person
+                $pfields = array('FAMILYNAME', 'GIVENNAME', 'PHONENUMBER', 'EMAILADDRESS');
+                foreach ($pfields as $i => $f) {
+                    if ($this->has_arg($f)) {
+                        $this->db->pq('UPDATE person SET '.$f.'=:1 WHERE personid=:2', array($this->arg($f), $pid));
+                    }
+                }
+
+            }
+            else {
             
-            $email = $this->has_arg('EMAILADDRESS') ? $this->arg('EMAILADDRESS') : '';
-            $phone = $this->has_arg('PHONENUMBER') ? $this->arg('PHONENUMBER') : '';
-            
-            $this->db->pq("INSERT INTO person (personid, givenname, familyname, emailaddress, phonenumber, laboratoryid) 
-                VALUES (s_person.nextval, :1, :2, :3, :4, :5) RETURNING personid INTO :id", 
-                array($this->arg('GIVENNAME'), $this->arg('FAMILYNAME'), $email, $phone, $lid));
-            
-            $pid = $this->db->id();
+                $this->db->pq("INSERT INTO laboratory (laboratoryid,name,address,city,postcode,country)
+                    VALUES (s_laboratory.nextval, :1, :2, :3, :4, :5) RETURNING laboratoryid INTO :id",
+                    array($this->arg('LABNAME'), $this->arg('ADDRESS'), $this->arg('CITY'), $this->arg('POSTCODE'), $this->arg('COUNTRY')));
+                $lid = $this->db->id();
+
+                $email = $this->has_arg('EMAILADDRESS') ? $this->arg('EMAILADDRESS') : '';
+                $phone = $this->has_arg('PHONENUMBER') ? $this->arg('PHONENUMBER') : '';
+
+                $this->db->pq("INSERT INTO person (personid, givenname, familyname, emailaddress, phonenumber, laboratoryid)
+                    VALUES (s_person.nextval, :1, :2, :3, :4, :5) RETURNING personid INTO :id",
+                    array($this->arg('GIVENNAME'), $this->arg('FAMILYNAME'), $email, $phone, $lid));
+
+                $pid = $this->db->id();
+            }
             
             $c = $this->def_arg('DEFAULTCOURRIERCOMPANY', '');
             $ca = $this->has_arg('COURIERACCOUNT') ? $this->arg('COURIERACCOUNT') : '';

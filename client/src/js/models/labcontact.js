@@ -9,6 +9,9 @@ define(['backbone'], function(Backbone) {
                 required: true,
                 pattern: 'wwsdash',
             },
+            PERSONID: {
+                required: false,
+            },
             FAMILYNAME: {
                 required: true,
                 pattern: 'wwdash',
