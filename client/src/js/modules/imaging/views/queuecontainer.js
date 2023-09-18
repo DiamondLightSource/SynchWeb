@@ -527,6 +527,8 @@ define(['marionette',
             'click a.unqueue': 'unqueueContainer',
             'click a.addpage': 'queuePageSamples',
             'click a.addall': 'queueAllSamples',
+            'click a.unqueuesel': 'unqueueSelectedSamples',
+            'click a.unqueueall': 'unqueueAllSamples',
             'change @ui.nodata': 'refreshSubSamples',
             'change @ui.notcompleted': 'refreshSubSamples',
         },
@@ -571,7 +573,6 @@ define(['marionette',
             this.$el.addClass('loading');
             Backbone.ajax({
                 url: app.apiurl+'/sample/sub/queue/cid/'+this.model.get('CONTAINERID'),
-                method: "post",
                 data: {},
                 success: function(resp) {
                     _.each(resp, function (r) {
@@ -584,6 +585,56 @@ define(['marionette',
                     self.refreshQSubSamples(self)
                 }
             })            
+        },
+
+        unqueueSelectedSamples: function(e) {
+            e.preventDefault()
+
+            var self = this
+            this.$el.addClass('loading');
+            var sids = _.map(this.qsubsamples.where({ isGridSelected: true }), function(ss) {return ss.get('BLSUBSAMPLEID')})
+
+            Backbone.ajax({
+                url: app.apiurl+'/sample/sub/queue',
+                data: {
+                    BLSUBSAMPLEID: sids,
+                    UNQUEUE: 1,
+                },
+                success: function(resp) {
+                    _.each(resp, function (r) {
+                        var ss = self.qsubsamples.findWhere({ BLSUBSAMPLEID: r.BLSUBSAMPLEID })
+                        ss.set({ READYFORQUEUE: '0' })
+                    })
+                },
+                complete: function(resp, status) {
+                    self.$el.removeClass('loading')
+                    self.refreshQSubSamples(self)
+                }
+            })
+        },
+
+        unqueueAllSamples: function(e) {
+            e.preventDefault()
+
+            var self = this
+            this.$el.addClass('loading');
+            Backbone.ajax({
+                url: app.apiurl+'/sample/sub/queue/cid/'+this.model.get('CONTAINERID'),
+                data: {
+                    queued: 1,
+                    UNQUEUE: 1,
+                },
+                success: function(resp) {
+                    _.each(resp, function (r) {
+                        var ss = self.qsubsamples.fullCollection.findWhere({ BLSUBSAMPLEID: r.BLSUBSAMPLEID })
+                        ss.set({ READYFORQUEUE: '0' })
+                    })
+                },
+                complete: function(resp, status) {
+                    self.$el.removeClass('loading')
+                    self.refreshQSubSamples(self)
+                }
+            })
         },
 
 
