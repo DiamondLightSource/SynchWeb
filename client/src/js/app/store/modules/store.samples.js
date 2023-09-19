@@ -166,7 +166,7 @@ const samplesModule = {
       // Convert our samples json to a backbone collection
       state.samples.map(s => {
         s.CONTAINERID = containerId
-        let locationIndex = +s.INDEX
+        let locationIndex = +(s.LOCATION - 1)
         let proteinId = +s.PROTEINID
         if (proteinId > 0 && s.NAME !== '') {
           state.samplesCollection.at(locationIndex).set(s)
