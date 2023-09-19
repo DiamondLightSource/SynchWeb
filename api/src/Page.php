@@ -272,7 +272,7 @@ class Page
             }
             else
             {
-                $rows = $this->db->pq("SELECT CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as vis
+                $rows = $this->db->pq("SELECT CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) as vis
                         FROM proposal p
                         INNER JOIN blsession s ON p.proposalid = s.proposalid
                         INNER JOIN session_has_person shp ON shp.sessionid = s.sessionid
@@ -315,7 +315,7 @@ class Page
 
                         if ($table == 'datacollectiongroup')
                         {
-                            $vis = $this->db->pq("SELECT p.proposalid, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as vis 
+                            $vis = $this->db->pq("SELECT p.proposalid, CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) as vis
                                     FROM blsession s 
                                     INNER JOIN proposal p ON (p.proposalid = s.proposalid) 
                                     INNER JOIN datacollectiongroup dcg ON s.sessionid = dcg.sessionid
@@ -323,7 +323,7 @@ class Page
                         }
                         else
                         {
-                            $vis = $this->db->pq("SELECT p.proposalid, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as vis 
+                            $vis = $this->db->pq("SELECT p.proposalid, CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) as vis
                                     FROM blsession s 
                                     INNER JOIN proposal p ON (p.proposalid = s.proposalid) 
                                     INNER JOIN $table dc ON s.sessionid = dc.sessionid WHERE dc.$col = :1", array($this->arg('id')));
@@ -339,7 +339,7 @@ class Page
                     {
                         $vis = $this->arg('visit');
 
-                        $visp = $this->db->pq("SELECT p.proposalid FROM blsession s INNER JOIN proposal p ON (p.proposalid = s.proposalid) WHERE CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) LIKE :1", array($this->arg('visit')));
+                        $visp = $this->db->pq("SELECT p.proposalid FROM blsession s INNER JOIN proposal p ON (p.proposalid = s.proposalid) WHERE CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) LIKE :1", array($this->arg('visit')));
 
                         if (sizeof($visp))
                             $this->proposalid = $visp[0]['PROPOSALID'];
@@ -348,7 +348,7 @@ class Page
                     }
                     else if ($this->has_arg('prop'))
                     {
-                        $viss = $this->db->pq("SELECT p.proposalid, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as vis FROM blsession s INNER JOIN proposal p ON (p.proposalid = s.proposalid) WHERE CONCAT(p.proposalcode, p.proposalnumber) LIKE :1", array($this->arg('prop')));
+                        $viss = $this->db->pq("SELECT p.proposalid, CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) as vis FROM blsession s INNER JOIN proposal p ON (p.proposalid = s.proposalid) WHERE CONCAT(p.proposalcode, p.proposalnumber) LIKE :1", array($this->arg('prop')));
 
                         $vis = array();
                         foreach ($viss as $v)
@@ -780,8 +780,8 @@ class Page
         if (!$b)
             return array();
 
-        $visits = $this->db->pq("SELECT CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as visit, TO_CHAR(s.startdate, 'DD-MM-YYYY HH24:MI') as st, TO_CHAR(s.enddate, 'DD-MM-YYYY HH24:MI') as en,s.beamlinename as bl FROM blsession s INNER JOIN proposal p ON (p.proposalid = s.proposalid) WHERE TIMESTAMPDIFF('DAY', s.startdate, CURRENT_TIMESTAMP) < 1 AND TIMESTAMPDIFF('DAY', CURRENT_TIMESTAMP, s.enddate) < 2 AND s.beamlinename LIKE :1 ORDER BY s.startdate", array($b));
-        $v = $this->db->paginate("SELECT CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as visit, TO_CHAR(s.startdate, 'DD-MM-YYYY HH24:MI') as st, TO_CHAR(s.enddate, 'DD-MM-YYYY HH24:MI') as en,s.beamlinename as bl FROM blsession s INNER JOIN proposal p ON (p.proposalid = s.proposalid) WHERE p.proposalcode LIKE 'cm' AND s.beamlinename LIKE :1 AND s.enddate <= CURRENT_TIMESTAMP ORDER BY s.startdate DESC", array($b, 0, 1));
+        $visits = $this->db->pq("SELECT CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) as visit, TO_CHAR(s.startdate, 'DD-MM-YYYY HH24:MI') as st, TO_CHAR(s.enddate, 'DD-MM-YYYY HH24:MI') as en,s.beamlinename as bl FROM blsession s INNER JOIN proposal p ON (p.proposalid = s.proposalid) WHERE TIMESTAMPDIFF('DAY', s.startdate, CURRENT_TIMESTAMP) < 1 AND TIMESTAMPDIFF('DAY', CURRENT_TIMESTAMP, s.enddate) < 2 AND s.beamlinename LIKE :1 ORDER BY s.startdate", array($b));
+        $v = $this->db->paginate("SELECT CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) as visit, TO_CHAR(s.startdate, 'DD-MM-YYYY HH24:MI') as st, TO_CHAR(s.enddate, 'DD-MM-YYYY HH24:MI') as en,s.beamlinename as bl FROM blsession s INNER JOIN proposal p ON (p.proposalid = s.proposalid) WHERE p.proposalcode LIKE 'cm' AND s.beamlinename LIKE :1 AND s.enddate <= CURRENT_TIMESTAMP ORDER BY s.startdate DESC", array($b, 0, 1));
         $visits = array_merge($visits, $v);
         return $visits;
     }

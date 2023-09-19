@@ -400,7 +400,7 @@ class Processing extends Page {
                     app.processingstatus, app.processingmessage,
                     app.processingstarttime, app.processingendtime, pj.recipe, pj.comments as processingcomments,
                     dc.imageprefix as dcimageprefix, dc.imagedirectory as dcimagedirectory, 
-                    CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as visit,
+                    CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) as visit,
                     GROUP_CONCAT(CONCAT(pjp.parameterkey, '=', pjp.parametervalue)) as parameters
                 FROM datacollection dc 
                 INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid

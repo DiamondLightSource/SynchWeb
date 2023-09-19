@@ -524,6 +524,7 @@ define(['marionette',
             'click button.submit': 'queueContainer',
             'click a.apply': 'applyPreset',
             'click a.unqueue': 'unqueueContainer',
+            'click a.addpage': 'queuePageSamples',
             'click a.addall': 'queueAllSamples',
             'change @ui.nodata': 'refreshSubSamples',
             'change @ui.notcompleted': 'refreshSubSamples',
@@ -538,7 +539,7 @@ define(['marionette',
         },
 
 
-        queueAllSamples: function(e) {
+        queuePageSamples: function(e) {
             e.preventDefault()
 
             var self = this
@@ -560,6 +561,28 @@ define(['marionette',
             setTimeout(function() {
                 self.refreshQSubSamples.bind(self)
             }, 200)
+        },
+
+        queueAllSamples: function(e) {
+            e.preventDefault()
+
+            var self = this
+            this.$el.addClass('loading');
+            Backbone.ajax({
+                url: app.apiurl+'/sample/sub/queue/cid/'+this.model.get('CONTAINERID'),
+                method: "post",
+                data: {},
+                success: function(resp) {
+                    _.each(resp, function (r) {
+                        var ss = self.subsamples.fullCollection.findWhere({ BLSUBSAMPLEID: r.BLSUBSAMPLEID })
+                        ss.set({ READYFORQUEUE: '1' })
+                    })
+                },
+                complete: function(resp, status) {
+                    self.$el.removeClass('loading')
+                    self.refreshQSubSamples(self)
+                }
+            })            
         },
 
 

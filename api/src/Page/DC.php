@@ -176,7 +176,7 @@ class DC extends Page
         $info = array();
         # Visits
         if ($this->has_arg('visit')) {
-            $info = $this->db->pq("SELECT TO_CHAR(s.startdate, 'HH24') as sh, TO_CHAR(s.startdate, 'DDMMYYYY') as dmy, s.sessionid, s.beamlinename as bl FROM blsession s INNER JOIN proposal p ON (p.proposalid = s.proposalid) WHERE  CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) LIKE :1", array($this->arg('visit')));
+            $info = $this->db->pq("SELECT TO_CHAR(s.startdate, 'HH24') as sh, TO_CHAR(s.startdate, 'DDMMYYYY') as dmy, s.sessionid, s.beamlinename as bl FROM blsession s INNER JOIN proposal p ON (p.proposalid = s.proposalid) WHERE CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) LIKE :1", array($this->arg('visit')));
 
             if (!sizeof($info)) {
                 $this->_error('No such visit');
@@ -225,8 +225,8 @@ class DC extends Page
                 array('project_has_xfefspectrum', 'xrf', 'xfefluorescencespectrumid'),
             );
 
-            $extc = "CONCAT(CONCAT(CONCAT(prop.proposalcode,prop.proposalnumber), '-'), ses.visit_number) as vis, CONCAT(prop.proposalcode, prop.proposalnumber) as prop, ";
-            $extcg = "max(CONCAT(CONCAT(CONCAT(prop.proposalcode,prop.proposalnumber), '-'), ses.visit_number)) as vis, max(CONCAT(prop.proposalcode, prop.proposalnumber)) as prop, ";
+            $extc = "CONCAT(prop.proposalcode, prop.proposalnumber, '-', ses.visit_number) as vis, CONCAT(prop.proposalcode, prop.proposalnumber) as prop, ";
+            $extcg = "max(CONCAT(prop.proposalcode, prop.proposalnumber, '-', ses.visit_number)) as vis, max(CONCAT(prop.proposalcode, prop.proposalnumber)) as prop, ";
             if ($this->has_arg('dcg'))
                 $extcg = $extc;
 
@@ -1063,7 +1063,7 @@ class DC extends Page
             return;
         }
 
-        $dct = $this->db->pq("SELECT CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as vis, dc.datacollectionid as id, dc.startimagenumber, dc.filetemplate, dc.xtalsnapshotfullpath1 as x1, dc.xtalsnapshotfullpath2 as x2, dc.xtalsnapshotfullpath3 as x3, dc.xtalsnapshotfullpath4 as x4,dc.imageprefix as imp, dc.datacollectionnumber as run, dc.imagedirectory as dir, s.visit_number 
+        $dct = $this->db->pq("SELECT CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) as vis, dc.datacollectionid as id, dc.startimagenumber, dc.filetemplate, dc.xtalsnapshotfullpath1 as x1, dc.xtalsnapshotfullpath2 as x2, dc.xtalsnapshotfullpath3 as x3, dc.xtalsnapshotfullpath4 as x4,dc.imageprefix as imp, dc.datacollectionnumber as run, dc.imagedirectory as dir, s.visit_number
                 FROM datacollection dc 
                 INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
                 INNER JOIN blsession s ON s.sessionid = dcg.sessionid

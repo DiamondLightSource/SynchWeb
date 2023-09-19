@@ -199,7 +199,7 @@ class Vstat extends Page
             $ctf = array();
             $missed = array();
 
-            $sched = $this->db->pq("SELECT CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as visit, TO_CHAR(s.enddate, 'DD-MM-YYYY HH24:MI:SS') as en, TO_CHAR(s.startdate, 'DD-MM-YYYY HH24:MI:SS') as st, p.title, s.scheduled, p.proposalcode
+            $sched = $this->db->pq("SELECT CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) as visit, TO_CHAR(s.enddate, 'DD-MM-YYYY HH24:MI:SS') as en, TO_CHAR(s.startdate, 'DD-MM-YYYY HH24:MI:SS') as st, p.title, s.scheduled, p.proposalcode
                     FROM blsession s
                     INNER JOIN proposal p ON p.proposalid = s.proposalid
                     INNER JOIN v_run vr ON s.startdate BETWEEN vr.startdate AND vr.enddate
@@ -732,7 +732,7 @@ class Vstat extends Page
             $this->_error('No visit specified');
 
         $args = array($this->arg('visit'));
-        $where = "WHERE CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) LIKE :1";
+        $where = "WHERE CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) LIKE :1";
 
         if (!$this->staff) {
             if (!$this->has_arg('prop'))

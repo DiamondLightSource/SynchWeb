@@ -3,6 +3,7 @@
 namespace SynchWeb\Page;
 
 use Exception;
+use SynchWeb\Database\DatabaseQueryBuilder;
 use SynchWeb\Page;
 use SynchWeb\Shipment\Courier\DHL;
 use SynchWeb\Shipment\ShippingService;
@@ -402,7 +403,7 @@ class Shipment extends Page
         array_push($args, $start);
         array_push($args, $end);
 
-        $rows = $this->db->paginate("SELECT s.shippingid, s.shippingname as shipment, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), b.visit_number) as visit, b.beamlinename as bl, b.beamlineoperator as localcontact, h.dewarid, h.dewarstatus,h.storagelocation,TO_CHAR(h.arrivaldate, 'DD-MM-YYYY HH24:MI') as arrival, d.comments
+        $rows = $this->db->paginate("SELECT s.shippingid, s.shippingname as shipment, CONCAT(p.proposalcode, p.proposalnumber, '-', b.visit_number) as visit, b.beamlinename as bl, b.beamlineoperator as localcontact, h.dewarid, h.dewarstatus,h.storagelocation,TO_CHAR(h.arrivaldate, 'DD-MM-YYYY HH24:MI') as arrival, d.comments
               FROM dewartransporthistory h 
               INNER JOIN dewar d ON d.dewarid = h.dewarid 
               INNER JOIN shipping s ON d.shippingid = s.shippingid 
@@ -429,7 +430,7 @@ class Shipment extends Page
         if (!$this->has_arg('LOCATION'))
             $this->_error('No location specified');
 
-        $dew = $this->db->pq("SELECT CONCAT(CONCAT(pe.givenname, ' '), pe.familyname) as lcout, pe.emailaddress as lcoutemail, CONCAT(CONCAT(pe2.givenname, ' '), pe2.familyname) as lcret, pe2.emailaddress as lcretemail, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), e.visit_number) as firstexp, TO_CHAR(e.startdate, 'DD-MM-YYYY HH24:MI') as firstexpst, e.beamlinename, e.beamlineoperator, d.dewarid, d.trackingnumberfromsynchrotron, s.shippingid, s.shippingname, p.proposalcode, CONCAT(p.proposalcode, p.proposalnumber) as prop, d.barcode, d.facilitycode, d.firstexperimentid, d.dewarstatus
+        $dew = $this->db->pq("SELECT CONCAT(pe.givenname, ' ', pe.familyname) as lcout, pe.emailaddress as lcoutemail, CONCAT(CONCAT(pe2.givenname, ' '), pe2.familyname) as lcret, pe2.emailaddress as lcretemail, CONCAT(p.proposalcode, p.proposalnumber, '-', e.visit_number) as firstexp, TO_CHAR(e.startdate, 'DD-MM-YYYY HH24:MI') as firstexpst, e.beamlinename, e.beamlineoperator, d.dewarid, d.trackingnumberfromsynchrotron, s.shippingid, s.shippingname, p.proposalcode, CONCAT(p.proposalcode, p.proposalnumber) as prop, d.barcode, d.facilitycode, d.firstexperimentid, d.dewarstatus
               FROM dewar d 
               INNER JOIN shipping s ON s.shippingid = d.shippingid
               LEFT OUTER JOIN labcontact c ON s.sendinglabcontactid = c.labcontactid 
@@ -792,7 +793,7 @@ class Shipment extends Page
         if (!$this->has_arg('FACILITYCODE'))
             $this->_error('No dewar specified');
 
-        $last_visits = $this->db->pq("SELECT s.beamlineoperator as localcontact, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as visit, TO_CHAR(s.startdate, 'YYYY') as year, s.beamlinename
+        $last_visits = $this->db->pq("SELECT s.beamlineoperator as localcontact, CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) as visit, TO_CHAR(s.startdate, 'YYYY') as year, s.beamlinename
               FROM dewar d
               INNER JOIN blsession s ON d.firstexperimentid = s.sessionid
               INNER JOIN shipping sh ON sh.shippingid = d.shippingid
@@ -1336,15 +1337,17 @@ class Shipment extends Page
                 $order = $cols[$this->arg('sort_by')] . ' ' . $dir;
         }
 
-        $dewars = $this->db->paginate("SELECT CONCAT(p.proposalcode, p.proposalnumber) as prop, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), se.visit_number) as firstexperiment, r.labcontactid, se.beamlineoperator as localcontact, se.beamlinename, TO_CHAR(se.startdate, 'HH24:MI DD-MM-YYYY') as firstexperimentst, d.firstexperimentid, s.shippingid, s.shippingname, d.facilitycode, count(c.containerid) as ccount, (case when se.visit_number > 0 then (CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), se.visit_number)) else '' end) as exp, d.code, d.barcode, d.storagelocation, d.dewarstatus, d.dewarid,  d.trackingnumbertosynchrotron, d.trackingnumberfromsynchrotron, s.deliveryagent_agentname, d.weight, d.deliveryagent_barcode, GROUP_CONCAT(c.code SEPARATOR ', ') as containers, s.sendinglabcontactid, s.returnlabcontactid
+        $dewars = $this->db->paginate("SELECT CONCAT(p.proposalcode, p.proposalnumber) as prop, CONCAT(p.proposalcode, p.proposalnumber, '-', se.visit_number) as firstexperiment, r.labcontactid, se.beamlineoperator as localcontact, se.beamlinename, TO_CHAR(se.startdate, 'HH24:MI DD-MM-YYYY') as firstexperimentst, d.firstexperimentid, s.shippingid, s.shippingname, d.facilitycode, count(c.containerid) as ccount, (case when se.visit_number > 0 then (CONCAT(p.proposalcode, p.proposalnumber, '-', se.visit_number)) else '' end) as exp, d.code, d.barcode, d.storagelocation, d.dewarstatus, d.dewarid,  d.trackingnumbertosynchrotron, d.trackingnumberfromsynchrotron, s.deliveryagent_agentname, d.weight, d.deliveryagent_barcode, GROUP_CONCAT(c.code SEPARATOR ', ') as containers, s.sendinglabcontactid, s.returnlabcontactid, pe.givenname, pe.familyname
               FROM dewar d 
               LEFT OUTER JOIN container c ON c.dewarid = d.dewarid 
               INNER JOIN shipping s ON d.shippingid = s.shippingid 
               INNER JOIN proposal p ON p.proposalid = s.proposalid 
               LEFT OUTER JOIN blsession se ON d.firstexperimentid = se.sessionid 
               LEFT OUTER JOIN dewarregistry r ON r.facilitycode = d.facilitycode
+              LEFT OUTER JOIN labcontact lc ON s.sendinglabcontactid = lc.labcontactid
+              LEFT OUTER JOIN person pe ON lc.personid = pe.personid
               WHERE $where 
-              GROUP BY CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), se.visit_number), r.labcontactid, se.beamlineoperator, TO_CHAR(se.startdate, 'HH24:MI DD-MM-YYYY'), (case when se.visit_number > 0 then (CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), se.visit_number)) else '' end),s.shippingid, s.shippingname, d.code, d.barcode, d.storagelocation, d.dewarstatus, d.dewarid,  d.trackingnumbertosynchrotron, d.trackingnumberfromsynchrotron, d.facilitycode, d.firstexperimentid
+              GROUP BY CONCAT(p.proposalcode, p.proposalnumber, '-', se.visit_number), r.labcontactid, se.beamlineoperator, TO_CHAR(se.startdate, 'HH24:MI DD-MM-YYYY'), (case when se.visit_number > 0 then (CONCAT(p.proposalcode, p.proposalnumber, '-', se.visit_number)) else '' end),s.shippingid, s.shippingname, d.code, d.barcode, d.storagelocation, d.dewarstatus, d.dewarid,  d.trackingnumbertosynchrotron, d.trackingnumberfromsynchrotron, d.facilitycode, d.firstexperimentid
               ORDER BY $order", $args);
 
         if ($this->has_arg('did')) {
@@ -1489,7 +1492,7 @@ class Shipment extends Page
                     $sessionId = !empty($experimentId) ? $this->arg('FIRSTEXPERIMENTID') : NULL;
                     $this->db->pq("UPDATE dewar SET $f=:1 WHERE dewarid=:2", array($sessionId, $this->arg('did')));
 
-                    $visit = $this->db->pq("SELECT CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as visit
+                    $visit = $this->db->pq("SELECT CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) as visit
                           FROM blsession s
                           INNER JOIN proposal p ON p.proposalid = s.proposalid
                           WHERE s.sessionid=:1", array($sessionId));
@@ -1642,8 +1645,6 @@ class Shipment extends Page
         $this->_output($cont[0]);
     }
 
-
-
     function _get_all_containers()
     {
         //$this->db->set_debug(True);
@@ -1651,11 +1652,17 @@ class Shipment extends Page
             $this->_error('No proposal specified');
 
         $having = '';
+        $subsamplesInTotal = "";
+        $totalQuery = new DatabaseQueryBuilder($this->db);
 
         if ($this->has_arg('visit')) {
             $join = " INNER JOIN blsession ses2 ON ses2.proposalid = p.proposalid";
             $args = array($this->arg('visit'));
-            $where = "CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), ses2.visit_number) LIKE :1";
+            $where = "CONCAT(p.proposalcode, p.proposalnumber, '-', ses2.visit_number) LIKE :1";
+            $totalQuery->joinClause("INNER JOIN blsession ses2 ON ses2.proposalid = p.proposalid");
+            $totalQuery->joinClause("INNER JOIN dewar d ON d.dewarid = c.dewarid");
+            $totalQuery->joinClause("INNER JOIN shipping sh ON sh.shippingid = d.shippingid");
+            $totalQuery->joinClause("INNER JOIN proposal p ON p.proposalid = sh.proposalid");
         } else if ($this->has_arg('all') && $this->staff) {
             $join = '';
             $args = array();
@@ -1664,6 +1671,8 @@ class Shipment extends Page
             $join = '';
             $args = array($this->proposalid);
             $where = 'sh.proposalid=:1';
+            $totalQuery->joinClause("INNER JOIN dewar d ON d.dewarid = c.dewarid");
+            $totalQuery->joinClause("INNER JOIN shipping sh ON sh.shippingid = d.shippingid");
         }
 
 
@@ -1677,16 +1686,22 @@ class Shipment extends Page
             } else if ($this->arg('ty') == 'todispose') {
                 $where .= " AND c.imagerid IS NOT NULL";
                 $having .= " HAVING (TIMESTAMPDIFF('HOUR', min(ci.bltimestamp), CURRENT_TIMESTAMP)/24) > 42";
+                $totalQuery->joinClause("LEFT OUTER JOIN containerinspection ci ON ci.containerid = c.containerid AND ci.state = 'Completed'");
             } else if ($this->arg('ty') == 'queued') {
                 $where .= " AND cq.containerqueueid IS NOT NULL";
+                $totalQuery->joinClause("LEFT OUTER JOIN containerqueue cq ON cq.containerid = c.containerid AND cq.completedtimestamp IS NULL");
             } else if ($this->arg('ty') == 'completed') {
                 $where .= " AND cq2.completedtimestamp IS NOT NULL";
+                $totalQuery->joinClause("LEFT OUTER JOIN containerqueue cq2 ON cq2.containerid = c.containerid AND cq2.completedtimestamp IS NOT NULL");
                 $this->args['sort_by'] = 'COMPLETEDTIMESTAMP';
                 $this->args['order'] = 'desc';
             } else if ($this->arg('ty') == 'processing') {
                 $where .= " AND c.containerstatus = 'processing'";
             } else if ($this->arg('ty') == 'subsamples') {
-                $having .= " HAVING COUNT(distinct ss.blsubsampleid) > 0";
+                $having .= " HAVING subsamples > 0";
+                $subsamplesInTotal = ", count(distinct ss.blsubsampleid) as subsamples";
+                $totalQuery->joinClause("LEFT OUTER JOIN blsample s ON s.containerid = c.containerid");
+                $totalQuery->joinClause("LEFT OUTER JOIN blsubsample ss ON s.blsampleid = ss.blsampleid AND ss.source='manual'");
             }
         }
 
@@ -1698,10 +1713,13 @@ class Shipment extends Page
 
         if ($this->has_arg('did')) {
             $where .= ' AND d.dewarid=:' . (sizeof($args) + 1);
+            $totalQuery->joinClause("INNER JOIN dewar d ON d.dewarid = c.dewarid");
             array_push($args, $this->arg('did'));
         }
         if ($this->has_arg('sid')) {
             $where .= ' AND sh.shippingid=:' . (sizeof($args) + 1);
+            $totalQuery->joinClause("INNER JOIN dewar d ON d.dewarid = c.dewarid");
+            $totalQuery->joinClause("INNER JOIN shipping sh ON sh.shippingid = d.shippingid");
             array_push($args, $this->arg('sid'));
         }
         if ($this->has_arg('cid')) {
@@ -1711,12 +1729,17 @@ class Shipment extends Page
 
         if ($this->has_arg('pid')) {
             // $this->db->set_debug(True);
+            $join .= ' LEFT OUTER JOIN crystal cr ON cr.crystalid = s.crystalid LEFT OUTER JOIN protein pr ON pr.proteinid = cr.proteinid';
             $where .= ' AND pr.proteinid=:' . (sizeof($args) + 1);
+            $totalQuery->joinClause("LEFT OUTER JOIN blsample s ON s.containerid = c.containerid");
+            $totalQuery->joinClause("LEFT OUTER JOIN crystal cr ON cr.crystalid = s.crystalid");
+            $totalQuery->joinClause("LEFT OUTER JOIN protein pr ON pr.proteinid = cr.proteinid");
             array_push($args, $this->arg('pid'));
         }
 
         if ($this->has_arg('assigned')) {
             $where .= " AND d.dewarstatus LIKE 'processing' AND c.samplechangerlocation > 0";
+            $totalQuery->joinClause("INNER JOIN dewar d ON d.dewarid = c.dewarid");
         }
 
         if ($this->has_arg('bl')) {
@@ -1728,6 +1751,8 @@ class Shipment extends Page
             $where .= " AND c.containerid NOT IN (SELECT c.containerid FROM container c INNER JOIN dewar d ON d.dewarid = c.dewarid WHERE d.dewarstatus LIKE 'processing' AND c.samplechangerlocation > 0 AND c.beamlinelocation=:" . (sizeof($args) + 1) . ")";
 
             array_push($args, $this->arg('unassigned'));
+            $totalQuery->joinClause("INNER JOIN dewar d ON d.dewarid = c.dewarid");
+            $totalQuery->joinClause("INNER JOIN shipping sh ON sh.shippingid = d.shippingid");
             $this->args['sort_by'] = 'SHIPPINGID';
             $this->args['order'] = 'desc';
         }
@@ -1756,18 +1781,9 @@ class Shipment extends Page
         }
 
         $tot = $this->db->pq("SELECT count(distinct c.containerid) as tot 
+                $subsamplesInTotal
                 FROM container c 
-                INNER JOIN dewar d ON d.dewarid = c.dewarid 
-                INNER JOIN shipping sh ON sh.shippingid = d.shippingid
-                INNER JOIN proposal p ON p.proposalid = sh.proposalid
-                LEFT OUTER JOIN blsample s ON s.containerid = c.containerid 
-                LEFT OUTER JOIN blsubsample ss ON s.blsampleid = ss.blsampleid AND ss.source='manual'
-                LEFT OUTER JOIN crystal cr ON cr.crystalid = s.crystalid
-                LEFT OUTER JOIN protein pr ON pr.proteinid = cr.proteinid
-                LEFT OUTER JOIN containerinspection ci ON ci.containerid = c.containerid AND ci.state = 'Completed'
-                LEFT OUTER JOIN containerqueue cq ON cq.containerid = c.containerid AND cq.completedtimestamp IS NULL
-                LEFT OUTER JOIN containerqueue cq2 ON cq2.containerid = c.containerid AND cq2.completedtimestamp IS NOT NULL
-                $join 
+                {$totalQuery->getJoins()}
                 WHERE $where
                 $having", $args);
         $tot = sizeof($tot) ? intval($tot[0]['TOT']) : 0;
@@ -1805,7 +1821,7 @@ class Shipment extends Page
         if ($this->has_arg('sort_by')) {
             $cols = array(
                 'NAME' => 'c.code', 'DEWAR' => 'd.code', 'SHIPMENT' => 'sh.shippingname', 'SAMPLES' => 'count(s.blsampleid)', 'SHIPPINGID' => 'sh.shippingid', 'LASTINSPECTION' => 'max(ci.bltimestamp)', 'INSPECTIONS' => 'count(ci.containerinspectionid)',
-                'DCCOUNT' => 'COUNT(distinct dc.datacollectionid)', 'SUBSAMPLES' => 'count(distinct ss.blsubsampleid)',
+                'DCCOUNT' => 'COUNT(distinct dc.datacollectionid)', 'SUBSAMPLES' => 'subsamples',
                 'LASTQUEUECOMPLETED' => 'max(cq2.completedtimestamp)', 'QUEUEDTIMESTAMP' => 'max(cq.createdtimestamp)'
             );
             $dir = $this->has_arg('order') ? ($this->arg('order') == 'asc' ? 'ASC' : 'DESC') : 'ASC';
@@ -1813,34 +1829,28 @@ class Shipment extends Page
                 $order = $cols[$this->arg('sort_by')] . ' ' . $dir;
         }
         // $this->db->set_debug(True);
-        $rows = $this->db->paginate("SELECT round(TIMESTAMPDIFF('HOUR', min(ci.bltimestamp), CURRENT_TIMESTAMP)/24,1) as age, case when count(ci2.containerinspectionid) > 1 then 0 else 1 end as allow_adhoc, sch.name as schedule, c.scheduleid, c.screenid, sc.name as screen, c.imagerid, i.temperature as temperature, i.name as imager, TO_CHAR(max(ci.bltimestamp), 'HH24:MI DD-MM-YYYY') as lastinspection, round(TIMESTAMPDIFF('HOUR', max(ci.bltimestamp), CURRENT_TIMESTAMP)/24,1) as lastinspectiondays, count(distinct ci.containerinspectionid) as inspections, CONCAT(p.proposalcode, p.proposalnumber) as prop, c.bltimestamp, c.samplechangerlocation, c.beamlinelocation, d.dewarstatus, c.containertype, c.capacity, c.containerstatus, c.containerid, c.code as name, d.code as dewar, sh.shippingname as shipment, d.dewarid, sh.shippingid, count(distinct s.blsampleid) as samples, cq.containerqueueid, TO_CHAR(cq.createdtimestamp, 'DD-MM-YYYY HH24:MI') as queuedtimestamp, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), ses.visit_number) as visit, ses.beamlinename, c.requestedreturn, c.requestedimagerid, i2.name as requestedimager, c.comments, c.experimenttype, c.storagetemperature, c.barcode, reg.barcode as registry, reg.containerregistryid, 
-                count(distinct ss.blsubsampleid) as subsamples, 
-                ses3.beamlinename as firstexperimentbeamline,
-                pp.name as pipeline,
+        $rows = $this->db->paginate("SELECT round(TIMESTAMPDIFF('HOUR', min(ci.bltimestamp), CURRENT_TIMESTAMP)/24,1) as age, case when count(ci2.containerinspectionid) > 1 then 0 else 1 end as allow_adhoc, c.scheduleid, c.screenid, sc.name as screen, c.imagerid, i.temperature as temperature, i.name as imager, TO_CHAR(max(ci.bltimestamp), 'HH24:MI DD-MM-YYYY') as lastinspection, round(TIMESTAMPDIFF('HOUR', max(ci.bltimestamp), CURRENT_TIMESTAMP)/24,1) as lastinspectiondays, count(distinct ci.containerinspectionid) as inspections, CONCAT(p.proposalcode, p.proposalnumber) as prop, c.bltimestamp, c.samplechangerlocation, c.beamlinelocation, d.dewarstatus, c.containertype, c.capacity, c.containerstatus, c.containerid, c.code as name, d.code as dewar, sh.shippingname as shipment, d.dewarid, sh.shippingid, count(distinct s.blsampleid) as samples, cq.containerqueueid, TO_CHAR(cq.createdtimestamp, 'DD-MM-YYYY HH24:MI') as queuedtimestamp, CONCAT(p.proposalcode, p.proposalnumber, '-', ses.visit_number) as visit, ses.beamlinename, c.requestedreturn, c.requestedimagerid, c.comments, c.experimenttype, c.storagetemperature, c.barcode, reg.barcode as registry, reg.containerregistryid,
+                (SELECT sch.name FROM schedule sch WHERE sch.scheduleid = c.scheduleid) as schedule,
+                (SELECT i2.name FROM imager i2 WHERE i2.imagerid = c.requestedimagerid) as requestedimager,
+                (SELECT count(distinct ss.blsubsampleid) FROM blsubsample ss RIGHT OUTER JOIN blsample s2 ON s2.blsampleid = ss.blsampleid WHERE s2.containerid = c.containerid AND ss.source='manual') as subsamples,
+                (SELECT ses3.beamlinename FROM blsession ses3 WHERE d.firstexperimentid = ses3.sessionid) as firstexperimentbeamline,
+                (SELECT pp.name FROM processingpipeline pp WHERE c.prioritypipelineid = pp.processingpipelineid) as pipeline,
                 TO_CHAR(max(cq2.completedtimestamp), 'HH24:MI DD-MM-YYYY') as lastqueuecompleted, TIMESTAMPDIFF('MINUTE', max(cq2.completedtimestamp), max(cq2.createdtimestamp)) as lastqueuedwell,
-                c.ownerid, CONCAT(pe.givenname, ' ', pe.familyname) as owner
+                c.ownerid,
+                (SELECT CONCAT(pe.givenname, ' ', pe.familyname) FROM person pe WHERE c.ownerid = pe.personid) as owner
                                   FROM container c 
                                   INNER JOIN dewar d ON d.dewarid = c.dewarid 
-                                  LEFT OUTER JOIN blsession ses3 ON d.firstexperimentid = ses3.sessionid
                                   INNER JOIN shipping sh ON sh.shippingid = d.shippingid 
                                   INNER JOIN proposal p ON p.proposalid = sh.proposalid 
                                   LEFT OUTER JOIN blsample s ON s.containerid = c.containerid 
-                                  LEFT OUTER JOIN blsubsample ss ON s.blsampleid = ss.blsampleid AND ss.source='manual'
-                                  LEFT OUTER JOIN crystal cr ON cr.crystalid = s.crystalid
-                                  LEFT OUTER JOIN protein pr ON pr.proteinid = cr.proteinid
                                   LEFT OUTER JOIN containerinspection ci ON ci.containerid = c.containerid AND ci.state = 'Completed'
                                   LEFT OUTER JOIN imager i ON i.imagerid = c.imagerid
-                                  LEFT OUTER JOIN imager i2 ON i2.imagerid = c.requestedimagerid
                                   LEFT OUTER JOIN screen sc ON sc.screenid = c.screenid
-                                  LEFT OUTER JOIN schedule sch ON sch.scheduleid = c.scheduleid
                                   LEFT OUTER JOIN containerinspection ci2 ON ci2.containerid = c.containerid AND ci2.state != 'Completed' AND ci2.manual!=1 AND ci2.schedulecomponentid IS NULL
                                   LEFT OUTER JOIN containerqueue cq ON cq.containerid = c.containerid AND cq.completedtimestamp IS NULL
                                   LEFT OUTER JOIN containerqueue cq2 ON cq2.containerid = c.containerid AND cq2.completedtimestamp IS NOT NULL
                                   LEFT OUTER JOIN containerregistry reg ON reg.containerregistryid = c.containerregistryid
-
                                   LEFT OUTER JOIN blsession ses ON c.sessionid = ses.sessionid
-                                  LEFT OUTER JOIN processingpipeline pp ON c.prioritypipelineid = pp.processingpipelineid
-                                  LEFT OUTER JOIN person pe ON c.ownerid = pe.personid
 
                                   $join
                                   WHERE $where
@@ -2074,7 +2084,7 @@ class Shipment extends Page
         array_push($args, $start);
         array_push($args, $end);
 
-        $rows = $this->db->paginate("SELECT h.containerhistoryid, s.shippingid, s.shippingname as shipment, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), b.visit_number) as visit, b.beamlinename as bl, b.beamlineoperator as localcontact, h.containerid, h.status,h.location,TO_CHAR(h.bltimestamp, 'DD-MM-YYYY HH24:MI') as bltimestamp, h.beamlinename
+        $rows = $this->db->paginate("SELECT h.containerhistoryid, s.shippingid, s.shippingname as shipment, CONCAT(p.proposalcode, p.proposalnumber, '-', b.visit_number) as visit, b.beamlinename as bl, b.beamlineoperator as localcontact, h.containerid, h.status,h.location,TO_CHAR(h.bltimestamp, 'DD-MM-YYYY HH24:MI') as bltimestamp, h.beamlinename
               FROM containerhistory h 
               INNER JOIN container c ON c.containerid = h.containerid
               INNER JOIN dewar d ON d.dewarid = c.dewarid 
@@ -2380,7 +2390,7 @@ class Shipment extends Page
         if (!$this->has_arg('CONTAINERREGISTRYID'))
             $this->_error('No container specified');
 
-        $last_visits = $this->db->pq("SELECT CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as visit, TO_CHAR(s.startdate, 'YYYY') as year, s.beamlinename, s.beamlineoperator as localcontact, pe.emailaddress, r.containerregistryid, r.barcode, CONCAT(p.proposalcode, p.proposalnumber) as prop
+        $last_visits = $this->db->pq("SELECT CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) as visit, TO_CHAR(s.startdate, 'YYYY') as year, s.beamlinename, s.beamlineoperator as localcontact, pe.emailaddress, r.containerregistryid, r.barcode, CONCAT(p.proposalcode, p.proposalnumber) as prop
               FROM containerregistry r
               INNER JOIN container c ON c.containerregistryid = r.containerregistryid
               LEFT OUTER JOIN person pe ON pe.personid = c.ownerid
@@ -2606,7 +2616,7 @@ class Shipment extends Page
         if (!$this->has_arg('visit'))
             $this->_error('No visit specified');
 
-        $sids = $this->db->pq("SELECT s.sessionid FROM blsession s INNER JOIN proposal p ON p.proposalid = s.proposalid WHERE CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) LIKE :1 AND p.proposalid=:2", array($this->arg('visit'), $this->proposalid));
+        $sids = $this->db->pq("SELECT s.sessionid FROM blsession s INNER JOIN proposal p ON p.proposalid = s.proposalid WHERE CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) LIKE :1 AND p.proposalid=:2", array($this->arg('visit'), $this->proposalid));
 
         if (!sizeof($sids))
             $this->_error('No such visit');

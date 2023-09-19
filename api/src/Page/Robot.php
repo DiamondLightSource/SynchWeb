@@ -35,14 +35,14 @@ class Robot extends Page
               : "MEDIAN(TIMESTAMPDIFF('SECOND', CAST(r.starttimestamp AS DATE), CAST(r.endtimestamp AS DATE))) as avgt";
 
 
-            $rows = $this->db->pq("SELECT CONCAT(CONCAT(vr.run, '-'), s.beamlinename) as rbl, min(vr.run) as run, min(vr.runid) as runid, min(s.beamlinename) as bl, count(r.robotactionid) as num, 
+            $rows = $this->db->pq("SELECT CONCAT(vr.run, '-', s.beamlinename) as rbl, min(vr.run) as run, min(vr.runid) as runid, min(s.beamlinename) as bl, count(r.robotactionid) as num,
                     $median
                 FROM v_run vr 
                 INNER JOIN blsession s ON (s.startdate BETWEEN vr.startdate AND vr.enddate) 
                 INNER JOIN proposal p ON (p.proposalid = s.proposalid) 
                 INNER JOIN robotaction r ON (r.blsessionid = s.sessionid) 
                 WHERE /*r.robotactionid > 1 AND*/ p.proposalcode <> 'cm' AND r.status='SUCCESS' AND (r.actiontype = 'LOAD') 
-                GROUP BY CONCAT(CONCAT(vr.run, '-'), s.beamlinename)
+                GROUP BY CONCAT(vr.run, '-', s.beamlinename)
                 ORDER BY min(s.beamlinename), min(vr.runid)");
             
             $tvs = $this->db->pq("SELECT distinct vr.run,vr.runid 
@@ -122,7 +122,7 @@ class Robot extends Page
                 array_push($args, $this->arg('run'));
             }
             if ($this->has_arg('visit')) {
-                array_push($where, "CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) LIKE :" . (sizeof($args)+1));
+                array_push($where, "CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) LIKE :" . (sizeof($args)+1));
                 array_push($args, $this->arg('visit'));
             }
             if ($this->has_arg('s')) {
@@ -154,7 +154,7 @@ class Robot extends Page
             array_push($args, $start);
             array_push($args, $end);
             
-            $errors = $this->db->paginate("SELECT r.samplebarcode, r.actiontype, r.dewarlocation, r.containerlocation, r.message, TO_CHAR(r.starttimestamp, 'DD-MM-YYYY HH24:MI:SS') as st, CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as vis, s.beamlinename as bl, r.status, TIMESTAMPDIFF('SECOND', CAST(r.starttimestamp AS DATE), CAST(r.endtimestamp AS DATE)) as time 
+            $errors = $this->db->paginate("SELECT r.samplebarcode, r.actiontype, r.dewarlocation, r.containerlocation, r.message, TO_CHAR(r.starttimestamp, 'DD-MM-YYYY HH24:MI:SS') as st, CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) as vis, s.beamlinename as bl, r.status, TIMESTAMPDIFF('SECOND', CAST(r.starttimestamp AS DATE), CAST(r.endtimestamp AS DATE)) as time
                 FROM blsession s 
                 INNER JOIN proposal p ON (p.proposalid = s.proposalid) 
                 INNER JOIN v_run vr ON s.startdate BETWEEN vr.startdate AND vr.enddate
@@ -188,7 +188,7 @@ class Robot extends Page
             }
 
             if ($this->has_arg('visit')) {
-                $where .= " AND CONCAT(CONCAT(CONCAT(p.proposalcode,p.proposalnumber), '-'), s.visit_number) LIKE :".(sizeof($args)+1);
+                $where .= " AND CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) LIKE :".(sizeof($args)+1);
                 array_push($args, $this->arg('visit'));
             }
 
@@ -266,7 +266,7 @@ class Robot extends Page
                 INNER JOIN proposal p ON (p.proposalid = s.proposalid) 
                 INNER JOIN robotaction r ON (r.blsessionid = s.sessionid) 
                 WHERE p.proposalcode <> 'cm' AND $where AND (r.actiontype = 'LOAD') 
-                GROUP BY CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number)) inq", $args);
+                GROUP BY CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number)) inq", $args);
             $tot = intval($tot[0]['TOT']);
 
             $start = 0;
@@ -289,13 +289,13 @@ class Robot extends Page
                 "ROUND(AVG(CASE WHEN r.status='SUCCESS' then TIMESTAMPDIFF('SECOND', CAST(r.starttimestamp AS DATE), CAST(r.endtimestamp AS DATE)) END),1) as avgt"
               : "ROUND(MEDIAN(CASE WHEN r.status='SUCCESS' then TIMESTAMPDIFF('SECOND', CAST(r.starttimestamp AS DATE), CAST(r.endtimestamp AS DATE)) END),1) as avgt";
 
-            $q = "SELECT TO_CHAR(min(r.starttimestamp), 'DD-MM-YYYY HH24:MI:SS') as st, CONCAT(CONCAT(CONCAT(p.proposalcode,p.proposalnumber), '-'), s.visit_number) as vis, s.beamlinename as bl, count(r.robotactionid) as num, count(CASE WHEN r.status='SUCCESS' then 1 end) as success, count(CASE WHEN r.status='ERROR' then 1 end) as error, count(CASE WHEN r.status='CRITICAL' then 1 end) as critical, count(CASE WHEN r.status='WARNING' then 1 end) as warning, count(CASE WHEN r.status='EPICSFAIL' then 1 end) as epicsfail, count(CASE WHEN r.status='COMMANDNOTSENT' then 1 end) as commandnotsent, 
+            $q = "SELECT TO_CHAR(min(r.starttimestamp), 'DD-MM-YYYY HH24:MI:SS') as st, CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) as vis, s.beamlinename as bl, count(r.robotactionid) as num, count(CASE WHEN r.status='SUCCESS' then 1 end) as success, count(CASE WHEN r.status='ERROR' then 1 end) as error, count(CASE WHEN r.status='CRITICAL' then 1 end) as critical, count(CASE WHEN r.status='WARNING' then 1 end) as warning, count(CASE WHEN r.status='EPICSFAIL' then 1 end) as epicsfail, count(CASE WHEN r.status='COMMANDNOTSENT' then 1 end) as commandnotsent,
                         $median
                     FROM v_run vr INNER JOIN blsession s ON (s.startdate BETWEEN vr.startdate AND vr.enddate) 
                     INNER JOIN proposal p ON (p.proposalid = s.proposalid) 
                     INNER JOIN robotaction r ON (r.blsessionid = s.sessionid) 
                     WHERE p.proposalcode <> 'cm' AND $where AND r.actiontype = 'LOAD' 
-                    GROUP BY CONCAT(CONCAT(CONCAT(p.proposalcode,p.proposalnumber), '-'), s.visit_number), s.beamlinename 
+                    GROUP BY CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number), s.beamlinename
                     ORDER BY min(r.starttimestamp) DESC";
             
             $rows = $this->db->paginate($q, $args);
