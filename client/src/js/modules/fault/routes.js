@@ -85,6 +85,7 @@ const routes = [
             {
                 path: 'edit',
                 name: 'faults-view-edit',
+                component: MarionetteView,
                 props: {
                     mview: FaultTypeEditor,
                     breadcrumbs: [bc, { title: 'Edit Fault Types' }],
