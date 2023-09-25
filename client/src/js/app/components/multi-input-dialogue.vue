@@ -46,7 +46,6 @@ export default {
         showSelector: false,
         inputContent: '',
         selected: this.multInputSelected,
-        debounceTimeout: null,
         showDialog: false,
         }
     },
