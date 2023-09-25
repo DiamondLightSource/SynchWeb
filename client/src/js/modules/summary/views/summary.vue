@@ -1299,9 +1299,6 @@ export default {
         filters: {
             // if empty filter combo box is populated with a parameter, then populate the keys with values attributed to the selected parameter
             handler(val){
-
-                console.log('filters', this.filters)
-
                 for (var i in this.filters) {
 
                     let keyToCompare = this.filters[i].selected;
