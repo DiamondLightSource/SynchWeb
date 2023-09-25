@@ -55,17 +55,15 @@
     @apply tw-text-content-active tw-text-content-active
 }
 
-.filter-grid {
-    @apply tw-grid tw-grid-rows-1 tw-grid-cols-4 tw-grid-flow-col 
-}
-
 .filter-options-grid {
-    @apply tw-grid tw-grid-rows-6 tw-grid-cols-3 tw-grid-flow-col tw-mb-2
+    @apply tw-flex tw-flex-wrap 
 }
 
-.format-options-grid {
-    @apply tw-grid tw-grid-rows-6 tw-grid-cols-1 tw-grid-flow-col tw-mb-2
-
+.flex-thirds {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-auto-flow: row; /* this will make items flow vertically within columns */
+    gap: 1rem; /* for spacing between rows/columns, you can adjust this */
 }
 
 .select-column-button {
