@@ -248,7 +248,10 @@
     # Shipping service details
     $use_shipping_service = null;
     $use_shipping_service_incoming_shipments = null;
-    $shipping_service_url = null;
+    $shipping_service_api_url = null;
+    $shipping_service_api_user = null;
+    $shipping_service_api_password = null;
+    $shipping_service_app_url = null;
     $shipping_service_links_in_emails = null;
 
 

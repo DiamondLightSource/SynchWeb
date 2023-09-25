@@ -927,10 +927,10 @@ class Shipment extends Page
         global $facility_country;
         global $facility_phone;
         global $facility_contact;
-        global $shipping_service_url;
+        global $shipping_service_api_url;
         global $facility_email;
-        if (!isset($shipping_service_url)) {
-            throw new Exception("Could not send request to shipping service: shipping_service_url not set");
+        if (!isset($shipping_service_api_url)) {
+            throw new Exception("Could not send request to shipping service: shipping_service_api_url not set");
         }
 
         # Create shipment
