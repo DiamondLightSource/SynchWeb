@@ -42,9 +42,6 @@ export default {
     },
     data() {
         return {
-        search: '',
-        showSelector: false,
-        inputContent: '',
         selected: this.multInputSelected,
         showDialog: false,
         }
