@@ -56,18 +56,6 @@ export default {
         document.removeEventListener('click', this.handleClickOutside);
     },
     methods: {
-        handleClickOutside(event) {
-            if (this.$refs.myElement && !this.$refs.myElement.contains(event.target)) {
-            // Clicked outside the element
-            console.log('Clicked outside!');
-            this.showSelector = false;
-            }
-        },
-        clearOpts() {
-                this.search = '';
-                this.showSelector = false;
-                this.options = []
-            },
         openDialog() {
             this.showDialog = true;
         }
