@@ -63,7 +63,6 @@
                 </template>
 
                 <template v-slot:filter-bar-content>
-                    <!-- <div class="filter-options-grid tw-space-x-4 tw-space-y-4"> -->
                     <div class="flex-thirds">
                         <div class="tw-m-2" v-for="(value, index) in filters.slice(2)" :key="value.id">
                             <div class="tw-flex">
