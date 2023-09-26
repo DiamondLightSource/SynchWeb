@@ -1275,17 +1275,6 @@ export default {
 
             }
         },
-        handleSelectedChange(eventPayload) {
-
-            if (index !== undefined && index > -1) {
-            // Remove the item at that index
-            this.filters.splice(index, 1);
-
-
-            // OR if you want to replace the value at that index with updatedSelected:
-            // this.$set(this.filters, index, updatedSelected);
-            }
-        }
     },
     watch: {
         windowWidth: {
