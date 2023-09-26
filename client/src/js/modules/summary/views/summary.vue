@@ -438,7 +438,6 @@ export default {
             isOpen: true,
             isSelectAll: true,
             showFavourites: false,
-            showDialog: true,
             totalRecords:  10,
             pageSize: 15,
             currentPage: 1,
