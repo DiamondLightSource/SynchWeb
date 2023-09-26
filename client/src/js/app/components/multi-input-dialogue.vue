@@ -8,10 +8,10 @@
                 </div>
             </div>
             <div class="tw-flex-1">
-                <input type="text" v-model="search" ref="search_input"
+                <div type="text" ref="search_input"
                 @click="openDialog" placeholder="Search"
-                    class="tw-w-full tw-border-0 focus:tw-border-0 focus:tw-outline-none focus:tw-ring-0 tw-py-1 tw-px-0">
-                
+                    class="tw-w-full tw-h-8 tw-border-0 focus:tw-border-0 focus:tw-outline-none focus:tw-ring-0 tw-py-1 tw-px-0">
+            </div>
                     <dialog-modal
                         class="tw-w-full"
                         v-if="showDialog"
