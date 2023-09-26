@@ -1277,13 +1277,10 @@ export default {
         },
         handleSelectedChange(eventPayload) {
 
-            console.log('Received payload:', eventPayload);
-
             if (index !== undefined && index > -1) {
             // Remove the item at that index
             this.filters.splice(index, 1);
 
-            console.log('filters removed 2', this.filters)
 
             // OR if you want to replace the value at that index with updatedSelected:
             // this.$set(this.filters, index, updatedSelected);
