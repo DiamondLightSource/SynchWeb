@@ -406,10 +406,8 @@
         methods: {
             async setDewarInformation() {
               // Try to retrieve the default dewar for this proposal/visit
-              // Uses the special session-0 because at this point we are not necessarily on a session
               this.defaultDewarId = await this.$store.dispatch('fetchDataFromApi', {
                 url: '/shipment/dewars/default',
-                data: { visit: `${this.$store.getters['proposal/currentProposal']}-0`},
                 requestType: 'fetching default dewar for this proposal/visit'
               })
             },
