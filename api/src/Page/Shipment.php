@@ -2613,7 +2613,6 @@ class Shipment extends Page
 
     function _get_default_dewar()
     {
-        error_log('foo');
         if ($this->has_arg('visit')) {
             $shipmentName = $this->arg('visit') . '_Shipment1';
             $dewarName = $this->arg('visit') . '_Dewar1';
