@@ -18,9 +18,11 @@ class OIDC extends AuthenticationParent implements AuthenticationInterface
         curl_setopt($ch, CURLOPT_HEADER, 0);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         $response = curl_exec($ch);
+        $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $errno = curl_errno($ch);
 
-        if (curl_errno($ch) || curl_getinfo($ch, CURLINFO_HTTP_CODE != 200)) {
-            error_log("Failed to connect to OIDC discovery endpoint");
+        if ($errno || http_code != 200) {
+            error_log("Failed to connect to OIDC discovery endpoint. HTTP code: " . $http_code . ". CURL err. no.: " . $errno);
             return;
         }
 
