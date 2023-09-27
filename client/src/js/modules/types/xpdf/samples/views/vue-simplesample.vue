@@ -540,7 +540,7 @@
                     })
 
                     let container = new Container({
-                        NAME: app.prop + '-' + app.visit + '_samples',
+                        NAME: app.visit ? app.prop + '-' + app.visit + '_samples' : app.prop + '_samples',
                         CAPACITY: self.capacity,
                         CONTAINERTYPE: 'Box',
                         COMMENTS: item.comments
@@ -618,7 +618,7 @@
                 })
 
                 let container = new Container({
-                    NAME: app.prop + '-' + app.visit + '_samples',
+                    NAME: app.visit ? app.prop + '-' + app.visit + '_samples' : app.prop + '_samples',
                     CAPACITY: this.capacity,
                     CONTAINERTYPE: 'Box',
                     COMMENTS: this.comments
