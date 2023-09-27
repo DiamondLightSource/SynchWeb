@@ -415,8 +415,10 @@ define(['jquery', 'marionette',
             if (d.length > 0) {
                 let max = 0
                 let power = this.invertHeatMap ? -1 : 1
+                let val = 0
                 _.each(d, function(v) {
-                    if (Math.pow(v[1],power) > max) max = Math.pow(v[1],power)
+                    val = Math.pow(v[1], power)
+                    if (val > max) max = val
                 })
 
                 max = max === 0 ? 1 : max
@@ -431,6 +433,7 @@ define(['jquery', 'marionette',
                 var data = []
                 _.each(d, function(v) {
                     var k = v[0] - 1
+                    val = Math.pow(v[1], power)
 
                     // Account for vertical grid scans
                     let xstep, ystep, x, y
@@ -461,7 +464,7 @@ define(['jquery', 'marionette',
                     data.push({
                         x: x,
                         y: y,
-                        value: v[1] < 1 && max > 1 ? 0 : Math.pow(v[1], power),
+                        value: val < 1 && max > 1 ? 0 : val,
                         radius: radius
                     })
 
