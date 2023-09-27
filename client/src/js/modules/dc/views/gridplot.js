@@ -70,6 +70,7 @@ define(['jquery', 'marionette',
             this.statusesLoaded = false
             this.listenTo(options.imagestatuses, 'sync', this.setStatues, this)
             this.noHeatMapResult = []
+            this.invertHeatMap = false
 
             this._ready = []
 
@@ -130,6 +131,8 @@ define(['jquery', 'marionette',
 
         loadAttachment: function() {
             var a = this.attachments.findWhere({ 'DATACOLLECTIONFILEATTACHMENTID': this.ui.ty2.val() })
+            var selectedOption = this.ui.ty2.find('option:selected').text()
+            this.invertHeatMap = selectedOption === 'pia_estimated_d_min'
             if (a) {
                 if (!a.get('DATA')) {
                     var self = this
@@ -411,12 +414,13 @@ define(['jquery', 'marionette',
 
             if (d.length > 0) {
                 let max = 0
+                let power = this.invertHeatMap ? -1 : 1
                 _.each(d, function(v) {
-                    if (v[1] > max) max = v[1]
+                    if (Math.pow(v[1],power) > max) max = Math.pow(v[1],power)
                 })
 
                 max = max === 0 ? 1 : max
-                if (this.getOption('padMax') && max < 10) max = max * 50
+                if (this.getOption('padMax') && max < 10 && !this.invertHeatMap) max = max * 50
 
                 var sw = (this.perceivedw-(this.offset_w*this.scale))/this.grid.get('STEPS_X')
                 var sh = (this.perceivedh-(this.offset_h*this.scale))/this.grid.get('STEPS_Y')
@@ -454,7 +458,10 @@ define(['jquery', 'marionette',
                     }
 
                     // Dont zero values < 1 if data is scaled to max==1
-                    data.push({ x: x, y: y, value: v[1] < 1 && max > 1 ? 0 : v[1],
+                    data.push({
+                        x: x,
+                        y: y,
+                        value: v[1] < 1 && max > 1 ? 0 : Math.pow(v[1], power),
                         radius: radius
                     })
 
@@ -514,7 +521,16 @@ define(['jquery', 'marionette',
 
         _getVal: function(pos) {
             var val = null
-            const d = Number(this.ui.ty.val()) > -1 ?  this.distl.get('data')[Number(this.ui.ty.val())] : []
+            var d = []
+            if (this.ui.ty.is(":visible")) {
+                d = Number(this.ui.ty.val()) > -1 ? this.distl.get('data')[Number(this.ui.ty.val())] : []
+            }
+            if (this.ui.ty2.is(":visible")) {
+                var a = this.attachments.findWhere({ 'DATACOLLECTIONFILEATTACHMENTID': this.ui.ty2.val() })
+                if (a && a.get('DATA')) {
+                    d = a.get('DATA')
+                }
+            }
             _.each(d, function(v) {
                 // 1 indexed array
                 if (v[0] === pos+1) {
