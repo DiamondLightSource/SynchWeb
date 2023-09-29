@@ -10,7 +10,6 @@ class ShippingService
 {
     private $shipping_api_url;
     private $shipping_app_url;
-    private $headers;
     public const JOURNEY_TO_FACILITY = "TO_FACILITY";
     public const JOURNEY_FROM_FACILITY = "FROM_FACILITY";
 
@@ -45,18 +44,18 @@ class ShippingService
         global $shipping_service_app_url;
         $this->shipping_api_url = $shipping_service_api_url;
         $this->shipping_app_url = $shipping_service_app_url;
-        $this->headers = $this->_build_headers();
     }
 
 
     function _send_request($url, $type, $data, $expected_status_code)
     {
         $ch = curl_init($url);
+        $base_headers = $this->_build_headers();
         curl_setopt_array(
             $ch,
             array(
                 CURLOPT_RETURNTRANSFER => TRUE,
-                CURLOPT_HTTPHEADER => $this->headers,
+                CURLOPT_HTTPHEADER => $base_headers,
                 CURLOPT_TIMEOUT => 5
             )
         );
@@ -77,7 +76,7 @@ class ShippingService
                     $ch,
                     array(
                         CURLOPT_CUSTOMREQUEST => "PUT",
-                        CURLOPT_HTTPHEADER => array_merge($this->headers, array('Content-Length: ' . strlen(json_encode($data)))),
+                        CURLOPT_HTTPHEADER => array_merge($base_headers, array('Content-Length: ' . strlen(json_encode($data)))),
                         CURLOPT_POSTFIELDS => json_encode($data),
                     )
                 );
