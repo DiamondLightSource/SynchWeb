@@ -43,7 +43,7 @@
     # CAS CA Cert (for SSO)
     $cacert = '/etc/certs/ca-bundle.crt';
 
-    # ldap server, used for lookup and authentication (if using)
+    # ldap server, used for lookup and authentication (if using, set to null if not)
     # Update the ldap(s) prefix, hostname and search settings as required
     $ldap_server = 'ldaps://ldap.example.com';
     $ldap_search = 'ou=people,dc=example,dc=com';
