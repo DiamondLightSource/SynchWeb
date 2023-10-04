@@ -2613,45 +2613,56 @@ class Shipment extends Page
 
     function _get_default_dewar()
     {
-        if (!$this->has_arg('visit'))
-            $this->_error('No visit specified');
+        if ($this->has_arg('visit')) {
+            $shipmentName = $this->arg('visit') . '_Shipment1';
+            $dewarName = $this->arg('visit') . '_Dewar1';
+            $sids = $this->db->pq("SELECT s.sessionid FROM blsession s INNER JOIN proposal p ON p.proposalid = s.proposalid WHERE CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) LIKE :1 AND p.proposalid=:2", array($this->arg('visit'), $this->proposalid));
+            if (!sizeof($sids))
+                $this->_error('No such visit');
+            else
+                $sid = $sids[0]['SESSIONID'];
 
-        $sids = $this->db->pq("SELECT s.sessionid FROM blsession s INNER JOIN proposal p ON p.proposalid = s.proposalid WHERE CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) LIKE :1 AND p.proposalid=:2", array($this->arg('visit'), $this->proposalid));
+        } elseif ($this->has_arg('prop')) {
+            $shipmentName = $this->arg('prop') . '_Shipment1';
+            $dewarName = $this->arg('prop') . '_Dewar1';
+            $sid = null;
+        } else {
+            $this->_error('No visit or proposal specified');
+        }
 
-        if (!sizeof($sids))
-            $this->_error('No such visit');
-        else
-            $sid = $sids[0]['SESSIONID'];
-
-
-        $shids = $this->db->pq("SELECT shippingid FROM shipping WHERE proposalid LIKE :1 AND shippingname LIKE :2", array($this->proposalid, $this->arg('visit') . '_Shipment1'));
+        $shids = $this->db->pq("SELECT shippingid FROM shipping WHERE proposalid LIKE :1 AND shippingname LIKE :2", array($this->proposalid, $shipmentName));
 
         if (sizeof($shids) > 0) {
             $shid = $shids[0]['SHIPPINGID'];
         } else {
-            $this->db->pq("INSERT INTO shipping (shippingid,proposalid,shippingname,bltimestamp,creationdate,shippingstatus) VALUES (s_shipping.nextval,:1,:2,CURRENT_TIMESTAMP,CURRENT_TIMESTAMP,'processing') RETURNING shippingid INTO :id", array($this->proposalid, $this->arg('visit') . '_Shipment1'));
+            $this->db->pq("INSERT INTO shipping (shippingid,proposalid,shippingname,bltimestamp,creationdate,shippingstatus) VALUES (s_shipping.nextval,:1,:2,CURRENT_TIMESTAMP,CURRENT_TIMESTAMP,'processing') RETURNING shippingid INTO :id", array($this->proposalid, $shipmentName));
 
             $shid = $this->db->id();
-
-            $vals = $this->db->pq("INSERT INTO shippinghassession (shippingid,sessionid) VALUES (:1,:2)", array($shid, $sid));
+            if ($sid)
+                $vals = $this->db->pq("INSERT INTO shippinghassession (shippingid,sessionid) VALUES (:1,:2)", array($shid, $sid));
         }
 
         $did = -1;
-        if ($sid) {
-            $dids = $this->db->pq("SELECT dewarid from dewar WHERE shippingid LIKE :1 AND code LIKE :2", array($shid, $this->arg('visit') . '_Dewar1'));
 
-            if (sizeof($dids) > 0) {
-                $did = $dids[0]['DEWARID'];
-            } else {
-                $this->db->pq("INSERT INTO dewar (dewarid,code,shippingid,bltimestamp,dewarstatus,firstexperimentid) VALUES (s_dewar.nextval,:1,:2,CURRENT_TIMESTAMP,'processing',:3) RETURNING dewarid INTO :id", array($this->arg('visit') . '_Dewar1', $shid, $sid));
+        $dids = $this->db->pq("SELECT dewarid from dewar WHERE shippingid LIKE :1 AND code LIKE :2", array($shid, $dewarName));
 
-                $did = $this->db->id();
+        if (sizeof($dids) > 0) {
+            $did = $dids[0]['DEWARID'];
+        } else {
+            $this->db->pq("INSERT INTO dewar (dewarid,code,shippingid,bltimestamp,dewarstatus,firstexperimentid) VALUES (s_dewar.nextval,:1,:2,CURRENT_TIMESTAMP,'processing',:3) RETURNING dewarid INTO :id", array($dewarName, $shid, $sid));
 
-                # Need to generate barcode
+            $did = $this->db->id();
+
+            # Need to generate barcode
+            if ($this->has_arg('visit')) {
                 $bl = $this->db->pq("SELECT s.beamlinename as bl FROM blsession s WHERE s.sessionid=:1", array($sid));
-                $this->db->pq("UPDATE dewar set barcode=:1 WHERE dewarid=:2", array($this->arg('visit') . '-' . $bl[0]['BL'] . '-' . str_pad($did, 7, '0', STR_PAD_LEFT), $did));
+                $barcode = $this->arg('visit') . '-' . $bl[0]['BL'] . '-' . str_pad($did, 7, '0', STR_PAD_LEFT);
+            } else {
+                $barcode = $this->arg('prop') . '-' . str_pad($did, 7, '0', STR_PAD_LEFT);
             }
+            $this->db->pq("UPDATE dewar set barcode=:1 WHERE dewarid=:2", array($barcode, $did));
         }
+
 
         if ($did == -1)
             $this->_error('Couldn\'t create default dewar');

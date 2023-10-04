@@ -406,10 +406,8 @@
         methods: {
             async setDewarInformation() {
               // Try to retrieve the default dewar for this proposal/visit
-              // Uses the special session-0 because at this point we are not necessarily on a session
               this.defaultDewarId = await this.$store.dispatch('fetchDataFromApi', {
                 url: '/shipment/dewars/default',
-                data: { visit: `${this.$store.getters['proposal/currentProposal']}-0`},
                 requestType: 'fetching default dewar for this proposal/visit'
               })
             },
@@ -542,7 +540,7 @@
                     })
 
                     let container = new Container({
-                        NAME: app.prop + '-' + app.visit + '_samples',
+                        NAME: app.visit ? app.prop + '-' + app.visit + '_samples' : app.prop + '_samples',
                         CAPACITY: self.capacity,
                         CONTAINERTYPE: 'Box',
                         COMMENTS: item.comments
@@ -620,7 +618,7 @@
                 })
 
                 let container = new Container({
-                    NAME: app.prop + '-' + app.visit + '_samples',
+                    NAME: app.visit ? app.prop + '-' + app.visit + '_samples' : app.prop + '_samples',
                     CAPACITY: this.capacity,
                     CONTAINERTYPE: 'Box',
                     COMMENTS: this.comments
