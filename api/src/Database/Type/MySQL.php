@@ -202,6 +202,7 @@ class MySQL extends DatabaseParent {
         // Xray Centring
         'XrayCentring',
         'XrayCentringResult',
+        'XrayCentring',
 
         'BeamCalendar',
         'SpaceGroup',

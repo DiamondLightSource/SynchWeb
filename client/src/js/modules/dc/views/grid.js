@@ -37,6 +37,8 @@ define(['marionette',
       bx: '.boxx',
       by: '.boxy',
       zoom: 'a.zoom',
+      warning: '.warning',
+      warningli: '.warning-li',
 
       holder: '.holder h1',
     },
@@ -68,6 +70,7 @@ define(['marionette',
 
       this.gridplot = new GridPlot({ BL: this.model.get('BL'), ID: this.model.get('ID'), NUMIMG: this.model.get('NUMIMG'), parent: this.model, imagestatuses: this.getOption('imagestatuses') })
       this.listenTo(this.gridplot, 'current', this.loadImage, this)
+      this.listenTo(this.gridplot, 'warning', this.loadWarning, this)
     },
 
     // should be an event
@@ -81,11 +84,18 @@ define(['marionette',
       this.ui.val.text(val)
       this.ui.img.text(number+1)
     },
+
+    loadWarning: function(val) {
+      console.log('set warning', arguments)
+      this.ui.warning.text(val)
+      this.ui.warningli.show()
+    },
       
 
     onShow: function() {
       this.ui.holder.hide()
       this.ui.zoom.hide()
+      this.ui.warningli.hide()
 
       this.diviewer = new ImageViewer({ model: this.model, embed: true, readyText: 'Click on the grid to load a diffraction image' })      
       this.ui.di.append(this.diviewer.render().$el)
@@ -121,7 +131,7 @@ define(['marionette',
                 this.hasXRC = true
             }
 
-            if (state == 2) {
+            if (state >= 2) {
                 this.xrc = new GridXRC({ id: this.model.get('ID') })
                 this.xrc.fetch({
                     success: this.showXRC.bind(this)
@@ -131,7 +141,16 @@ define(['marionette',
     },
 
     showXRC: function() {
-        this.ui.holder.prepend('Method: '+this.xrc.get('METHOD')+' - X Pos: '+this.xrc.get('X')+' Y Pos: '+this.xrc.get('Y'))
+        var xrcs = this.xrc.get('data')
+        var t = ''
+        for (var i = 0; i < xrcs.length; i++) {
+            t += ' - Crystal '+(i+1)+': X Pos '+xrcs[i]['X']+' Y Pos '+xrcs[i]['Y']+' Z Pos '+xrcs[i]['Z']
+        }
+        if (xrcs.length > 0) {
+            this.ui.holder.prepend('Method: '+xrcs[0]['METHOD']+t)
+        } else {
+            this.ui.holder.prepend('Found no diffraction')
+        }
     },
                                       
     onDestroy: function() {

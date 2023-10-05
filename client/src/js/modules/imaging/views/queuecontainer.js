@@ -523,6 +523,7 @@ define(['marionette',
         events: {
             'click button.submit': 'queueContainer',
             'click a.apply': 'applyPreset',
+            'click a.applyall': 'applyPresetAll',
             'click a.unqueue': 'unqueueContainer',
             'click a.addpage': 'queuePageSamples',
             'click a.addall': 'queueAllSamples',
@@ -615,25 +616,36 @@ define(['marionette',
             e.preventDefault()
 
             var p = this.plans.findWhere({ DIFFRACTIONPLANID: this.ui.preset.val() })
-            if (p) this.applyModel(p)
+            if (p) this.applyModel(p, true)
         },
 
-        applyModel: function(p) {
-            var models = this.qsubsamples.where({ isGridSelected: true })
-            _.each(models, function(m) {
-                if (p.get('EXPERIMENTKIND') !== m.get('EXPERIMENTKIND')) return
+        applyPresetAll:function(e) {
+            e.preventDefault()
+
+            var p = this.plans.findWhere({ DIFFRACTIONPLANID: this.ui.preset.val() })
+            if (p) this.applyModel(p, false)
+        },
+
+        applyModel: function(modelParameter, isLimitedToSelected) {
+            if (isLimitedToSelected) {
+                var models = this.qsubsamples.where({ isGridSelected: true })
+            } else {
+                var models = this.qsubsamples.fullCollection.toArray()
+            }
+            _.each(models, function(model) {
+                if (modelParameter.get('EXPERIMENTKIND') !== model.get('EXPERIMENTKIND')) return
                     
                 _.each(['REQUIREDRESOLUTION', 'PREFERREDBEAMSIZEX', 'PREFERREDBEAMSIZEY', 'EXPOSURETIME', 'BOXSIZEX', 'BOXSIZEY', 'AXISSTART', 'AXISRANGE', 'NUMBEROFIMAGES', 'TRANSMISSION', 'ENERGY', 'MONOCHROMATOR'], function(k) {
-                    if (p.get(k) !== null) m.set(k, p.get(k))
+                    if (modelParameter.get(k) !== null) model.set(k, modelParameter.get(k))
                 }, this)
-                m.save()
-                m.trigger('refresh')
+                model.save()
+                model.trigger('refresh')
             }, this)
         },
 
         cloneModel: function(m) {
             console.log('cloning', m)
-            this.applyModel(m)
+            this.applyModel(m, true)
         },
 
         queueContainer: function(e) {
