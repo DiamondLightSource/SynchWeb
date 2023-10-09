@@ -46,9 +46,24 @@ class Contact extends Page
                 $where .= ' AND c.labcontactid=:'.(sizeof($args)+1);
                 array_push($args, $this->arg('cid'));
             }
-            
 
-            $tot = $this->db->pq("SELECT count(c.labcontactid) as tot FROM labcontact c  $where", $args);
+            if ($this->has_arg('s')) {
+                $st = sizeof($args) + 1;
+                $fields = array('pe.givenname', 'pe.familyname', 'c.cardname',
+                    'l.name', 'l.address', 'l.city', 'l.country', 'pe.phonenumber', 'l.postcode');
+                $where .= " AND (0=1";
+
+                foreach ($fields as $i => $field) {
+                    $where .= " OR lower(" . $field . ") LIKE lower(CONCAT('%', :" . ($st + $i) . ", '%'))";
+                    array_push($args, $this->arg('s'));
+                }
+                $where .= ")";
+            }
+
+            $tot = $this->db->pq("SELECT count(c.labcontactid) as tot FROM labcontact c
+                                    INNER JOIN person pe ON c.personid = pe.personid
+                                    INNER JOIN laboratory l ON l.laboratoryid = pe.laboratoryid
+                                    $where", $args);
             $tot = intval($tot[0]['TOT']);
 
             $pp = $this->has_arg('per_page') ? $this->arg('per_page') : 15;
