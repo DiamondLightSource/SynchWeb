@@ -21,6 +21,7 @@ final class AssignDataTest extends TestCase
     private $db;
     private $assignData;
     private $insertId;
+    private $stmtStub;
 
     protected function setUp(): void
     {
@@ -30,7 +31,7 @@ final class AssignDataTest extends TestCase
         $this->db = new MySQL($connStub);
 
         $this->assignData = new AssignData($this->db);
-        $stmtStub = $this->getMockBuilder(\mysqli_stmt::class)
+        $this->stmtStub = $this->getMockBuilder(\mysqli_stmt::class)
             ->disableOriginalConstructor()
             ->onlyMethods(['bind_param', 'execute', 'get_result', 'close'])
             ->getMock();
@@ -41,9 +42,8 @@ final class AssignDataTest extends TestCase
             $this->insertId->expects($this->any())->willReturn(666);
         }
 
-        $stmtStub->method('execute')->willReturn(true);
-        $connStub->method('prepare')->willReturn($stmtStub);
-        $this->stmtStub = $stmtStub;
+        $this->stmtStub->method('execute')->willReturn(true);
+        $connStub->method('prepare')->willReturn($this->stmtStub);        
     }
 
     public function testGetContainerCreatesCorrectSql(): void

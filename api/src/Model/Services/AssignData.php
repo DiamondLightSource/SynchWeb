@@ -90,10 +90,10 @@ class AssignData
         $location = $this->db->pq("SELECT storagelocation FROM dewar WHERE dewarid=:1", array($dewarId));
         $this->updateDewarHistory($dewarId, 'unprocessing', $location[0]['STORAGELOCATION']);
 
-        $conts = $this->db->pq("SELECT containerid as id FROM container WHERE dewarid=:1", array($dewarId));
+        $conts = $this->db->pq("SELECT containerid FROM container WHERE dewarid=:1", array($dewarId));
         foreach ($conts as $container)
         {
-            $this->updateContainerAndHistory($container['ID'], 'at facility', '', '');
+            $this->updateContainerAndHistory($container['CONTAINERID'], 'at facility', '', '');
         }
     }
 

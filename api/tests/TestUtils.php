@@ -29,6 +29,7 @@ class MockTestResult
     public $num_rows;
     private $returnRows;
     private $row_index = -1;
+
     function __construct($returnRows){
         $this->returnRows = $returnRows;
         $this->num_rows = $returnRows? count($returnRows) : 0;
