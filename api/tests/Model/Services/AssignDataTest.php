@@ -8,6 +8,7 @@ use MYSQLi;
 use PHPUnit\Framework\TestCase;
 use SynchWeb\Model\Services\AssignData;
 use SynchWeb\Database\Type\MySQL;
+use Tests\TestUtils;
 
 /**
  * @runTestsInSeparateProcesses // Needed to allow db mocking
@@ -42,6 +43,7 @@ final class AssignDataTest extends TestCase
 
         $stmtStub->method('execute')->willReturn(true);
         $connStub->method('prepare')->willReturn($stmtStub);
+        $this->stmtStub = $stmtStub;
     }
 
     public function testGetContainerCreatesCorrectSql(): void
@@ -108,8 +110,9 @@ final class AssignDataTest extends TestCase
 
     public function testDeactivateDewarCreatesCorrectSql(): void
     {
+        TestUtils::mockDBReturnsResult($this->stmtStub, [['STORAGELOCATION'=> "current location"], ]);
         $this->assignData->deactivateDewar('testDewarId');
-        $this->assertEquals("SELECT containerid as id FROM Container WHERE dewarid='testDewarId'", $this->db->getLastQuery());
+        $this->assertEquals("SELECT containerid FROM Container WHERE dewarid='testDewarId'", $this->db->getLastQuery());
     }
 
     public function testUpdateDewarHistoryCreatesCorrectSql(): void
