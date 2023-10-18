@@ -524,12 +524,12 @@ define(['jquery', 'marionette',
 
         _getVal: function(pos) {
             var val = null
-            var d = []
+            let d = []
             if (this.ui.ty.is(":visible")) {
                 d = Number(this.ui.ty.val()) > -1 ? this.distl.get('data')[Number(this.ui.ty.val())] : []
             }
             if (this.ui.ty2.is(":visible")) {
-                var a = this.attachments.findWhere({ 'DATACOLLECTIONFILEATTACHMENTID': this.ui.ty2.val() })
+                let a = this.attachments.findWhere({ 'DATACOLLECTIONFILEATTACHMENTID': this.ui.ty2.val() })
                 if (a && a.get('DATA')) {
                     d = a.get('DATA')
                 }
