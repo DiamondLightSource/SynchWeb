@@ -1608,7 +1608,6 @@ class DC extends Page
         } elseif (file_exists($file.'.gz')) {
             $zd = gzopen($file.'.gz', 'r');
             $log = gzread($zd, 10000000);
-            error_log($log);
             gzclose($zd);
         }
         if (isset($log)) {
