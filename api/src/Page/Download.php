@@ -9,6 +9,7 @@ use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use Symfony\Component\HttpFoundation\Response;
 use ZipStream\Option\Archive;
 use ZipStream\ZipStream;
 
@@ -137,6 +138,13 @@ class Download extends Page
             $r['PLOTS'] = array();
             if (file_exists($json)) {
                 $cont = file_get_contents($json);
+            } elseif (file_exists($json.'.gz')) {
+                $zd = gzopen($json.'.gz', 'r');
+                $cont = gzread($zd, 10000000);
+                gzclose($zd);
+            }
+
+            if (isset($cont)) {
 
                 $plotData = json_decode($cont);
                 $r['PLOTS'] = $plotData;
@@ -254,26 +262,22 @@ class Download extends Page
     {
         // We don't want to allow unlimited file sizes
         ini_set('memory_limit', '512M');
-        $filesystem = new Filesystem();
 
         $filename = $file['FILEPATH'] . '/' . $file['FILENAME'];
 
         // Do the check first, if no file quit early
-        if ($filesystem->exists($filename)) {
+        if (file_exists($filename)) {
+            $cont = file_get_contents($filename);
+        } elseif (file_exists($filename.'.gz')) {
+            $zd = gzopen($filename.'.gz', 'r');
+            $cont = gzread($zd, 10000000);
+            gzclose($zd);
+        }
 
-            $response = new BinaryFileResponse($filename);
-
-            # Set mime / content type
+        if (isset($cont)) {
+            $response = new Response();
+            $response->setContent($cont);
             $this->set_mime_content($response, $file['FILENAME'], $id);
-
-            // All OK - send it
-            // We were getting out of memory errors - switch off output buffer to fix
-            if (ob_get_level()) {
-                ob_end_clean();
-            }
-            // Setting content length means browser can indicate how long is left
-            $response->headers->set("Content-Length", filesize($filename));
-
             $response->send();
             exit();
         } else {
@@ -474,7 +478,11 @@ class Download extends Page
             $zip = new ZipStream($zipName . '.zip', $options);
             foreach ($files as $file) {
                 $filename = $file['FILEPATH'] . '/' . $file['FILENAME'];
-                $zip->addFileFromPath(basename($filename), $filename);
+                if (file_exists($filename)) {
+                    $zip->addFileFromPath(basename($filename), $filename);
+                } elseif (file_exists($filename.'.gz')) {
+                    $zip->addFileFromPath(basename($filename), $filename.'.gz');
+                }
             }
 
             $zip->finish();
@@ -499,25 +507,22 @@ class Download extends Page
 
         if (in_array($path_ext, array('html', 'htm'))) {
             $response->headers->set("Content-Type", "text/html");
-            $response->setContentDisposition(ResponseHeaderBag::DISPOSITION_INLINE);
+            $response->headers->set("Content-Disposition", ResponseHeaderBag::DISPOSITION_INLINE);
         } elseif ($path_ext == 'pdf') {
             $response->headers->set("Content-Type", "application/pdf");
-            $response->setContentDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT, $saved_filename);
+            $response->headers->set("Content-Disposition", ResponseHeaderBag::DISPOSITION_ATTACHMENT, $saved_filename);
         } elseif ($path_ext == 'png') {
             $response->headers->set("Content-Type", "image/png");
-            $response->setContentDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT, $saved_filename);
+            $response->headers->set("Content-Disposition", ResponseHeaderBag::DISPOSITION_ATTACHMENT, $saved_filename);
         } elseif (in_array($path_ext, array('jpg', 'jpeg'))) {
             $response->headers->set("Content-Type", "image/jpeg");
-            $response->setContentDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT, $saved_filename);
+            $response->headers->set("Content-Disposition", ResponseHeaderBag::DISPOSITION_ATTACHMENT, $saved_filename);
         } elseif (in_array($path_ext, array('log', 'txt', 'error', 'LP', 'json', 'lsa'))) {
             $response->headers->set("Content-Type", "text/plain");
-            $response->setContentDisposition(ResponseHeaderBag::DISPOSITION_INLINE);
+            $response->headers->set("Content-Disposition", ResponseHeaderBag::DISPOSITION_INLINE);
         } else {
             $response->headers->set("Content-Type", "application/octet-stream");
-            $response->setContentDisposition(
-                ResponseHeaderBag::DISPOSITION_ATTACHMENT,
-                $saved_filename
-            );
+            $response->headers->set("Content-Disposition", ResponseHeaderBag::DISPOSITION_ATTACHMENT, $saved_filename);
         }
     }
 
