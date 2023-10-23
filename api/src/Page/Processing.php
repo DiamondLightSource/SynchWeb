@@ -582,6 +582,8 @@ class Processing extends Page {
             // Specify whether to load map or model, default is model
             $this->has_arg('map') ? $this->arg('map') : false
         );
+        
+        error_log('mapmodel: '.$mapmodel);
 
         if (file_exists($mapmodel)) {
             $this->app->response->headers->set(
@@ -589,6 +591,11 @@ class Processing extends Page {
                 filesize($mapmodel)
             );
             readfile($mapmodel);
+        } elseif (file_exists($mapmodel.'.gz')) {
+            $zd = gzopen($mapmodel.'.gz', 'r');
+            $log = gzread($zd, 10000000);
+            gzclose($zd);
+            $this->app->response()->body($log);
         } else {
             $this->_error('Could not find map / model');
         }
