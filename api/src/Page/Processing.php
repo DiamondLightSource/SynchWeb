@@ -518,17 +518,27 @@ class Processing extends Page {
         $im = $plugin->images($this->has_arg('n') ? $this->arg("n") : 0);
         if ($im) {
             if (file_exists($im)) {
-                $ext = pathinfo($im, PATHINFO_EXTENSION);
-                if (in_array($ext, array('png', 'jpg', 'jpeg', 'gif'))) {
-                    $head = 'image/' . $ext;
-                }
-
+                $this->_set_content_type_header($im);
                 $this->_browser_cache();
-                $this->app->contentType($head);
                 readfile($im);
+            } elseif (file_exists($im.'.gz')) {
+                $zd = gzopen($im.'.gz', 'r');
+                $image = gzread($zd, 10000000);
+                gzclose($zd);
+                $this->_set_content_type_header($im);
+                $this->_browser_cache();
+                $this->app->response()->body($image);
             } else {
                 $this->_error("No such image");
             }
+        }
+    }
+
+    function _set_content_type_header($im) {
+        $ext = pathinfo($im, PATHINFO_EXTENSION);
+        if (in_array($ext, array('png', 'jpg', 'jpeg', 'gif'))) {
+            $head = 'image/' . $ext;
+            $this->app->contentType($head);
         }
     }
 
