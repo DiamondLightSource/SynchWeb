@@ -593,8 +593,6 @@ class Processing extends Page {
             $this->has_arg('map') ? $this->arg('map') : false
         );
         
-        error_log('mapmodel: '.$mapmodel);
-
         if (file_exists($mapmodel)) {
             $this->app->response->headers->set(
                 "Content-Length",
