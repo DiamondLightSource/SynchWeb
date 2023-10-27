@@ -34,7 +34,7 @@ class BigEPPhasing extends DownstreamPlugin {
             if (file_exists($model['FILE'])) {
                 $json_str = file_get_contents($model['FILE']);
             } elseif (file_exists($model['FILE'].'.gz')) {
-                $json_str = readgzfile($model['FILE'].'.gz');
+                $json_str = gzdecode(file_get_contents($model['FILE'].'.gz'));
             }
             if (isset($json_str)) {
                 $json_data = json_decode($json_str, true);

@@ -18,7 +18,7 @@ class FastEp extends DownstreamPlugin {
             if (file_exists($pdb["FILE"])) {
                 $pdb = file_get_contents($pdb["FILE"]);
             } elseif (file_exists($pdb['FILE'].'.gz')) {
-                $pdb = readgzfile($pdb['FILE'].'.gz');
+                $pdb = gzdecode(file_get_contents($pdb['FILE'].'.gz'));
             } else {
                 $this->_error('Could not find sad_fa.pdb file');
             }

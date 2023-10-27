@@ -424,8 +424,10 @@ class Processing extends Page {
             if ($downstream["PARAMETERS"]) {
                 $str_params = explode(',', $downstream["PARAMETERS"]);
                 foreach ($str_params as $str_param) {
-                    list($key, $value) = explode('=', $str_param);
-                    $params[$key] = $value;
+                    if (str_contains($str_param, '=')) {
+                        list($key, $value) = explode('=', $str_param);
+                        $params[$key] = $value;
+                    }
                 }
             }
             $downstream['PARAMETERS'] = $params;
@@ -522,10 +524,9 @@ class Processing extends Page {
                 $this->_browser_cache();
                 readfile($im);
             } elseif (file_exists($im.'.gz')) {
-                $image = readgzfile($im.'.gz');
                 $this->_set_content_type_header($im);
                 $this->_browser_cache();
-                $this->app->response()->body($image);
+                readgzfile($im.'.gz');
             } else {
                 $this->_error("No such image");
             }
@@ -598,8 +599,7 @@ class Processing extends Page {
             );
             readfile($mapmodel);
         } elseif (file_exists($mapmodel.'.gz')) {
-            $log = readgzfile($mapmodel.'.gz');
-            $this->app->response()->body($log);
+            readgzfile($mapmodel.'.gz');
         } else {
             $this->_error('Could not find map / model');
         }

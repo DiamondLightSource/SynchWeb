@@ -139,7 +139,7 @@ class Download extends Page
             if (file_exists($json)) {
                 $cont = file_get_contents($json);
             } elseif (file_exists($json.'.gz')) {
-                $cont = readgzfile($json.'.gz');
+                $cont = gzdecode(file_get_contents($json.'.gz'));
             }
 
             if (isset($cont)) {
