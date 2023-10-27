@@ -45,7 +45,7 @@ class FastEp extends DownstreamPlugin {
             if (file_exists($lst['FILE'])) {
                 $lst = file_get_contents($lst['FILE']);
             } elseif (file_exists($lst['FILE'].'.gz')) {
-                $lst = readgzfile($lst['FILE'].'.gz');
+                $lst = gzdecode(file_get_contents($lst['FILE'].'.gz'));
             } else {
                 $this->_error('Could not find sad.lst file');
             }
