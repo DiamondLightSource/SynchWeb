@@ -265,22 +265,25 @@ class Download extends Page
 
         // Do the check first, if no file quit early
         if (file_exists($filename)) {
-            $cont = file_get_contents($filename);
+            $response = new BinaryFileResponse($filename);
+            $this->set_mime_content($response, $filename, $id);
+            $response->headers->set("Content-Length", filesize($filename));
         } elseif (file_exists($filename.'.gz')) {
-            $zd = gzopen($filename.'.gz', 'r');
-            $cont = gzread($zd, 10000000);
-            gzclose($zd);
-        }
-
-        if (isset($cont)) {
-            $response = new Response();
-            $response->setContent($cont);
-            $this->set_mime_content($response, $file['FILENAME'], $id);
-            $response->send();
-            exit();
+            $filename = $filename.'.gz';
+            if ($this->arg('download') == 1) {
+                // View log file, so unzip and serve
+                $response = new Response(readgzfile($filename));
+                $this->set_mime_content($response, $file['FILENAME'], $id);
+            } else {
+                // Download gzipped file
+                $response = new BinaryFileResponse($filename);
+                $this->set_mime_content($response, $filename, $id);
+                $response->headers->set("Content-Length", filesize($filename));
+            }
         } else {
             $this->_error("No such file, the specified file " . $filename . " doesn't exist");
         }
+        $response->send();
     }
 
 
