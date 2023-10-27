@@ -85,10 +85,7 @@ class Download extends Page
         if ($filesystem->exists($data)) {
             $response = new BinaryFileResponse($data);
             $response->headers->set("Content-Type", "application/octet-stream");
-            $response->setContentDisposition(
-                ResponseHeaderBag::DISPOSITION_ATTACHMENT,
-                $this->arg('visit') . '_download.zip'
-            );
+            $this->_set_disposition_attachment($response, $this->arg('visit') . '_download.zip');
             $response->send();
         } else
             $this->_error('There doesnt seem to be a data archive available for this visit');
@@ -311,7 +308,7 @@ class Download extends Page
                 WHERE dcg.sessionid=:1 ORDER BY dc.starttime", array($vis['SESSIONID']));
 
         $this->app->response->headers->set("Content-type", "application/vnd.ms-excel");
-        $this->app->response->headers->set("Content-disposition", "attachment; filename=" . $vis['ST'] . "_" . $vis['BEAMLINENAME'] . "_" . $this->arg('visit') . ".csv");
+        $this->_set_disposition_attachment($this->app->response, $vis['ST'] . "_" . $vis['BEAMLINENAME'] . "_" . $this->arg('visit') . ".csv");
         print "Image prefix,Beamline,Run no,Start Time,Sample Name,Protein Acronym,# images, Wavelength (angstrom), Distance (mm), Exp. Time (sec), Phi start (deg), Phi range (deg), Xbeam (mm), Ybeam (mm), Detector resol. (angstrom), Comments\n";
         foreach ($rows as $r) {
             $r['COMMENTS'] = '"' . $r['COMMENTS'] . '"';
@@ -508,23 +505,35 @@ class Download extends Page
 
         if (in_array($path_ext, array('html', 'htm'))) {
             $response->headers->set("Content-Type", "text/html");
-            $response->headers->set("Content-Disposition", ResponseHeaderBag::DISPOSITION_INLINE);
+            $this->_set_disposition_inline($response);
         } elseif ($path_ext == 'pdf') {
             $response->headers->set("Content-Type", "application/pdf");
-            $response->headers->set("Content-Disposition", "attachment; filename=".$saved_filename);
+            $this->_set_disposition_attachment($response, $saved_filename);
         } elseif ($path_ext == 'png') {
             $response->headers->set("Content-Type", "image/png");
-            $response->headers->set("Content-Disposition", "attachment; filename=".$saved_filename);
+            $this->_set_disposition_attachment($response, $saved_filename);
         } elseif (in_array($path_ext, array('jpg', 'jpeg'))) {
             $response->headers->set("Content-Type", "image/jpeg");
-            $response->headers->set("Content-Disposition", "attachment; filename=".$saved_filename);
+            $this->_set_disposition_attachment($response, $saved_filename);
         } elseif (in_array($path_ext, array('log', 'txt', 'error', 'LP', 'json', 'lsa'))) {
             $response->headers->set("Content-Type", "text/plain");
-            $response->headers->set("Content-Disposition", ResponseHeaderBag::DISPOSITION_INLINE);
+            $this->_set_disposition_inline($response);
         } else {
             $response->headers->set("Content-Type", "application/octet-stream");
-            $response->headers->set("Content-Disposition", "attachment; filename=".$saved_filename);
+            $this->_set_disposition_attachment($response, $saved_filename);
         }
+    }
+
+    function _set_disposition_attachment($response, $filename) {
+        $response->headers->set("Content-Disposition",
+            ResponseHeaderBag::makeDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT, $filename)
+        );
+    }
+
+    function _set_disposition_inline($response) {
+        $response->headers->set("Content-Disposition",
+            ResponseHeaderBag::makeDisposition(ResponseHeaderBag::DISPOSITION_INLINE, '')
+        );
     }
 
 
@@ -557,25 +566,11 @@ class Download extends Page
         if ($filesystem->exists($data)) {
             $response = new BinaryFileResponse($data);
             $response->headers->set("Content-Type", "application/octet-stream");
-            $response->setContentDisposition(
-                ResponseHeaderBag::DISPOSITION_ATTACHMENT,
-                $this->arg('id') . '_download.zip'
-            );
+            $this->_set_disposition_attachment($response, $this->arg('id') . '_download.zip');
             $response->send();
         } else {
             error_log("Download file " . $data . " not found");
             $this->_error('File not found on filesystem', 404);
         }
-    }
-
-
-    # ------------------------------------------------------------------------
-    # Force browser to download file
-    # Deprecated function now we are using symfony filesystem
-    function _header($f)
-    {
-        header("Content-Type: application/octet-stream");
-        header("Content-Transfer-Encoding: Binary");
-        header("Content-disposition: attachment; filename=\"$f\"");
     }
 }
