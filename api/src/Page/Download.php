@@ -511,19 +511,19 @@ class Download extends Page
             $response->headers->set("Content-Disposition", ResponseHeaderBag::DISPOSITION_INLINE);
         } elseif ($path_ext == 'pdf') {
             $response->headers->set("Content-Type", "application/pdf");
-            $response->headers->set("Content-Disposition", ResponseHeaderBag::DISPOSITION_ATTACHMENT, $saved_filename);
+            $response->headers->set("Content-Disposition", "attachment; filename=".$saved_filename);
         } elseif ($path_ext == 'png') {
             $response->headers->set("Content-Type", "image/png");
-            $response->headers->set("Content-Disposition", ResponseHeaderBag::DISPOSITION_ATTACHMENT, $saved_filename);
+            $response->headers->set("Content-Disposition", "attachment; filename=".$saved_filename);
         } elseif (in_array($path_ext, array('jpg', 'jpeg'))) {
             $response->headers->set("Content-Type", "image/jpeg");
-            $response->headers->set("Content-Disposition", ResponseHeaderBag::DISPOSITION_ATTACHMENT, $saved_filename);
+            $response->headers->set("Content-Disposition", "attachment; filename=".$saved_filename);
         } elseif (in_array($path_ext, array('log', 'txt', 'error', 'LP', 'json', 'lsa'))) {
             $response->headers->set("Content-Type", "text/plain");
             $response->headers->set("Content-Disposition", ResponseHeaderBag::DISPOSITION_INLINE);
         } else {
             $response->headers->set("Content-Type", "application/octet-stream");
-            $response->headers->set("Content-Disposition", ResponseHeaderBag::DISPOSITION_ATTACHMENT, $saved_filename);
+            $response->headers->set("Content-Disposition", "attachment; filename=".$saved_filename);
         }
     }
 
