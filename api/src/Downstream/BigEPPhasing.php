@@ -28,14 +28,13 @@ class BigEPPhasing extends DownstreamPlugin {
         $dat['IMAGE'] = file_exists($image) || file_exists($image.'.gz');
 
         $model = $this->_get_attachments('big_ep_model_ispyb.json');
+
         $dat['HASMODEL'] = $model && (file_exists($model['FILE']) || file_exists($model['FILE'].'.gz'));
         if ($model) {
             if (file_exists($model['FILE'])) {
                 $json_str = file_get_contents($model['FILE']);
             } elseif (file_exists($model['FILE'].'.gz')) {
-                $zd = gzopen($model['FILE'].'.gz', 'r');
-                $json_str = gzread($zd, 10000000);
-                gzclose($zd);
+                $json_str = readgzfile($model['FILE'].'.gz');
             }
             if (isset($json_str)) {
                 $json_data = json_decode($json_str, true);

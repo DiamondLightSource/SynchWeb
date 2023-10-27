@@ -18,9 +18,7 @@ class FastEp extends DownstreamPlugin {
             if (file_exists($pdb["FILE"])) {
                 $pdb = file_get_contents($pdb["FILE"]);
             } elseif (file_exists($pdb['FILE'].'.gz')) {
-                $zd = gzopen($pdb['FILE'].'.gz', 'r');
-                $pdb = gzread($zd, 10000000);
-                gzclose($zd);
+                $pdb = readgzfile($pdb['FILE'].'.gz');
             } else {
                 $this->_error('Could not find sad_fa.pdb file');
             }
@@ -47,9 +45,7 @@ class FastEp extends DownstreamPlugin {
             if (file_exists($lst['FILE'])) {
                 $lst = file_get_contents($lst['FILE']);
             } elseif (file_exists($lst['FILE'].'.gz')) {
-                $zd = gzopen($lst['FILE'].'.gz', 'r');
-                $lst = gzread($zd, 10000000);
-                gzclose($zd);
+                $lst = readgzfile($lst['FILE'].'.gz');
             } else {
                 $this->_error('Could not find sad.lst file');
             }

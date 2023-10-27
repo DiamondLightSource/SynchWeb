@@ -522,9 +522,7 @@ class Processing extends Page {
                 $this->_browser_cache();
                 readfile($im);
             } elseif (file_exists($im.'.gz')) {
-                $zd = gzopen($im.'.gz', 'r');
-                $image = gzread($zd, 10000000);
-                gzclose($zd);
+                $image = readgzfile($im.'.gz');
                 $this->_set_content_type_header($im);
                 $this->_browser_cache();
                 $this->app->response()->body($image);
@@ -600,9 +598,7 @@ class Processing extends Page {
             );
             readfile($mapmodel);
         } elseif (file_exists($mapmodel.'.gz')) {
-            $zd = gzopen($mapmodel.'.gz', 'r');
-            $log = gzread($zd, 10000000);
-            gzclose($zd);
+            $log = readgzfile($mapmodel.'.gz');
             $this->app->response()->body($log);
         } else {
             $this->_error('Could not find map / model');

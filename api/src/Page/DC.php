@@ -1606,9 +1606,7 @@ class DC extends Page
         if (file_exists($file)) {
             $log = file_get_contents($file);
         } elseif (file_exists($file.'.gz')) {
-            $zd = gzopen($file.'.gz', 'r');
-            $log = gzread($zd, 10000000);
-            gzclose($zd);
+            $log = readgzfile($file.'.gz');
         }
         if (isset($log)) {
 
