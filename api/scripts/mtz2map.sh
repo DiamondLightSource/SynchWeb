@@ -21,8 +21,13 @@ else
 	if [ -f $1.gz ]; then
 		mtz=/tmp/$2_$3.mtz
 		gunzip -c $1.gz > $mtz
+	else
+		echo "No mtz file found"
+		exit
 	fi
 fi
+
+if [ $3 == 'dimple' -o $3 == 'mrbump' ]; then
 
 if [ -f $4 ]; then
 	pdb=$4
@@ -30,16 +35,13 @@ else
 	if [ -f $4.gz ]; then
 		pdb=/tmp/$2_$3.pdb
 		gunzip -c $4.gz > $pdb
+	else
+		echo "No pdb file found"
+		exit
 	fi
 fi
 
-if [ $3 == 'dimple' -o $3 == 'mrbump' ]; then
-
 if [ $3 == 'dimple' ]; then
-	# fofc2="F1=F SIG1=SIGF PHI=PH2FOFCWT W=FOM"
-	# fofc="F1=F SIG1=SIGF PHI=PHFOFCWT W=FOM"
-	# fofc2="F1=F SIG1=SIGF PHI=PHWT W=FOM"
-	# fofc="F1=F SIG1=SIGF PHI=PHDELWT W=FOM"
 
 	if $root/mtzinfo $mtz | grep -q PH2FOFCWT; then
 		fofc2="F1=2FOFCWT SIG1=SIGF PHI=PH2FOFCWT"
@@ -85,6 +87,7 @@ eof
 gzip "/tmp/$2_$3_2fofc.map"
 gzip "/tmp/$2_$3_fofc.map"
 
+rm -f /tmp/$2_$3.pdb
 
 else
 $root/fft HKLIN $mtz MAPOUT "/tmp/$2_$3.map" << eof
@@ -96,10 +99,8 @@ F1=F SIG1=SIGF PHI=PHI W=FOM
 end
 eof
 
-#$mm MAPIN "/tmp/$2_ep.map.tmp" MAPOUT "/tmp/$2_ep.map" XYZIN "$pdb" << eof
-#BORDER 5
-#eof
-
 gzip "/tmp/$2_$3.map"
 
 fi
+
+rm -f /tmp/$2_$3.mtz

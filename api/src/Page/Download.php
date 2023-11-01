@@ -257,15 +257,16 @@ class Download extends Page
     {
         // We don't want to allow unlimited file sizes
         ini_set('memory_limit', '512M');
+        $filesystem = new Filesystem();
 
         $filename = $file['FILEPATH'] . '/' . $file['FILENAME'];
 
         // Do the check first, if no file quit early
-        if (file_exists($filename)) {
+        if ($filesystem->exists($filename)) {
             $response = new BinaryFileResponse($filename);
             $this->set_mime_content($response, $filename, $id);
             $response->headers->set("Content-Length", filesize($filename));
-        } elseif (file_exists($filename.'.gz')) {
+        } elseif ($filesystem->exists($filename.'.gz')) {
             $filename = $filename.'.gz';
             if ($this->arg('download') == 1) {
                 // View log file, so unzip and serve
@@ -479,7 +480,7 @@ class Download extends Page
                 if (file_exists($filename)) {
                     $zip->addFileFromPath(basename($filename), $filename);
                 } elseif (file_exists($filename.'.gz')) {
-                    $zip->addFileFromPath(basename($filename), $filename.'.gz');
+                    $zip->addFileFromPath(basename($filename).'.gz', $filename.'.gz');
                 }
             }
 

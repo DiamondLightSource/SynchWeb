@@ -16,14 +16,14 @@ class FastEp extends DownstreamPlugin {
         $pdb = $this->_get_attachments("sad_fa.pdb");
         if ($pdb) {
             if (file_exists($pdb["FILE"])) {
-                $pdb = file_get_contents($pdb["FILE"]);
+                $pdb_cont = file_get_contents($pdb["FILE"]);
             } elseif (file_exists($pdb['FILE'].'.gz')) {
-                $pdb = gzdecode(file_get_contents($pdb['FILE'].'.gz'));
-            } else {
-                $this->_error('Could not find sad_fa.pdb file');
+                $pdb_cont = gzdecode(file_get_contents($pdb['FILE'].'.gz'));
             }
+        }
 
-            foreach (explode("\n", $pdb) as $l) {
+        if (isset($pdb_cont)) {
+            foreach (explode("\n", $pdb_cont) as $l) {
                 if (strpos($l, 'HETATM') !== false) {
                     $parts = preg_split('/\s+/', $l);
                     array_push($ats, array(
@@ -43,19 +43,19 @@ class FastEp extends DownstreamPlugin {
         $lst = $this->_get_attachments("sad.lst");
         if ($lst) {
             if (file_exists($lst['FILE'])) {
-                $lst = file_get_contents($lst['FILE']);
+                $lst_cont = file_get_contents($lst['FILE']);
             } elseif (file_exists($lst['FILE'].'.gz')) {
-                $lst = gzdecode(file_get_contents($lst['FILE'].'.gz'));
-            } else {
-                $this->_error('Could not find sad.lst file');
+                $lst_cont = gzdecode(file_get_contents($lst['FILE'].'.gz'));
             }
+        }
 
+        if (isset($lst_cont)) {
             $p1 = array();
             $p2 = array();
 
             $graph_vals = 0;
             $gvals = array();
-            foreach (explode("\n", $lst) as $l) {
+            foreach (explode("\n", $lst_cont) as $l) {
                 if (
                     strpos(
                         $l,
