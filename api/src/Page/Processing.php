@@ -424,7 +424,7 @@ class Processing extends Page {
             if ($downstream["PARAMETERS"]) {
                 $str_params = explode(',', $downstream["PARAMETERS"]);
                 foreach ($str_params as $str_param) {
-                    if (str_contains($str_param, '=')) {
+                    if (strpos($str_param, '=')) {
                         list($key, $value) = explode('=', $str_param);
                         $params[$key] = $value;
                     }

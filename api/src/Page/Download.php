@@ -527,13 +527,13 @@ class Download extends Page
 
     function _set_disposition_attachment($response, $filename) {
         $response->headers->set("Content-Disposition",
-            ResponseHeaderBag::makeDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT, $filename)
+            (new ResponseHeaderBag())->makeDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT, $filename)
         );
     }
 
     function _set_disposition_inline($response) {
         $response->headers->set("Content-Disposition",
-            ResponseHeaderBag::makeDisposition(ResponseHeaderBag::DISPOSITION_INLINE, '')
+        (new ResponseHeaderBag())->makeDisposition(ResponseHeaderBag::DISPOSITION_INLINE, '')
         );
     }
 
