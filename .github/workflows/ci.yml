@@ -61,9 +61,8 @@ jobs:
           php_version: 7.3
           version: 9
 
-      # Note, lint errors are being escaped here - so this will report, but not cause the build to fail
       - name: Run Psalm
-        run: psalm --output-format=github || exit 0
+        run: psalm --output-format=github
 
   js_build:
     name: JavaScript build, test and lint

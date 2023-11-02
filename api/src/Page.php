@@ -923,6 +923,9 @@ class Page
         if ($ds)
         {
             // Explictly set the protocol version to prevent bind errors
+            /**
+             * @psalm-suppress UndefinedConstant
+             */
             ldap_set_option($ds, LDAP_OPT_PROTOCOL_VERSION, 3);
             $r = ldap_bind($ds);
             $sr = ldap_search($ds, $ldap_search, $search);
