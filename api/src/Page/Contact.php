@@ -167,7 +167,7 @@ class Contact extends Page
                     foreach ($lfields as $i => $f) {
                         if ($this->has_arg($f)) {
                             $c = $f == 'LABNAME' ? 'NAME' : $f;
-                            $this->db->pq('UPDATE laboratory SET '.$c.'=:1 WHERE laboratoryid=:2', array($this->arg($f), $lab['LABORATORYID']));
+                            $this->db->pq('UPDATE laboratory SET '.$c.'=:1 WHERE laboratoryid=:2', array($this->arg($f), $lab[0]['LABORATORYID']));
                         }
                     }
                 }
