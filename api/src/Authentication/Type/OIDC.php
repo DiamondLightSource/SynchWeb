@@ -11,7 +11,7 @@ class OIDC extends AuthenticationParent implements AuthenticationInterface
     private $providerConfig = array();
 
     private function getEndpoints() {
-        if (empty($providerConfig)) {
+        if (empty($this->providerConfig)) {
             global $sso_url, $oidc_client_id, $oidc_client_secret;
 
             $ch = curl_init();
