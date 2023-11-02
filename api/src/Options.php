@@ -21,7 +21,7 @@ class Options
 
             $this->options = array();
             foreach ($options as $o) {
-                $this->options[$o['NAME']] = unserialize($o['VALUE']);
+                $this->options[$o['NAME']] = $o['VALUE'];
                 if ($o['UI'] == 1) $this->public[$o['NAME']] = $this->options[$o['NAME']];
 
             }

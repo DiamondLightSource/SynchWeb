@@ -45,6 +45,7 @@ define(['marionette', 'backbone', 'utils', 'backbone-validation'], function(Mari
             this.hover = {}
             this.showImageStatus = this.getOption('showImageStatus')
             this.showSampleStatus = this.getOption('showSampleStatus')
+            this.showMaxScore = false
             
             Backbone.Validation.bind(this, {
                 collection: this.collection
@@ -61,9 +62,10 @@ define(['marionette', 'backbone', 'utils', 'backbone-validation'], function(Mari
             this.autoscores = scores
         },
 
-        setShowSampleStatus: function(status) {
-            this.showSampleStatus = status
-            this.showImageStatus = !status
+        setShowSampleStatus: function(sampleStatus, imageStatus, showMaxScore) {
+            this.showSampleStatus = sampleStatus
+            this.showImageStatus = imageStatus
+            this.showMaxScore = showMaxScore
             this.drawPlate()
         },
 
@@ -191,7 +193,7 @@ define(['marionette', 'backbone', 'utils', 'backbone-validation'], function(Mari
                         var sampleid = i*this.pt.dropTotal()+did+1
                         var sample = this.collection.findWhere({ LOCATION: sampleid.toString() })
 
-                        if (sample && this.showImageStatus && this.inspectionimages) var im = this.inspectionimages.findWhere({ BLSAMPLEID: sample.get('BLSAMPLEID') })
+                        if (sample && (this.showImageStatus || this.showMaxScore) && this.inspectionimages) var im = this.inspectionimages.findWhere({ BLSAMPLEID: sample.get('BLSAMPLEID') })
                         else var im = null
                         
                         this.ctx.beginPath()
@@ -280,7 +282,17 @@ define(['marionette', 'backbone', 'utils', 'backbone-validation'], function(Mari
                                     this.ctx.fill()  
                                 } 
                             }
+                        }
 
+                        // Show max image score
+                        if (sample && this.showMaxScore) {
+                            if (im) {
+                                var isc = im.get('MAXSCORECOLOUR')
+                                if (isc){
+                                    this.ctx.fillStyle = isc
+                                    this.ctx.fill()
+                                }
+                            }
                         }
 
                         // Auto image scores

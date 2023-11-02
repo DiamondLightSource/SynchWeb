@@ -915,6 +915,10 @@ class Page
         global $ldap_server, $ldap_search;
 
         $ret = array();
+        if (is_null($ldap_server)) {
+            error_log("Ldap server is not configured, not looking up user.");
+            return $ret;
+        }
         $ds = ldap_connect($ldap_server);
         if ($ds)
         {

@@ -424,8 +424,10 @@ class Processing extends Page {
             if ($downstream["PARAMETERS"]) {
                 $str_params = explode(',', $downstream["PARAMETERS"]);
                 foreach ($str_params as $str_param) {
-                    list($key, $value) = explode('=', $str_param);
-                    $params[$key] = $value;
+                    if (str_contains($str_param, '=')) {
+                        list($key, $value) = explode('=', $str_param);
+                        $params[$key] = $value;
+                    }
                 }
             }
             $downstream['PARAMETERS'] = $params;
@@ -518,17 +520,24 @@ class Processing extends Page {
         $im = $plugin->images($this->has_arg('n') ? $this->arg("n") : 0);
         if ($im) {
             if (file_exists($im)) {
-                $ext = pathinfo($im, PATHINFO_EXTENSION);
-                if (in_array($ext, array('png', 'jpg', 'jpeg', 'gif'))) {
-                    $head = 'image/' . $ext;
-                }
-
+                $this->_set_content_type_header($im);
                 $this->_browser_cache();
-                $this->app->contentType($head);
                 readfile($im);
+            } elseif (file_exists($im.'.gz')) {
+                $this->_set_content_type_header($im);
+                $this->_browser_cache();
+                readgzfile($im.'.gz');
             } else {
                 $this->_error("No such image");
             }
+        }
+    }
+
+    function _set_content_type_header($im) {
+        $ext = pathinfo($im, PATHINFO_EXTENSION);
+        if (in_array($ext, array('png', 'jpg', 'jpeg', 'gif'))) {
+            $head = 'image/' . $ext;
+            $this->app->contentType($head);
         }
     }
 
@@ -589,6 +598,8 @@ class Processing extends Page {
                 filesize($mapmodel)
             );
             readfile($mapmodel);
+        } elseif (file_exists($mapmodel.'.gz')) {
+            readgzfile($mapmodel.'.gz');
         } else {
             $this->_error('Could not find map / model');
         }
