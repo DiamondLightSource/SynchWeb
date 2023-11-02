@@ -30,6 +30,7 @@
         :input-index="sampleIndex"
         default-text=""
         size="small"
+        :canCreateNewItem="false"
         :exclude-element-class-list="['custom-add']"
       >
         <template slot-scope="{ option }">
