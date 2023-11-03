@@ -57,6 +57,9 @@
     # - Show at the top of every page on first load
     $motd = 'This is the message of the day.';
 
+    # Synchweb version, displayed in footer of each page
+    $synchweb_version = '';
+
     # Maintainance Mode
     # - Disables site access, showing a message
     # - This is defined in client/js/config.json
