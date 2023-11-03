@@ -52,7 +52,6 @@ class Contact extends Page
                 $fields = array('pe.givenname', 'pe.familyname', 'c.cardname',
                     'l.name', 'l.address', 'l.city', 'l.country', 'pe.phonenumber', 'l.postcode');
                 $where = $where . DatabaseQueryBuilder::getWhereSearch($this->arg('s'), $fields, $args);
-                error_log($where);
             }
 
             $tot = $this->db->pq("SELECT count(c.labcontactid) as tot FROM labcontact c
