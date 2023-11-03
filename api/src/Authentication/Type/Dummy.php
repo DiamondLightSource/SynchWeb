@@ -7,6 +7,16 @@ use SynchWeb\Authentication\AuthenticationParent;
 
 class Dummy extends AuthenticationParent implements AuthenticationInterface
 {
+    function authorise()
+    {
+        return false;
+    }
+
+    function authenticateByCode($code)
+    {
+        return false;
+    }
+    
     function check()
     {
         return false;

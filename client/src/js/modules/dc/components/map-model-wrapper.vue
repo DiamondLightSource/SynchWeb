@@ -1,15 +1,15 @@
 <!-- Map Model Viewer - Wrapper component -->
 <template>
-    <section>
-        <marionette-view
-            v-if="ready"
-            :key="$route.fullPath"
-            :options="options"
-            :preloaded="true"
-            :mview="mview"
-            :breadcrumbs="bc">
-        </marionette-view>
-    </section>
+  <section>
+    <marionette-view
+      v-if="ready"
+      :key="$route.fullPath"
+      :options="options"
+      :preloaded="true"
+      :mview="mview"
+      :breadcrumbs="bc"
+    />
+  </section>
 </template>
 
 <script>
@@ -24,7 +24,7 @@ import DataCollection from 'models/datacollection'
 import store from 'app/store/store'
 
 export default {
-    name: 'dc-mapmodelview-wrapper',
+    name: 'DcMapmodelviewWrapper',
     components: {
         'marionette-view': MarionetteView
     },

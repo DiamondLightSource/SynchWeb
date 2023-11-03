@@ -27,7 +27,7 @@ class Stats extends Page
         
         # Whos online list
         function _online_users() {
-            $rows = $this->db->pq("SELECT a.username, a.comments, TO_CHAR(a.datetime, 'DD-MM-YYYY HH24:MI:SS') as time, CONCAT(CONCAT(p.givenname, ' '), p.familyname) as name  
+            $rows = $this->db->pq("SELECT a.username, a.comments, TO_CHAR(a.datetime, 'DD-MM-YYYY HH24:MI:SS') as time, CONCAT(p.givenname, ' ', p.familyname) as name
                 FROM adminactivity a
                 LEFT OUTER JOIN person p ON p.login = a.username
                 WHERE TIMESTAMPDIFF('MINUTE', a.datetime, CURRENT_TIMESTAMP) < 15 ORDER BY a.datetime DESC");
@@ -37,7 +37,7 @@ class Stats extends Page
         
         
         function _last_actions() {
-            $rows = $this->db->paginate("SELECT a.username, a.comments, TO_CHAR(a.datetime, 'DD-MM-YYYY HH24:MI:SS') as time, CONCAT(CONCAT(p.givenname, ' '), p.familyname) as name 
+            $rows = $this->db->paginate("SELECT a.username, a.comments, TO_CHAR(a.datetime, 'DD-MM-YYYY HH24:MI:SS') as time, CONCAT(p.givenname, ' ', p.familyname) as name
                 FROM adminactivity a 
                 LEFT OUTER JOIN person p ON p.login = a.username
                 WHERE comments LIKE 'ISPyB2%' 
@@ -97,8 +97,10 @@ class Stats extends Page
                            );
             
             $t = $this->has_arg('t') ? $this->arg('t') : 'dc';
-            
-            if (array_key_exists($t, $types)) $this->$types[$t]();
+            if (array_key_exists($t, $types)) {
+                $methodToCall = $types[$t];
+                $this->$methodToCall();
+            }
             else $this->_error('No such stat type');
         }
         

@@ -8,12 +8,25 @@ use SynchWeb\Authentication\AuthenticationParent;
 
 class CAS extends AuthenticationParent implements AuthenticationInterface
 {
+    function authorise()
+    {
+        return false;
+    }
+
+    function authenticateByCode($code)
+    {
+        return false;
+    }
+    
     function check()
     {
         global $cas_url, $cas_sso, $cacert;
 
         if (!$cas_sso) return false;
 
+        /**
+         * @psalm-suppress UndefinedConstant define in CAS.php
+         */
         phpCAS::client(CAS_VERSION_2_0, $cas_url, 443, '/cas');
         phpCAS::setCasServerCACert($cacert);
 

@@ -1,18 +1,5 @@
 // postcss.config.js
 const path = require('path');
-// Disabling purgecss for now because it strips too many styles.
-// TODO - figure out the correct extractor to parse backbone templates (inline and html)
-// const purgecss = require('@fullhuman/postcss-purgecss')({
-
-//   // Specify the paths to all of the template files in your project
-//   content: [
-//     './src/index.php',
-//     './src/**/*.html',
-//     './src/**/*.vue',
-//     './src/**/*.js', /* Lots of classes are used within inline templates... */
-//   ],
-//   defaultExtractor: content => content.match(/[\w-/:]+(?<!:)/g) || []
-// })
 
 module.exports = ({env}) => (
   {
@@ -31,8 +18,6 @@ module.exports = ({env}) => (
       require('postcss-extend-rule'),
       require('tailwindcss'),
       require('autoprefixer'),
-      // Disabling purgecss for now - strips out too many styles
-      // ...process.env.NODE_ENV === 'production' ? [purgecss]: [],
     ]
   }
 )

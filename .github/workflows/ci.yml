@@ -1,0 +1,88 @@
+name: Build and Test SynchWeb
+
+on:
+  push:
+    branches: 
+      - 'master'
+      - 'prerelease'
+      - 'release/**'
+      - 'pre-release/**'
+  pull_request:
+    branches:
+      - 'master'
+      - 'prerelease'
+      - 'release/**'
+      - 'pre-release/**'
+
+defaults:
+  run:
+    shell: bash
+    working-directory: ./api
+
+# Note, jobs do not share the same working environment, whereas steps do.  Also, jobs will run in parallel unless the 'needs' tag is used to flag a dependency    
+jobs:
+  php-build:
+    name: Checkout, build, test and lint PHP code
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup PHP 7.3
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 7.3
+          tools: psalm:4
+
+      - name: Validate composer.json and composer.lock
+        run: composer validate
+
+      - name: Cache Composer packages
+        id: composer-cache
+        uses: actions/cache@v3
+        with:
+          path: vendor
+          key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-php-
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress
+
+      - name: PHPUnit Tests
+        uses: php-actions/phpunit@v3
+        env:
+          XDEBUG_MODE: coverage
+        with:
+          bootstrap: api/vendor/autoload.php
+          configuration: api/tests/phpunit.xml
+          php_extensions: xdebug mysqli zip
+          args: --coverage-text
+          php_version: 7.3
+          version: 9
+
+      - name: Run Psalm
+        run: psalm --output-format=github
+
+  js_build:
+    name: JavaScript build, test and lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Use Node.js 18
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.x
+      - name: JavaScript build, lint and test
+        working-directory: ./client
+        # hack the output from the linting steps to avoid these stopping the builds - we are not going to get 
+        # to a clean output without considerable effort, but it's useful to see the output
+        run: |
+              node --version
+              npm ci
+              npm run build
+              npm run test
+              npm run lint || exit 0
+              npm run lint-vue || exit 0

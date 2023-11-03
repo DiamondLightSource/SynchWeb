@@ -87,7 +87,7 @@ define(['marionette',
                         try {
                             json = $.parseJSON(xhr.responseText)
                         } catch(err) {
-
+                            console.error("Error parsing response:", err)
                         }
                     }
                     app.alert({ message: json.message })
@@ -148,7 +148,7 @@ define(['marionette',
             if (did == this.lastDewarID && !force) return
                 
             this.$el.find('.dewar_name').text(this.dewars.findWhere({ DEWARID: did }).get('CODE'))
-            if (app.proposal && app.proposal.get('ACTIVE') == '1') this.$el.find('.add_container').html('<a class="button" href="/containers/add/did/'+did+'"><i class="fa fa-plus"></i> Add Container</a>')
+            if (app.proposal && app.proposal.get('ACTIVE') == '1') this.$el.find('.add_container').html('<a class="button" data-testid="shipment-add-container" href="/containers/add/did/'+did+'"><i class="fa fa-plus"></i> Add Container</a>')
             this.dewarcontent.dewarID = did
             this.dewarcontent.fetch()
             this.dewarhistory.id = did
@@ -170,6 +170,22 @@ define(['marionette',
 
         refreshDewar: function() {
             this.fetchDewars(true)
+        },
+
+        updateDynamic: function(){
+            dynamic = this.model.get('DYNAMIC')
+            dynamicSelectedValues = [true, 'Yes', 'yes', 'Y', 'y']
+            if (!dynamicSelectedValues.includes(dynamic)) {
+                this.$el.find(".remoteormailin").hide()
+                this.$el.find(".remoteform").hide()
+            } else {
+                industrial_codes = ['in', 'sw']
+                industrial_visit = industrial_codes.includes(app.prop.slice(0,2))
+                if (industrial_visit) {
+                    this.$el.find(".remoteormailin").show()
+                }
+                this.$el.find(".remoteform").show()
+            }
         },
         
         onRender: function() {
@@ -194,6 +210,30 @@ define(['marionette',
             edit.create('PHYSICALLOCATION', 'text')
             edit.create('READYBYTIME', 'time')
             edit.create('CLOSETIME', 'time')
+
+
+            edit.create("ENCLOSEDHARDDRIVE", 'select', { data: {'Yes': 'Yes', 'No': 'No'}})
+            edit.create("ENCLOSEDTOOLS", 'select', { data: {'Yes': 'Yes', 'No': 'No'}})
+            edit.create("DYNAMIC", 'select', { data: {'Yes': 'Yes', 'No': 'No'}})
+            industrial_codes = ['in', 'sw']
+            industrial_visit = industrial_codes.includes(app.prop.slice(0,2))
+            if (!industrial_visit) {
+                this.$el.find(".remoteormailin").hide()
+            } else {
+                edit.create("REMOTEORMAILIN", 'select', { data: {'Remote': 'Remote', 'Mail-in': 'Mail-in', 'Other': 'Other'}})
+            }
+
+            edit.create("SESSIONLENGTH", 'text')
+            edit.create("ENERGY", 'text')
+            edit.create("MICROFOCUSBEAM", 'select', { data: {'Yes': 'Yes', 'No': 'No'}})
+            edit.create("SCHEDULINGRESTRICTIONS", 'text')
+            edit.create("LASTMINUTEBEAMTIME", 'select', { data: {'Yes': 'Yes', 'No': 'No'}})
+            edit.create("DEWARGROUPING", 'select', { data: {'Yes': 'Yes', 'No': 'No', 'Don\'t mind': 'Don\'t mind'}})
+            edit.create("EXTRASUPPORTREQUIREMENT", 'text');
+            edit.create("MULTIAXISGONIOMETRY", 'select', { data: {'Yes': 'Yes', 'No': 'No'}})
+
+            this.updateDynamic()
+            this.listenTo(this.model, "change:DYNAMIC", this.updateDynamic)
             
             var self = this
             this.contacts = new LabContacts(null, { state: { pageSize: 9999 } })

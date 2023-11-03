@@ -1,26 +1,78 @@
 <template>
-    <div id="vue-header" class="tw-flex tw-justify-between tw-items-center tw-h-10 tw-bg-header-background">
-      <div class="">
-        <router-link class="tw-mx-1 tw-inline lg:tw-hidden hover:tw-text-header-hover-color" @click.native="showSidebar" to=""><span class="fa fa-2x fa-bars"/></router-link>
-        <router-link class="tw-mx-1 tw-text-header-color hover:tw-text-header-hover-color" to="/"><span class="fa fa-2x fa-home"/><p class="tw-hidden lg:tw-inline"> Home </p></router-link>
-        <router-link class="tw-mx-1 tw-text-header-color hover:tw-text-header-hover-color" v-if="isStaff" to="/cal"><span class="fa fa-2x fa-calendar"/><p class="tw-hidden lg:tw-inline"> Calendar </p></router-link>
-        <router-link class="tw-mx-1 tw-text-header-color hover:tw-text-header-hover-color" v-if="isLoggedIn" to="/" v-on:click.native="logout"><span class="fa fa-2x fa-sign-out"/><p class="tw-hidden lg:tw-inline"> Logout </p></router-link>
-        <router-link class="tw-mx-1 tw-text-header-color hover:tw-text-header-hover-color" v-else to="/login" @click.prevent="login"><span class="fa fa-2x fa-sign-in"/> <p class="tw-hidden lg:tw-inline"> Login </p></router-link>
-      </div>
-      <div v-if="isStaff" class="tw-flex">
-        <!-- Only show those links with correct permission -->
-        <router-link v-for="(item, index) in validStaffMenus"
-          :key="index"
-          class="tw-mx-1 tw-text-header-color hover:tw-text-header-hover-color"
-          :to="item.link | link"
-          :alt="item.name">
-          <div class="tw-flex tw-flex-row tw-items-center">
-            <i class="fa fa-2x" v-bind:class="item.icon"/>
-            <p class="tw-text-xs tw-mx-1 tw-hidden lg:tw-inline">{{item.name}}</p>
-          </div>
-          </router-link>
-      </div>
+  <div
+    id="vue-header"
+    class="tw-flex tw-justify-between tw-items-center tw-h-10 tw-bg-header-background"
+  >
+    <div class="">
+      <router-link
+        class="tw-mx-1 tw-inline lg:tw-hidden hover:tw-text-header-hover-color"
+        to=""
+        @click.native="showSidebar"
+      >
+        <span class="fa fa-2x fa-bars" />
+      </router-link>
+      <router-link
+        class="tw-mx-1 tw-text-header-color hover:tw-text-header-hover-color"
+        to="/"
+      >
+        <span class="fa fa-2x fa-home" /><p class="tw-hidden lg:tw-inline">
+          Home
+        </p>
+      </router-link>
+      <router-link
+        v-if="isStaff"
+        class="tw-mx-1 tw-text-header-color hover:tw-text-header-hover-color"
+        to="/cal"
+      >
+        <span class="fa fa-2x fa-calendar" /><p class="tw-hidden lg:tw-inline">
+          Calendar
+        </p>
+      </router-link>
+      <router-link
+        v-if="isLoggedIn"
+        class="tw-mx-1 tw-text-header-color hover:tw-text-header-hover-color"
+        to="/"
+        @click.native="logout"
+      >
+        <span class="fa fa-2x fa-sign-out" /><p class="tw-hidden lg:tw-inline">
+          Logout
+        </p>
+      </router-link>
+      <router-link
+        v-else
+        class="tw-mx-1 tw-text-header-color hover:tw-text-header-hover-color"
+        to="/login"
+        @click.prevent="login"
+      >
+        <span class="fa fa-2x fa-sign-in" /> <p class="tw-hidden lg:tw-inline">
+          Login
+        </p>
+      </router-link>
     </div>
+    <div
+      v-if="isStaff"
+      class="tw-flex"
+    >
+      <!-- Only show those links with correct permission -->
+      <router-link
+        v-for="(item, index) in validStaffMenus"
+        :key="index"
+        class="tw-mx-1 tw-text-header-color hover:tw-text-header-hover-color"
+        :to="item.link | link"
+        :alt="item.name"
+      >
+        <div class="tw-flex tw-flex-row tw-items-center">
+          <i
+            class="fa fa-2x"
+            :class="item.icon"
+          />
+          <p class="tw-text-xs tw-mx-1 tw-hidden lg:tw-inline">
+            {{ item.name }}
+          </p>
+        </div>
+      </router-link>
+    </div>
+  </div>
 </template>
 
 <script>
@@ -28,6 +80,12 @@ import EventBus from './utils/event-bus.js'
 
 export default {
     name: 'Header',
+    filters: {
+        link: function(url) {
+            // Make sure all menu options are absolute paths
+            return (url[0] !== '/') ? '/' + url : url
+        }
+    },
     props: {
       // Array of menu items: { name, link, icon, permission }
       'staff_menus' : Array
@@ -42,8 +100,8 @@ export default {
         isLoggedIn : function(){ return this.$store.getters['auth/isLoggedIn']},
         isStaff : function(){ return this.$store.getters['user/isStaff']},
         currentProposal : function(){ return this.$store.getters['proposal/currentProposal']},
-        ssoUrl: function() {
-          return this.$store.sso_url + '/cas/login?service='+encodeURIComponent(window.location.href)
+        sso: function() {
+          return this.$store.getters.sso;
         },
         validStaffMenus: function() {
           // filter the list of staff menus based on their permissions
@@ -58,23 +116,19 @@ export default {
       logout: function () {
         this.$store.dispatch('auth/logout')
         .then(() => {
-          if (this.$store.sso) this.$router.replace(this.$store.sso_url+'/cas/logout')
-          else this.$router.push('/')
+          if (this.sso) {
+            this.$router.push('/logout');
+          } else {
+            this.$router.push('/');
+          }
         })
       },
       login: function() {
-        if (this.$store.sso) this.$router.replace(this.ssoUrl)
-        else this.$router.push('/login')
+        this.$router.push('/login')
       },
       showSidebar: function() {
         EventBus.$emit('toggleSidebar')
       }
-    },
-    filters: {
-        link: function(url) {
-            // Make sure all menu options are absolute paths
-            return (url[0] !== '/') ? '/' + url : url
-        }
     },
 }
 </script>

@@ -1,19 +1,49 @@
 <template>
   <div class="content">
-    <filter-pills class="tw-mt-3" v-if="displayFilters" :filter-data="beamlines" value-field="id" text-field="name" :selected="this.selectedBeamline" @filter-selected="updateSelectedFilter" />
-    <h1>Visits for {{ months[currentMonth] }} {{ currentYear }}</h1>
+    <filter-pills
+      v-if="displayFilters"
+      class="tw-mt-3"
+      :filter-data="beamlines"
+      value-field="id"
+      text-field="name"
+      :selected="selectedBeamline"
+      @filter-selected="updateSelectedFilter"
+    />
+    <h1 data-testid="status-calendar-header">Visits for {{ months[currentMonth] }} {{ currentYear }}</h1>
 
     <div class="tw-w-full tw-flex tw-mb-2">
-      <div class="calendar-nav-button" @click="goToPreviousYear"> {{ previousYear}} </div>
-      <div class="calendar-nav-button" @click="goToPreviousMonth">{{ previousMonth}}</div>
-      <div class="calendar-nav-button" @click="goToNextMonth">{{ nextMonth }}</div>
-      <div class="calendar-nav-button" @click="goToNextYear">{{ nextYear }}</div>
+      <div
+        class="calendar-nav-button"
+        @click="goToPreviousYear"
+      >
+        {{ previousYear }}
+      </div>
+      <div
+        class="calendar-nav-button"
+        @click="goToPreviousMonth"
+      >
+        {{ previousMonth }}
+      </div>
+      <div
+        class="calendar-nav-button"
+        @click="goToNextMonth"
+      >
+        {{ nextMonth }}
+      </div>
+      <div
+        class="calendar-nav-button"
+        @click="goToNextYear"
+      >
+        {{ nextYear }}
+      </div>
     </div>
 
     <div class="tw-w-full tw-hidden sm:tw-flex">
       <div
+        v-for="(day, dayIndex) in days"
+        :key="dayIndex"
         class="calendar-day-header"
-        v-for="(day, dayIndex) in days" :key="dayIndex">
+      >
         {{ day }}
       </div>
     </div>
@@ -22,7 +52,8 @@
       <div
         v-for="(weekValues, weekKey) in getDatesForDay(startDayOfMonth)"
         :key="weekKey"
-        class="tw-w-full tw-flex tw-my-1/2">
+        class="tw-w-full tw-flex tw-my-1/2"
+      >
         <div
           v-for="(date, dateIndex) in weekValues"
           :key="dateIndex"
@@ -30,68 +61,89 @@
             'tw-bg-content-cal-background': date && !isToday(date),
             'tw-bg-content-cal-header-background': date && isToday(date)
           }"
-          class="sm:tw-w-1/7  tw-h-32 tw-mx-1/2">
+          class="sm:tw-w-1/7  tw-h-32 tw-mx-1/2"
+        >
           <div
             v-if="date"
             class="tw-hidden sm:tw-block tw-p-2 tw-h-40 tw-overflow-hidden hover:tw-overflow-visible hover:tw-h-auto hover:tw-relative"
             @mouseenter="onHover(`day-${date}-${currentSelectedMonth}-${currentYear}`, true)"
-            @mouseleave="onHover(`day-${date}-${currentSelectedMonth}-${currentYear}`, false)">
+            @mouseleave="onHover(`day-${date}-${currentSelectedMonth}-${currentYear}`, false)"
+          >
             <div :class="['sm:tw-bg-transparent', sortedVisitsByDay[date].length > 0 ? 'tw-bg-content-filter-background' : '']">
-              <p class="tw-p-4 sm:tw-p-1">{{ date }}</p>
+              <p class="tw-p-4 sm:tw-p-1">
+                {{ date }}
+              </p>
             </div>
             <calendar-day-events
-              class="tw-hidden sm:tw-block"
               :ref="`day-${date}-${currentSelectedMonth}-${currentYear}`"
+              class="tw-hidden sm:tw-block"
               :date="date"
-              :isToday="isToday(date)"
+              :is-today="isToday(date)"
               :day="days[dateIndex]"
               :visits-data="sortedVisitsByDay[date]"
               :month="currentSelectedMonth"
-              :year="currentYear"/>
+              :year="currentYear"
+            />
           </div>
         </div>
       </div>
     </div>
 
     <div
-      class="tw-w-full sm:tw-hidden tw-flex tw-flex-row tw-overflow-x-scroll"
       id="mobileDateWrapper"
+      class="tw-w-full sm:tw-hidden tw-flex tw-flex-row tw-overflow-x-scroll"
       @scroll="handleScrollDebounced({
         event: $event,
         targetId: 'mobileDayVisitsWrapper',
         targetDirection: 'ttb',
         sourceDirection: 'rtl'
-      })">
+      })"
+    >
       <div
         v-for="([date, day], index) in Object.entries(dateAndDays)"
-        @click="goToDate(date)"
         :key="index"
         :data-visit="date && sortedVisitsByDay[date].length > 0 ? date : ''"
         :class="[
           date && sortedVisitsByDay[date].length > 0 ? 'tw-bg-content-filter-background' : '',
           'tw-mx-1',
           'tw-cursor-pointer'
-        ]">
-        <p class="tw-p-4 sm:tw-p-1" :class="[isPastDate(date) ? 'tw-text-content-cal-past-date' : '']">{{ day }}</p>
-        <p class="tw-p-4 sm:tw-p-1 tw-text-center" :class="[isPastDate(date) ? 'tw-text-content-cal-past-date' : '']">{{ date }}</p>
+        ]"
+        @click="goToDate(date)"
+      >
+        <p
+          class="tw-p-4 sm:tw-p-1"
+          :class="[isPastDate(date) ? 'tw-text-content-cal-past-date' : '']"
+        >
+          {{ day }}
+        </p>
+        <p
+          class="tw-p-4 sm:tw-p-1 tw-text-center"
+          :class="[isPastDate(date) ? 'tw-text-content-cal-past-date' : '']"
+        >
+          {{ date }}
+        </p>
       </div>
     </div>
     <div
+      id="mobileDayVisitsWrapper"
       class="tw-w-full sm:tw-hidden tw-overflow-y-scroll mobile-calendar-view tw-mt-4"
-      id="mobileDayVisitsWrapper">
-
+    >
       <div
         v-for="([date, day], index) in Object.entries(dateAndDays)"
         :key="index"
-        :data-visit="date && sortedVisitsByDay[date].length > 0 ? date : ''">
+        :data-visit="date && sortedVisitsByDay[date].length > 0 ? date : ''"
+      >
         <div v-if="date && sortedVisitsByDay[date].length">
-          <div class="tw-mb-2">{{ day }} {{ date }} {{ currentSelectedMonth }}</div>
+          <div class="tw-mb-2">
+            {{ day }} {{ date }} {{ currentSelectedMonth }}
+          </div>
           <calendar-day-events
             :date="Number(date)"
             :day="day"
             :visits-data="sortedVisitsByDay[date]"
             :month="currentSelectedMonth"
-            :year="currentYear"/>
+            :year="currentYear"
+          />
         </div>
       </div>
     </div>
@@ -105,9 +157,10 @@ import Visits from 'collections/visits'
 import Beamlines from 'collections/bls'
 import FilterPills from 'app/components/filter-pills.vue'
 import CalendarDayEvents from 'modules/calendar/views/components/calendar-day-events.vue'
+import { DateTime } from 'luxon'
 
 export default {
-  name: 'calendar-view',
+  name: 'CalendarView',
   components: {
     'calendar-day-events': CalendarDayEvents,
     'filter-pills': FilterPills
@@ -125,7 +178,6 @@ export default {
   },
   data() {
     return {
-      currentDate: new Date(),
       days: [
         'Monday',
         'Tuesday',
@@ -136,13 +188,13 @@ export default {
         'Sunday',
       ],
       shortDays: [
-        'Sun',
         'Mon',
         'Tues',
         'Wed',
         'Thurs',
         'Fri',
         'Sat',
+        'Sun',
       ],
       months: [
         'January',
@@ -158,15 +210,19 @@ export default {
         'November',
         'December'
       ],
-      currentMonth: new Date().getUTCMonth(),
-      currentDay: new Date().getUTCDate(),
-      currentYear: new Date().getUTCFullYear(),
+      currentMonth: null,
+      currentDay: null,
+      currentYear: null,
       visits: [],
       selectedBeamline: this.bl || 'all',
       beamlines: []
     }
   },
   mounted() {
+    const dateTime = this.todayDate
+    this.currentMonth = dateTime.month - 1
+    this.currentDay = dateTime.day
+    this.currentYear = dateTime.year
     this.fetchBeamlinesByType()
     this.fetchVisitsCalendar()
   },
@@ -223,9 +279,17 @@ export default {
     },
     goToPreviousMonth() {
       this.currentMonth = this.currentMonth - 1
+      if (this.currentMonth == -1) {
+        this.currentMonth = 11
+        this.goToPreviousYear()
+      }
     },
     goToNextMonth() {
       this.currentMonth = this.currentMonth + 1
+      if (this.currentMonth == 12) {
+        this.currentMonth = 0
+        this.goToNextYear()
+      }
     },
     goToNextYear() {
       this.currentYear = this.currentYear + 1
@@ -253,8 +317,7 @@ export default {
           acc[currentWeek].push(date)
         } else {
           currentWeek += 1
-          acc[currentWeek] = []
-          acc[currentWeek].push(date)
+          acc[currentWeek] = [date]
         }
 
         if (index === this.daysInMonth - 1 && acc[currentWeek].length < 7) {
@@ -267,16 +330,18 @@ export default {
       }, {})
     },
     isToday(date) {
-      const todaysDate = new Date()
-      const [month, day, year] = [todaysDate.getUTCMonth(), todaysDate.getUTCDate(), todaysDate.getUTCFullYear()]
-      return date === day && month === this.currentMonth && year === this.currentYear
+      const { month, day, year } = this.todayDate
+      return date === day && month - 1 === this.currentMonth && year === this.currentYear
     },
     isPastDate(date) {
-      const todaysDate = new Date()
-      const currentDate = new Date(todaysDate.getUTCFullYear(), todaysDate.getUTCMonth(), todaysDate.getUTCDate())
-      const dateItem = new Date(this.currentYear, this.currentMonth, date)
+      const dateItem = DateTime.fromObject({
+        year: this.currentYear,
+        month: this.currentMonth + 1,
+        day: date,
+        zone: this.timezone
+      })
 
-      return currentDate > dateItem
+      return dateItem < this.todayDate
 
     },
     onHover(ref, addHover) {
@@ -337,18 +402,35 @@ export default {
   },
   computed: {
     ...mapGetters({
-      proposalType: ['proposal/currentProposalType']
+      proposalType: ['proposal/currentProposalType'],
+      appOption: ['getAppOptions']
     }),
+    timezone() {
+      return this.appOption['timezone']
+    },
+    todayDate() {
+      return DateTime.local().setZone(this.timezone)
+    },
     currentSelectedMonth() {
       return this.months[this.currentMonth]
     },
     previousMonth() {
-      const [value] = this.months.slice(this.currentMonth - 1)
-      return value
+      var value
+      if (this.currentMonth == 0) {
+        value = this.months.slice(11)
+      } else {
+        value = this.months.slice(this.currentMonth - 1)
+      }
+      return value[0]
     },
     nextMonth() {
-      const [value] = this.months.slice(this.currentMonth + 1)
-      return value
+      var value
+      if (this.currentMonth == 11) {
+        value = this.months.slice(0)
+      } else {
+        value = this.months.slice(this.currentMonth + 1)
+      }
+      return value[0]
     },
     previousYear() {
       return this.currentYear - 1
@@ -357,18 +439,28 @@ export default {
       return this.currentYear + 1
     },
     daysInMonth() {
-      return new Date(this.currentYear, this.currentMonth + 1, 0).getDate()
+      return DateTime.fromObject({
+        year: this.currentYear,
+        month: this.currentMonth + 1,
+        day: 1,
+        zone: this.timezone
+      }).daysInMonth
     },
     startDayOfMonth() {
-      return new Date(this.currentYear, this.currentMonth, 1).getUTCDay()
+      return DateTime.fromObject({
+        year: this.currentYear,
+        month: this.currentMonth + 1,
+        day: 1,
+        zone: this.timezone
+      }).weekday - 1
     },
     sortedVisitsByDay() {
       return Array(this.daysInMonth).fill('').reduce((acc, curr, index) => {
         const number = index + 1
-        const date = new Date(this.currentYear, this.currentMonth, number)
 
         acc[number] = this.visits.filter(visit => {
-          return new Date(visit['STISO']) >= date && new Date(visit['STISO']) < new Date(date.getTime() + (24 * 3600 * 1000))
+          const { year, month, day } = visit['STISO']
+          return year === this.currentYear && month - 1 === this.currentMonth && day === number
         })
 
         return acc

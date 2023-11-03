@@ -1,18 +1,18 @@
 <template>
-    <section>
-        <component
-          :is="componentType"
-          v-if="ready"
-          :key="$route.fullPath"
-          :options="options"
-          :preloaded="true"
-          :fetchOnLoad="true"
-          :mview="mview"
-          :breadcrumbs="bc"
-          :containerModel="model"
-          @update-container-state="updateContainerModel"
-        />
-    </section>
+  <section>
+    <component
+      :is="componentType"
+      v-if="ready"
+      :key="$route.fullPath"
+      :options="options"
+      :preloaded="true"
+      :fetch-on-load="true"
+      :mview="mview"
+      :breadcrumbs="bc"
+      :container-model="model"
+      @update-container-state="updateContainerModel"
+    />
+  </section>
 </template>
 
 <script>
@@ -28,10 +28,20 @@ import MxContainerView from 'modules/types/mx/shipment/views/mx-container-view.v
 import store from 'app/store/store'
 
 export default {
-  name: 'container-view-wrapper',
+  name: 'ContainerViewWrapper',
   components: {
     'marionette-view': MarionetteView,
     'mx-container-view': MxContainerView
+  },
+  beforeRouteEnter: function(to, from, next) {
+    // Lookup the proposal first to make sure we can still add to it
+    store.dispatch('proposal/proposalLookup', { field: 'CONTAINERID', value: to.params.cid })
+    .then(() => {
+      next()
+    }, (error) => {
+      store.commit('notifications/addNotification', {title: 'No such container', msg: error.msg, level: 'error'})
+      next('/404')
+    })
   },
   props: {
     'cid': Number,
@@ -113,23 +123,13 @@ export default {
       // This is the current logic to determine the plate type
       // Anything other than Box, Puck or PCRStrip
       // TODO - get container types from data base
-      let is_plate = ['box', 'puck', 'pcrstrip', null].indexOf(containerType) == -1 && containerType.indexOf('puck') == -1
+      let is_plate = ['box', 'puck', 'pcrstrip', 'block-4', null].indexOf(containerType) == -1 && containerType.indexOf('puck') == -1
 
       return is_plate
     },
     async updateContainerModel(data) {
       this.model.set(data)
     }
-  },
-  beforeRouteEnter: function(to, from, next) {
-    // Lookup the proposal first to make sure we can still add to it
-    store.dispatch('proposal/proposalLookup', { field: 'CONTAINERID', value: to.params.cid })
-    .then(() => {
-      next()
-    }, (error) => {
-      store.commit('notifications/addNotification', {title: 'No such container', msg: error.msg, level: 'error'})
-      next('/404')
-    })
   }
 }
 </script>

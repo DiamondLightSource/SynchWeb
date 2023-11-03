@@ -5,29 +5,58 @@
     </div>
 
     <div class="tw-w-full tw-flex tw-mb-3 tw-flex-wrap">
-      <pv-item v-for="(pv, pvIndex) in pvs" :key="pvIndex" class="tw-mx-1/2 tw-my-1/2 md:tw-w-1/7 sm:tw-w-1/6" :pv-item="pv">
-      </pv-item>
+      <pv-item
+        v-for="(pv, pvIndex) in pvs"
+        :key="pvIndex"
+        class="tw-mx-1/2 tw-my-1/2 md:tw-w-1/7 sm:tw-w-1/6"
+        :pv-item="pv"
+      />
     </div>
 
     <div class="tw-full tw-mb-3">
-      <pv-item v-for="(messagePV, messagePVIndex) in messagesPvs" :key="messagePVIndex" class="tw-mx-1/2 tw-my-1/2 tw-w-full" :pv-item="messagePV" value-class-names="" title-class-names="tw-font-bold tw-mb-2">
-      </pv-item>
+      <pv-item
+        v-for="(messagePV, messagePVIndex) in messagesPvs"
+        :key="messagePVIndex"
+        class="tw-mx-1/2 tw-my-1/2 tw-w-full"
+        :pv-item="messagePV"
+        value-class-names=""
+        title-class-names="tw-font-bold tw-mb-2"
+      />
     </div>
 
     <div class="tw-mb-3">
-      <h6 class="tw-font-bold">Webcams</h6>
+      <h6 class="tw-font-bold">
+        Webcams
+      </h6>
       <div class="tw-w-full tw-flex">
-        <div v-for="(webcam, webcamIndex) in webcams" :key="webcamIndex" class="tw-px-1">
-          <img class="tw-w-full" :alt="webcam.alt" :src="webcam.url"/>
+        <div
+          v-for="(webcam, webcamIndex) in webcams"
+          :key="webcamIndex"
+          class="tw-px-1"
+        >
+          <img
+            class="tw-w-full"
+            :alt="webcam.alt"
+            :src="webcam.url"
+          >
         </div>
       </div>
     </div>
 
     <div class="tw-mb-3">
-      <h1 @click="toggleOAV">OAV</h1>
-      <div v-show="showOAV" class="tw-w-full">
+      <h1 @click="toggleOAV">
+        OAV
+      </h1>
+      <div
+        v-show="showOAV"
+        class="tw-w-full"
+      >
         <div class="sm:tw-w-1/3">
-          <img class="tw-w-full"  :alt="oavData.alt" :src="oavData.url"/>
+          <img
+            class="tw-w-full"
+            :alt="oavData.alt"
+            :src="oavData.url"
+          >
         </div>
       </div>
     </div>
@@ -39,40 +68,64 @@
           v-for="(epic, epicIndex) in epicPages"
           :key="epicIndex"
           class="button tw-mx-1 tw-cursor-pointer"
-          @click="showEpicMotor(epic)">
+          @click="showEpicMotor(epic)"
+        >
           {{ epic['NAME'] }}
         </button>
       </div>
     </div>
 
-    <div v-if="isStaff" class="tw-mb-3">
+    <div
+      v-if="isStaff"
+      class="tw-mb-3"
+    >
       <h1>GDA Log</h1>
       <div class="tw-bg-content-light-background tw-m-2 tw-p-2 tw-rounded-sm tw-overflow-y-scroll tw-h-64 tw-text-content-page-color">
-        <p v-for="(logItem, logIndex) in GDALogData" :key="logIndex">{{ logItem['LINE'] }}</p>
+        <p
+          v-for="(logItem, logIndex) in GDALogData"
+          :key="logIndex"
+        >
+          {{ logItem['LINE'] }}
+        </p>
       </div>
     </div>
 
-    <calendar-view :bl="beamline" :display-filters="false"/>
+    <calendar-view
+      :bl="beamline"
+      :display-filters="false"
+    />
 
     <portal to="dialog">
       <dialog-box
-        :hideOkButton="true"
-        size="large"
         v-if="displayEpicMotorsModal"
-        @close-modal-action="closeEpicMotor">
+        :hide-ok-button="true"
+        size="large"
+        @close-modal-action="closeEpicMotor"
+      >
         <template slot="dialog-title">
           <div class="tw-relative tw-w-full tw-py-2">
-            <p class="tw-font-bold">{{ selectedMotorTitle }}</p>
-            <button class="button tw-absolute tw-right-0 tw-top-0" @click="closeEpicMotor"><i :class="['fa', 'fa-times']"></i></button>
+            <p class="tw-font-bold">
+              {{ selectedMotorTitle }}
+            </p>
+            <button
+              class="button tw-absolute tw-right-0 tw-top-0"
+              @click="closeEpicMotor"
+            >
+              <i :class="['fa', 'fa-times']" />
+            </button>
           </div>
         </template>
-        <div class="tw-flex tw-w-full tw-flex-wrap" v-if="selectedMotorItems.length > 0">
+        <div
+          v-if="selectedMotorItems.length > 0"
+          class="tw-flex tw-w-full tw-flex-wrap"
+        >
           <motor-view
+            v-for="(motorItem, motorItemIndex) in selectedMotorItems"
+            :key="motorItemIndex"
             class="motor-view"
             title="Name"
             :motor-item="motorItem"
-            v-for="(motorItem, motorItemIndex) in selectedMotorItems"
-            :key="motorItemIndex"/>
+          />
         </div>
       </dialog-box>
     </portal>
@@ -92,7 +145,7 @@ import DialogBox from 'app/components/custom-dialog-box.vue'
 import MotorView from 'modules/status/views/components/motor-view.vue'
 
 export default {
-  name: 'beamline-status',
+  name: 'BeamlineStatus',
   components: {
     'motor-view': MotorView,
     'pv-item': PvItem,

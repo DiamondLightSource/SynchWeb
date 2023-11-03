@@ -1,5 +1,5 @@
-var Styles = require('css/main.scss')
-var FontAwesome = require('font-awesome/css/font-awesome.css')
+require('font-awesome/css/font-awesome.css')
+require('css/main.scss')
 
 import Vue from 'vue'
 import VeeValidate from 'vee-validate'
@@ -18,17 +18,15 @@ import VeeValidateCustomRules from 'app/mixins/vee-validate-custom-rules'
 Vue.use(VeeValidate)
 Vue.use(PortalVue)
 
+Vue.use(VeeValidate)
+
 Vue.config.productionTip = false
 Vue.config.devtools = !config.production
-
 
 const vm = new Vue({
   store,
   router,
-  render: function(h) {
-    if (config.maintenance) return h(MaintenanceView, {props: {'message': config.maintenance_message}})
-    else return h(Main)
-  },
+  mixins: [VeeValidateCustomRules],
   created: function() {
     console.log("VUE::created")
 
@@ -37,7 +35,10 @@ const vm = new Vue({
 
     application.start()
   },
-  mixins: [VeeValidateCustomRules]
+  render: function(h) {
+    if (config.maintenance) return h(MaintenanceView, {props: {'message': config.maintenance_message}})
+    else return h(Main)
+  }
 }).$mount('#synchweb-app')
 
 

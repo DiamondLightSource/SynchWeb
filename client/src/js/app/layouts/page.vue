@@ -1,9 +1,12 @@
 <template>
-    <!-- 
+  <!-- 
         This allows this page to manage its sub-routes 
         The onNavigate is emitted by children to navigate between components
     -->
-    <router-view :key="$route.fullPath" v-on:navigate="onNavigate"></router-view>
+  <router-view
+    :key="$route.fullPath"
+    @navigate="onNavigate"
+  />
 </template>
 
 <script>

@@ -12,28 +12,45 @@ Slots include:
   <div :class="outerClass">
     <input
       v-show="editable"
-      ref="inputRef"
       :id="id"
+      ref="inputRef"
       :name="name"
       type="checkbox"
       :checked="value"
       :disabled="disabled"
-      @input="updateValue"
       @change="updateValue"
       @blur="onBlur"
       @focus="$emit('focus')"
     >
-    <span v-if="inline && !editable" class="btn-edit" @click="onEdit" @mouseover="showEditIcon = true" @mouseleave="showEditIcon = false">{{ value }} <span v-show="showEditIcon"><i :class="['fa', 'fa-edit']"></i> Edit</span></span>
+    <span
+      v-if="inline && !editable"
+      class="btn-edit"
+      @click="onEdit"
+      @mouseover="showEditIcon = true"
+      @mouseleave="showEditIcon = false"
+    >{{ value }} <span v-show="showEditIcon"><i :class="['fa', 'fa-edit']" /> Edit</span></span>
 
-    <label class="secondary" :for="id">{{label}}
+    <label
+      class="secondary"
+      :for="id"
+    >{{ label }}
       <slot name="description">
-        <span v-show="description" class="small">{{description}}</span>
+        <span
+          v-show="description"
+          class="small"
+        >{{ description }}</span>
       </slot>
     </label>
 
-    <button v-if="inline && editable" @mousedown="onSave" class="button">OK</button>
+    <button
+      v-if="inline && editable"
+      class="button"
+      @mousedown="onSave"
+    >
+      OK
+    </button>
 
-    <slot name="actions"></slot>
+    <slot name="actions" />
   </div>
 </template>
 
@@ -42,8 +59,8 @@ export default {
   name: "BaseInputCheckbox",
   props: {
     value: { // Passed in automatically if v-model used
-      type: Boolean,
-      required: true,
+      type: [String, Boolean, Number],
+      required: true
     },
     id: {
       type: String,
@@ -84,7 +101,7 @@ export default {
   },
   watch: {
     editable: function(value) {
-      if (value === false) this.showEditIcon = false
+      if (!value) this.showEditIcon = false
     }
   },
   created() {

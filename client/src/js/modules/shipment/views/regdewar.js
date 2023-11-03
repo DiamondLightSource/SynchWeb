@@ -96,6 +96,7 @@ define(['marionette',
             })
 
             this.dewars = new Dewars(null, { FACILITYCODE: this.model.get('FACILITYCODE') })
+            this.dewars.queryParams.all = 1
             this.dewars.fetch().done(this.getHistory.bind(this))
 
             var columns = [

@@ -79,7 +79,8 @@ define(['marionette', 'modules/blstats/models/histogram', 'utils',
             
             var ticks = []
             var i = 0
-            var int = Math.floor(Object.keys(f['data']).length/15)
+            // need at least one tick
+            var int = Math.max(Math.floor(Object.keys(f['data']).length/15), 1)
             _.each(f['data'], function(v, bin) {
                 ticks.push([i, i % int == 0 ? bin : ''])
                 i++

@@ -1,3 +1,4 @@
+/* eslint no-undef: "off"*/
 define(['marionette',
         'modules/samples/views/getsampleview',
         'models/sample',

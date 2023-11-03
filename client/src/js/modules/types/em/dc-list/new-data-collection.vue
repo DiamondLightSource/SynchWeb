@@ -51,10 +51,10 @@
 
 <script>
 import { mapGetters } from 'vuex'
+import ToolbarButton from 'modules/types/em/components/toolbar-button.vue'
 import DialogSchemaForm from 'modules/types/em/components/dialog-schema-form.vue'
 import DialogSchemaFormSection from 'modules/types/em/components/dialog-schema-form-section.vue'
 import SchemaInput from 'modules/types/em/components/schema-input.vue'
-import ToolbarButton from 'modules/types/em/components/toolbar-button.vue'
 
 export default {
     'name': 'NewDataCollection',

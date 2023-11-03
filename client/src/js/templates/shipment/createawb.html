@@ -1,4 +1,4 @@
-<h1>Create Airway Bill: <% if (RETURN) { %>From Facility<% } else { %>To Facility<% } %></h1>
+<h1>Create Air Waybill: <% if (RETURN) { %>From Facility<% } else { %>To Facility<% } %></h1>
 
 <h2>Shipment Details</h2>
 <div class="form">
@@ -64,7 +64,7 @@
         </li>
         
         <li class="clearfix">
-            <span class="label">Laboratory Address <br /><span class="small">(excluding post code)</span></span>
+            <span class="label">Laboratory Address <br /><span class="small">(Max 3 lines, excluding post code, city)</span></span>
             <div class="ADDRESS text"></div>
         </li>
         
@@ -131,5 +131,5 @@
 
 <div class="form">
     <button name="quote" value="1" type="submit" class="button submit">Get Quote</button>
-    <button name="submit" value="1" type="submit" class="button submit">Create Airway Bill</button>
+    <button name="submit" value="1" type="submit" class="button submit">Create Air Waybill</button>
 </div>

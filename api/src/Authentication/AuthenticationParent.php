@@ -9,7 +9,11 @@ class AuthenticationParent
 
 interface AuthenticationInterface
 {
-    public function authenticate($user, $pass);
+    public function authenticate($login, $password);
 
     public function check();
+
+    public function authorise();
+
+    public function authenticateByCode($code);
 }

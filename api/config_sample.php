@@ -4,7 +4,6 @@
     # - Many of the parameters in this file will in due course move into the
     #   database
 
-
     # Production / Dev Mode Switch
     # - Dev mode enabled debugging to stdout in addition to httpd error_log
     #   Values: dev | production
@@ -14,29 +13,37 @@
     $isb  = array('user' => 'user', 'pass' => 'pass', 'db' => 'localhost/ispyb');
     $dbtype = 'mysql';
 
+    # Summary Database credentials 
+    ######### DELETE if not using connection. 
+    $summarydbconfig = array('user' => 'user', 'pass' => 'pass', 'db' => 'localhost/ispyb');
+    $ifsummary = true;
 
     # Encoded JWT key, used to sign and check validaty of jwt tokens
     # - Create one of these using /api/authenticate/key
     #   This can be changed to invalidate all currently active tokens
     $jwt_key = '';
 
-
     # Auth type
-    # Can be cas, ldap
+    # Can be cas, ldap, oidc
     $authentication_type = 'cas';
-
 
     # CAS url (if using cas, assume https)
     $cas_url = 'cas.server.ac.uk';
 
     # Follow CAS SSO
     $cas_sso = true;
+    $sso_url = "sso.server.ac.uk";
+
+    # OIDC (or OAuth2) client ID and secret. Only useful if authentication_type is set to OIDC
+    $oidc_client_id = "oidcClientId";
+    $oidc_client_secret = "oidcClientSecret";
+    # Cookie key used for SSO/cookie based authentication
+    $cookie_key = "synchweb-auth";
 
     # CAS CA Cert (for SSO)
     $cacert = '/etc/certs/ca-bundle.crt';
 
-
-    # ldap server, used for lookup and authentication (if using)
+    # ldap server, used for lookup and authentication (if using, set to null if not)
     # Update the ldap(s) prefix, hostname and search settings as required
     $ldap_server = 'ldaps://ldap.example.com';
     $ldap_search = 'ou=people,dc=example,dc=com';
@@ -47,6 +54,7 @@
     # i.e. "MYDOMAIN" rather than "mydomain.com" 
     # This will be prepended onto the username (e.g. MYDOMAIN\mylogin)
     $active_directory_domain = "MYDOMAIN";
+    $ldap_use_tls = false; # default - i.e. don't use secured LDAP connection
 
     # Upload directory
     # - used for user image uploads
@@ -62,6 +70,9 @@
 
     # Timezone
     $timezone = 'Europe/London';
+
+    # URL to access the PV archiver
+    $archive_url = '';
 
     # Valid Components
     #   Denotes that only staff may create proteins, otherwise they must come from replication 
@@ -143,9 +154,10 @@
     # - The feedback form uses this address
     $email_admin = 'webmaster@server.ac.uk';
 
-    # Recepients for dewar Dispatch / Transfers Emails when users request dispatch or tranfser from the shipping page
+    # Recipients for dewar Dispatch / Transfers Emails when users request dispatch or tranfser from the shipping page
     $dispatch_email = 'ehc@server.ac.uk, goods@server.ac.uk';
     $transfer_email = 'ehc@server.ac.uk';
+    $arrival_email = 'ehc@server.ac.uk';
 
     # and for RED experiments, 
     # email will be sent for shipments containing red level samples when "send to facility" is clicked
@@ -153,6 +165,13 @@
 
     # and for shipment booked,
     $shipbooked_email = 'goods@server.ac.uk';
+
+    # dewar back in storage (complete)
+    $dewar_complete_email = '';
+
+    # Send a 'visit finished' email when a dewar moves from this beamline to this (regex) location
+    $dewar_complete_email_locations = array('i03' => '/tray-\w+/',
+                                           );
 
     # Industrial Contacts
     # - Industrial users get a personalised email with in contact details,
@@ -212,6 +231,8 @@
     $package_description = 'Dry shipper containing frozen crystals';
     $dewar_weight = 18;
 
+    # location used by Mpdf to create pdfs - this needs to be created and allow apache to create directories in it
+    $pdf_tmp_dir = "/tmp";
 
     # DHL API Details
     $dhl_enable = true;
@@ -230,6 +251,15 @@
     $dhl_service = 'N';
     // Non dom service (eu)
     $dhl_service_eu = 'U';
+
+    # Shipping service details
+    $use_shipping_service = null;
+    $use_shipping_service_incoming_shipments = null;
+    $shipping_service_api_url = null;
+    $shipping_service_api_user = null;
+    $shipping_service_api_password = null;
+    $shipping_service_app_url = null;
+    $shipping_service_links_in_emails = null;
 
 
     # VMXi
@@ -340,5 +370,7 @@
         'i03' => 'BL03I',
     );
 
-
+    # Dials server values
+    $dials_rest_url = "";
+    $dials_rest_jwt = "";
 ?>

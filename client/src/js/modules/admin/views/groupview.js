@@ -93,7 +93,7 @@ define(['marionette',
             this.users.queryParams.gid = this.model.get('USERGROUPID')
             this.users.fetch()
 
-            var columns = [
+            var permissionTableColumns = [
                 { name: 'TYPE', label: 'Name', cell: 'string', editable: false },
                 { name: 'DESCRIPTION', label: 'Description', cell: 'string', editable: false },
                 { label: '', cell: table.TemplateCell, editable: false, template: '<a class="button" href="#"><i class="fa fa-times"></i></a>' },
@@ -106,7 +106,7 @@ define(['marionette',
 
             this.permstable = new TableView({ 
                 collection: this.permissions, 
-                columns: columns, 
+                columns: permissionTableColumns, 
                 tableClass: 'permissions', 
                 filter: 's', 
                 search: options.params && options.params.s, 
@@ -118,27 +118,27 @@ define(['marionette',
             })
 
 
-            var columns = [
+            var userTableColumns = [
                 { name: 'GIVENNAME', label: 'First Name', cell: 'string', editable: false },
                 { name: 'FAMILYNAME', label: 'Surname', cell: 'string', editable: false },
                 { name: 'LOGIN', label: 'Login', cell: 'string', editable: false },
                 { label: '', cell: table.TemplateCell, editable: false, template: '<a class="button" href="#"><i class="fa fa-times"></i></a>' },
             ]
 
-            var DeleteRow = ClickableRow.extend({
+            var userTableDeleteRow = ClickableRow.extend({
                 url: app.apiurl+'/users/groups/'+this.model.get('USERGROUPID')+'/users',
                 idcolumn: 'PERSONID'
             })
 
             this.userstable = new TableView({ 
                 collection: this.users, 
-                columns: columns, 
+                columns: userTableColumns, 
                 tableClass: 'users', 
                 filter: 's', 
                 search: options.params && options.params.s, 
                 loading: true, 
                 backgrid: { 
-                    row: DeleteRow,
+                    row: userTableDeleteRow,
                     emptyText: 'No users found'
                 }, 
             })

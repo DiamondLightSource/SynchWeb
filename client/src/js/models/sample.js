@@ -38,11 +38,13 @@ define(['backbone', 'collections/components',
             if (strategyOption) {
                 const option = JSON.parse(strategyOption)
                 if (option) {
-                    this.set('SCREENINGMETHOD', option.screen)
+                    this.set('SCREENINGMETHOD', option.screen == null ? 'none' : option.screen)
                     this.set('SCREENINGCOLLECTVALUE', option.collect_samples)
                     this.set('SAMPLEGROUP', option.sample_group)
                     this.set('STRATEGYOPTION', null)
                 }
+            } else if (this.get('BLSAMPLEID') && !this.get('SCREENINGMETHOD') && this.get('REQUIREDRESOLUTION')) {
+                this.set('SCREENINGMETHOD', 'none')
             }
         },
 
@@ -63,6 +65,7 @@ define(['backbone', 'collections/components',
             CELL_BETA: '',
             CELL_GAMMA: '',
             CENTRINGMETHOD: '',
+            COLOR: '',
             COMMENTS: '',
             COMPOSITION: '',
             CONTAINERID: '',
@@ -179,6 +182,16 @@ define(['backbone', 'collections/components',
             DIMENSION3: {
                 required: false,
                 pattern: 'number'
+            },
+
+            SHAPE: {
+                required: false,
+                pattern: 'word',
+            },
+
+            COLOR: {
+                required: false,
+                pattern: 'word',
             },
 
             LOOPTYPE: {

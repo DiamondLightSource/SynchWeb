@@ -1,25 +1,51 @@
 <template>
-  <div :id="`${date}_${month}_${year}`" class="tw-p-2 tw-w-full">
-    <div class="tw-ml-2 tw-py-2 tw-border-b tw-border-content-cal-hl1-background" v-for="(visitHour, visitHourIndex) in visitDataKeys" :key="visitHourIndex">
+  <div
+    :id="`${date}_${month}_${year}`"
+    class="tw-p-2 tw-w-full"
+  >
+    <div
+      v-for="(visitHour, visitHourIndex) in visitDataKeys"
+      :key="visitHourIndex"
+      class="tw-ml-2 tw-py-2 tw-border-b tw-border-content-cal-hl1-background"
+    >
       <p>{{ visitHour }}</p>
-      <div v-for="(session, sessionIndex) in visitsByTime[visitHour]" :key="sessionIndex" class="tw-ml-1" :class="[Number(session['ACTIVE']) === 1 ? 'tw-bg-content-active' : '']">
-        <p class="tw-ml-1">{{ session['BEAMLINENAME'] }}: <router-link  :to="`/dc/visit/${session['VISIT']}`" class="tw-no-underline tw-text-content-page-color">{{ session['VISIT'] }}</router-link> <span> ({{ session['LEN'] }})</span></p>
-        <p class="tw-ml-2">- {{ session['BEAMLINEOPERATOR'] }}</p>
-        <p class="tw-ml-1" v-if="session['SESSIONTYPE']">[{{ session['SESSIONTYPE'] }}]</p>
+      <div
+        v-for="(session, sessionIndex) in visitsByTime[visitHour]"
+        :key="sessionIndex"
+        class="tw-ml-1"
+        :class="[Number(session['ACTIVE']) === 1 ? 'tw-bg-content-active' : '']"
+      >
+        <p class="tw-ml-1">
+          {{ session['BEAMLINENAME'] }}: <router-link
+            :to="`/dc/visit/${session['VISIT']}`"
+            class="tw-no-underline tw-text-content-page-color"
+          >
+            {{ session['VISIT'] }}
+          </router-link> <span> ({{ session['LEN'] }})</span>
+        </p>
+        <p class="tw-ml-2">
+          - {{ session['BEAMLINEOPERATOR'] }}
+        </p>
+        <p
+          v-if="session['SESSIONTYPE']"
+          class="tw-ml-1"
+        >
+          [{{ session['SESSIONTYPE'] }}]
+        </p>
       </div>
     </div>
   </div>
 </template>
 <script>
 export default {
-  name: 'calendar-day-events',
+  name: 'CalendarDayEvents',
   props: {
     date: {
       type: Number,
       required: true
     },
     visitsData: {
-      type: Object,
+      type: Array,
       required: true
     },
     day: {
@@ -43,6 +69,18 @@ export default {
       visitsByTime: {}
     }
   },
+  computed: {
+    visitDataKeys() {
+      return Object.keys(this.visitsByTime).sort()
+    }
+  },
+  watch: {
+    visitsData: {
+      deep: true,
+      immediate: true,
+      handler: 'groupVisitsByTime'
+    }
+  },
   mounted() {
     this.groupVisitsByTime()
   },
@@ -50,7 +88,7 @@ export default {
     groupVisitsByTime() {
       if (this.visitsData) {
         this.visitsByTime = this.visitsData.reduce((acc, curr) => {
-          const visitHour = new Date(curr['STISO']).getUTCHours()
+          const visitHour = curr['STISO'].hour
 
           const hourString = String(visitHour).length > 1 ? `${visitHour}:00` : `0${visitHour}:00`
 
@@ -64,18 +102,6 @@ export default {
         }, {})
       }
     },
-  },
-  watch: {
-    visitsData: {
-      deep: true,
-      immediate: true,
-      handler: 'groupVisitsByTime'
-    }
-  },
-  computed: {
-    visitDataKeys() {
-      return Object.keys(this.visitsByTime).sort()
-    }
   }
 }
 </script>

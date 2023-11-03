@@ -13,7 +13,7 @@
         <li>Transmission: <%-TRANSMISSION%>%</li>
         <li>Beamsize: <%-BSX%>x<%-BSY%>&mu;m</li>
         <li>Boxsize: <span class="boxx"></span>x<span class="boxy"></span>&mu;m</li>
-        <li class="comment" title="Click to edit the comment for this data collection">Comment: <span class="COMMENTS"><%-COMMENTS%></span></li>
+        <li class="comment">Comment: <span class="COMMENTS"><%-COMMENTS%></span></li>
         <% if (!STATE) { %><li>Status: <span class="b">Stopped</span></li><% } %>
 
         <li>
@@ -25,6 +25,7 @@
             Y: <span class="y"></span>
             Z: <span class="z"></span>
         </li>
+        <li class="warning-li"><i class="fa fa-warning"></i>Warning: <span class="warning"></span></li>
     </ul>
 
     <a href="#" class="button zoom"><i class="fa fa-search-plus"></i> <span>Enlarge</span></a>

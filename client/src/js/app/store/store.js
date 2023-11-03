@@ -11,6 +11,7 @@ import UserStore from './modules/store.user.js'
 import NotificationStore from './modules/store.notifications.js'
 import SamplesStore from './modules/store.samples.js'
 import ShipmentStore from './modules/store.shipment.js'
+import SampleGroups from './modules/store.sample-groups.js'
 
 // Configuration
 import Options from 'models/options.js'
@@ -30,7 +31,8 @@ const store = new Vuex.Store({
     user: UserStore,
     notifications: NotificationStore,
     samples: SamplesStore,
-    shipment: ShipmentStore
+    shipment: ShipmentStore,
+    sampleGroups: SampleGroups
   },
   state: {
     // Flag we use to check if we have already setup options
@@ -41,9 +43,11 @@ const store = new Vuex.Store({
 
     isLoading: false,
     motd: '',
+    ifsummary: false,
     help: false, // Global help flag used to denote if we should display inline help on pages
     skipHomePage: config.skipHome || false,
-    models: {}
+    models: {},
+    appOptions: {}
   },
   mutations: {
     // For future use - save a model to a specified name
@@ -58,8 +62,12 @@ const store = new Vuex.Store({
       state.auth.type = options.get('authentication_type')
       state.auth.cas_sso = options.get('cas_sso')
       state.auth.cas_url = options.get('cas_url')
+      state.auth.sso_url = options.get('sso_url')
+      state.appOptions = options.toJSON()
 
       state.motd = options.get('motd') || state.motd
+
+      state.ifsummary = options.get('ifsummary') || state.ifsummary
 
       app.options = options
     },
@@ -67,9 +75,6 @@ const store = new Vuex.Store({
       state.help = !!helpFlag
       sessionStorage.setItem('ispyb_help', state.help)
     },
-    //
-    // Loading screen
-    //
     loading(state, status) {
       state.isLoading = !!status
     },
@@ -193,7 +198,7 @@ const store = new Vuex.Store({
       })
     },
 
-    // Method that returns a collection promise
+    // Method that returns a Model promise
     getModel(context, model) {
 
       return new Promise((resolve, reject) => {
@@ -235,6 +240,21 @@ const store = new Vuex.Store({
         })
       })
     },
+    // Method that deletes a model from the server
+    deleteModel(context, model) {
+      return new Promise((resolve, reject) => {
+        model.destroy({
+          success: function(result) {
+            resolve(result)
+          },
+
+          error: function(err) {
+            let response = err.responseJSON || { status: 400, message: 'Error deleting model'}
+            reject(response)
+          },
+        })
+      })
+    },
 
     // fetch data from the backend that is not attached to any model
     async fetchDataFromApi({ state, commit, rootState }, { url, data, requestType }) {
@@ -257,13 +277,22 @@ const store = new Vuex.Store({
       })
     },
     // post data to the backend that is not attached to any model
-    async saveDataToApi({ state, commit, rootState }, { url, data, requestType }) {
+    async saveDataToApi({ state, commit, rootState }, args) {
+      const { url, data, requestType, ...others } = args
       return await Backbone.ajax({
         url: app.apiurl + url,
         type: 'POST',
         data,
+        ...others,
 
         success: function(response) {
+          commit('notifications/addNotification', {
+            title: 'Action Successful',
+            message: requestType,
+            level: 'success'
+          }, {
+            root: true
+          })
           return response
         },
         error: function() {
@@ -278,13 +307,22 @@ const store = new Vuex.Store({
       })
     },
     // update data to the backend that is not attached to any model
-    async updateDataToApi({ state, commit, rootState }, { url, data, requestType, updateType }) {
+    async updateDataToApi({ state, commit, rootState }, args) {
+      const { url, data, requestType, type, ...others } = args
       return await Backbone.ajax({
         url: app.apiurl + url,
-        type: updateType,
+        type,
         data,
+        ...others,
 
         success: function(response) {
+          commit('notifications/addNotification', {
+            title: 'Update Successful',
+            message: requestType,
+            level: 'success'
+          }, {
+            root: true
+          })
           return response
         },
         error: function() {
@@ -319,12 +357,18 @@ const store = new Vuex.Store({
         },
       })
     },
+    updateLoadingState({ commit }, payload) {
+      commit('loading', payload)
+    }
   },
   getters: {
     sso: state => state.auth.cas_sso,
-    sso_url: state => state.auth.cas_url,
+    sso_url: state => state.auth.sso_url,
+    oidcId: state => state.auth.oidcId,
     apiUrl: state => state.apiUrl,
-    appUrl: state => state.appUrl
+    appUrl: state => state.appUrl,
+    getAppOptions: state => state.appOptions,
+    isLoading: state => state.isLoading,
   }
 })
 

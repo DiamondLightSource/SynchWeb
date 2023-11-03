@@ -47,12 +47,12 @@ var MarionetteApplication = (function () {
 
                 // JSON content
                 } else if (options.contentType == 'application/json' || options.type == 'DELETE') {
-                    if (options.data) var tmp = JSON.parse(options.data)
-                    else var tmp = {}
+                    var tmp = (options.data) ? JSON.parse(options.data) : {}
 
-                    if (Array.isArray(tmp)) tmp[0].prop = prop
-                    else {
-                        if (!tmp.prop) tmp.prop = prop
+                    if (Array.isArray(tmp) && tmp.length) {
+                        tmp[0].prop = prop
+                    } else if (!tmp.prop) {
+                        tmp.prop = prop
                     }
                     options.data = JSON.stringify(tmp)
 
@@ -153,7 +153,7 @@ var MarionetteApplication = (function () {
             application.appurl = store.state.appUrl
 
             application.cookie = function(prop, callbackFn) {
-                console.log("Saving proposal from legacy cookie fn")
+                console.log("Saving proposal from legacy cookie fn:", prop)
 
                 store.dispatch('proposal/setProposal', prop)
 
@@ -163,7 +163,7 @@ var MarionetteApplication = (function () {
             }
             // Define user permission method - hooked into store
             application.user_can = function(perm) {
-                console.log("CHECK USER PERMISSIONS LIST " + JSON.stringify(store.getters.permissions))
+                console.log("CHECK USER PERMISSIONS LIST " + JSON.stringify(store.getters['user/permissions']))
                 console.log("CHECK USER PERMISSIONS FOR " + perm)
                 return store.getters['user/permissions'].indexOf(perm) > -1
             }

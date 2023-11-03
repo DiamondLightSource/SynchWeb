@@ -5,7 +5,6 @@ export default {
   data() {
     return {
       editingSample: {},
-      editingRow: null,
       screeningMethodList: [
         {
           value: "none",
@@ -110,15 +109,13 @@ export default {
     queueForUDC() {
       return this.$queueForUDC()
     },
-    sampleGroupSamples() {
-      return this.$sampleGroupsSamples()
-    },
     // Based on the requirements of UDC sample creations we want to return the
     // sample group that is saved in the strategyOption if the screening method is "Collect Best N";
     // otherwise, we want to return the first sample group that the sample belongs to
     // If the sample belongs to more than one group, we want to return the first matching name and how many other groups it belongs to
     ...createFieldsForSamples([
       'ABUNDANCE',
+      'ACRONYM',
       'ANOMALOUSSCATTERER',
       'BLSUBSAMPLEID',
       'CODE',
@@ -203,13 +200,16 @@ export default {
     },
     screenComponentGroups() {
       return this.$screenComponentGroups()
+    },
+    editingRow() {
+      return this.$editingRow()
     }
   },
   methods: {
     editRow(row) {
       this.editingSample = row;
       this.editingSample.CONTAINERID = this.containerId;
-      this.editingRow = row.LOCATION;
+      this.$emit('update-editing-row', row.LOCATION)
     },
     formatSelectData(selectData, data, property) {
       const matchedSelectData = selectData.find(select => select.value === data[property])
@@ -263,7 +263,7 @@ export default {
       else return null;
     },
     closeSampleEditing() {
-      this.editingRow = null
+      this.$emit('update-editing-row', null)
     },
     sortSelectField(a, b) {
       const aText = a.text.toLowerCase()
@@ -288,8 +288,15 @@ export default {
     canEditRow(location, editingRow) {
       return !this.containerId || location === editingRow
     },
-    doAddNewProteinOption(protein) {
-
+    handleCollectBestNValue(value, fieldToUpdate, triggerField, triggerValue) {
+      if (this['SAMPLEGROUP']) {
+        this.$emit('update-samples-with-sample-group', {
+          value,
+          fieldToUpdate,
+          triggerField,
+          triggerValue
+        })
+      }
     }
   },
   inject: [
@@ -311,6 +318,7 @@ export default {
     "$plateType",
     "$containerTypeDetails",
     "$screenComponents",
-    "$screenComponentGroups"
+    "$screenComponentGroups",
+    "$editingRow"
   ]
 };

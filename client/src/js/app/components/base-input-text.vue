@@ -4,7 +4,6 @@ Slots include:
 - description = sub title for the label
 - error-msg = place to show error messages
 - actions = place to show action buttons after the form control
-
 Can be used as inline edit - by default acts as normal input
 Set inline = true to initially show as span with button to change the input
 Component will emit a save event when the value changes
@@ -15,18 +14,25 @@ https://eslint.vuejs.org/rules/no-v-html.html
 <template>
   <div :class="outerClass">
     <!-- The label which includes an optional subtitle -->
-    <label v-if="label" :for="id" :class="labelClass">
-      <span v-html="label"></span>
+    <label
+      v-if="label"
+      :for="id"
+      :class="labelClass"
+    >
+      <span v-html="label" />
       <slot name="description">
-        <span v-if="description" class="small">{{ description }}</span>
+        <span
+          v-if="description"
+          class="small"
+        >{{ description }}</span>
       </slot>
     </label>
 
     <!-- The form input itself - bound to the v-model passed in -->
     <input
       v-show="editable"
-      ref="inputRef"
       :id="id"
+      ref="inputRef"
       :name="name"
       :type="type"
       :value="value"
@@ -34,6 +40,7 @@ https://eslint.vuejs.org/rules/no-v-html.html
       :disabled="disabled"
       :class="classObject"
       :step="step"
+      :data-testid="dataTestId"
       @keyup="onEnter"
       @input="updateValue"
       @blur="onBlur"
@@ -44,21 +51,31 @@ https://eslint.vuejs.org/rules/no-v-html.html
       class="btn-edit"
       @click="onEdit"
       @mouseover="showEditIcon = true"
-      @mouseleave="showEditIcon = false">
+      @mouseleave="showEditIcon = false"
+    >
       {{ inlineText }}
       <span v-show="showEditIcon">
-        <i :class="['fa', 'fa-edit']"></i> Edit
+        <i :class="['fa', 'fa-edit']" /> Edit
       </span>
     </span>
-    <button v-if="inline && editable" class="button tw-px-2 tw-py-1" @mousedown="onSave">OK</button>
+    <button
+      v-if="inline && editable"
+      class="button tw-px-2 tw-py-1"
+      @mousedown="onSave"
+    >
+      OK
+    </button>
 
     <!-- Placeholder for any error message placed after the input -->
     <slot name="error-msg">
-      <span v-show="errorMessage && !quiet" :class="errorClass">{{ errorMessage }}</span>
+      <span
+        v-show="errorMessage && !quiet"
+        :class="errorClass"
+      >{{ errorMessage }}</span>
     </slot>
 
     <!-- Placeholder for any buttons that should be placed after the input -->
-    <slot name="actions"></slot>
+    <slot name="actions" />
   </div>
 </template>
 
@@ -75,6 +92,10 @@ export default {
     },
     name: {
       type: String,
+    },
+    dataTestId: {
+      type: String,
+      required: false
     },
     type: { // Allows a user to override the type so it could be password, number etc.
       type: String,
@@ -143,14 +164,6 @@ export default {
       showEditIcon: false,
     }
   },
-  watch: {
-    editable: function(value) {
-      if (!value) this.showEditIcon = false
-    },
-    value: function(newVal) {
-      this.$emit('value-changed', newVal)
-    },
-  },
   computed: {
     // If a user passes in an error Message, add the error class to the input
     classObject() {
@@ -160,10 +173,19 @@ export default {
       return this.value || this.initialText
     },
   },
+  watch: {
+    editable: function(value) {
+      if (!value) this.showEditIcon = false
+    },
+    value: function(newVal) {
+      this.$emit('value-changed', newVal)
+    },
+  },
   created() {
     // If created with editable = false then we are in inline-edit mode
     this.editable = !this.inline
   },
+
   methods: {
     updateValue(event) {
       // If we are in inline editing mode, only update model on save
@@ -177,8 +199,10 @@ export default {
     },
     onEdit() {
       // May add focus code here
-      this.$refs.inputRef.focus()
       this.editable = true
+      this.$nextTick( () => {
+        this.$refs.inputRef.focus()
+      })
     },
     onSave() {
       this.editable = false

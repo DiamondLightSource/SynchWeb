@@ -1,58 +1,69 @@
 <template>
   <div
+    data-testid="container-sample-row"
     class="tw-flex tw-w-full tw-items-center"
-     :class="{
+    :class="{
       'tw-bg-table-body-background': sampleIndex % 2 === 0,
       'tw-bg-table-body-background-odd': sampleIndex % 2 === 1
-    }">
-    <div class="location-column tw-text-center tw-py-1">{{ sample.LOCATION || sampleIndex + 1 }}</div>
+    }"
+  >
+    <div class="location-column tw-text-center tw-py-1">
+      {{ sample.LOCATION || sampleIndex + 1 }}
+    </div>
 
     <validation-provider
+      v-slot="{ errors }"
       class="tw-px-2 protein-column tw-py-1"
       tag="div"
-      :rules="sample['NAME'] && !containerId ? 'required' : ''"
+      :rules="sample['NAME'] && (!containerId || editingRow === sample['LOCATION']) ? 'required' : ''"
       :name="`Sample ${sampleIndex + 1} Protein`"
       :vid="`sample ${sampleIndex + 1} protein`"
-      v-slot="{ errors }">
+    >
       <combo-box
-        v-if="canEditRow(sample['LOCATION'], editingRow) && !isContainerProcessing && !sampleHasDataCollection"
+        v-model="PROTEINID"
+        :is-disabled="!canEditRow(sample['LOCATION'], editingRow) || isContainerProcessing || sampleHasDataCollection"
         :data="proteinsOptionsList"
         class="tw-w-full protein-select"
-        textField="ACRONYM"
-        valueField="PROTEINID"
-        :inputIndex="sampleIndex"
-        defaultText=""
+        dataTestId="add-container-protein-select"
+        text-field="ACRONYM"
+        value-field="PROTEINID"
+        :input-index="sampleIndex"
+        default-text=""
         size="small"
-        v-model="PROTEINID"
+        :canCreateNewItem="false"
         :exclude-element-class-list="['custom-add']"
       >
         <template slot-scope="{ option }">
           <span class="tw-flex tw-justify-between tw-w-full">
-            <span class="tw-"><i v-if="option.SAFETYLEVEL === 'GREEN'" class="fa fa-check green"></i></span>
+            <span class="tw-"><i
+              v-if="option.SAFETYLEVEL === 'GREEN'"
+              class="fa fa-check green"
+              data-testid="add-container-approved"
+            /></span>
             {{ option['ACRONYM'] }}
           </span>
         </template>
       </combo-box>
-      <div v-else class="tw-text-center">{{ sample['ACRONYM'] }}</div>
       <span>{{ errors[0] }}</span>
     </validation-provider>
 
     <validation-provider
+      v-slot="{ errors }"
       tag="div"
       class="name-column tw-py-1 tw-px-2"
-      :rules="sample['PROTEINID'] > -1 && !containerId ? 'required|alpha_dash|max:25|' : ''"
+      :rules="sample['PROTEINID'] > -1 && (!containerId || editingRow === sample['LOCATION']) ? 'required|alpha_dash|max:25|' : ''"
       :name="`Sample ${sampleIndex + 1} Name`"
       :vid="`sample ${sampleIndex + 1} name`"
-      v-slot="{ errors }">
+    >
       <base-input-text
-        v-if="canEditRow(sample['LOCATION'], editingRow) && !isContainerProcessing && !sampleHasDataCollection"
-        inputClass="tw-w-full tw-h-8"
-        v-model="NAME"
-        :errorMessage="errors[0]"
+        :disabled="!canEditRow(sample['LOCATION'], editingRow) || isContainerProcessing || sampleHasDataCollection"
+        v-model.trim="NAME"
+        input-class="tw-w-full tw-h-8"
+        :error-message="errors[0]"
         :quiet="true"
-        :errorClass="errors[0] ? 'tw-text-xxs ferror' : ''"
+        :error-class="errors[0] ? 'tw-text-xxs ferror' : ''"
+        dataTestId="add-container-sample-name"
       />
-      <p v-else class="tw-text-center">{{ sample['NAME'] }}</p>
     </validation-provider>
 
     <extended-validation-provider
@@ -60,49 +71,77 @@
       class="tw-px-2 sample-group-column tw-py-1"
       :rules="`required_if:sample ${sampleIndex + 1} screening method,best`"
       :name="`Sample Group Sample ${sampleIndex + 1}`"
-      :vid="`sample group sample ${sampleIndex + 1}`">
-      <template v-slot="{ errors, inputChanged }">
+      :vid="`sample group sample ${sampleIndex + 1}`"
+    >
+      <template #default="{ errors, inputChanged }">
         <combo-box
+          v-model="SAMPLEGROUP"
           :is-disabled="!canEditRow(sample['LOCATION'], editingRow) || sampleGroupInputDisabled"
           :data="sampleGroups"
-          textField="text"
-          valueField="value"
-          :inputIndex="sampleIndex"
-          :defaultText="SAMPLEGROUP"
+          text-field="text"
+          value-field="value"
+          :input-index="sampleIndex"
+          :default-text="SAMPLEGROUP"
           class="sample-group-select tw-w-44"
           size="small"
           @create-new-option="createNewSampleGroup"
-          v-model="SAMPLEGROUP"
           @value-changed="inputChanged"
-        >
-        </combo-box>
+          @input="handleCollectBestNValue(sampleIndex, 'SCREENINGCOLLECTVALUE', 'SAMPLEGROUP', SAMPLEGROUP)"
+        />
       </template>
     </extended-validation-provider>
 
     <tabbed-columns
       class="tw-w-1/2 tw-py-1 tw-border-l tw-border-table-header-background min-height-8 tw-flex tw-h-full"
-      :currentEditingRow="editingRow"
+      :current-editing-row="editingRow"
       :sample="sample"
-      :currentTab="currentTab"
-      :sampleIndex="sampleIndex"
-      :containerId="containerId"
+      :current-tab="currentTab"
+      :sample-index="sampleIndex"
+      :container-id="containerId"
+      v-on="$listeners"
     />
 
     <div class="actions-column tw-py-1 tw-text-right">
       <span v-if="containerId">
         <span v-if="editingRow === sample['LOCATION']">
-          <a class="button tw-cursor-pointer  " @click="$emit('save-sample', sampleIndex)"><i class="fa fa-check"></i></a>
-          <a class="button tw-cursor-pointer tw-mx-1" @click="closeSampleEditing"><i class="fa fa-times"></i></a>
+          <a
+            class="button tw-cursor-pointer  "
+            @click="$emit('save-sample', sampleIndex)"
+            data-testid="container-save-sample"
+          ><i class="fa fa-check" /></a>
+          <a
+            class="button tw-cursor-pointer tw-mx-1"
+            @click="closeSampleEditing"
+            data-testid="container-cancel-sample"
+          ><i class="fa fa-times" /></a>
         </span>
         <span v-else>
-          <a class="button tw-cursor-pointer tw-mx-1" @click="editRow(sample)"><i class="fa fa-pencil"></i></a>
-          <router-link v-if="sample['BLSAMPLEID']" class="button tw-mx-1" :to="`/samples/sid/${sample['BLSAMPLEID']}`" ><i class="fa fa-search"></i></router-link>
-          <a class="button tw-cursor-pointer tw-mx-1" v-if="sample['BLSAMPLEID']" @click="onAddToSampleGroup"><i class="fa fa-cubes"></i></a>
+          <a class="button tw-py-1 tw-cursor-pointer tw-mx-1" data-testid="container-move-sample" v-if="sample['BLSAMPLEID'] && !isContainerProcessing" @click="moveSampleToAnotherContainer(sampleIndex)">
+            <i class="fa fa-exchange"/>
+          </a>
+          <a class="button tw-py-1 tw-cursor-pointer tw-mx-1" data-testid="container-edit-sample" @click="editRow(sample)" >
+            <i class="fa fa-pencil" />
+          </a>
+          <router-link v-if="sample['BLSAMPLEID']" class="button tw-py-1 tw-mx-1" data-testid="container-view-sample" :to="`/samples/sid/${sample['BLSAMPLEID']}`" >
+            <i class="fa fa-search" />
+          </router-link>
+          <a class="button tw-cursor-pointer tw-py-1 tw-mx-1" v-if="sample['BLSAMPLEID']" data-testid="container-sample-groups" @click="onAddToSampleGroup">
+            <i class="fa fa-cubes" />
+          </a>
         </span>
       </span>
       <span v-else>
-        <a class="button tw-mx-1" href="" @click.prevent="$emit('clone-sample', sampleIndex)"><i class="fa fa-plus"></i></a>
-        <a class="button tw-mx-1" href="" @click.prevent="$emit('clear-sample', sampleIndex)"><i class="fa fa-times"></i></a>
+        <a
+          class="button tw-mx-1"
+          href=""
+          @click.prevent="$emit('clone-sample', sampleIndex)"
+          data-testid="add-container-clone-sample"
+        ><i class="fa fa-plus" /></a>
+        <a
+          class="button tw-mx-1"
+          href=""
+          @click.prevent="$emit('clear-sample', sampleIndex)"
+        ><i class="fa fa-times" /></a>
       </span>
     </div>
   </div>
@@ -114,10 +153,19 @@ import TabbedColumnsView from 'modules/types/mx/samples/tabbed-columns-view.vue'
 import ComboBox from 'app/components/combo-box.vue'
 import {ValidationObserver, ValidationProvider} from 'vee-validate'
 import MxSampleTableMixin from 'modules/types/mx/samples/sample-table-mixin.js'
-import ExtendedValidationProvider from "app/components/extended-validation-provider.vue";
+import ExtendedValidationProvider from 'app/components/extended-validation-provider.vue'
 
 export default {
-  name: 'sample-table-row',
+  name: 'SampleTableRow',
+  components: {
+    'extended-validation-provider': ExtendedValidationProvider,
+    'base-input-select': BaseInputSelect,
+    'base-input-text': BaseInputText,
+    'tabbed-columns': TabbedColumnsView,
+    'combo-box': ComboBox,
+    'validation-provider': ValidationProvider,
+    'validation-observer': ValidationObserver
+  },
   mixins: [MxSampleTableMixin],
   props: {
     sample: {
@@ -153,24 +201,13 @@ export default {
       default: 1
     },
   },
-  components: {
-    'extended-validation-provider': ExtendedValidationProvider,
-    'base-input-select': BaseInputSelect,
-    'base-input-text': BaseInputText,
-    'tabbed-columns': TabbedColumnsView,
-    'combo-box': ComboBox,
-    'validation-provider': ValidationProvider,
-    'validation-observer': ValidationObserver
-  },
   methods: {
-    editRow(row) {
-      this.sample = row
-      this.sample.CONTAINERID = this.containerId
-      this.editingRow = row.LOCATION
-    },
     onAddToSampleGroup() {
       this.displaySampleGroupModal = true
     },
+    moveSampleToAnotherContainer(sampleIndex) {
+      this.$emit('open-move-container-form', sampleIndex)
+    }
   },
 }
 </script>
@@ -193,7 +230,7 @@ export default {
 .min-height-8 {
   min-height: 32px;
 }
->>> .sample-group-select .items-list, >>> .protein-select .items-list {
+:deep() .sample-group-select .items-list, :deep() .protein-select .items-list {
   min-height: 40px;
   max-height: 100px;
   overflow-y: auto;

@@ -361,7 +361,7 @@ define(['backbone',
             var p = this.proteins.findWhere({ ACRONYM: acronym })
             
             if (!p) {
-                var p = new Protein({ ACRONYM: acronym })
+                p = new Protein({ ACRONYM: acronym })
                 p.save({}, {
                     success: function() {
                         self.proteins.add(p)
@@ -540,7 +540,6 @@ define(['backbone',
             
             this.users = new Users(null, { state: { pageSize: 9999 }})
             this.users.queryParams.all = 1
-            this.users.queryParams.pid = app.proposal.get('PROPOSALID')
             this.listenTo(this.users, 'sync', this.updateUsers, this)
             this.ready.push(this.users.fetch())
 

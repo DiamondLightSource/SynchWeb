@@ -1,15 +1,22 @@
 <template>
-    <section id="notifications">
-        <div class="tw-fixed tw-left-0 tw-right-0 tw-top-0 tw-z-10">
-            <div class="notification">
-                <transition-group name="notify" tag="ul">
-                    <li v-for="item in notifications" :key="item.id" class="tw-w-full md:tw-w-2/3">
-                        <notification-card :notification="item"></notification-card>
-                    </li>
-                </transition-group>
-            </div>
-        </div>
-    </section>
+  <section id="notifications">
+    <div class="tw-fixed tw-left-0 tw-right-0 tw-top-0 tw-z-10">
+      <div class="notification">
+        <transition-group
+          name="notify"
+          tag="ul"
+        >
+          <li
+            v-for="item in notifications"
+            :key="item.id"
+            class="tw-w-full md:tw-w-2/3"
+          >
+            <notification-card :notification="item" />
+          </li>
+        </transition-group>
+      </div>
+    </div>
+  </section>
 </template>
 
 <script>
@@ -21,11 +28,6 @@ export default {
 components: {
         'notification-card': NotificationCard
     },
-
-    data: function() {
-        return {
-        }
-    },
     filters: {
         // Simple filter to convert text to upper case
         upper: function (value) {
@@ -35,6 +37,16 @@ components: {
                 return value.toString().toUpperCase()
             }
         }
+    },
+
+    data: function() {
+        return {
+        }
+    },
+    computed: {
+        notifications: function() {
+            return this.$store.getters['notifications/notifications']
+        },
     },
     watch: {
         // We deal with clearing the notifications after a given time (5s)
@@ -48,11 +60,6 @@ components: {
                 })
             }, 5000)
         }
-    },
-    computed: {
-        notifications: function() {
-            return this.$store.getters['notifications/notifications']
-        },
     },
 }
 </script>

@@ -33,12 +33,16 @@
         <h2>Available Samples</h2>
         <div class="filter">
             <span class="r">
-                <a href="#" class="button addall"><i class="fa fa-plus"></i> <span>Add Current Page to Queue</span></a>
+                <a href="#" class="button addpage"><i class="fa fa-plus"></i> <span>Add Current Page to Queue</span></a>
+                <a href="#" class="button addall"><i class="fa fa-plus"></i> <span>Add All to Queue</span></a>
             </span>
             <ul>
                 <li><label><input type="checkbox" name="nodata" /> Without Data</label></li>
                 <li><label><input type="checkbox" name="notcompleted" /> Not Completed</label></li>
             </ul>
+        </div>
+        <div class="filter">
+            <div class="filter filter-nohide afilt"></div>
         </div>
         <div class="asamples"></div>
     </div>
@@ -46,7 +50,9 @@
 
 <h2>Queued Samples</h2>
 <div class="r rpreset">
-Presets: <select name="preset"></select> <a href="#" class="button apply" title="Apply this preset to the selected samples"><i class="fa fa-file-o"></i> Apply</a>
+Presets: <select name="preset"></select>
+<a href="#" class="button apply" title="Apply this preset to the selected samples"><i class="fa fa-check-square-o"></i> Apply to Selected</a>
+<a href="#" class="button applyall" title="Apply this preset to all samples"><i class="fa fa-file-text-o"></i> Apply to All</a>
 </div>
 <div class="filter filter-nohide qfilt"></div>
 <div class="qsamples"></div>

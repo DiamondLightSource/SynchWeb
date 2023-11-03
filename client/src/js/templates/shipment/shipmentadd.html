@@ -5,24 +5,24 @@
 <p class="message alert">Please note that international shipping is currently disabled from this application. Please see the link <a href="https://www.diamond.ac.uk/Instruments/Mx/I03/I03-Manual/Shipping-Samples.html">here</a></p>
 
 <form method="post" id="add_shipment">
-    
+
     <div class="form">
         <ul>
-            
+
             <li>
                 <label>Name
                     <span class="small">Name for the shipment</span>
                 </label>
-                <input type="text" name="SHIPPINGNAME" />
+                <input type="text" name="SHIPPINGNAME" data-testid="add-shipment-name" />
             </li>
-            
+
             <li>
                 <label>Number of Dewars
                     <span class="small">Number of dewars to automatically create for this shipment</span>
                 </label>
-                <input type="text" name="DEWARS" value="1" />
+                <input type="text" name="DEWARS" value="1" data-testid="add-shipment-number" />
             </li>
-            
+
             <li class="d clearfix">
                 <label>Facility Dewar Codes
                     <span class="small">Unique code for each dewar of the shipment.<br />No facility codes listed? Make sure they are <a href="/dewars/registry">Registered</a> to this proposal.</span>
@@ -31,111 +31,197 @@
                     <!--<span class="fcodes"></span>-->
                 </div>
             </li>
-            
-            <li>
-                <!-- Small tweaks to the styling here using tailwind flexbox -->
-                <label>First Experiment / Scheduling
-                    <span class="small">Select first experiment or if it's for an automated or responsive remote mail-in session</span>
-                </label>
-                <div class="tw-flex">
-                    <select class="tw-h-6 tw-mr-2" name="FIRSTEXPERIMENTID"></select>
-                    <label class="secondary tw-mr-2">
-                        <input type="checkbox" name="noexp"> Automated / Imager
-                    </label>
-                    <label class="secondary tw-mr-2">
-                        <input type="checkbox" name="dynamic"> Responsive Remote / Mail-in
-                    </label>
-                </div>
-            </li>
 
             <li>
                 <label>Safety Level
                     <span class="small">The safety level of the shipment</span>
                 </label>
-                <select class="tw-h-6" name="SAFETYLEVEL" required>
+                <select class="tw-h-6" name="SAFETYLEVEL" data-testid="add-shipment-safety-level" required>
                     <option value="Green">Green</option>
                     <option value="Yellow">Yellow</option>
                     <option value="Red">Red</option>
                 </select>
             </li>
-            
+
+            <li>
+                <!-- Small tweaks to the styling here using tailwind flexbox -->
+                <label>First Experiment / Scheduling
+                    <span class="small">Select first experiment or if it's for an automated or responsive session</span>
+                </label>
+                <div class="tw-flex">
+                    <select class="tw-h-6 tw-mr-2" name="FIRSTEXPERIMENTID" data-testid="add-shipment-experiment"></select>
+                    <label class="secondary tw-mr-2">
+                        <input type="checkbox" name="noexp" data-testid="add-shipment-automated"> UDC / Automated / Imager
+                    </label>
+                    <label class="secondary tw-mr-2">
+                        <input type="checkbox" name="DYNAMIC" data-testid="add-shipment-dynamic"> Responsive / Mail-in
+                    </label>
+                </div>
+            </li>
+
+            <li class="remoteormailin">
+                <label>Remote or mail-in (Industrial users only)
+                    <span class="small">Is this for remote data collection or mail-in service work?</span>
+                </label>
+                <select name="REMOTEORMAILIN" data-testid="add-shipment-industry-remote">
+                    <option value="" disabled selected>Please select</option>
+                    <option value="Remote">Remote</option>
+                    <option value="Mail-in">Mail-in</option>
+                    <option value="Other">Other</option>
+                </select>
+            </li>
+
+            <li class="remoteform">
+                <label>Session length
+                    <span class="small">Requested beamline session length [hours]</span>
+                </label>
+                <input name="SESSIONLENGTH" data-testid="add-shipment-length"/>
+            </li>
+
+            <li class="remoteform">
+                <label>Energy/Wavelength
+                    <span class="small">Specify any energy/Wavelength requirements [eV/&#8491]</span>
+                </label>
+                <input type="text" name="ENERGY" data-testid="add-shipment-energy"/>
+            </li>
+
+            <li class="remoteform">
+                <label>Microfocus beam
+                    <span class="small">Microfocus beam is required for this shipment (provide further information in additional comments)</span>
+                </label>
+                <input type="checkbox" name="MICROFOCUSBEAM" data-testid="add-shipment-microfocus">
+            </li>
+
+            <li class="remoteform">
+                <label>Scheduling restrictions for data collection
+                    <span class="small">Are there times in the two weeks after delivery when the people collecting data are unavailable, including weekends?:</span>
+                </label>
+                <textarea name="SCHEDULINGRESTRICTIONS" data-testid="add-shipment-restrictions"></textarea>
+            </li>
+
+            <li class="remoteform">
+                <label>Short-notice beam time
+                    <span class="small">Would you like to be considered for short-notice beamtime, generally with only 1-3 days notice?</span>
+                </label>
+                <input type="checkbox" name="LASTMINUTEBEAMTIME" data-testid="add-shipment-last-minute">
+            </li>
+
+            <li class="remoteform">
+                <label>Dewar grouping
+                    <span class="small">Would you prefer your beam time for this dewar to be grouped with beam time for other dewars?:</span>
+                </label>
+                <select name="DEWARGROUPING" data-testid="add-shipment-grouping">
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                    <option value="Don't mind">Don't mind</option>
+                </select>
+            </li>
+
+            <li class="remoteform">
+                <label>Extra support requirement
+                    <span class="small">Do you need extra support from your Local Contact, for instance, relating to operating the beamlines, or new/specific functionality?</span>
+                </label>
+                <textarea name="EXTRASUPPORTREQUIREMENT" data-testid="add-shipment-extra-support"></textarea>
+            </li>
+
+            <li class="remoteform">
+                <label>Multi-axis goniometry
+                    <span class="small">Do you need multi-axis goniometry?:</span>
+                </label>
+                <input type="checkbox" name="MULTIAXISGONIOMETRY" data-testid="add-shipment-multiaxis">
+            </li>
+
+            <li>
+                <label>Hard drive enclosed
+                    <span class="small">A hard drive is included with this shipment</span>
+                </label>
+                <input type="checkbox" name="ENCLOSEDHARDDRIVE" data-testid="add-shipment-hdd">
+            </li>
+
+            <li>
+                <label>Tools enclosed
+                    <span class="small">Tools are included within this shipment</span>
+                </label>
+                <input type="checkbox" name="ENCLOSEDTOOLS" data-testid="add-shipment-tools">
+            </li>
+
             <li>
                 <label>Comments
                     <span class="small">Comment for the shipment</span>
                 </label>
-                <textarea name="COMMENTS" maxlength="1000"></textarea>
+                <textarea name="COMMENTS" maxlength="1000" data-testid="add-shipment-comments"></textarea>
             </li>
-            
+
             <li>
                 <label>Outgoing Lab Contact
                     <span class="small">Lab contact for outgoing transport | <a class="add_lc" href="/contact/add">Add</a></span>
                 </label>
-                <select name="SENDINGLABCONTACTID"></select>
+                <select name="SENDINGLABCONTACTID" data-testid="add-shipment-outgoing-lc"></select>
             </li>
-            
+
             <li>
                 <label>Return Lab Contact
                     <span class="small">Lab contact for return transport | <a class="add_lc" href="/contact/add">Add</a></span>
                 </label>
-                <select name="RETURNLABCONTACTID"></select>
+                <select name="RETURNLABCONTACTID" data-testid="add-shipment-return-lc"></select>
             </li>
-            
+
             <li>
                 <label>Shipping Date
                     <span class="small">Date shipment will leave lab / be picked up</span>
                 </label>
-                <input class="half" type="text" name="DELIVERYAGENT_SHIPPINGDATE" />
+                <input class="half" type="text" name="DELIVERYAGENT_SHIPPINGDATE" data-testid="add-shipment-date" />
             </li>
 
             <li>
                 <label>Pickup Location
                     <span class="small">Location where shipment can be picked up from. i.e. Reception</span>
                 </label>
-                <input class="half" type="text" name="PHYSICALLOCATION" />
+                <input class="half" type="text" name="PHYSICALLOCATION" data-testid="add-shipment-location" />
             </li>
 
             <li>
                 <label>Ready by Time
                     <span class="small">Time shipment will be ready for pickup</span>
                 </label>
-                <input class="half" type="text" name="READYBYTIME" />
+                <input class="half" type="text" name="READYBYTIME" data-testid="add-shipment-ready-time" />
             </li>
 
             <li>
                 <label>Close Time
                     <span class="small">Time after which shipment cannot be picked up</span>
                 </label>
-                <input class="half" type="text" name="CLOSETIME" />
+                <input class="half" type="text" name="CLOSETIME" data-testid="add-shipment-close-time" />
             </li>
-            
-            
+
+
             <li>
                 <label>Delivery Date
                     <span class="small">Estimated date of delivery at facility</span>
                 </label>
-                <input class="half" type="text" name="DELIVERYAGENT_DELIVERYDATE" />
+                <input class="half" type="text" name="DELIVERYAGENT_DELIVERYDATE"  data-testid="add-shipment-delivery-date"/>
             </li>
-            
+
             <li>
                 <label>Courier Name
                     <span class="small">Courier name for the return shipment</span>
                 </label>
-                <input type="text" name="DELIVERYAGENT_AGENTNAME" /> 
-                <% if (!DHL_ENABLE) { %><a href="<%-DHL_LINK%>" class="dhl button"><i class="fa fa-envelope"></i> Use Facility Account (UK ONLY)</a><% } %>
+                <input type="text" name="DELIVERYAGENT_AGENTNAME"  data-testid="add-shipment-courier"/>
+                <% if (!DHL_ENABLE) { %><a href="<%-DHL_LINK%>" class="dhl button" data-testid="add-shipment-facility-account"><i class="fa fa-envelope"></i> Use Facility Account (UK ONLY)</a><% } %>
             </li>
-            
+
             <li>
                 <label>Courier Account Number
                     <span class="small">Courier account number for return shipment</span>
                 </label>
-                <input type="text" name="DELIVERYAGENT_AGENTCODE" />
+                <input type="text" name="DELIVERYAGENT_AGENTCODE" data-testid="add-shipment-account" />
             </li>
-            
-            <button name="submit" value="1" type="submit" class="button submit">Add Shipment</button>
-            
-            
+
+            <button name="submit" value="1" type="submit" class="button submit" data-testid="add-shipment-submit">Add Shipment</button>
+
+
         </ul>
     </div>
-    
+
 </form>
 

@@ -113,7 +113,6 @@ define(['marionette',
             // We need users in case we want to edit the container owner
             this.users = new Users(null, { state: { pageSize: 9999 }})
             this.users.queryParams.all = 1
-            this.users.queryParams.pid = app.proposal.get('PROPOSALID')
 
             Backbone.Validation.bind(this)
         },
@@ -149,7 +148,6 @@ define(['marionette',
 
             // Enable editing of the container owner
             // The template restricts this to staff only
-            var self = this
             this.users.fetch().done(function() {
                 edit.create('OWNERID', 'select', { data: self.users.kv() })
             })

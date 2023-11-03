@@ -315,6 +315,9 @@ define(['marionette',
             var sc = this.scores.findWhere({ BLSAMPLEIMAGESCOREID: this.ui.score.val() })
             this.model.set('BLSAMPLEIMAGESCOREID', this.ui.score.val())
             this.model.set('SCORECOLOUR', sc.get('COLOUR'))
+            if (sc.get('SCORE') > this.model.get('MAXSCORE')) {
+                this.model.set('MAXSCORECOLOUR', sc.get('COLOUR'))
+            }
             this.model.save({ BLSAMPLEIMAGESCOREID: this.ui.score.val() }, { patch: true })
             this.trigger('image:scored')
         },
@@ -634,8 +637,8 @@ define(['marionette',
             var newp = curp*(this.scalef/(last_scale))
             this.offsetx -= newp-curp
 
-            var curp = -this.offsety + xy[1]
-            var newp = curp*(this.scalef/(last_scale))
+            curp = -this.offsety + xy[1]
+            newp = curp*(this.scalef/(last_scale))
             this.offsety -= newp-curp
                          
             this.clampOffsets()

@@ -6,9 +6,17 @@
 
     <li>Last Data: <%-info.LAST%></li>
 
-    <li>Data Collections: <%-info.DC_TOT%> (<span title="Full Data Collections"><%-info.DC_FULL%></span> / <span title="Screenings"><%-info.DC_SCREEN%></span> / <span title="Grid Screens"><%-info.DC_GRID%></span>)</li>
+    <li>
+    Samples Loaded: <%-info.R_TOT%><br />
+    Grid Scans: <%-info.DC_GRID%> (on <%-info.DC_GRID_SAMPLES%> samples)<br />
+    Screenings: <%-info.DC_SCREEN%> (on <%-info.DC_SCREEN_SAMPLES%> samples)<br />
+    Full Data Collections: <%-info.DC_FULL%> (on <%-info.DC_FULL_SAMPLES%> samples)<br />
+    </li>
+    <li>
+    Loaded samples without data collections: <%-info.DC_MISSED_SAMPLES%><br />
+    <%-info.DC_MISSED%>
+    </li>
     <li>Collections Stopped: <%-info.DC_STOPPED%></li>
     <li>Energy Scans: <%-info.E_TOT%></li>
     <li>MCA Spectra: <%-info.FL_TOT%></li>
-    <li>Samples Loaded: <%-info.R_TOT%></li>
 </ul>

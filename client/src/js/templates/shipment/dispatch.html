@@ -1,5 +1,5 @@
-<h1>Request Dewar Dispatch</h1>
-<div id="help" class="content dispatch-state tw-hidden md:tw-flex tw-my-4 tw-p-4 tw-bg-content-inactive tw-rounded tw-flex tw-justify-between">
+<h1 data-testid="dispatch-header">Request Dewar Dispatch</h1>
+<div id="help" class="content dispatch-state tw-hidden md:tw-flex tw-my-4 tw-p-4 tw-bg-content-inactive tw-rounded tw-flex tw-justify-between" data-testid="dispatch-warning">
   Please note, dewars are not topped up with LN2 after a return is requested.
 </div>
 
@@ -9,18 +9,18 @@
             
             <li>
                 <span class="label">Dewar Name</span>
-                <span class=""><%-DEWAR.CODE%></span>
+                <span class="" data-testid="dispatch-dewar-name"><%-DEWAR.CODE%></span>
             </li>
 
             <li>
                 <span class="label">Shipment</span>
-                <span class=""><%-DEWAR.SHIPPINGNAME%></span>
+                <span class="" data-testid="dispatch-shipment-name"><%-DEWAR.SHIPPINGNAME%></span>
             </li>
 
             <% if (DEWAR.FACILITYCODE) { %>
             <li>
                 <span class="label">Dewar Code</span>
-                <span class=""><%-DEWAR.FACILITYCODE%></span>
+                <span class="" data-testid="dispatch-facility-code"><%-DEWAR.FACILITYCODE%></span>
             </li>
             <% } %>
             
@@ -29,21 +29,21 @@
                 <label>Visit
                     <span class="small">The last visit the dewar was used for</span>
                 </label>
-                <select name="VISIT"></select>
+                <select name="VISIT" data-testid="dispatch-visit"></select>
             </li>
             
             <li>
                 <label>Local Contact
                     <span class="small">Beamline local contact</span>
                 </label>
-                <input type="text" name="LOCALCONTACT" />
+                <input type="text" name="LOCALCONTACT" data-testid="dispatch-local-contact" disabled="disabled"/>
             </li>
 
             <li>
                 <label>Dewar Location
                     <span class="small">Where the dewar currently is</span>
                 </label>
-                <input type="text" name="LOCATION" />
+                <input type="text" name="LOCATION" data-testid="dispatch-location"/>
             </li>
 
 
@@ -52,7 +52,7 @@
                 <label>Return Contact
                     <span class="small">The contact to return the dewar to</span>
                 </label>
-                <select name="LABCONTACTID"></select>
+                <select name="LABCONTACTID" data-testid="dispatch-lab-contact"></select>
             </li>
             
 
@@ -60,96 +60,128 @@
                 <label>Full Name
                     <span class="small">The person's given &amp; family name</span>
                 </label>
-                <input type="text" name="GIVENNAME" />
-                <input type="text" name="FAMILYNAME" />
+                <input type="text" name="GIVENNAME" data-testid="dispatch-given-name"/>
+                <input type="text" name="FAMILYNAME" data-testid="dispatch-family-name"/>
             </li>
 
             <li>
-                <label>Phone Number
-                    <span class="small">The person's phone number</span>
-                </label>
-                <input type="text" name="PHONENUMBER" />
+                <label>Phone Number</label>
+                <input type="text" name="PHONENUMBER" data-testid="dispatch-phone-number" />
             </li>
 
             <li>
-                <label>Contact Email
-                    <span class="small">The person's email address</span>
-                </label>
-                <input type="email" name="EMAILADDRESS" />
+                <label>Email Address</label>
+                <input type="email" name="EMAILADDRESS" data-testid="dispatch-email-address"/>
             </li>
 
             <li>
-                <label>Laboratory Name
-                    <span class="small">The contact's laboratory name</span>
+                <label>University / Institution / Company
+                    <span class="small">The name of the contact's university, institution or company</span>
                 </label>
-                <input type="text" name="LABNAME" />
+                <input type="text" name="LABNAME" data-testid="dispatch-lab-name"/>
             </li>
 
             <li>
-                <label>Laboratory Address
-                    <span class="small">The contact's laboratory address</span>
+                <label>Address
+                    <span class="small">Address for courier <br/>Exclude post code and city</span>
                 </label>
-                <textarea name="ADDRESS"></textarea>
+                <textarea name="ADDRESS" data-testid="dispatch-lab-address"></textarea>
+            </li>
+
+            <li>
+                <label>City
+                    <span class="small">Laboratory City</span>
+                </label>
+                <input type="text" name="CITY" data-testid="dispatch-city"/>
+            </li>
+
+            <li>
+                <label>Post Code
+                    <span class="small">Laboratory Post Code</span>
+                </label>
+                <input type="text" name="POSTCODE" data-testid="dispatch-post-code"/>
+            </li>
+
+            <li>
+                <label>Laboratory Country
+                    <span class="small">The contact's laboratory country</span>
+                </label>
+                <select name="COUNTRY" data-testid="dispatch-lab-country">
+                    <option value="United Kingdom">United Kingdom</option>
+                    <option value="Other">Other</option>
+                </select>
             </li>
 
              <li>
                 <label>Package description
                     <span class="small">1 line, please specify value and quantity</span>
                 </label>
-                <textarea name="DESCRIPTION">Dry shipper containing frozen crystals (Value: £100; Quantity: 1)</textarea>
+                <textarea name="DESCRIPTION" data-testid="dispatch-description">Dry shipper containing frozen crystals (Value: £100; Quantity: 1)</textarea>
             </li>
 
             <li>
                 <label>Pickup Date
                     <span class="small">Date dewar will be ready for dispatch</span>
                 </label>
-                <input class="half" type="text" name="DELIVERYAGENT_SHIPPINGDATE" />
+                <input class="half" type="text" name="DELIVERYAGENT_SHIPPINGDATE" data-testid="dispatch-shipping-date"/>
             </li>
 
             
-            <li class="head">Courier Details</li>
-            <% if (SHIPPING.DELIVERYAGENT_AGENTCODE) { %>
-            <li>
+            <li class="head">
+                Courier Details
+                <span></span>
+                <a href="#" class="facc button" data-testid="dispatch-use-facility-courier"><i class="fa fa-envelope"></i> Use Facility Account</a>
+            </li>
+
+            <% if (SHIPPING.TERMSACCEPTED == 0) { %>
+
+            <li class="courierDetails">
+                <label>Courier
+                    <span class="small">Courier Name</span>
+                </label>
+                <input type="text" name="DELIVERYAGENT_AGENTNAME" data-testid="dispatch-courier-name"/>
+            </li>
+
+            <li class="courierDetails">
+                <label>Account Number
+                    <span class="small">Courier account number</span>
+                </label>
+                <input type="text" name="DELIVERYAGENT_AGENTCODE" data-testid="dispatch-courier-account"/>
+            </li>
+
+            <% if (SHIPPING.DELIVERYAGENT_AGENTNAME && SHIPPING.DELIVERYAGENT_AGENTCODE) { %>
+            <li class="courierDetails">
                 <label>
                     Use another account
                     <span class="small">Use another courier account instead</span>
                 </label>
-                <input type="checkbox" name="USE_ANOTHER_COURIER_ACCOUNT" value="0" />
-            </li>
-            <li>
-                <label>Courier
-                    <span class="small">Courier Name</span>
-                </label>
-                <input type="text" name="DELIVERYAGENT_AGENTNAME" />
-            </li>
-
-
-            <li>
-                <label>Account Number
-                    <span class="small">Courier account number</span>
-                </label>
-                <input type="text" name="DELIVERYAGENT_AGENTCODE" />
+                <input type="checkbox" name="USE_ANOTHER_COURIER_ACCOUNT" value="0" data-testid="dispatch-use-another-account"/>
             </li>
             <% } %>
 
-            <li>
-                <label>Airway Bill Number
-                    <span class="small">Airway bill no. if you have generated your own</span>
+            <li class="courierDetails">
+                <label>Air Waybill Number
+                    <span class="small">Air waybill no. if you have generated your own</span>
                 </label>
-                <input type="text" name="AWBNUMBER" />
+                <input type="text" name="AWBNUMBER" data-testid="dispatch-air-waybill"/>
             </li>
 
+            <% } %>
+
+            <li class="facilityCourier">
+                <label>Courier</label>
+                <span class="small" data-testid="dispatch-facility-courier">This dewar will be returned using the facility's courier account</span>
+            </li>
+    
 
             <li>
                 <label>Comments
-                    <span class="small">Comment for the shipment</span>
+                    <span class="small">Comments for the shipment</span>
                 </label>
-                <textarea name="COMMENTS"></textarea>
+                <textarea name="COMMENTS" data-testid="dispatch-comments"></textarea>
             </li>
 
-
-            <button name="submit" value="1" type="submit" class="button submit">Request Dewar Dispatch</button>
-            
+            <button name="submit" value="1" type="submit" class="button submit" data-testid="dispatch-submit">Request Dewar Dispatch</button>
             
         </ul>
     </div>
