@@ -42,7 +42,6 @@ class LDAP extends AuthenticationParent implements AuthenticationInterface
             if ($ldap_use_tls) {
                 ldap_start_tls($conn);
             }
-	    
             try {
                 if ($ldap_server_type == "activedirectory") {
                     if (!$active_directory_domain) {
@@ -51,7 +50,7 @@ class LDAP extends AuthenticationParent implements AuthenticationInterface
                         return false;
                     }
                     $ldap_user = $active_directory_domain . "\\" . $login;
-		        } else {
+                } else {
                     // testing with openldap indicates this call needs to use a correct
                     // DN syntax: "uid=<login>,ou=people,dc=example,dc=com"
                     $ldap_user = "uid=" . $login . "," . $ldap_search;
