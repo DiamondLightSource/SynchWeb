@@ -687,15 +687,15 @@ class Vstat extends Page
     function _ehc_log()
     {
         $info = $this->_check_visit();
+        $elog_url = $this->_construct_elog_url($info, false);
 
-        $en = strtotime($info['EN']);
-        $ehc_tmp = $this->_get_remote_xml('https://rdb.pri.diamond.ac.uk/php/elog/cs_logwscontentinfo.php?startdate=' . date('d/m/Y', $en));
-        if (!$ehc_tmp)
+        if ($elog_url)
+            $ehc_tmp = $this->_get_remote_xml($elog_url);
+        if (!$elog_url || !$ehc_tmp)
             $ehc_tmp = array();
 
         $ehcs = array();
         foreach ($ehc_tmp as $e) {
-            //if (strpos($e->title, 'shift') !== False) 
             array_push($ehcs, $e);
         }
 
@@ -706,24 +706,61 @@ class Vstat extends Page
     function _callouts()
     {
         $info = $this->_check_visit();
+        $elog_url = $this->_construct_elog_url($info, true);
+        if ($elog_url)
+            $calls_tmp = $this->_get_remote_xml($elog_url);
 
-        $st = strtotime($info['ST']);
-        $en = strtotime($info['EN']);
+        if (!$elog_url || !$calls_tmp)
+            $calls_tmp = array();
 
-        $bls = array(
-            'i02' => 'BLI02', 'i03' => 'BLI03', 'i04' => 'BLI04', 'i04-1' => 'BLI04J', 'i24' => 'BLI24', 'i23' => 'BLI23',
-            'i11-1' => 'BLI11',
-            'b21' => 'BLB21',
-            'i12' => 'BLI12', 'i13' => 'BLI13', 'i13-1' => 'BLI13J',
-        );
-        $calls = $this->_get_remote_xml('https://rdb.pri.diamond.ac.uk/php/elog/cs_logwscalloutinfo.php?startdate=' . date('d/m/Y', $st) . '&enddate=' . date('d/m/Y', $en) . 'selgroupid=' . $bls[$info['BL']]);
-        if (!$calls)
-            $calls = array();
-
+        $calls = array();
+        foreach ($calls_tmp as $e) {
+            array_push($calls, $e);
+        }
         $this->_output($calls);
     }
 
 
+    function _construct_elog_url($info, $callouts)
+    {
+        global $elog_base_url, $elog_callouts_page, $elog_ehc_page;
+        if (!$elog_base_url) {
+            return '';
+        }
+        $st = strtotime($info['ST']);
+        $en = strtotime($info['EN']);
+        if ($callouts) {
+            $page = $elog_callouts_page;
+            $parameters = array(
+                'startdate' => date('d/m/Y', $st),
+                'enddate' => date('d/m/Y', $en),
+                'selgroupid' => $this->_get_logbook_from_beamline($info['BL']),
+            );
+        } else {
+            $page = $elog_ehc_page;
+            $parameters = array('startdate' => date('d/m/Y', $en));
+        }
+
+        $url_query = http_build_query($parameters);
+        $elog_url = $elog_base_url . $page . "?" . $url_query;
+        return $elog_url;
+    }
+
+
+    function _get_logbook_from_beamline($bl)
+    {
+        global $bl_types;
+        $logbook = null;
+        foreach ($bl_types as $type)
+        {
+            if ($type['name'] == $bl)
+            {
+                $logbook = $type['logbook'];
+                break;
+            }
+        }
+        return $logbook;
+    }
 
 
     function _check_visit()
