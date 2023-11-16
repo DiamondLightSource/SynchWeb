@@ -924,6 +924,54 @@ class Shipment extends Page
         $this->_output(1);
     }
 
+    function _dispatch_dewar_shipment_request($dewar)
+    {
+        if (is_null($dewar['EXTERNALSHIPPINGIDFROMSYNCHROTRON'])) {
+            $server_port = ($_SERVER['SERVER_PORT']==='443') ? '' : ":{$_SERVER['SERVER_PORT']}";
+            $shipment_request_info = array(
+                "proposal" => $dewar['PROPOSAL'],
+                "external_id" => (int) $dewar['DEWARID'],
+                "origin_url" => "https://{$_SERVER['SERVER_NAME']}{$server_port}/shipments/sid/{$dewar['SHIPPINGID']}",
+                "packages" => [
+                    [
+                        "external_id" => (int) $dewar['DEWARID'],
+                        "shippable_item_type" => "CRYOGENIC_DRY_SHIPPER_CASE",
+                        "line_items" => [
+                            [
+                                "shippable_item_type" => "CRYOGENIC_DRY_SHIPPER",
+                                "quantity" => 1
+                            ],
+                            [
+                                "shippable_item_type"=> "UNI_PUCK",
+                                "quantity" => (int) $dewar['NUM_PUCKS']
+                            ],
+                            [
+                                "shippable_item_type" => "SHELVED_UNI_PUCK_SHIPPING_CANE",
+                                "quantity" => 1
+                            ],
+                            [
+                                "shippable_item_type" => "SPINE_SAMPLE_HOLDER",
+                                "quantity" => (int) $dewar['NUM_SAMPLES']
+                            ]
+                        ]
+                    ]
+                ]
+            );
+            try {
+                $response = $this->shipping_service->create_shipment_request($shipment_request_info);
+                $external_shipping_id = $response['shipmentRequestId'];
+                $this->db->pq(
+                    "UPDATE dewar SET externalShippingIdFromSynchrotron=:1 WHERE dewarid=:2",
+                    array($external_shipping_id, $dewar['DEWARID'])
+                );
+                return $external_shipping_id;
+            } catch (Exception $e) {
+                throw new Exception("Error returned from shipping service: " . $e . "\nShipment data: " . json_encode($shipment_data));
+            }
+        }
+        return $dewar['EXTERNALSHIPPINGIDFROMSYNCHROTRON'];
+    }
+
     function _dispatch_dewar_in_shipping_service($dispatch_info, $dewar)
     {
         global $facility_company;
@@ -1000,6 +1048,8 @@ class Shipment extends Page
         global $dispatch_email_intl;
         global $use_shipping_service;
         global $shipping_service_links_in_emails;
+        global $use_shipping_service_redirect;
+        global $shipping_service_app_url;
         // Variable to store where the dewar is (Synchrotron or eBIC building)
         // Could map this to dewar storage locations in ISPyB to make more generic...?
         $dispatch_from_location = 'Synchrotron';
@@ -1014,10 +1064,12 @@ class Shipment extends Page
         }
 
         $dew = $this->db->pq(
-            "SELECT d.dewarid, d.barcode, d.storagelocation, d.dewarstatus, s.shippingid, CONCAT(p.proposalcode, p.proposalnumber) as proposal
+            "SELECT d.dewarid, d.barcode, d.storagelocation, d.dewarstatus, d.externalShippingIdFromSynchrotron, s.shippingid, CONCAT(p.proposalcode, p.proposalnumber) as proposal, count(distinct c.containerId) as num_pucks, count(b.blsampleId) as num_samples
                 FROM dewar d 
                 INNER JOIN shipping s ON s.shippingid = d.shippingid 
                 INNER JOIN proposal p ON p.proposalid = s.proposalid
+                INNER JOIN container c on c.dewarid = d.dewarid
+                LEFT JOIN BLSample b on b.containerId = c.containerId
                 WHERE d.dewarid=:1 and p.proposalid=:2",
             array($this->arg('DEWARID'), $this->proposalid)
         );
@@ -1032,7 +1084,7 @@ class Shipment extends Page
         // If no location specified (i.e. deleted), then read from dewar transport history.
         // If no dewar transport history fall back to dewar location
         // We still update history based on provided location to record action from user
-        $dewar_location = $this->has_arg('LOCATION)') ? $this->arg('LOCATION') : "";
+        $dewar_location = $this->has_arg('LOCATION') ? $this->arg('LOCATION') : "";
 
         if (empty($dewar_location)) {
             // What was the last history entry for this dewar?
@@ -1080,21 +1132,40 @@ class Shipment extends Page
 
         if (Utils::getValueOrDefault($use_shipping_service) && in_array($country, $facility_courier_countries)) {
             if ($terms_accepted) {
-                try {
-                    $shipment_id = $this->_dispatch_dewar_in_shipping_service($data, $dew);
+                if (Utils::getValueOrDefault($use_shipping_service_redirect)) {
+                    try {
+                        $shipment_id = $this->_dispatch_dewar_shipment_request($dew);
+                    } catch (Exception $e) {
+                        $this->_error($e);
+                    }
+                    if (Utils::getValueOrDefault($shipping_service_links_in_emails)) {
+                        $data['AWBURL'] = "{$shipping_service_app_url}/shipment_requests/{$shipment_id}/outgoing";
+                    }
+                } else {
+                    try {
+                        $shipment_id = $this->_dispatch_dewar_in_shipping_service($data, $dew);
+                    } catch (Exception $e) {
+                        error_log($e);
+                        $data['AWBURL'] = "";
+                    }
                     if (Utils::getValueOrDefault($shipping_service_links_in_emails)) {
                         $data['AWBURL'] = $this->shipping_service->get_awb_pdf_url($shipment_id);
                     }
-                } catch (Exception $e) {
-                    error_log($e);
-                    $data['AWBURL'] = "";
                 }
             }
         }
 
         # Prepare e-mail response for dispatch request
-        $subject_line = '*** Dispatch requested for Dewar ' . $dew['BARCODE'] . ' from ' . $dispatch_from_location . ' - Pickup Date: ' . $this->args['DELIVERYAGENT_SHIPPINGDATE'] . ' ***';
-        $email = new Email('dewar-dispatch', $subject_line);
+        $use_dispatch_lite_template = (
+            Utils::getValueOrDefault($use_shipping_service)
+            && in_array($country, $facility_courier_countries)
+            && $terms_accepted
+            && Utils::getValueOrDefault($use_shipping_service_redirect)
+        );
+        $subject_pickup_date = $use_dispatch_lite_template ? '' : ' - Pickup Date: ' . $this->args['DELIVERYAGENT_SHIPPINGDATE'];
+        $subject_line = '*** Dispatch requested for Dewar ' . $dew['BARCODE'] . ' from ' . $dispatch_from_location . $subject_pickup_date . ' ***';
+        $email_template = $use_dispatch_lite_template ? 'dewar-dispatch-lite' : 'dewar-dispatch';
+        $email = new Email($email_template, $subject_line);
 
         // If a local contact is given, try to find their email address
         // First try LDAP, if unsuccessful look at the ISPyB person record for a matching staff user
@@ -1120,6 +1191,7 @@ class Shipment extends Page
             $data['LOCALCONTACT'] = $local_contact;
         if (!array_key_exists('LCEMAIL', $data))
             $data['LCEMAIL'] = '';
+        $data['BARCODE'] = $dew['BARCODE'];
         $email->data = $data;
 
         if ($country != $facility_country && !is_null($dispatch_email_intl)) {
@@ -1343,7 +1415,7 @@ class Shipment extends Page
                 $order = $cols[$this->arg('sort_by')] . ' ' . $dir;
         }
 
-        $dewars = $this->db->paginate("SELECT CONCAT(p.proposalcode, p.proposalnumber) as prop, CONCAT(p.proposalcode, p.proposalnumber, '-', se.visit_number) as firstexperiment, r.labcontactid, se.beamlineoperator as localcontact, se.beamlinename, TO_CHAR(se.startdate, 'HH24:MI DD-MM-YYYY') as firstexperimentst, d.firstexperimentid, s.shippingid, s.shippingname, d.facilitycode, count(c.containerid) as ccount, (case when se.visit_number > 0 then (CONCAT(p.proposalcode, p.proposalnumber, '-', se.visit_number)) else '' end) as exp, d.code, d.barcode, d.storagelocation, d.dewarstatus, d.dewarid,  d.trackingnumbertosynchrotron, d.trackingnumberfromsynchrotron, s.deliveryagent_agentname, d.weight, d.deliveryagent_barcode, GROUP_CONCAT(c.code SEPARATOR ', ') as containers, s.sendinglabcontactid, s.returnlabcontactid, pe.givenname, pe.familyname
+        $dewars = $this->db->paginate("SELECT CONCAT(p.proposalcode, p.proposalnumber) as prop, CONCAT(p.proposalcode, p.proposalnumber, '-', se.visit_number) as firstexperiment, r.labcontactid, se.beamlineoperator as localcontact, se.beamlinename, TO_CHAR(se.startdate, 'HH24:MI DD-MM-YYYY') as firstexperimentst, d.firstexperimentid, s.shippingid, s.shippingname, d.facilitycode, count(c.containerid) as ccount, (case when se.visit_number > 0 then (CONCAT(p.proposalcode, p.proposalnumber, '-', se.visit_number)) else '' end) as exp, d.code, d.barcode, d.storagelocation, d.dewarstatus, d.dewarid,  d.trackingnumbertosynchrotron, d.trackingnumberfromsynchrotron, d.externalShippingIdFromSynchrotron, s.deliveryagent_agentname, d.weight, d.deliveryagent_barcode, GROUP_CONCAT(c.code SEPARATOR ', ') as containers, s.sendinglabcontactid, s.returnlabcontactid, pe.givenname, pe.familyname
               FROM dewar d 
               LEFT OUTER JOIN container c ON c.dewarid = d.dewarid 
               INNER JOIN shipping s ON d.shippingid = s.shippingid 

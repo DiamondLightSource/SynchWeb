@@ -16,7 +16,9 @@ define(['backbone'], function(Backbone) {
         },
 
         VISIT: {
-            required: true,
+            required: function() {
+                return this.visitRequired
+            },
             pattern: 'visit',
         },
 
@@ -108,6 +110,7 @@ define(['backbone'], function(Backbone) {
 
     courierDetailsRequired: false, // We want to set this default to false unless 'DELIVERYAGENT_AGENTCODE' has a value in the shipment model
     postCodeRequired: false,
+    visitRequired: true,
   })
        
 })

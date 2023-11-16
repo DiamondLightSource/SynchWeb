@@ -84,6 +84,7 @@ define(['marionette', 'views/form',
             accountNumber: 'input[NAME=DELIVERYAGENT_AGENTCODE]',
             courier: 'input[name=DELIVERYAGENT_AGENTNAME]',
             courierDetails: '.courierDetails',
+            dispatchDetails: '.dispatchDetails',
             facilityCourier: '.facilityCourier',
             awbNumber: 'input[name=AWBNUMBER]',
             useAnotherCourierAccount: 'input[name=USE_ANOTHER_COURIER_ACCOUNT]',
@@ -112,6 +113,14 @@ define(['marionette', 'views/form',
         
         success: function() {
             app.trigger('shipment:show', this.getOption('dewar').get('SHIPPINGID'))
+            if (app.options.get("shipping_service_app_url") && (this.terms.get('ACCEPTED') == 1)) { // terms.ACCPETED could be undefined, 1, or "1"
+                this.getOption('dewar').fetch().done((dewar) => {
+                    const external_id = dewar.EXTERNALSHIPPINGIDFROMSYNCHROTRON;
+                    window.location.assign(
+                        `https://${app.options.get("shipping_service_app_url")}/shipment-requests/${external_id}/outgoing`
+                    )
+                })
+            }
         },
 
         failure: function() {
@@ -120,6 +129,7 @@ define(['marionette', 'views/form',
         
         onRender: function() {
             this.date('input[name=DELIVERYAGENT_SHIPPINGDATE]')
+            this.$el.hide()
 
             var d = new Date()
             var today = (d.getDate() < 10 ? '0'+d.getDate() : d.getDate()) + '-' + (d.getMonth() < 9 ? '0'+(d.getMonth()+1) : d.getMonth()+1) + '-' + d.getFullYear()
@@ -150,6 +160,8 @@ define(['marionette', 'views/form',
             this.populateCountries()
             this.stripPostCode()
             this.formatAddress()
+            this.$el.show()
+            this.getOption('dewar').fetch().done((foo)=>{console.log(foo);})
         },
 
         populateCountries: function() {
@@ -266,6 +278,10 @@ define(['marionette', 'views/form',
             this.ui.courierDetails.hide()
             this.ui.facilityCourier.show()
             this.model.courierDetailsRequired = false
+            if (app.options.get("shipping_service_app_url")){
+                this.model.visitRequired = false
+                this.ui.dispatchDetails.hide()
+            }
         },
 
         checkPostCodeRequired: function() {
