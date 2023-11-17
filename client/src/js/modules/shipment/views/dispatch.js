@@ -117,7 +117,7 @@ define(['marionette', 'views/form',
                 this.getOption('dewar').fetch().done((dewar) => {
                     const external_id = dewar.EXTERNALSHIPPINGIDFROMSYNCHROTRON;
                     window.location.assign(
-                        `https://${app.options.get("shipping_service_app_url")}/shipment-requests/${external_id}/outgoing`
+                        `${app.options.get("shipping_service_app_url")}/shipment-requests/${external_id}/outgoing`
                     )
                 })
             }

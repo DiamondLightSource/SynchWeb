@@ -1139,7 +1139,7 @@ class Shipment extends Page
                         $this->_error($e);
                     }
                     if (Utils::getValueOrDefault($shipping_service_links_in_emails)) {
-                        $data['AWBURL'] = "{$shipping_service_app_url}/shipment_requests/{$shipment_id}/outgoing";
+                        $data['AWBURL'] = "{$shipping_service_app_url}/shipment-requests/{$shipment_id}/outgoing";
                     }
                 } else {
                     try {
