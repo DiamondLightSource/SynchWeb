@@ -355,7 +355,7 @@ class Sample extends Page
                 $isCapillary = sizeof($crystals) > 1 ? true : false;
 
                 foreach ($crystals as $sample) {
-                    $c = array('NAME' => $protein->ACRONYM . '-sample');
+                    $c = array('NAME' => $phase->ACRONYM . '-sample');
                     foreach (array('SPACEGROUP', 'COMMENTS') as $f)
                         $c[$f] = array_key_exists($f, $sample) ? $sample->$f : '';
                     foreach (array('ABUNDANCE', 'THEORETICALDENSITY') as $f)
@@ -412,7 +412,7 @@ class Sample extends Page
                 if (array_key_exists('CAPILLARYID', $ids[$model]) && $capillary->CRYSTALID == null && !$capillary->CONTAINERLESS)
                     $blSamples['capillary'] = array('CONTAINERID' => $ids[$model]['CONTAINERID'], 'CRYSTALID' => $ids[$model]['CAPILLARYID'], 'PROTEINID' => $ids[$model]['CAPILLARYPHASEID'], 'LOCATION' => ++$maxLocation, 'NAME' => $capillary->NAME, 'PACKINGFRACTION' => 1, 'COMMENTS' => array_key_exists('COMMENTS', $capillary) ? $capillary->COMMENTS : '', 'DIMENSION1' => $capillary->OUTERDIAMETER, 'DIMENSION2' => $capillary->INNERDIAMETER, 'DIMENSION3' => $capillary->LENGTH, 'SHAPE' => $capillary->SHAPE, 'LOOPTYPE' => 1);
 
-                $blSamples['sample'] = array('CONTAINERID' => $ids[$model]['CONTAINERID'], 'CRYSTALID' => $ids[$model]['CRYSTALID'], 'PROTEINID' => $ids[$model]['PHASEID'], 'LOCATION' => ++$maxLocation, 'NAME' => $protein->ACRONYM, 'PACKINGFRACTION' => $attrs->PACKINGFRACTION ? $attrs->PACKINGFRACTION : null, 'COMMENTS' => array_key_exists('COMMENTS', $crystal) ? $crystal->COMMENTS : '');
+                $blSamples['sample'] = array('CONTAINERID' => $ids[$model]['CONTAINERID'], 'CRYSTALID' => $ids[$model]['CRYSTALID'], 'PROTEINID' => $ids[$model]['PHASEID'], 'LOCATION' => ++$maxLocation, 'NAME' => $phase->ACRONYM, 'PACKINGFRACTION' => $attrs->PACKINGFRACTION ? $attrs->PACKINGFRACTION : null, 'COMMENTS' => array_key_exists('COMMENTS', $crystal) ? $crystal->COMMENTS : '');
 
                 foreach ($blSamples as $key => $blSample) {
                     $a = $this->_prepare_sample_args($blSample);
