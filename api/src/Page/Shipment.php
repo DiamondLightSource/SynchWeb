@@ -942,21 +942,31 @@ class Shipment extends Page
                                 "quantity" => 1
                             ],
                             [
-                                "shippable_item_type"=> "UNI_PUCK",
-                                "quantity" => (int) $dewar['NUM_PUCKS']
-                            ],
-                            [
                                 "shippable_item_type" => "SHELVED_UNI_PUCK_SHIPPING_CANE",
                                 "quantity" => 1
                             ],
-                            [
-                                "shippable_item_type" => "SPINE_SAMPLE_HOLDER",
-                                "quantity" => (int) $dewar['NUM_SAMPLES']
-                            ]
                         ]
                     ]
                 ]
             );
+            if ((int) $dewar['NUM_PUCKS'] > 0) {
+                array_push(
+                    $shipment_request_info["packages"][0]["line_items"],
+                    [
+                        "shippable_item_type"=> "UNI_PUCK",
+                        "quantity" => (int) $dewar['NUM_PUCKS']
+                    ]
+                );
+            }
+            if ((int) $dewar['NUM_SAMPLES'] > 0) {
+                array_push(
+                    $shipment_request_info["packages"][0]["line_items"],
+                    [
+                        "shippable_item_type"=> "SPINE_SAMPLE_HOLDER",
+                        "quantity" => (int) $dewar['NUM_SAMPLES']
+                    ]
+                );
+            }
             try {
                 $response = $this->shipping_service->create_shipment_request($shipment_request_info);
                 $external_shipping_id = $response['shipmentRequestId'];
@@ -1068,7 +1078,7 @@ class Shipment extends Page
                 FROM dewar d 
                 INNER JOIN shipping s ON s.shippingid = d.shippingid 
                 INNER JOIN proposal p ON p.proposalid = s.proposalid
-                INNER JOIN container c on c.dewarid = d.dewarid
+                LEFT JOIN container c on c.dewarid = d.dewarid
                 LEFT JOIN BLSample b on b.containerId = c.containerId
                 WHERE d.dewarid=:1 and p.proposalid=:2",
             array($this->arg('DEWARID'), $this->proposalid)
