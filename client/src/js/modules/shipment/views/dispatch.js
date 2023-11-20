@@ -80,6 +80,8 @@ define(['marionette', 'views/form',
             ph: 'input[name=PHONENUMBER]',
             lab: 'input[name=LABNAME]',
 
+            submit: 'button[name=submit]',
+
             facc: 'a.facc',
             accountNumber: 'input[NAME=DELIVERYAGENT_AGENTCODE]',
             courier: 'input[name=DELIVERYAGENT_AGENTNAME]',
@@ -161,7 +163,6 @@ define(['marionette', 'views/form',
             this.stripPostCode()
             this.formatAddress()
             this.$el.show()
-            this.getOption('dewar').fetch().done((foo)=>{console.log(foo);})
         },
 
         populateCountries: function() {
@@ -281,6 +282,7 @@ define(['marionette', 'views/form',
             if (app.options.get("shipping_service_app_url")){
                 this.model.visitRequired = false
                 this.ui.dispatchDetails.hide()
+                this.ui.submit.text("Proceed")
             }
         },
 
