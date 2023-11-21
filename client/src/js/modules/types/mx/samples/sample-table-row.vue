@@ -11,21 +11,17 @@
       {{ sample.LOCATION || sampleIndex + 1 }}
     </div>
 
-    <div class="sublocation-column tw-text-center tw-py-1">
-      {{ sample.SUBLOCATION }}
-    </div>
-
     <validation-provider
       v-slot="{ errors }"
       class="tw-px-2 protein-column tw-py-1"
       tag="div"
-      :rules="sample['NAME'] && (!containerId || editingRow === sample['INDEX']) ? 'required' : ''"
+      :rules="sample['NAME'] && (!containerId || editingRow === sample['LOCATION']) ? 'required' : ''"
       :name="`Sample ${sampleIndex + 1} Protein`"
       :vid="`sample ${sampleIndex + 1} protein`"
     >
       <combo-box
         v-model="PROTEINID"
-        :is-disabled="!canEditRow(sample['INDEX'], editingRow) || isContainerProcessing || sampleHasDataCollection"
+        :is-disabled="!canEditRow(sample['LOCATION'], editingRow) || isContainerProcessing || sampleHasDataCollection"
         :data="proteinsOptionsList"
         class="tw-w-full protein-select"
         dataTestId="add-container-protein-select"
@@ -34,6 +30,7 @@
         :input-index="sampleIndex"
         default-text=""
         size="small"
+        :canCreateNewItem="false"
         :exclude-element-class-list="['custom-add']"
       >
         <template slot-scope="{ option }">
@@ -54,12 +51,12 @@
       v-slot="{ errors }"
       tag="div"
       class="name-column tw-py-1 tw-px-2"
-      :rules="sample['PROTEINID'] > -1 && (!containerId || editingRow === sample['INDEX']) ? 'required|alpha_dash|max:25|' : ''"
+      :rules="sample['PROTEINID'] > -1 && (!containerId || editingRow === sample['LOCATION']) ? 'required|alpha_dash|max:25|' : ''"
       :name="`Sample ${sampleIndex + 1} Name`"
       :vid="`sample ${sampleIndex + 1} name`"
     >
       <base-input-text
-        :disabled="!canEditRow(sample['INDEX'], editingRow) || isContainerProcessing || sampleHasDataCollection"
+        :disabled="!canEditRow(sample['LOCATION'], editingRow) || isContainerProcessing || sampleHasDataCollection"
         v-model.trim="NAME"
         input-class="tw-w-full tw-h-8"
         :error-message="errors[0]"
@@ -79,7 +76,7 @@
       <template #default="{ errors, inputChanged }">
         <combo-box
           v-model="SAMPLEGROUP"
-          :is-disabled="!canEditRow(sample['INDEX'], editingRow) || sampleGroupInputDisabled"
+          :is-disabled="!canEditRow(sample['LOCATION'], editingRow) || sampleGroupInputDisabled"
           :data="sampleGroups"
           text-field="text"
           value-field="value"
@@ -106,7 +103,7 @@
 
     <div class="actions-column tw-py-1 tw-text-right">
       <span v-if="containerId">
-        <span v-if="editingRow === sample['INDEX']">
+        <span v-if="editingRow === sample['LOCATION']">
           <a
             class="button tw-cursor-pointer  "
             @click="$emit('save-sample', sampleIndex)"
@@ -216,9 +213,6 @@ export default {
 </script>
 <style scoped>
 .location-column {
-  width: 30px;
-}
-.sublocation-column {
   width: 30px;
 }
 .protein-column {

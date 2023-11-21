@@ -597,7 +597,7 @@ class Shipment extends Page
         $tot = $this->db->pq("SELECT count(r.facilitycode) as tot 
               FROM dewarregistry r 
               LEFT OUTER JOIN dewarregistry_has_proposal rhp ON r.dewarregistryid = rhp.dewarregistryid
-              LEFT OUTER JOIN proposal p ON p.proposalid = r.proposalid 
+              LEFT OUTER JOIN proposal p ON p.proposalid = rhp.proposalid
               WHERE $where", $args);
         $tot = intval($tot[0]['TOT']);
 
@@ -672,7 +672,11 @@ class Shipment extends Page
         if (!$this->has_arg('FACILITYCODE'))
             $this->_error('No dewar code specified');
 
-        $dew = $this->db->pq("SELECT facilitycode FROM dewarregistry WHERE facilitycode LIKE :1 AND proposalid = :2", array($this->arg('FACILITYCODE'), $this->proposalid));
+        $dew = $this->db->pq("SELECT facilitycode FROM dewarregistry dr
+              INNER JOIN dewarregistry_has_proposal drhp ON dr.dewarregistryid = drhp.dewarregistryid
+              WHERE dr.facilitycode LIKE :1
+              AND drhp.proposalid = :2",
+              array($this->arg('FACILITYCODE'), $this->proposalid));
 
         if (!sizeof($dew))
             $this->_error('No such dewar');
@@ -858,6 +862,8 @@ class Shipment extends Page
         global $transfer_email;
         if (!$this->has_arg('DEWARID'))
             $this->_error('No dewar specified');
+        if (!$this->has_arg('LOCATION'))
+            $this->_error('No location specified');
 
         $dew = $this->db->pq("SELECT d.dewarid,s.shippingid
               FROM dewar d
@@ -927,10 +933,10 @@ class Shipment extends Page
         global $facility_country;
         global $facility_phone;
         global $facility_contact;
-        global $shipping_service_url;
+        global $shipping_service_api_url;
         global $facility_email;
-        if (!isset($shipping_service_url)) {
-            throw new Exception("Could not send request to shipping service: shipping_service_url not set");
+        if (!isset($shipping_service_api_url)) {
+            throw new Exception("Could not send request to shipping service: shipping_service_api_url not set");
         }
 
         # Create shipment
@@ -1046,7 +1052,7 @@ class Shipment extends Page
                 $dewar_location = $last_history['STORAGELOCATION'];
             } else {
                 // Use the current location of the dewar instead if no history
-                $dewar_location = $dew['STORAGELOCATION'];
+                $dewar_location = Utils::getValueOrDefault($dew['STORAGELOCATION'], '');
             }
         }
         // Check if the last history storage location is an EBIC prefix or not
@@ -1561,7 +1567,7 @@ class Shipment extends Page
         }
 
         $this->db->pq("UPDATE shipping SET shippingstatus='sent to facility' where shippingid=:1", array($ship['SHIPPINGID']));
-        $this->db->pq("UPDATE dewar SET dewarstatus='sent to facility' where shippingid=:1", array($ship['SHIPPINGID']));
+        $this->db->pq("UPDATE dewar SET dewarstatus='sent to facility', storagelocation='off-site' where shippingid=:1", array($ship['SHIPPINGID']));
 
         $dewars = $this->db->pq("SELECT d.dewarid, s.visit_number as vn, s.beamlinename as bl, TO_CHAR(s.startdate, 'DD-MM-YYYY HH24:MI') as startdate 
               FROM dewar d 
@@ -1569,8 +1575,8 @@ class Shipment extends Page
               WHERE d.shippingid=:1", array($ship['SHIPPINGID']));
         foreach ($dewars as $d) {
             $this->db->pq(
-                "INSERT INTO dewartransporthistory (dewartransporthistoryid,dewarid,dewarstatus,arrivaldate) 
-                  VALUES (s_dewartransporthistory.nextval,:1,'sent to facility',CURRENT_TIMESTAMP) RETURNING dewartransporthistoryid INTO :id",
+                "INSERT INTO dewartransporthistory (dewartransporthistoryid,dewarid,dewarstatus,storagelocation,arrivaldate)
+                  VALUES (s_dewartransporthistory.nextval,:1,'sent to facility','off-site',CURRENT_TIMESTAMP) RETURNING dewartransporthistoryid INTO :id",
                 array($d['DEWARID'])
             );
         }
@@ -2613,45 +2619,56 @@ class Shipment extends Page
 
     function _get_default_dewar()
     {
-        if (!$this->has_arg('visit'))
-            $this->_error('No visit specified');
+        if ($this->has_arg('visit')) {
+            $shipmentName = $this->arg('visit') . '_Shipment1';
+            $dewarName = $this->arg('visit') . '_Dewar1';
+            $sids = $this->db->pq("SELECT s.sessionid FROM blsession s INNER JOIN proposal p ON p.proposalid = s.proposalid WHERE CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) LIKE :1 AND p.proposalid=:2", array($this->arg('visit'), $this->proposalid));
+            if (!sizeof($sids))
+                $this->_error('No such visit');
+            else
+                $sid = $sids[0]['SESSIONID'];
 
-        $sids = $this->db->pq("SELECT s.sessionid FROM blsession s INNER JOIN proposal p ON p.proposalid = s.proposalid WHERE CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) LIKE :1 AND p.proposalid=:2", array($this->arg('visit'), $this->proposalid));
+        } elseif ($this->has_arg('prop')) {
+            $shipmentName = $this->arg('prop') . '_Shipment1';
+            $dewarName = $this->arg('prop') . '_Dewar1';
+            $sid = null;
+        } else {
+            $this->_error('No visit or proposal specified');
+        }
 
-        if (!sizeof($sids))
-            $this->_error('No such visit');
-        else
-            $sid = $sids[0]['SESSIONID'];
-
-
-        $shids = $this->db->pq("SELECT shippingid FROM shipping WHERE proposalid LIKE :1 AND shippingname LIKE :2", array($this->proposalid, $this->arg('visit') . '_Shipment1'));
+        $shids = $this->db->pq("SELECT shippingid FROM shipping WHERE proposalid LIKE :1 AND shippingname LIKE :2", array($this->proposalid, $shipmentName));
 
         if (sizeof($shids) > 0) {
             $shid = $shids[0]['SHIPPINGID'];
         } else {
-            $this->db->pq("INSERT INTO shipping (shippingid,proposalid,shippingname,bltimestamp,creationdate,shippingstatus) VALUES (s_shipping.nextval,:1,:2,CURRENT_TIMESTAMP,CURRENT_TIMESTAMP,'processing') RETURNING shippingid INTO :id", array($this->proposalid, $this->arg('visit') . '_Shipment1'));
+            $this->db->pq("INSERT INTO shipping (shippingid,proposalid,shippingname,bltimestamp,creationdate,shippingstatus) VALUES (s_shipping.nextval,:1,:2,CURRENT_TIMESTAMP,CURRENT_TIMESTAMP,'processing') RETURNING shippingid INTO :id", array($this->proposalid, $shipmentName));
 
             $shid = $this->db->id();
-
-            $vals = $this->db->pq("INSERT INTO shippinghassession (shippingid,sessionid) VALUES (:1,:2)", array($shid, $sid));
+            if ($sid)
+                $vals = $this->db->pq("INSERT INTO shippinghassession (shippingid,sessionid) VALUES (:1,:2)", array($shid, $sid));
         }
 
         $did = -1;
-        if ($sid) {
-            $dids = $this->db->pq("SELECT dewarid from dewar WHERE shippingid LIKE :1 AND code LIKE :2", array($shid, $this->arg('visit') . '_Dewar1'));
 
-            if (sizeof($dids) > 0) {
-                $did = $dids[0]['DEWARID'];
-            } else {
-                $this->db->pq("INSERT INTO dewar (dewarid,code,shippingid,bltimestamp,dewarstatus,firstexperimentid) VALUES (s_dewar.nextval,:1,:2,CURRENT_TIMESTAMP,'processing',:3) RETURNING dewarid INTO :id", array($this->arg('visit') . '_Dewar1', $shid, $sid));
+        $dids = $this->db->pq("SELECT dewarid from dewar WHERE shippingid LIKE :1 AND code LIKE :2", array($shid, $dewarName));
 
-                $did = $this->db->id();
+        if (sizeof($dids) > 0) {
+            $did = $dids[0]['DEWARID'];
+        } else {
+            $this->db->pq("INSERT INTO dewar (dewarid,code,shippingid,bltimestamp,dewarstatus,firstexperimentid) VALUES (s_dewar.nextval,:1,:2,CURRENT_TIMESTAMP,'processing',:3) RETURNING dewarid INTO :id", array($dewarName, $shid, $sid));
 
-                # Need to generate barcode
+            $did = $this->db->id();
+
+            # Need to generate barcode
+            if ($this->has_arg('visit')) {
                 $bl = $this->db->pq("SELECT s.beamlinename as bl FROM blsession s WHERE s.sessionid=:1", array($sid));
-                $this->db->pq("UPDATE dewar set barcode=:1 WHERE dewarid=:2", array($this->arg('visit') . '-' . $bl[0]['BL'] . '-' . str_pad($did, 7, '0', STR_PAD_LEFT), $did));
+                $barcode = $this->arg('visit') . '-' . $bl[0]['BL'] . '-' . str_pad($did, 7, '0', STR_PAD_LEFT);
+            } else {
+                $barcode = $this->arg('prop') . '-' . str_pad($did, 7, '0', STR_PAD_LEFT);
             }
+            $this->db->pq("UPDATE dewar set barcode=:1 WHERE dewarid=:2", array($barcode, $did));
         }
+
 
         if ($did == -1)
             $this->_error('Couldn\'t create default dewar');
@@ -2867,11 +2884,11 @@ class Shipment extends Page
                         continue;
 
                     $p = $awb['pieces'][$i];
-                    $this->db->pq("UPDATE dewar SET $tno=:1, deliveryAgent_barcode=:2, dewarstatus='awb created' WHERE dewarid=:3", array($awb['awb'], $p['licenseplate'], $d['DEWARID']));
+                    $this->db->pq("UPDATE dewar SET $tno=:1, deliveryAgent_barcode=:2, dewarstatus='awb created', storagelocation='off-site' WHERE dewarid=:3", array($awb['awb'], $p['licenseplate'], $d['DEWARID']));
 
                     $this->db->pq(
-                        "INSERT INTO dewartransporthistory (dewartransporthistoryid,dewarid,dewarstatus,arrivaldate) 
-                        VALUES (s_dewartransporthistory.nextval,:1,'awb created',CURRENT_TIMESTAMP) RETURNING dewartransporthistoryid INTO :id",
+                        "INSERT INTO dewartransporthistory (dewartransporthistoryid,dewarid,dewarstatus,storagelocation,arrivaldate)
+                        VALUES (s_dewartransporthistory.nextval,:1,'awb created','off-site',CURRENT_TIMESTAMP) RETURNING dewartransporthistoryid INTO :id",
                         array($d['DEWARID'])
                     );
                 }
@@ -3024,10 +3041,10 @@ class Shipment extends Page
                 WHERE shippingid=:4", array($pickup['confirmationnumber'], $pickup['readybytime'], $pickup['callintime'], $options['shippingid']));
 
             foreach ($options['dewars'] as $i => $d) {
-                $this->db->pq("UPDATE dewar SET dewarstatus='pickup booked' WHERE dewarid=:1", array($d['DEWARID']));
+                $this->db->pq("UPDATE dewar SET dewarstatus='pickup booked', storagelocation='off-site' WHERE dewarid=:1", array($d['DEWARID']));
                 $this->db->pq(
-                    "INSERT INTO dewartransporthistory (dewartransporthistoryid,dewarid,dewarstatus,arrivaldate) 
-                    VALUES (s_dewartransporthistory.nextval,:1,'pickup booked',CURRENT_TIMESTAMP) RETURNING dewartransporthistoryid INTO :id",
+                    "INSERT INTO dewartransporthistory (dewartransporthistoryid,dewarid,dewarstatus,storagelocation,arrivaldate)
+                    VALUES (s_dewartransporthistory.nextval,:1,'pickup booked','off-site',CURRENT_TIMESTAMP) RETURNING dewartransporthistoryid INTO :id",
                     array($d['DEWARID'])
                 );
             }
@@ -3159,7 +3176,7 @@ class Shipment extends Page
             $this->_error('No such lab contact');
         $cont = $cont[0];
 
-        $dewars = $this->db->pq("SELECT d.dewarid
+        $dewars = $this->db->pq("SELECT d.dewarid, d.storagelocation
                 FROM dewar d
                 WHERE d.shippingid=:1 AND d.deliveryagent_barcode IS NOT NULL", array($this->arg('sid')));
 
@@ -3180,10 +3197,11 @@ class Shipment extends Page
 
             foreach ($dewars as $i => $d) {
                 $this->db->pq("UPDATE dewar SET dewarstatus='pickup cancelled' WHERE dewarid=:1", array($d['DEWARID']));
+                $loc = Utils::getValueOrDefault($d['STORAGELOCATION'], '');
                 $this->db->pq(
-                    "INSERT INTO dewartransporthistory (dewarid,dewarstatus,arrivaldate) 
-                    VALUES (:1,'pickup cancelled',CURRENT_TIMESTAMP)",
-                    array($d['DEWARID'])
+                    "INSERT INTO dewartransporthistory (dewarid,dewarstatus,storagelocation,arrivaldate)
+                    VALUES (:1,'pickup cancelled',:2,CURRENT_TIMESTAMP)",
+                    array($d['DEWARID'], $loc)
                 );
             }
         } catch (\Exception $e) {

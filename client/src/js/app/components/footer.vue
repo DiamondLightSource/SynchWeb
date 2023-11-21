@@ -1,9 +1,14 @@
 <template>
   <div id="footer">
-    <div class="whatnow">
-      <a href="http://diamondlightsource.github.io/SynchWeb/">SynchWeb? What is This?</a>
+    <div class="bottom_bar">
+      <div class="powered_by">
+        <p>Powered by <a href="http://diamondlightsource.github.io/SynchWeb/">SynchWeb</a> {{ synchwebVersion }} </p>
+      </div>
+      <div class="site">
+        <p><a :href="siteLink">{{ siteName }}</a> &copy;2013-{{ currentYear }}</p>
+      </div>
     </div>
-    <p><a :href="siteLink">{{ siteName }}</a> &copy;2013-{{ currentYear }}</p>
+
   </div>
 </template>
 
@@ -18,6 +23,9 @@ export default {
         siteLink: config.site_link || 'https://www.diamond.ac.uk',
         siteName: config.site_name || 'Diamond Light Source'
       }
+    },
+    computed: {
+        synchwebVersion : function() { return this.$store.state.synchwebVersion }
     }
 }
 </script>
@@ -27,7 +35,7 @@ export default {
     margin-top: 70px;
     background: #000 url(~images/ispyb_gs_medium.png) center center no-repeat;
     height: 200px;
-    background-position: 50% 85%
+    background-position: 50% 60%
 }
 
 @media (max-width: 1024px) {
@@ -36,40 +44,29 @@ export default {
     }
 }
 
-#footer .whatnow {
+#footer .bottom_bar {
     border-top: 1px solid #bbb;
-    font-size: 16px;
+    font-size: 12px;
     font-family: "Maven Pro";
-    text-align: center
-}
-
-#footer .whatnow a {
     display: block;
     padding: 0.5%;
     color: #222;
     background: #eee;
-    transition: 0.3s ease-in-out
+    transition: 0.3s ease-in-out;
 }
 
-#footer .whatnow a:hover {
-    color: #000
+#footer .bottom_bar a {
+    text-decoration: none;
 }
 
-#footer a {
-    color: #efefef;
-    text-decoration: none
+#footer .bottom-bar .powered_by {
+    float: left;
+    width: 50%;
 }
 
-#footer a:hover {
-    color: #efefef
+#footer .bottom-bar .site {
+    margin-left: 50%;
+    text-align: right;
 }
-
-#footer p {
-    padding: 1%;
-    text-align: center;
-    color: #efefef;
-    font-size: 10px
-}
-
 
 </style>

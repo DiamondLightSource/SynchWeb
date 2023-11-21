@@ -30,6 +30,9 @@ class LDAP extends AuthenticationParent implements AuthenticationInterface
 
         if ($conn) {
             // Tested against LDAP version 3 (could add support for older versions here)
+            /**
+             * @psalm-suppress UndefinedConstant
+             */
             ldap_set_option($conn, LDAP_OPT_PROTOCOL_VERSION, 3);
 
             // use a secure connection for LDAP, if configured this way (default is unsecured as this was the historical setting)

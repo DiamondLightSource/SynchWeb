@@ -43,7 +43,7 @@
     # CAS CA Cert (for SSO)
     $cacert = '/etc/certs/ca-bundle.crt';
 
-    # ldap server, used for lookup and authentication (if using)
+    # ldap server, used for lookup and authentication (if using, set to null if not)
     # Update the ldap(s) prefix, hostname and search settings as required
     $ldap_server = 'ldaps://ldap.example.com';
     $ldap_search = 'ou=people,dc=example,dc=com';
@@ -57,6 +57,9 @@
     # - Show at the top of every page on first load
     $motd = 'This is the message of the day.';
 
+    # Synchweb version, displayed in footer of each page
+    $synchweb_version = '';
+
     # Maintainance Mode
     # - Disables site access, showing a message
     # - This is defined in client/js/config.json
@@ -66,6 +69,12 @@
 
     # URL to access the PV archiver
     $archive_url = '';
+
+    # URL to access elog logbook
+    $elog_base_url = '';
+    $elog_callouts_page = '';
+    $elog_ehc_page = '';
+
 
     # Valid Components
     #   Denotes that only staff may create proteins, otherwise they must come from replication 
@@ -248,7 +257,10 @@
     # Shipping service details
     $use_shipping_service = null;
     $use_shipping_service_incoming_shipments = null;
-    $shipping_service_url = null;
+    $shipping_service_api_url = null;
+    $shipping_service_api_user = null;
+    $shipping_service_api_password = null;
+    $shipping_service_app_url = null;
     $shipping_service_links_in_emails = null;
 
 
@@ -304,7 +316,8 @@
         array(
             'name' => 'i03',
             'group' => 'mx',
-            'archived' => False
+            'archived' => False,
+            'logbook' => 'BLI03'
         ),
         array(
             'name' => 'i04',

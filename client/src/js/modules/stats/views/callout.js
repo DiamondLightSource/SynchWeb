@@ -11,9 +11,7 @@ define(['marionette', 'modules/stats/collections/callouts', 'views/table'], func
         initialize: function(options) {
             var columns = [
                 { name: 'username', label: 'User', cell: 'string', editable: false },
-                { name: 'logcontent', label: 'Description', cell: 'string', editable: false },
-                { name: 'intime', label: 'In Time', cell: 'string', editable: false },
-                { name: 'hometime', label: 'Out Time', cell: 'string', editable: false },
+                { name: 'hometime', label: 'Time', cell: 'string', editable: false },
             ]
             
             this.collection = new Callouts(null, { visit: options.visit })

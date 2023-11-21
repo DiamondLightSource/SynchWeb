@@ -1605,6 +1605,10 @@ class DC extends Page
         $rows = array();
         if (file_exists($file)) {
             $log = file_get_contents($file);
+        } elseif (file_exists($file.'.gz')) {
+            $log = gzdecode(file_get_contents($file.'.gz'));
+        }
+        if (isset($log)) {
 
             $start = 0;
             foreach (explode("\n", $log) as $l) {

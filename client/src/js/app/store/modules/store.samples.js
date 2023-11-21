@@ -47,7 +47,6 @@ const INITIAL_SAMPLE_STATE = {
   SAMPLEGROUP: '',
   INITIALSAMPLEGROUP: '',
   STATUS: '',
-  SUBLOCATION: null,
 }
 
 // Use Location as idAttribute for this table
@@ -96,35 +95,26 @@ const samplesModule = {
     setSample(state, { data, index }) {
       if (index < state.samples.length) state.samples.splice(index, 1, data)
     },
-    // For each sample put it in the correct place, based on location & sublocation, in the capacity array
+    // For each sample put it in the correct place, based on location, in the capacity array
     setAllSamples(state, {capacity, samples}) {
       
-      const state_samples = Array.from({ length: capacity*10 }, (_, i) => new LocationSample({
+      const state_samples = Array.from({ length: capacity }, (_, i) => new LocationSample({
         BLSAMPLEID: null,
-        LOCATION: (parseInt(i/10) + 1).toString(),
-        INDEX: i,
+        LOCATION: (i + 1).toString(),
         PROTEINID: -1,
         CRYSTALID: -1,
         new: true
       }))
-
       if (samples) {
         for (let sample of samples) {
-          const index = 10*(Number(sample.LOCATION)-1)+Number(sample.SUBLOCATION)
-          sample.INDEX = index
-          if (index < capacity*10) {
+          const index = Number(sample.LOCATION)-1
+          if (index < capacity) {
             state_samples[index] = sample
           }
         }
       }
       state.samplesCollection.reset(state_samples)
-      state.samples = state.samplesCollection.toJSON().filter(function(e, i, a) {
-        if (e.BLSAMPLEID) { return true }
-        for (var j of a) {
-          if (j.BLSAMPLEID && j.LOCATION === e.LOCATION) { return false }
-        }
-        return true
-      })
+      state.samples = state.samplesCollection.toJSON().filter(() => { return true })
     },
     clearSample(state, index) {
       if (index < state.samples.length) state.samples.splice(index, 1, {
@@ -166,7 +156,7 @@ const samplesModule = {
       // Convert our samples json to a backbone collection
       state.samples.map(s => {
         s.CONTAINERID = containerId
-        let locationIndex = +s.INDEX
+        let locationIndex = +(s.LOCATION - 1)
         let proteinId = +s.PROTEINID
         if (proteinId > 0 && s.NAME !== '') {
           state.samplesCollection.at(locationIndex).set(s)
@@ -184,6 +174,7 @@ const samplesModule = {
       const oldSamplesCollection = new Samples()
 
       state.samples.forEach(sample => {
+        // const locationIndex = +sample['LOCATION'] - 1
         if (sample['PROTEINID'] && sample['NAME'] && sample['BLSAMPLEID']) {
           oldSamplesCollection.add(sample)
         }
