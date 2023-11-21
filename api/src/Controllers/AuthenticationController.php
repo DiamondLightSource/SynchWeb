@@ -359,9 +359,7 @@ class AuthenticationController
              * the SSO provider and not our internal authentication logic, we need to double check
              * if it's valid
              */
-            try {
-                $this->dataLayer->getUser($this->fedid);
-            } catch (\TypeError $exc) {
+            if (!$this->dataLayer->isUserLoggedIn($fedid)) {
                 $this->returnError(403, 'User not recognised');
             }
             $this->returnResponse(200, $this->generateJwtToken($fedid));
