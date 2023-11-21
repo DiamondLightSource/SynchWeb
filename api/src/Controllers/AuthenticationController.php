@@ -354,6 +354,16 @@ class AuthenticationController
         $code = $this->app->request()->post('code');
         $fedid = $this->authenticateByType()->authenticateByCode($code);
         if ($fedid) {
+            /* 
+             * Since the returned username might not be in the database, given it's returned by 
+             * the SSO provider and not our internal authentication logic, we need to double check
+             * if it's valid
+             */
+            try {
+                $this->dataLayer->getUser($this->fedid);
+            } catch (\TypeError $exc) {
+                $this->returnError(403, 'User not recognised');
+            }
             $this->returnResponse(200, $this->generateJwtToken($fedid));
         } else {
             $this->returnError(401, 'Invalid Credentials');
