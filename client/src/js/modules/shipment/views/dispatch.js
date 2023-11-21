@@ -279,7 +279,10 @@ define(['marionette', 'views/form',
             this.ui.courierDetails.hide()
             this.ui.facilityCourier.show()
             this.model.courierDetailsRequired = false
-            if (app.options.get("shipping_service_app_url")){
+            if (
+                app.options.get("shipping_service_app_url")
+                && app.options.get("facility_courier_countries").includes(this.ui.country.val())
+            ){
                 this.model.visitRequired = false
                 this.ui.dispatchDetails.hide()
                 this.ui.submit.text("Proceed")
