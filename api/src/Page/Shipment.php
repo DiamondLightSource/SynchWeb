@@ -967,17 +967,13 @@ class Shipment extends Page
                     ]
                 );
             }
-            try {
-                $response = $this->shipping_service->create_shipment_request($shipment_request_info);
-                $external_shipping_id = $response['shipmentRequestId'];
-                $this->db->pq(
-                    "UPDATE dewar SET externalShippingIdFromSynchrotron=:1 WHERE dewarid=:2",
-                    array($external_shipping_id, $dewar['DEWARID'])
-                );
-                return $external_shipping_id;
-            } catch (Exception $e) {
-                throw new Exception("Error returned from shipping service: " . $e . "\nShipment data: " . json_encode($shipment_data));
-            }
+            $response = $this->shipping_service->create_shipment_request($shipment_request_info);
+            $external_shipping_id = $response['shipmentRequestId'];
+            $this->db->pq(
+                "UPDATE dewar SET externalShippingIdFromSynchrotron=:1 WHERE dewarid=:2",
+                array($external_shipping_id, $dewar['DEWARID'])
+            );
+            return $external_shipping_id;
         }
         return $dewar['EXTERNALSHIPPINGIDFROMSYNCHROTRON'];
     }
@@ -1146,7 +1142,9 @@ class Shipment extends Page
                     try {
                         $shipment_id = $this->_dispatch_dewar_shipment_request($dew);
                     } catch (Exception $e) {
-                        $this->_error($e);
+                        error_log("Error returned from shipping service: " . $e . "\nShipment data: " . json_encode($shipment_data));
+                        $error_response = json_decode($e->getMessage());
+                        $this->_error($error_response->content->detail, $error_response->status);
                     }
                     if (Utils::getValueOrDefault($shipping_service_links_in_emails)) {
                         $data['AWBURL'] = "{$shipping_service_app_url}/shipment-requests/{$shipment_id}/outgoing";
@@ -1180,12 +1178,12 @@ class Shipment extends Page
         // If a local contact is given, try to find their email address
         // First try LDAP, if unsuccessful look at the ISPyB person record for a matching staff user
         $local_contact = $this->has_arg('LOCALCONTACT') ? $this->args['LOCALCONTACT'] : '';
-        if ($local_contact) {
-            $this->args['LCEMAIL'] = $this->_get_email_fn($local_contact);
-            if (!$this->args['LCEMAIL']) {
-                $this->args['LCEMAIL'] = $this->_get_ispyb_email_fn($local_contact);
-            }
-        }
+        // if ($local_contact) {
+        //     $this->args['LCEMAIL'] = $this->_get_email_fn($local_contact);
+        //     if (!$this->args['LCEMAIL']) {
+        //         $this->args['LCEMAIL'] = $this->_get_ispyb_email_fn($local_contact);
+        //     }
+        // }
 
         if (!array_key_exists('FACILITYCODE', $data))
             $data['FACILITYCODE'] = '';
