@@ -9,6 +9,7 @@ use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use Symfony\Component\HttpFoundation\Response;
 use ZipStream\Option\Archive;
 use ZipStream\ZipStream;
 
@@ -84,10 +85,7 @@ class Download extends Page
         if ($filesystem->exists($data)) {
             $response = new BinaryFileResponse($data);
             $response->headers->set("Content-Type", "application/octet-stream");
-            $response->setContentDisposition(
-                ResponseHeaderBag::DISPOSITION_ATTACHMENT,
-                $this->arg('visit') . '_download.zip'
-            );
+            $this->_set_disposition_attachment($response, $this->arg('visit') . '_download.zip');
             $response->send();
         } else
             $this->_error('There doesnt seem to be a data archive available for this visit');
@@ -137,6 +135,11 @@ class Download extends Page
             $r['PLOTS'] = array();
             if (file_exists($json)) {
                 $cont = file_get_contents($json);
+            } elseif (file_exists($json.'.gz')) {
+                $cont = gzdecode(file_get_contents($json.'.gz'));
+            }
+
+            if (isset($cont)) {
 
                 $plotData = json_decode($cont);
                 $r['PLOTS'] = $plotData;
@@ -260,25 +263,25 @@ class Download extends Page
 
         // Do the check first, if no file quit early
         if ($filesystem->exists($filename)) {
-
             $response = new BinaryFileResponse($filename);
-
-            # Set mime / content type
-            $this->set_mime_content($response, $file['FILENAME'], $id);
-
-            // All OK - send it
-            // We were getting out of memory errors - switch off output buffer to fix
-            if (ob_get_level()) {
-                ob_end_clean();
-            }
-            // Setting content length means browser can indicate how long is left
+            $this->set_mime_content($response, $filename, $id);
             $response->headers->set("Content-Length", filesize($filename));
-
-            $response->send();
-            exit();
+        } elseif ($filesystem->exists($filename.'.gz')) {
+            $filename = $filename.'.gz';
+            if ($this->arg('download') == 1) {
+                // View log file, so unzip and serve
+                $response = new Response(readgzfile($filename));
+                $this->set_mime_content($response, $file['FILENAME'], $id);
+            } else {
+                // Download gzipped file
+                $response = new BinaryFileResponse($filename);
+                $this->set_mime_content($response, $filename, $id);
+                $response->headers->set("Content-Length", filesize($filename));
+            }
         } else {
             $this->_error("No such file, the specified file " . $filename . " doesn't exist");
         }
+        $response->send();
     }
 
 
@@ -306,7 +309,7 @@ class Download extends Page
                 WHERE dcg.sessionid=:1 ORDER BY dc.starttime", array($vis['SESSIONID']));
 
         $this->app->response->headers->set("Content-type", "application/vnd.ms-excel");
-        $this->app->response->headers->set("Content-disposition", "attachment; filename=" . $vis['ST'] . "_" . $vis['BEAMLINENAME'] . "_" . $this->arg('visit') . ".csv");
+        $this->_set_disposition_attachment($this->app->response, $vis['ST'] . "_" . $vis['BEAMLINENAME'] . "_" . $this->arg('visit') . ".csv");
         print "Image prefix,Beamline,Run no,Start Time,Sample Name,Protein Acronym,# images, Wavelength (angstrom), Distance (mm), Exp. Time (sec), Phi start (deg), Phi range (deg), Xbeam (mm), Ybeam (mm), Detector resol. (angstrom), Comments\n";
         foreach ($rows as $r) {
             $r['COMMENTS'] = '"' . $r['COMMENTS'] . '"';
@@ -474,7 +477,11 @@ class Download extends Page
             $zip = new ZipStream($zipName . '.zip', $options);
             foreach ($files as $file) {
                 $filename = $file['FILEPATH'] . '/' . $file['FILENAME'];
-                $zip->addFileFromPath(basename($filename), $filename);
+                if (file_exists($filename)) {
+                    $zip->addFileFromPath(basename($filename), $filename);
+                } elseif (file_exists($filename.'.gz')) {
+                    $zip->addFileFromPath(basename($filename).'.gz', $filename.'.gz');
+                }
             }
 
             $zip->finish();
@@ -499,26 +506,35 @@ class Download extends Page
 
         if (in_array($path_ext, array('html', 'htm'))) {
             $response->headers->set("Content-Type", "text/html");
-            $response->setContentDisposition(ResponseHeaderBag::DISPOSITION_INLINE);
+            $this->_set_disposition_inline($response);
         } elseif ($path_ext == 'pdf') {
             $response->headers->set("Content-Type", "application/pdf");
-            $response->setContentDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT, $saved_filename);
+            $this->_set_disposition_attachment($response, $saved_filename);
         } elseif ($path_ext == 'png') {
             $response->headers->set("Content-Type", "image/png");
-            $response->setContentDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT, $saved_filename);
+            $this->_set_disposition_attachment($response, $saved_filename);
         } elseif (in_array($path_ext, array('jpg', 'jpeg'))) {
             $response->headers->set("Content-Type", "image/jpeg");
-            $response->setContentDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT, $saved_filename);
+            $this->_set_disposition_attachment($response, $saved_filename);
         } elseif (in_array($path_ext, array('log', 'txt', 'error', 'LP', 'json', 'lsa'))) {
             $response->headers->set("Content-Type", "text/plain");
-            $response->setContentDisposition(ResponseHeaderBag::DISPOSITION_INLINE);
+            $this->_set_disposition_inline($response);
         } else {
             $response->headers->set("Content-Type", "application/octet-stream");
-            $response->setContentDisposition(
-                ResponseHeaderBag::DISPOSITION_ATTACHMENT,
-                $saved_filename
-            );
+            $this->_set_disposition_attachment($response, $saved_filename);
         }
+    }
+
+    function _set_disposition_attachment($response, $filename) {
+        $response->headers->set("Content-Disposition",
+            (new ResponseHeaderBag())->makeDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT, $filename)
+        );
+    }
+
+    function _set_disposition_inline($response) {
+        $response->headers->set("Content-Disposition",
+        (new ResponseHeaderBag())->makeDisposition(ResponseHeaderBag::DISPOSITION_INLINE, '')
+        );
     }
 
 
@@ -551,25 +567,11 @@ class Download extends Page
         if ($filesystem->exists($data)) {
             $response = new BinaryFileResponse($data);
             $response->headers->set("Content-Type", "application/octet-stream");
-            $response->setContentDisposition(
-                ResponseHeaderBag::DISPOSITION_ATTACHMENT,
-                $this->arg('id') . '_download.zip'
-            );
+            $this->_set_disposition_attachment($response, $this->arg('id') . '_download.zip');
             $response->send();
         } else {
             error_log("Download file " . $data . " not found");
             $this->_error('File not found on filesystem', 404);
         }
-    }
-
-
-    # ------------------------------------------------------------------------
-    # Force browser to download file
-    # Deprecated function now we are using symfony filesystem
-    function _header($f)
-    {
-        header("Content-Type: application/octet-stream");
-        header("Content-Transfer-Encoding: Binary");
-        header("Content-disposition: attachment; filename=\"$f\"");
     }
 }

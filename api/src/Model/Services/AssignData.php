@@ -2,6 +2,8 @@
 
 namespace SynchWeb\Model\Services;
 
+use SynchWeb\Utils;
+
 class AssignData
 {
     private $db;
@@ -85,9 +87,10 @@ class AssignData
 
     function deactivateDewar($dewarId)
     {
-        $this->updateDewarHistory($dewarId, 'unprocessing');
+        $location = $this->db->pq("SELECT storagelocation FROM dewar WHERE dewarid=:1", array($dewarId));
+        $this->updateDewarHistory($dewarId, 'unprocessing', $location[0]['STORAGELOCATION']);
 
-        $conts = $this->db->pq("SELECT containerid as id FROM container WHERE dewarid=:1", array($dewarId));
+        $conts = $this->db->pq("SELECT containerid FROM container WHERE dewarid=:1", array($dewarId));
         foreach ($conts as $container)
         {
             $this->updateContainerAndHistory($container['CONTAINERID'], 'at facility', '', '');
@@ -99,9 +102,10 @@ class AssignData
         $st = $status;
         if ($additionalStatusDetail)
             $st .= ' (' . $additionalStatusDetail . ')';
+        $loc = Utils::getValueOrDefault($beamline, '');
         $this->db->pq("INSERT INTO dewartransporthistory 
                         (dewarid, dewarstatus, storagelocation, arrivaldate) 
-                        VALUES (:1, :2, :3, CURRENT_TIMESTAMP)", array($did, $st, $beamline));
+                        VALUES (:1, :2, :3, CURRENT_TIMESTAMP)", array($did, $st, $loc));
 
         $this->updateDewar($did, $status);
     }

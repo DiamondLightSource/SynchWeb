@@ -557,7 +557,7 @@ class Imaging extends Page
 
 
 
-    # Get a list of sample images avaialble for an inspection
+    # Get a list of sample images available for an inspection
     function _get_inspection_images()
     {
         $where = '';
@@ -578,8 +578,7 @@ class Imaging extends Page
             array_push($args, $this->arg('sid'));
         }
 
-
-        $images = $this->db->pq("SELECT i.containerid, si.containerinspectionid, ROUND(TIMESTAMPDIFF('HOUR', min(i2.bltimestamp), i.bltimestamp)/24,1) as delta, si.blsampleimageid, si.blsampleid, si.micronsperpixelx, si.micronsperpixely, si.blsampleimagescoreid, si.comments, TO_CHAR(si.bltimestamp, 'DD-MM-YYYY HH24:MI') as bltimestamp, sc.name as scorename, sc.score, sc.colour as scorecolour
+        $images = $this->db->pq("SELECT i.containerid, si.containerinspectionid, ROUND(TIMESTAMPDIFF('HOUR', min(i2.bltimestamp), i.bltimestamp)/24,1) as delta, si.blsampleimageid, si.blsampleid, si.micronsperpixelx, si.micronsperpixely, si.blsampleimagescoreid, si.comments, TO_CHAR(si.bltimestamp, 'DD-MM-YYYY HH24:MI') as bltimestamp, sc.name as scorename, sc.score, sc.colour as scorecolour, max.maxscore, scorecolours.colour as maxscorecolour
               FROM blsampleimage si
               LEFT OUTER JOIN blsampleimagescore sc ON sc.blsampleimagescoreid = si.blsampleimagescoreid
               INNER JOIN containerinspection i ON i.containerinspectionid = si.containerinspectionid
@@ -589,6 +588,14 @@ class Imaging extends Page
               INNER JOIN dewar d ON d.dewarid = c.dewarid
               INNER JOIN shipping s ON s.shippingid = d.shippingid
               INNER JOIN proposal p ON p.proposalid = s.proposalid
+
+              LEFT OUTER JOIN (SELECT blsampleid, max(score) as maxscore
+                               FROM BLSampleImageScore sc
+                               INNER JOIN BLSampleImage si ON sc.blsampleimagescoreid = si.blsampleimagescoreid
+                               INNER JOIN ContainerInspection i ON i.containerinspectionid = si.containerinspectionid
+                               GROUP BY blSampleid) as max ON max.blsampleid = si.blsampleid
+              LEFT OUTER JOIN (SELECT score, colour FROM BLSampleImageScore) as scorecolours ON scorecolours.score = max.maxscore
+
               WHERE p.proposalid = :1 $where
               GROUP BY i.containerid, si.containerinspectionid, i.bltimestamp, si.blsampleimageid, si.blsampleid, si.micronsperpixelx, si.micronsperpixely, si.blsampleimagescoreid, si.comments, TO_CHAR(si.bltimestamp, 'DD-MM-YYYY HH24:MI'), sc.name, sc.score, sc.colour
               ORDER BY i.bltimestamp", $args);

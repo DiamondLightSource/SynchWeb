@@ -8,45 +8,41 @@ use SynchWeb\Utils;
 
 class OIDC extends AuthenticationParent implements AuthenticationInterface
 {
-    private $providerConfig = array();
+    //** Cache for providerConfig */
+    private $providerConfigCache = null;
 
-    function __construct() {
+    private function getProviderConfig() {
         global $sso_url, $oidc_client_id, $oidc_client_secret;
+        if (is_null($this->providerConfigCache)) {            
 
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, 'https://' . $sso_url . '/.well-known/openid-configuration');
-        curl_setopt($ch, CURLOPT_HEADER, 0);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        $response = curl_exec($ch);
-        $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        $errno = curl_errno($ch);
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, 'https://' . $sso_url . '/.well-known/openid-configuration');
+            curl_setopt($ch, CURLOPT_HEADER, 0);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+            $response = curl_exec($ch);
+            curl_close($ch);
+            $newProviderConfig = json_decode($response);
 
-        if ($errno || $http_code != 200) {
-            error_log("Failed to connect to OIDC discovery endpoint. HTTP code: " . $http_code . ". CURL err. no.: " . $errno);
-            return;
+            if(!$newProviderConfig
+                || !isset($newProviderConfig->userinfo_endpoint)
+                || !isset($newProviderConfig->authorization_endpoint) 
+                || !isset($newProviderConfig->token_endpoint)) {
+                error_log("OIDC Authentication provider replied with invalid JSON body");
+                return null;
+            }
+            $newProviderConfig->b64ClientCreds = base64_encode(
+                $oidc_client_id . ":" . $oidc_client_secret
+            );
+
+            $this->providerConfigCache = $newProviderConfig;
         }
-
-        curl_close($ch);
-        $newProviderConfig = json_decode($response);
-
-        if(!$newProviderConfig
-            || !isset($newProviderConfig->userinfo_endpoint)
-            || !isset($newProviderConfig->authorization_endpoint) 
-            || !isset($newProviderConfig->token_endpoint)) {
-            error_log("OIDC Authentication provider replied with invalid JSON discovery body");
-            return;
-        }
-        $newProviderConfig->b64ClientCreds = base64_encode(
-            $oidc_client_id . ":" . $oidc_client_secret
-        );
-
-        $this->providerConfig = $newProviderConfig;
+        return $this->providerConfigCache;
     }
 
     private function getUser($token)
     {        
         $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $this->providerConfig->userinfo_endpoint);
+        curl_setopt($ch, CURLOPT_URL, $this->getProviderConfig()->userinfo_endpoint);
         curl_setopt($ch, CURLOPT_HEADER, 0);
         curl_setopt($ch, CURLOPT_HTTPHEADER, array('Authorization: Bearer ' . $token));
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
@@ -82,7 +78,7 @@ class OIDC extends AuthenticationParent implements AuthenticationInterface
         global $oidc_client_id;
         $redirect_url = Utils::filterParamFromUrl($_SERVER["HTTP_REFERER"], "code");
 
-        return ( $this->providerConfig->authorization_endpoint . 
+        return ( $this->getProviderConfig()->authorization_endpoint . 
             '?response_type=code&client_id=' . $oidc_client_id . 
             '&redirect_uri=' . $redirect_url
         );
@@ -95,14 +91,14 @@ class OIDC extends AuthenticationParent implements AuthenticationInterface
         $redirect_url = Utils::filterParamFromUrl($_SERVER["HTTP_REFERER"], "code");
         
         $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $this->providerConfig->token_endpoint . 
+        curl_setopt($ch, CURLOPT_URL, $this->getProviderConfig()->token_endpoint . 
             '?grant_type=authorization_code&redirect_uri=' . 
             $redirect_url . 
             "&code=" . $code
         );
         curl_setopt($ch, CURLOPT_HEADER, 0);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Authorization: Basic ' . $this->providerConfig->b64ClientCreds));
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Authorization: Basic ' . $this->getProviderConfig()->b64ClientCreds));
         $response = curl_exec($ch);
         curl_close($ch);
    
@@ -113,14 +109,14 @@ class OIDC extends AuthenticationParent implements AuthenticationInterface
         }        
         
         $token = $response_json->access_token;
-
+        
         if(!$token) {
             error_log("Invalid authentication attempt, provider returned no access token");
             return false;
         }
 
         $cookieOpts = array (
-            'expires' => time() + 60*60*24,
+            'expires' => time() + $response_json->expires_in,
             'path' => '/',
             'secure' => true,
             'httponly' => true,
@@ -131,4 +127,3 @@ class OIDC extends AuthenticationParent implements AuthenticationInterface
         return $this->getUser($token);
     }
 }
-
