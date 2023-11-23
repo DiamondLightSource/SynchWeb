@@ -329,7 +329,7 @@ define(['jquery', 'marionette',
 
         displayResolution: function(val) {
             if (val < 0) { return 0 }
-            return 100 * Math.pow(val, -1)
+            return 100 / val
         },
 
         draw: function() {
