@@ -1178,12 +1178,12 @@ class Shipment extends Page
         // If a local contact is given, try to find their email address
         // First try LDAP, if unsuccessful look at the ISPyB person record for a matching staff user
         $local_contact = $this->has_arg('LOCALCONTACT') ? $this->args['LOCALCONTACT'] : '';
-        // if ($local_contact) {
-        //     $this->args['LCEMAIL'] = $this->_get_email_fn($local_contact);
-        //     if (!$this->args['LCEMAIL']) {
-        //         $this->args['LCEMAIL'] = $this->_get_ispyb_email_fn($local_contact);
-        //     }
-        // }
+        if ($local_contact) {
+            $this->args['LCEMAIL'] = $this->_get_email_fn($local_contact);
+            if (!$this->args['LCEMAIL']) {
+                $this->args['LCEMAIL'] = $this->_get_ispyb_email_fn($local_contact);
+            }
+        }
 
         if (!array_key_exists('FACILITYCODE', $data))
             $data['FACILITYCODE'] = '';
