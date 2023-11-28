@@ -1142,7 +1142,7 @@ class Shipment extends Page
                     try {
                         $shipment_id = $this->_dispatch_dewar_shipment_request($dew);
                     } catch (Exception $e) {
-                        error_log("Error returned from shipping service: " . $e . "\nShipment data: " . json_encode($shipment_data));
+                        error_log("Error returned from shipping service: " . $e . "\nDewar data: " . json_encode($dew));
                         $error_response = json_decode($e->getMessage());
                         $this->_error($error_response->content->detail, $error_response->status);
                     }
