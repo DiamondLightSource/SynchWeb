@@ -2975,7 +2975,12 @@ class Shipment extends Page
 
                 $ship['DELIVERYAGENT_FLIGHTCODE'] = $awb['awb'];
             } catch (\Exception $e) {
-                $this->_error($e->getMessage());
+                if (Utils::getValueOrDefault($use_shipping_service_incoming_shipments) && $accno === $dhl_acc){
+                    $error_response = json_decode($e->getMessage());
+                    $this->_error($error_response->content->detail, $error_response->status);
+                } else {
+                    $this->_error($e->getMessage());
+                }
             }
         }
         $pickup = null;
