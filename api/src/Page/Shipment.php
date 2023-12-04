@@ -926,56 +926,56 @@ class Shipment extends Page
 
     function _dispatch_dewar_shipment_request($dewar)
     {
-        if (is_null($dewar['EXTERNALSHIPPINGIDFROMSYNCHROTRON'])) {
-            $server_port = ($_SERVER['SERVER_PORT']==='443') ? '' : ":{$_SERVER['SERVER_PORT']}";
-            $shipment_request_info = array(
-                "proposal" => $dewar['PROPOSAL'],
-                "external_id" => (int) $dewar['DEWARID'],
-                "origin_url" => "https://{$_SERVER['SERVER_NAME']}{$server_port}/shipments/sid/{$dewar['SHIPPINGID']}",
-                "packages" => [
-                    [
-                        "external_id" => (int) $dewar['DEWARID'],
-                        "shippable_item_type" => "CRYOGENIC_DRY_SHIPPER_CASE",
-                        "line_items" => [
-                            [
-                                "shippable_item_type" => "CRYOGENIC_DRY_SHIPPER",
-                                "quantity" => 1
-                            ],
-                            [
-                                "shippable_item_type" => "SHELVED_UNI_PUCK_SHIPPING_CANE",
-                                "quantity" => 1
-                            ],
-                        ]
+        if (!is_null($dewar['EXTERNALSHIPPINGIDFROMSYNCHROTRON'])) {
+            return $dewar['EXTERNALSHIPPINGIDFROMSYNCHROTRON'];
+        }
+        $server_port = ($_SERVER['SERVER_PORT']==='443') ? '' : ":{$_SERVER['SERVER_PORT']}";
+        $shipment_request_info = array(
+            "proposal" => $dewar['PROPOSAL'],
+            "external_id" => (int) $dewar['DEWARID'],
+            "origin_url" => "https://{$_SERVER['SERVER_NAME']}{$server_port}/shipments/sid/{$dewar['SHIPPINGID']}",
+            "packages" => [
+                [
+                    "external_id" => (int) $dewar['DEWARID'],
+                    "shippable_item_type" => "CRYOGENIC_DRY_SHIPPER_CASE",
+                    "line_items" => [
+                        [
+                            "shippable_item_type" => "CRYOGENIC_DRY_SHIPPER",
+                            "quantity" => 1
+                        ],
+                        [
+                            "shippable_item_type" => "SHELVED_UNI_PUCK_SHIPPING_CANE",
+                            "quantity" => 1
+                        ],
                     ]
                 ]
+            ]
+        );
+        if ((int) $dewar['NUM_PUCKS'] > 0) {
+            array_push(
+                $shipment_request_info["packages"][0]["line_items"],
+                [
+                    "shippable_item_type"=> "UNI_PUCK",
+                    "quantity" => (int) $dewar['NUM_PUCKS']
+                ]
             );
-            if ((int) $dewar['NUM_PUCKS'] > 0) {
-                array_push(
-                    $shipment_request_info["packages"][0]["line_items"],
-                    [
-                        "shippable_item_type"=> "UNI_PUCK",
-                        "quantity" => (int) $dewar['NUM_PUCKS']
-                    ]
-                );
-            }
-            if ((int) $dewar['NUM_SAMPLES'] > 0) {
-                array_push(
-                    $shipment_request_info["packages"][0]["line_items"],
-                    [
-                        "shippable_item_type"=> "SPINE_SAMPLE_HOLDER",
-                        "quantity" => (int) $dewar['NUM_SAMPLES']
-                    ]
-                );
-            }
-            $response = $this->shipping_service->create_shipment_request($shipment_request_info);
-            $external_shipping_id = $response['shipmentRequestId'];
-            $this->db->pq(
-                "UPDATE dewar SET externalShippingIdFromSynchrotron=:1 WHERE dewarid=:2",
-                array($external_shipping_id, $dewar['DEWARID'])
-            );
-            return $external_shipping_id;
         }
-        return $dewar['EXTERNALSHIPPINGIDFROMSYNCHROTRON'];
+        if ((int) $dewar['NUM_SAMPLES'] > 0) {
+            array_push(
+                $shipment_request_info["packages"][0]["line_items"],
+                [
+                    "shippable_item_type"=> "SPINE_SAMPLE_HOLDER",
+                    "quantity" => (int) $dewar['NUM_SAMPLES']
+                ]
+            );
+        }
+        $response = $this->shipping_service->create_shipment_request($shipment_request_info);
+        $external_shipping_id = $response['shipmentRequestId'];
+        $this->db->pq(
+            "UPDATE dewar SET externalShippingIdFromSynchrotron=:1 WHERE dewarid=:2",
+            array($external_shipping_id, $dewar['DEWARID'])
+        );
+        return $external_shipping_id;
     }
 
     function _dispatch_dewar_in_shipping_service($dispatch_info, $dewar)
