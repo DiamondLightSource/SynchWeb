@@ -729,8 +729,7 @@ class Shipment extends Page
             $this->_error('No dewar specified');
         if (!$this->has_arg('PROPOSALID'))
             $this->_error('No proposal specified');
-        if (!$this->has_arg('LABCONTACTID'))
-            $this->_error('No lab contact specified');
+        $lc = $this->has_arg('LABCONTACTID') ? $this->arg('LABCONTACTID') : null;
 
         $chk = $this->db->pq("SELECT dewarregistryid 
               FROM dewarregistry_has_proposal
@@ -739,7 +738,7 @@ class Shipment extends Page
             $this->_error('That dewar is already registered to that proposal');
 
         $this->db->pq("INSERT INTO dewarregistry_has_proposal (dewarregistryid,proposalid,personid,labcontactid) 
-              VALUES (:1,:2,:3,:4)", array($this->arg('DEWARREGISTRYID'), $this->arg('PROPOSALID'), $this->user->personId, $this->arg('LABCONTACTID')));
+              VALUES (:1,:2,:3,:4)", array($this->arg('DEWARREGISTRYID'), $this->arg('PROPOSALID'), $this->user->personId, $lc));
 
         $this->_output(array('DEWARREGISTRYHASPROPOSALID' => $this->db->id()));
     }
