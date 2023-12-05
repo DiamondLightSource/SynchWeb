@@ -188,7 +188,7 @@ class AuthenticationController
                 }
                 else
                 {
-                    $err = 'Authorisation token not valid for this address.';
+                    $err = 'Authorisation token not valid for this URL.';
                     $this->returnError(400, $err);
                 }
             }
