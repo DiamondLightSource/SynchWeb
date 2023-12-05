@@ -161,12 +161,20 @@ class AuthenticationController
         $tokenId = $this->app->request()->get('token');
         if ($tokenId)
         {
-            # Remove tokens more than 10 seconds old, they should have been used
-            $this->dataLayer->deleteOldOneTimeUseTokens();
+            global $max_token_age;
+            if (!$max_token_age) $max_token_age = 10;
             $token = $this->dataLayer->getOneTimeUseToken($tokenId);
             if (sizeof($token))
             {
                 $token = $token[0];
+                if ($token['AGE'] > $max_token_age)
+                {
+                    $err = 'Authorisation token too old. Age: '.$token['AGE'].'s. Max age: '.$max_token_age.'s.';
+                    error_log($err);
+                    $err .= ' Please press back and then try again.';
+                    $err .= ' If this problem persists, please try clearing your cookies or using a different browser.';
+                    $this->returnError(400, $err);
+                }
                 $qs = $_SERVER['QUERY_STRING'] ? (preg_replace('/(&amp;)?token=\w+/', '', str_replace('&', '&amp;', $_SERVER['QUERY_STRING']))) : null;
                 if ($qs)
                     $qs = '?' . $qs;
@@ -178,13 +186,21 @@ class AuthenticationController
                     $need_auth = false;
                     $this->dataLayer->deleteOneTimeUseToken($tokenId);
                 }
+                else
+                {
+                    $err = 'Authorisation token not valid for this address.';
+                    $this->returnError(400, $err);
+                }
             }
             else
             {
-                $this->returnError(400, 'Invalid one time authorisation token');
+                $err = 'No authorisation token found. ';
+                $err .= 'If this error persists, please try clearing your cookies or using a different browser.';
+                $this->returnError(400, $err);
             }
+            # Remove tokens more than $max_token_age seconds old, they should have been used
+            $this->dataLayer->deleteOldOneTimeUseTokens($max_token_age);
         }
-                
         return $need_auth;
     }
 
@@ -300,7 +316,14 @@ class AuthenticationController
 
     private function returnError($code, $message)
     {
-        $this->returnResponse($code, array('error' => $message));
+        $this->returnResponse(
+            $code,
+            array(
+                'error' => $message,
+                'user-agent' => $_SERVER['HTTP_USER_AGENT'],
+                'timestamp' => gmdate('c', time())
+            )
+        );
     }
 
     // Calls the relevant Authentication Mechanism
