@@ -157,11 +157,12 @@ class AuthenticationController
 
     private function processOneTimeUseTokens(): bool
     {
+        global $max_token_age;
+
         $need_auth = true;
         $tokenId = $this->app->request()->get('token');
         if ($tokenId)
         {
-            global $max_token_age;
             if (!$max_token_age) $max_token_age = 10;
             $token = $this->dataLayer->getOneTimeUseToken($tokenId);
             if (sizeof($token))
