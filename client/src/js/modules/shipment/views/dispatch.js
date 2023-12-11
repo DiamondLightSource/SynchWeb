@@ -115,7 +115,11 @@ define(['marionette', 'views/form',
         
         success: function() {
             app.trigger('shipment:show', this.getOption('dewar').get('SHIPPINGID'))
-            if (app.options.get("shipping_service_app_url") && (Number(this.terms.get('ACCEPTED')) === 1)) { // terms.ACCPETED could be undefined, 1, or "1"
+            if (
+                app.options.get("shipping_service_app_url")
+                && (Number(this.terms.get('ACCEPTED')) === 1) // terms.ACCPETED could be undefined, 1, or "1"
+                && app.options.get("facility_courier_countries").includes(this.labContactCountry)
+            ) {
                 this.getOption('dewar').fetch().done((dewar) => {
                     const external_id = dewar.EXTERNALSHIPPINGIDFROMSYNCHROTRON;
                     window.location.assign(
