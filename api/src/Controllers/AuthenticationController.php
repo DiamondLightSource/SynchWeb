@@ -163,7 +163,7 @@ class AuthenticationController
         {
             $max_token_age = 10;
             $token = $this->dataLayer->getOneTimeUseToken($tokenId);
-            if (false && sizeof($token))
+            if (sizeof($token))
             {
                 $token = $token[0];
                 if ($token['AGE'] > $max_token_age)
