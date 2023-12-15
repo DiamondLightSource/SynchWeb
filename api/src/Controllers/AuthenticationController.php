@@ -161,9 +161,9 @@ class AuthenticationController
         $tokenId = $this->app->request()->get('token');
         if ($tokenId)
         {
-            $max_token_age = -10;
+            $max_token_age = 10;
             $token = $this->dataLayer->getOneTimeUseToken($tokenId);
-            if (sizeof($token))
+            if (false && sizeof($token))
             {
                 $token = $token[0];
                 if ($token['AGE'] > $max_token_age)
@@ -197,7 +197,7 @@ class AuthenticationController
             {
                 $err = 'No authorisation token found. ';
                 $err .= 'If this error persists, please try clearing your cookies or using a different browser.';
-                $this->returnError(400, $err);
+                $this->returnError(400, $err, true);
             }
             # Remove tokens more than $max_token_age seconds old, they should have been used
             $this->dataLayer->deleteOldOneTimeUseTokens($max_token_age);
