@@ -157,13 +157,11 @@ class AuthenticationController
 
     private function processOneTimeUseTokens(): bool
     {
-        global $max_token_age;
-
         $need_auth = true;
         $tokenId = $this->app->request()->get('token');
         if ($tokenId)
         {
-            if (!$max_token_age) $max_token_age = 10;
+            $max_token_age = -10;
             $token = $this->dataLayer->getOneTimeUseToken($tokenId);
             if (sizeof($token))
             {
@@ -171,10 +169,9 @@ class AuthenticationController
                 if ($token['AGE'] > $max_token_age)
                 {
                     $err = 'Authorisation token too old. Age: '.$token['AGE'].'s. Max age: '.$max_token_age.'s.';
-                    error_log($err);
                     $err .= ' Please press back and then try again.';
                     $err .= ' If this problem persists, please try clearing your cookies or using a different browser.';
-                    $this->returnError(400, $err);
+                    $this->returnError(400, $err, true);
                 }
                 $qs = $_SERVER['QUERY_STRING'] ? (preg_replace('/(&amp;)?token=\w+/', '', str_replace('&', '&amp;', $_SERVER['QUERY_STRING']))) : null;
                 if ($qs)
@@ -189,7 +186,10 @@ class AuthenticationController
                 }
                 else
                 {
-                    $err = 'Authorisation token not valid for this URL.';
+                    error_log('Authorisation token not valid for this URL.');
+                    error_log('Requested site: ' . $this->app->request->getResourceUri() . $qs);
+                    error_log('Token valid for: ' . $token['VALIDITY']);
+                    $err = 'Invalid one-time authorisation token.';
                     $this->returnError(400, $err);
                 }
             }
@@ -315,16 +315,14 @@ class AuthenticationController
         }
     }
 
-    private function returnError($code, $message)
+    private function returnError($code, $message, $logError = false)
     {
-        $this->returnResponse(
-            $code,
-            array(
-                'error' => $message,
-                'user-agent' => $_SERVER['HTTP_USER_AGENT'],
-                'timestamp' => gmdate('c', time())
-            )
-        );
+        if ($logError)
+        {
+            error_log('Authentication error: ' . $message);
+            error_log('User-agent: ' . $_SERVER['HTTP_USER_AGENT']);
+        }
+        $this->returnResponse($code, array('error' => $message));
     }
 
     // Calls the relevant Authentication Mechanism
