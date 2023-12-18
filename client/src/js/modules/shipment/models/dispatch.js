@@ -55,6 +55,16 @@ define(['backbone'], function(Backbone) {
             required: true
         },
 
+        CITY: {
+            required: true
+        },
+
+        POSTCODE: {
+            required: function() {
+                return this.postCodeRequired
+            }
+        },
+
         COUNTRY: {
             required: true,
             pattern: 'country',
@@ -97,6 +107,7 @@ define(['backbone'], function(Backbone) {
     },
 
     courierDetailsRequired: false, // We want to set this default to false unless 'DELIVERYAGENT_AGENTCODE' has a value in the shipment model
+    postCodeRequired: false,
   })
        
 })

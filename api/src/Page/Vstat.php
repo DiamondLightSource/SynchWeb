@@ -199,7 +199,7 @@ class Vstat extends Page
             $ctf = array();
             $missed = array();
 
-            $sched = $this->db->pq("SELECT CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) as visit, TO_CHAR(s.enddate, 'DD-MM-YYYY HH24:MI:SS') as en, TO_CHAR(s.startdate, 'DD-MM-YYYY HH24:MI:SS') as st, p.title, s.scheduled, p.proposalcode
+            $sched = $this->db->pq("SELECT CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) as visit, TO_CHAR(s.enddate, 'DD-MM-YYYY HH24:MI:SS') as en, TO_CHAR(s.startdate, 'DD-MM-YYYY HH24:MI:SS') as st, p.title, s.scheduled, p.proposalcode
                     FROM blsession s
                     INNER JOIN proposal p ON p.proposalid = s.proposalid
                     INNER JOIN v_run vr ON s.startdate BETWEEN vr.startdate AND vr.enddate
@@ -373,22 +373,18 @@ class Vstat extends Page
         }
 
         // Beam status 
-        //$bs = $this->_get_archive('SR-DI-DCCT-01:SIGNAL', strtotime($info['ST']), strtotime($info['EN']), 200);
-        $bs = $this->_get_archive('CS-CS-MSTAT-01:MODE', strtotime($info['ST']), strtotime($info['EN']), 2000);
+        $bs = $this->_get_archive('CS-CS-MSTAT-01:MODE', strtotime($info['ST']), strtotime($info['EN']));
 
-        if (!$bs)
-            $bs = array();
 
         $lastv = 0;
         $ex = 3600 * 1000;
-        $bd = False;
+        $st = $this->jst($info['ST']);
+
         foreach ($bs as $i => $b) {
-            //$v = $b[1] < 5 ? 1 : 0;
             $v = $b[1] != 4;
             $c = $b[0] * 1000;
 
             if (($v != $lastv) && $v) {
-                $bd = True;
                 $st = $c;
             }
 
@@ -397,12 +393,18 @@ class Vstat extends Page
                     array($st + $ex, 5, $st + $ex),
                     array($c + $ex, 5, $st + $ex)
                 ), 'color' => 'black', 'status' => ' Beam Dump', 'type' => 'nobeam'));
-                $bd = False;
             }
 
             $lastv = $v;
         }
 
+        // in case visit ends with no beam
+        if ($lastv && $this->jst($info['EN']) > $st + $ex) {
+            array_push($data, array('data' => array(
+                array($st + $ex, 5, $st + $ex),
+                array($this->jst($info['EN']), 5, $st + $ex)
+            ), 'color' => 'black', 'status' => ' Beam Dump', 'type' => 'nobeam'));
+        }
 
         $first = $info['ST'];
         $last = $info['EN'];
@@ -514,30 +516,30 @@ class Vstat extends Page
                 $d['FAULT'] = 0;
 
             // Beam status
-            $bs = $this->_get_archive('CS-CS-MSTAT-01:MODE', strtotime($d['ST']), strtotime($d['EN']), 2000);
-            if (!$bs)
-                $bs = array();
+            $bs = $this->_get_archive('CS-CS-MSTAT-01:MODE', strtotime($d['ST']), strtotime($d['EN']));
 
             $lastv = 0;
             $ex = 3600 * 1000;
-            $bd = False;
+            $st = $this->jst($d['ST']);
             $total_no_beam = 0;
             foreach ($bs as $i => $b) {
-                //$v = $b[1] < 5 ? 1 : 0;
                 $v = $b[1] != 4;
                 $c = $b[0] * 1000;
 
                 if (($v != $lastv) && $v) {
-                    $bd = True;
                     $st = $c;
                 }
 
                 if ($lastv && ($v != $lastv)) {
                     $total_no_beam += ($c - $st) / 1000;
-                    $bd = False;
                 }
 
                 $lastv = $v;
+            }
+
+            // in case visit ends with no beam
+            if ($lastv && $this->jst($d['EN']) > ($ex + $st)) {
+                $total_no_beam += ($this->jst($d['EN']) - ($ex + $st)) / 1000;
             }
 
             $d['NOBEAM'] = $total_no_beam / 3600;
@@ -685,15 +687,15 @@ class Vstat extends Page
     function _ehc_log()
     {
         $info = $this->_check_visit();
+        $elog_url = $this->_construct_elog_url($info, false);
 
-        $en = strtotime($info['EN']);
-        $ehc_tmp = $this->_get_remote_xml('https://rdb.pri.diamond.ac.uk/php/elog/cs_logwscontentinfo.php?startdate=' . date('d/m/Y', $en));
-        if (!$ehc_tmp)
+        if ($elog_url)
+            $ehc_tmp = $this->_get_remote_xml($elog_url);
+        if (!$elog_url || !$ehc_tmp)
             $ehc_tmp = array();
 
         $ehcs = array();
         foreach ($ehc_tmp as $e) {
-            //if (strpos($e->title, 'shift') !== False) 
             array_push($ehcs, $e);
         }
 
@@ -704,24 +706,61 @@ class Vstat extends Page
     function _callouts()
     {
         $info = $this->_check_visit();
+        $elog_url = $this->_construct_elog_url($info, true);
+        if ($elog_url)
+            $calls_tmp = $this->_get_remote_xml($elog_url);
 
-        $st = strtotime($info['ST']);
-        $en = strtotime($info['EN']);
+        if (!$elog_url || !$calls_tmp)
+            $calls_tmp = array();
 
-        $bls = array(
-            'i02' => 'BLI02', 'i03' => 'BLI03', 'i04' => 'BLI04', 'i04-1' => 'BLI04J', 'i24' => 'BLI24', 'i23' => 'BLI23',
-            'i11-1' => 'BLI11',
-            'b21' => 'BLB21',
-            'i12' => 'BLI12', 'i13' => 'BLI13', 'i13-1' => 'BLI13J',
-        );
-        $calls = $this->_get_remote_xml('https://rdb.pri.diamond.ac.uk/php/elog/cs_logwscalloutinfo.php?startdate=' . date('d/m/Y', $st) . '&enddate=' . date('d/m/Y', $en) . 'selgroupid=' . $bls[$info['BL']]);
-        if (!$calls)
-            $calls = array();
-
+        $calls = array();
+        foreach ($calls_tmp as $e) {
+            array_push($calls, $e);
+        }
         $this->_output($calls);
     }
 
 
+    function _construct_elog_url($info, $callouts)
+    {
+        global $elog_base_url, $elog_callouts_page, $elog_ehc_page;
+        if (!$elog_base_url) {
+            return '';
+        }
+        $st = strtotime($info['ST']);
+        $en = strtotime($info['EN']);
+        if ($callouts) {
+            $page = $elog_callouts_page;
+            $parameters = array(
+                'startdate' => date('d/m/Y', $st),
+                'enddate' => date('d/m/Y', $en),
+                'selgroupid' => $this->_get_logbook_from_beamline($info['BL']),
+            );
+        } else {
+            $page = $elog_ehc_page;
+            $parameters = array('startdate' => date('d/m/Y', $en));
+        }
+
+        $url_query = http_build_query($parameters);
+        $elog_url = $elog_base_url . $page . "?" . $url_query;
+        return $elog_url;
+    }
+
+
+    function _get_logbook_from_beamline($bl)
+    {
+        global $bl_types;
+        $logbook = null;
+        foreach ($bl_types as $type)
+        {
+            if ($type['name'] == $bl)
+            {
+                $logbook = $type['logbook'];
+                break;
+            }
+        }
+        return $logbook;
+    }
 
 
     function _check_visit()
@@ -730,7 +769,7 @@ class Vstat extends Page
             $this->_error('No visit specified');
 
         $args = array($this->arg('visit'));
-        $where = "WHERE CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) LIKE :1";
+        $where = "WHERE CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) LIKE :1";
 
         if (!$this->staff) {
             if (!$this->has_arg('prop'))
@@ -945,10 +984,10 @@ class Vstat extends Page
         $bls = implode('\', \'', $beamlines);
 
         $types = array(
-            'energy' => array('unit' => 'eV', 'st' => 1000, 'en' => 25000, 'bin_size' => 200, 'col' => '(1.98644568e-25/(dc.wavelength*1e-10))/1.60217646e-19', 'count' => 'dc.wavelength'),
-            'beamsizex' => array('unit' => 'um', 'st' => 0, 'en' => 150, 'bin_size' => 5, 'col' => 'dc.beamsizeatsamplex*1000', 'count' => 'dc.beamsizeatsamplex'),
-            'beamsizey' => array('unit' => 'um', 'st' => 0, 'en' => 150, 'bin_size' => 5, 'col' => 'dc.beamsizeatsampley*1000', 'count' => 'dc.beamsizeatsampley'),
-            'exposuretime' => array('unit' => 'ms', 'st' => 0, 'en' => 5000, 'bin_size' => 50, 'col' => 'dc.exposuretime*1000', 'count' => 'dc.exposuretime'),
+            'energy' => array('unit' => 'eV', 'bin_size' => 200, 'col' => '(1.98644568e-25/(dc.wavelength*1e-10))/1.60217646e-19', 'count' => 'dc.wavelength'),
+            'beamsizex' => array('unit' => 'um', 'bin_size' => 5, 'col' => 'dc.beamsizeatsamplex*1000', 'count' => 'dc.beamsizeatsamplex'),
+            'beamsizey' => array('unit' => 'um', 'bin_size' => 5, 'col' => 'dc.beamsizeatsampley*1000', 'count' => 'dc.beamsizeatsampley'),
+            'exposuretime' => array('unit' => 'ms', 'bin_size' => 5, 'col' => 'dc.exposuretime*1000', 'count' => 'dc.exposuretime'),
         );
 
         $k = 'energy';
@@ -975,9 +1014,9 @@ class Vstat extends Page
 
         $col = $t['col'];
         $ct = $t['count'];
-        $bs = $t['bin_size'];
+        $binSize = $t['bin_size'];
 
-        $hist = $this->db->pq("SELECT ($col div $bs) * $bs as x, count($ct) as y, s.beamlinename
+        $hist = $this->db->pq("SELECT ($col div $binSize) * $binSize as x, count($ct) as y, s.beamlinename
                 FROM datacollection dc 
                 INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
                 INNER JOIN blsession s ON s.sessionid = dcg.sessionid
@@ -987,9 +1026,15 @@ class Vstat extends Page
                 GROUP BY s.beamlinename,x
                 ORDER BY s.beamlinename", $args);
 
+        $min = null;
+        $max = null;
         $bls = array();
-        foreach ($hist as $h)
+        foreach ($hist as $h) {
             $bls[$h['BEAMLINENAME']] = 1;
+            if (is_null($max) || $h['X'] > $max) $max = $h['X'];
+            if (is_null($min) || $h['X'] < $min) $min = $h['X'];
+        }
+        $min = is_null($min) ? 0 : intval(floor($min/$binSize) * $binSize); // make min align with bin size, or 0 for no data
 
         $data = array();
         foreach ($bls as $bl => $y) {
@@ -1001,7 +1046,7 @@ class Vstat extends Page
             }
 
             $gram = array();
-            for ($bin = $t['st']; $bin <= $t['en']; $bin += $t['bin_size']) {
+            for ($bin = $min; $bin <= $max; $bin += $binSize) {
                 $gram[$bin] = array_key_exists($bin, $ha) ? $ha[$bin] : 0;
             }
 

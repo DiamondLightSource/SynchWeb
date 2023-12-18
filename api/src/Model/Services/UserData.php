@@ -63,16 +63,16 @@ class UserData
         $this->db->pq("DELETE FROM usergroup_has_permission WHERE usergroupid=:1 and permissionid=:2", array($userGroupId, $permisionId));
     }
 
-    private function addPersonOrProposalSearch($pid, $personId, &$args): string
+    private function addPersonOrProposalSearch($proposalid, $personId, &$args): string
     {
         $whereClause = ' AND (prhp.proposalid=:' . (sizeof($args) + 1) . ' OR lc.proposalid=:' . (sizeof($args) + 2) . ' OR p.personid=:' . (sizeof($args) + 3) . ')';
-        array_push($args, $pid);
-        array_push($args, $pid);
+        array_push($args, $proposalid);
+        array_push($args, $proposalid);
         array_push($args, $personId);
         return $whereClause;
     }
 
-    function getUsers($getCount, $isStaffMember, $stringMatch, $page, $sortBy = null, $pid = null, $personId = null, $isManager = false, $currentUserId = null, $gid = null, $sid = null, $pjid = null, $visitName = null, $perPage = 15, $isAscending = true, $isAll = false, $onlyLogins = false)
+    function getUsers($getCount, $isStaffMember, $stringMatch, $page, $sortBy = null, $pid=null,  $proposalid = null, $personId = null, $isManager = false, $currentUserId = null, $gid = null, $sid = null, $pjid = null, $visitName = null, $perPage = 15, $isAscending = true, $isAll = false, $onlyLogins = false)
     {
         $args = array();
 
@@ -96,16 +96,21 @@ class UserData
 
         if ($personId == "" && $stringMatch == "" && $gid == "" && $sid == "" && $visitName == "" && $pjid == "")
         {
-            return $this->getUsersForProposal($where, $getCount, $page, $sortBy, $pid, $currentUserId, $perPage, $isAscending, $start, $end);
+            //secured by making sure the user has access toproposalid
+            return $this->getUsersForProposal($where, $getCount, $page, $sortBy, $proposalid, $currentUserId, $perPage, $isAscending, $start, $end);
         }
 
         $join = '';
         $extc = '';
         $group = 'GROUP BY p.personid';
 
-        if (($personId && !$isManager) || $pid || (!$isStaffMember && !$visitName))
+        // This blocks means that non-staff can only see users on their proposal, except when they looking at a visit 
+        //  (i.e. the proposal that was checkin page.php is added to the where clause)
+        if ((($personId && !$isManager) // if you not a manager: you looking for a person 
+            || (!$isStaffMember && !$visitName)) // if you are not a staff member and not loking at a specific visit
+            || $pid) // if you are looking for user based on a proposal, but this 
         {
-            $where .= $this->addPersonOrProposalSearch($pid, $currentUserId, $args);
+            $where .= $this->addPersonOrProposalSearch($proposalid, $currentUserId, $args);
         }
 
         if ($personId)
@@ -149,7 +154,7 @@ class UserData
                      INNER JOIN proposal pr ON pr.proposalid = s.proposalid
                      LEFT OUTER JOIN session_has_person shp2 ON p.personid = shp2.personid
                      LEFT OUTER JOIN blsession ses ON ses.sessionid = shp2.sessionid AND ses.startdate < s.startdate';
-            $where .= " AND shp.remote IS NOT NULL AND CONCAT(CONCAT(CONCAT(pr.proposalcode,pr.proposalnumber), '-'), s.visit_number) LIKE :" . (sizeof($args) + 1);
+            $where .= " AND shp.remote IS NOT NULL AND CONCAT(pr.proposalcode, pr.proposalnumber, '-', s.visit_number) LIKE :" . (sizeof($args) + 1);
             $group = 'GROUP BY p.personid, p.givenname, p.familyname, p.login';
             array_push($args, $visitName);
         }
@@ -157,7 +162,7 @@ class UserData
         {
             $join = 'INNER JOIN project_has_person php ON p.personid = php.personid';
             $where .= ' AND php.projectid=:' . (sizeof($args) + 1);
-            $extc = "CONCAT(CONCAT(p.personid, '-'), php.projectid) as ppid,";
+            $extc = "CONCAT(p.personid, '-', php.projectid) as ppid,";
             array_push($args, $pjid);
         }
 
@@ -187,7 +192,7 @@ class UserData
             }
         }
 
-        $rows = $this->db->paginate("SELECT $extc p.personid, p.givenname, p.familyname, CONCAT(CONCAT(p.givenname, ' '), p.familyname) as fullname, p.login, p.emailaddress, p.phonenumber, l.name as labname, l.address, l.city, '' as postcode, l.country
+        $rows = $this->db->paginate("SELECT $extc p.personid, p.givenname, p.familyname, CONCAT(p.givenname, ' ', p.familyname) as fullname, p.login, p.emailaddress, p.phonenumber, l.name as labname, l.address, l.city, l.postcode, l.country
                                FROM person p
                                LEFT OUTER JOIN proposalhasperson prhp ON prhp.personid = p.personid
                                LEFT OUTER JOIN labcontact lc ON lc.personid = p.personid
@@ -206,15 +211,15 @@ class UserData
         return $rows;
     }
 
-    function getUsersForProposal($where, $getCount, $page, $sortBy, $pid, $currentUserId, $perPage, $isAscending, $start, $end)
+    function getUsersForProposal($where, $getCount, $page, $sortBy, $proposalid, $currentUserId, $perPage, $isAscending, $start, $end)
     {
         $args = array();
 
         $where1 = $where . ' AND prhp.proposalid=:1';
         $where2 = $where . ' AND (lc.proposalid=:2 OR p.personid=:3)';
 
-        array_push($args, $pid);
-        array_push($args, $pid);
+        array_push($args, $proposalid);
+        array_push($args, $proposalid);
         array_push($args, $currentUserId);
 
         if ($getCount)
@@ -248,7 +253,7 @@ class UserData
             }
         }
 
-        $extc = "p.personid, p.givenname, p.familyname, CONCAT(CONCAT(p.givenname, ' '), p.familyname) as fullname, p.login, p.emailaddress, p.phonenumber, l.name as labname, l.address, l.city, '' as postcode, l.country";
+        $extc = "p.personid, p.givenname, p.familyname, CONCAT(p.givenname, ' ', p.familyname) as fullname, p.login, p.emailaddress, p.phonenumber, l.name as labname, l.address, l.city, l.postcode, l.country";
         $rows = $this->db->paginate("(SELECT $extc
                                FROM person p
                                LEFT OUTER JOIN ProposalHasPerson prhp ON prhp.personid = p.personid

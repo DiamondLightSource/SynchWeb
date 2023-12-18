@@ -95,7 +95,6 @@ export default {
     async getUsers() {
       this.usersCollection = new Users(null, { state: { pageSize: 9999 }})
       this.usersCollection.queryParams.all = 1
-      this.usersCollection.queryParams.pid = this.$store.state.proposal.proposalModel.get('PROPOSALID')
 
       if (this.plateType === 'plate') {
         this.usersCollection.queryParams.login = 1
@@ -160,7 +159,7 @@ export default {
     },
     formatExperimentKindList() {
       let experimentKindList = []
-      for (const [key, value] of Object.entries(ExperimentKindsList.list)) {
+      for (const [key, value] of Object.entries(ExperimentKindsList.getList())) {
         experimentKindList.push({ value, text: key })
       }
 
@@ -319,14 +318,16 @@ export default {
     // Save the sample to the server via backbone model
     // Location should be the sample LOCATION
     async onSaveSample(location) {
-      try {
+      if (this.$store.getters.isLoading) { // avoid double click
+          return
+      }
+      try {        
         this.$store.commit('loading', true)
         const result = await this.$refs.containerForm.validate()
-
         if (result) {
           await this.saveSample(location)
           const samplesRef = this.$refs.samples
-          samplesRef.$refs[`sample-row-${location}`][0].closeSampleEditing()
+          samplesRef.$refs[`sample-row-${location}`][0].closeSampleEditing()          
           this.$refs.containerForm.reset()
         }
         else {

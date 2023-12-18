@@ -314,11 +314,19 @@ define(['backbone',
         },
 
         checkAvailability: function() {
-            if (this.shipment.get('DELIVERYAGENT_AGENTNAME').toLowerCase() != 'dhl' && (
-                    !(app.options.get('facility_courier_countries').indexOf(this.lc.get('COUNTRY')) > -1) &&
-                    !(app.options.get('facility_courier_countries_nde').indexOf(this.lc.get('COUNTRY')) > -1)
-                ))
-                app.message({ title: 'Service Not Available', message: 'This service is only available for shipments from '+app.options.get('facility_courier_countries').concat(app.options.get('facility_courier_countries_nde')).join(',')+', or for user with DHL accounts. Please either update your labcontact or the shipment courier'})
+            const agent_name = this.shipment.get('DELIVERYAGENT_AGENTNAME')
+            const facility_courier_countries = app.options.get('facility_courier_countries')
+            const facility_courier_countries_nde = app.options.get('facility_courier_countries_nde')
+            if ((agent_name==null || agent_name.toLowerCase() != 'dhl') && (
+                    !(facility_courier_countries.indexOf(this.lc.get('COUNTRY')) > -1) &&
+                    !(facility_courier_countries_nde.indexOf(this.lc.get('COUNTRY')) > -1)
+                )) {
+                    const valid_countries = facility_courier_countries.concat(facility_courier_countries_nde).join(', ')
+                    app.message({ 
+                        title: 'Service Not Available', 
+                        message: 'This service is only available for shipments from ' + valid_countries +
+                            ', or for user with DHL accounts. Please either update your labcontact or the shipment courier'})
+                }
         },
 
         populateLC: function() {            
@@ -435,7 +443,7 @@ define(['backbone',
                     PRODUCTCODE: prod,
                 },
                 success: function(resp) {
-                    app.alert({ message: 'Air Waybill Successfully Created'})
+                    app.message({ message: 'Air Waybill Successfully Created'})
                     setTimeout(function() {
                         app.trigger('shipment:show', self.shipment.get('SHIPPINGID'))
                     }, 1000)
@@ -452,7 +460,8 @@ define(['backbone',
                             console.error("Error parsing response: ", err)
                         }
                     }
-                    app.alert({ message: json.message })
+                    app.alert({ message: json.message, persist:true })
+                    app.alert({ message: json.message})
                     self.ui.submit.prop('disabled', false)
                     self.$el.removeClass('loading')
                 }

@@ -13,13 +13,18 @@
     $isb  = array('user' => 'user', 'pass' => 'pass', 'db' => 'localhost/ispyb');
     $dbtype = 'mysql';
 
+    # Summary Database credentials 
+    ######### DELETE if not using connection. 
+    $summarydbconfig = array('user' => 'user', 'pass' => 'pass', 'db' => 'localhost/ispyb');
+    $ifsummary = true;
+
     # Encoded JWT key, used to sign and check validaty of jwt tokens
     # - Create one of these using /api/authenticate/key
     #   This can be changed to invalidate all currently active tokens
     $jwt_key = '';
 
     # Auth type
-    # Can be cas, ldap
+    # Can be cas, ldap, oidc
     $authentication_type = 'cas';
 
     # CAS url (if using cas, assume https)
@@ -27,14 +32,28 @@
 
     # Follow CAS SSO
     $cas_sso = true;
+    $sso_url = "sso.server.ac.uk";
+
+    # OIDC (or OAuth2) client ID and secret. Only useful if authentication_type is set to OIDC
+    $oidc_client_id = "oidcClientId";
+    $oidc_client_secret = "oidcClientSecret";
+    # Cookie key used for SSO/cookie based authentication
+    $cookie_key = "synchweb-auth";
 
     # CAS CA Cert (for SSO)
     $cacert = '/etc/certs/ca-bundle.crt';
 
-    # ldap server, used for lookup and authentication (if using)
+    # ldap server, used for lookup and authentication (if using, set to null if not)
     # Update the ldap(s) prefix, hostname and search settings as required
     $ldap_server = 'ldaps://ldap.example.com';
     $ldap_search = 'ou=people,dc=example,dc=com';
+    # Specify the LDAP server type, can be either 
+    # "openldap" (default) or "activedirectory"
+    $ldap_server_type = "openldap";
+    # If using "activedirectory" then specify the legacy domain name.
+    # i.e. "MYDOMAIN" rather than "mydomain.com" 
+    # This will be prepended onto the username (e.g. MYDOMAIN\mylogin)
+    $active_directory_domain = "MYDOMAIN";
     $ldap_use_tls = false; # default - i.e. don't use secured LDAP connection
 
     # Upload directory
@@ -45,12 +64,24 @@
     # - Show at the top of every page on first load
     $motd = 'This is the message of the day.';
 
+    # Synchweb version, displayed in footer of each page
+    $synchweb_version = '';
+
     # Maintainance Mode
     # - Disables site access, showing a message
     # - This is defined in client/js/config.json
 
     # Timezone
     $timezone = 'Europe/London';
+
+    # URL to access the PV archiver
+    $archive_url = '';
+
+    # URL to access elog logbook
+    $elog_base_url = '';
+    $elog_callouts_page = '';
+    $elog_ehc_page = '';
+
 
     # Valid Components
     #   Denotes that only staff may create proteins, otherwise they must come from replication 
@@ -144,6 +175,13 @@
     # and for shipment booked,
     $shipbooked_email = 'goods@server.ac.uk';
 
+    # dewar back in storage (complete)
+    $dewar_complete_email = '';
+
+    # Send a 'visit finished' email when a dewar moves from this beamline to this (regex) location
+    $dewar_complete_email_locations = array('i03' => '/tray-\w+/',
+                                           );
+
     # Industrial Contacts
     # - Industrial users get a personalised email with in contact details,
     #   template in assets/emails/dewar-stores-in-in.html
@@ -225,7 +263,11 @@
 
     # Shipping service details
     $use_shipping_service = null;
-    $shipping_service_url = null;
+    $use_shipping_service_incoming_shipments = null;
+    $shipping_service_api_url = null;
+    $shipping_service_api_user = null;
+    $shipping_service_api_password = null;
+    $shipping_service_app_url = null;
     $shipping_service_links_in_emails = null;
 
 
@@ -281,7 +323,8 @@
         array(
             'name' => 'i03',
             'group' => 'mx',
-            'archived' => False
+            'archived' => False,
+            'logbook' => 'BLI03'
         ),
         array(
             'name' => 'i04',

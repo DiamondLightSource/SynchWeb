@@ -4,11 +4,13 @@ on:
   push:
     branches: 
       - 'master'
+      - 'prerelease'
       - 'release/**'
       - 'pre-release/**'
   pull_request:
     branches:
       - 'master'
+      - 'prerelease'
       - 'release/**'
       - 'pre-release/**'
 
@@ -59,9 +61,8 @@ jobs:
           php_version: 7.3
           version: 9
 
-      # Note, lint errors are being escaped here - so this will report, but not cause the build to fail
       - name: Run Psalm
-        run: psalm --output-format=github || exit 0
+        run: psalm --output-format=github
 
   js_build:
     name: JavaScript build, test and lint
@@ -70,11 +71,16 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - name: Use Node.js 18
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.x
       - name: JavaScript build, lint and test
         working-directory: ./client
         # hack the output from the linting steps to avoid these stopping the builds - we are not going to get 
         # to a clean output without considerable effort, but it's useful to see the output
         run: |
+              node --version
               npm ci
               npm run build
               npm run test

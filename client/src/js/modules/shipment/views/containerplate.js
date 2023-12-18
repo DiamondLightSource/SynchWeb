@@ -255,12 +255,14 @@ define(['marionette',
             ret: 'div.return',
             adh: 'span.adhoc',
             que: 'div.queue',
-            ss: 'input[name=sample_status]',
+            sampleStatusData: 'input[id=sample_status_data]',
+            sampleStatusMax: 'input[id=sample_status_max]',
 
+            sampleStatusCurrent: 'input[id=sample_status_current]',
             param: 'select[name=param]',
             rank: 'input[name=rank]',
 
-            auto: 'input[name=auto]',
+            sampleStatusAuto: 'input[id=sample_status_auto]',
             schema: 'select[name=schema]',
             class: 'select[name=class]',
         },
@@ -280,12 +282,14 @@ define(['marionette',
 
             'click a.adhoc': 'requestAdhoc',
             'click a.return': 'requestReturn',
-            'change @ui.ss': 'toggleSampleStatus',
+            'change @ui.sampleStatusData': 'setSampleStatusShown',
+            'change @ui.sampleStatusMax': 'setSampleStatusShown',
+            'change @ui.sampleStatusCurrent': 'setSampleStatusShown',
 
             'click @ui.rank': 'setRankStatus',
-            'change @ui.param': 'setRankStatus',
+            'change @ui.param': 'setParamValue',
 
-            'click @ui.auto': 'setAutoStatus',
+            'click @ui.sampleStatusAuto': 'setSampleStatusShown',
             'change @ui.class': 'setAutoStatus',
 
             'change @ui.schema': 'selectSchema',
@@ -295,15 +299,19 @@ define(['marionette',
             'change:QUEUED': 'updatedQueued',
         },
 
-        toggleSampleStatus: function() {
-            this.ui.auto.prop('checked', false)
-            this.plateView.setAutoStatus(false)
-            this.plateView.setShowSampleStatus(this.ui.ss.is(':checked'))
-        },
+        setSampleStatusShown: function() {
+            
+            const showCurrentScore = this.ui.sampleStatusCurrent.is(':checked')            
+            const showMaxScore = this.ui.sampleStatusMax.is(':checked')
+            const showDataStatus = this.ui.sampleStatusData.is(':checked')
+            const showAutoScore = this.ui.sampleStatusAuto.is(':checked')
+            this.plateView.setShowSampleStatus(showDataStatus, showCurrentScore || showAutoScore, showMaxScore)
+            this.plateView.setAutoStatus(showAutoScore && this.ui.class.val())
 
-        setRankStatus: function() {
+            // set ranked options
             var opt = this.ui.param.find('option:selected')
-            var options = this.ui.rank.is(':checked') ? {
+            const is_rank_by = this.ui.rank.is(':checked')
+            var options = is_rank_by ? {
                 value: opt.attr('value'),
                 min: opt.data('min'),
                 check: opt.data('check'),
@@ -313,22 +321,23 @@ define(['marionette',
             this.plateView.setRankStatus(options)
             this.image.setRankStatus(options)
 
+        },
+
+        setParamValue: function() {
+            this.ui.rank.prop('checked', true)
+            this.setRankStatus()
+        },
+
+        setRankStatus: function() {
             if (this.ui.rank.is(':checked')) {
-                if (!this.ui.ss.is(':checked')) {
-                    this.ui.ss.prop('checked', true)
-                    this.toggleSampleStatus()
-                }
+                this.ui.sampleStatusData.prop('checked', true)
             }
+            this.setSampleStatusShown()
         },
 
         setAutoStatus: function() {
-            this.ui.ss.prop('checked', false)
-            this.ui.rank.prop('checked', false)
-            this.plateView.setShowSampleStatus(false)
-
-            var enabled = this.ui.auto.is(':checked')
-            console.log('setAutoStatus', enabled, this.ui.class.val(), enabled && this.ui.class.val())
-            this.plateView.setAutoStatus(enabled && this.ui.class.val())
+            this.ui.sampleStatusAuto.prop('checked', true)
+            this.setSampleStatusShown()
         },
 
         updateAdhoc: function() {
@@ -642,7 +651,6 @@ define(['marionette',
             this.users.queryParams.all = 1
             // Assumption all plates are for vmxi, so login => users only
             this.users.queryParams.login = 1
-            this.users.queryParams.pid = app.proposal.get('PROPOSALID')
 
             Backbone.Validation.bind(this)
         },

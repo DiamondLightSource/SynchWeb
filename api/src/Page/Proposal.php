@@ -24,6 +24,7 @@ class Proposal extends Page
         'started' => '\d',
         'scheduled' => '\d',
         'current' => '\d',
+        'notnull' => '\d+',
 
         'COMMENTS' => '(\w|\s|-)+',
 
@@ -209,7 +210,7 @@ class Proposal extends Page
                 $order = $cols[$this->arg('sort_by')] . ' ' . $dir;
         }
 
-        $rows = $this->db->paginate("SELECT CONCAT(p.proposalcode,p.proposalnumber) as proposal, p.title, TO_CHAR(p.bltimestamp, 'DD-MM-YYYY') as st, p.proposalcode, p.proposalnumber, count(distinct s.sessionid) as vcount, p.proposalid, CONCAT(CONCAT(pe.givenname, ' '), pe.familyname) as fullname, pe.personid, p.state, IF(p.state = 'Open', 1, 0) as active, CONCAT(p.proposalcode,p.proposalnumber) as prop, s.beamlinename
+        $rows = $this->db->paginate("SELECT CONCAT(p.proposalcode,p.proposalnumber) as proposal, p.title, TO_CHAR(p.bltimestamp, 'DD-MM-YYYY') as st, p.proposalcode, p.proposalnumber, count(distinct s.sessionid) as vcount, p.proposalid, CONCAT(pe.givenname, ' ', pe.familyname) as fullname, pe.personid, p.state, IF(p.state = 'Open', 1, 0) as active, CONCAT(p.proposalcode,p.proposalnumber) as prop, s.beamlinename
                     FROM proposal p 
                     LEFT OUTER JOIN blsession s ON p.proposalid = s.proposalid 
                     LEFT OUTER JOIN person pe ON pe.personid = p.personid
@@ -340,6 +341,10 @@ class Proposal extends Page
             $where = 'WHERE s.proposalid = :1';
         }
 
+        if ($this->has_arg('notnull')) {
+            $where .= ' AND s.visit_number is not NULL';
+        }
+
         if ($this->has_arg('year')) {
             $where .= " AND TO_CHAR(s.startdate, 'YYYY') = :" . (sizeof($args) + 1);
             array_push($args, $this->arg('year'));
@@ -393,7 +398,7 @@ class Proposal extends Page
         }
 
         if ($visit) {
-            $where .= " AND CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) LIKE :" . (sizeof($args) + 1);
+            $where .= " AND CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) LIKE :" . (sizeof($args) + 1);
             array_push($args, $visit);
         }
 
@@ -567,7 +572,7 @@ class Proposal extends Page
         $vis = $this->db->pq("SELECT s.sessionid, st.sessiontypeid, st.typename from blsession s
         INNER JOIN proposal p ON p.proposalid = s.proposalid 
         LEFT OUTER JOIN sessiontype st on st.sessionid = s.sessionid
-        WHERE p.proposalid = :1 AND CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) LIKE :2", array($this->proposalid, $this->arg('visit')));
+        WHERE p.proposalid = :1 AND CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) LIKE :2", array($this->proposalid, $this->arg('visit')));
 
         if (!sizeof($vis)) $this->_error('No such visit');
         $vis = $vis[0];
@@ -592,7 +597,7 @@ class Proposal extends Page
         $vis = $this->db->pq("SELECT s.sessionid, st.sessiontypeid, st.typename from blsession s
                 INNER JOIN proposal p ON p.proposalid = s.proposalid 
                 LEFT OUTER JOIN sessiontype st on st.sessionid = s.sessionid
-                WHERE p.proposalid = :1 AND CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) LIKE :2", array($this->proposalid, $this->arg('visit')));
+                WHERE p.proposalid = :1 AND CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) LIKE :2", array($this->proposalid, $this->arg('visit')));
 
         if (!sizeof($vis))
             $this->_error('No such visit');
@@ -756,7 +761,7 @@ class Proposal extends Page
             'shp.personid DESC'
         );
 
-        $rows = $this->db->paginate("SELECT shp.personid, shp.sessionid, shp.role, shp.remote, CONCAT(shp.sessionid, '-', pe.personid) as shpkey, CONCAT(CONCAT(pe.givenname, ' '), pe.familyname) as fullname
+        $rows = $this->db->paginate("SELECT shp.personid, shp.sessionid, shp.role, shp.remote, CONCAT(shp.sessionid, '-', pe.personid) as shpkey, CONCAT(pe.givenname, ' ', pe.familyname) as fullname
               FROM session_has_person shp
               INNER JOIN person pe ON pe.personid = shp.personid
               INNER JOIN blsession s ON s.sessionid = shp.sessionid

@@ -148,10 +148,10 @@ define(['marionette',
             if (did == this.lastDewarID && !force) return
             this.$el.find('.dewar_name').text(this.dewars.findWhere({ DEWARID: did }).get('CODE'))
             if (app.proposal && app.proposal.get('ACTIVE') == '1') {
-            if (app.type == "xpdf"){
-                 this.$el.find('.add_container').html('<a class="button" href="/containers/add/did/'+did+'"><i class="fa fa-plus"></i> Add Puck</a>')
+                if (app.type == "xpdf"){
+                    this.$el.find('.add_container').html('<a class="button" data-testid="shipment-add-container" href="/containers/add/did/'+did+'"><i class="fa fa-plus"></i> Add Puck</a>')
                 } else {
-                this.$el.find('.add_container').html('<a class="button" href="/containers/add/did/'+did+'"><i class="fa fa-plus"></i> Add Container</a>')
+                    this.$el.find('.add_container').html('<a class="button" data-testid="shipment-add-container" href="/containers/add/did/'+did+'"><i class="fa fa-plus"></i> Add Container</a>')
                 }
             }
             this.dewarcontent.dewarID = did

@@ -11,23 +11,48 @@
     <div class="img right"></div>
     <div class="left">
         <div class="plate"></div>
-        <div class="ra">
-            <span class="label">Show Data Status</span> <input type="checkbox" name="sample_status" />
-            <label>
-                Rank By
-                <input type="checkbox" name="rank" />
-            </label>:
-            <select name="param">
-                <option value="DCRESOLUTION" data-inverted="1" data-check="DC">AP Resolution</option>
-                <option value="DCCOMPLETENESS" data-check="DC" data-min="0.85">AP Completeness</option>
-            </select>
-
-            <div>
-                <span class="label">Show Auto Scores</span> <input type="checkbox" name="auto" /> 
-                <select name="schema"></select>
-                Class: <select name="class"></select>
+        <div class="flex">
+            <div class="flex_take_space form">
+            <span class="label">Display</span>
             </div>
-            <div class="sta small"></div> 
+            <div class="la flex_dont_change">
+                <div>
+                    <label>
+                        <input type="radio" value="sample_status_current" name="sample_status" id="sample_status_current" checked="checked" />
+                        Current Score 
+                    </label>                    
+                </div>
+                <div>
+                    <label>
+                        <input type="radio" value="sample_status_max" name="sample_status" id="sample_status_max"/> 
+                        Max Scores
+                    </label>
+                </div>
+                <div>
+                    <label>
+                        <input type="radio" value="sample_status_data" name="sample_status" id="sample_status_data"/> 
+                        Data Status
+                    </label>
+                    <label>
+                        Rank By
+                        <input type="checkbox" name="rank" />
+                    </label>:
+                    <select name="param">
+                        <option value="DCRESOLUTION" data-inverted="1" data-check="DC">AP Resolution</option>
+                        <option value="DCCOMPLETENESS" data-check="DC" data-min="0.85">AP Completeness</option>
+                    </select>
+                </div>
+                <div>
+                    <label>
+                        <input type="radio" value="sample_status_auto" name="sample_status" id="sample_status_auto"/> 
+                        CHIMP Auto Scores
+                    </label>
+                    <!--There is only ever one option in schema but it was too hard to remove the code see ticket LIMS-1064 -->
+                    <select name="schema" style="display:none"></select> 
+                    Class: <select name="class"></select>
+                </div>
+                <div class="sta small"></div> 
+            </div>
         </div>
         <div class="form">
             <!-- Added a couple of tailwind / css style tweaks to align buttons with input height and make spinner readable -->

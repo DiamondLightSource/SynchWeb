@@ -1,0 +1,248 @@
+
+
+
+.copied {
+    height: 125px;
+    width: 75px;
+    justify-content: center;
+    align-items: center;
+    display: flex;
+    position: fixed;
+    top: 20%;
+    left: 50%;
+}
+
+.status {
+    height: 125px;
+    width: 75px;
+    justify-content: center;
+    align-items: center;
+    display: flex;
+    position: fixed;
+    top: 45%;
+    left: 50%;
+    color: rgb(111, 213, 111);
+}
+
+.proposal-select {
+    color: black;
+    height: 10px;
+}
+
+
+.order-by {
+  cursor: pointer;
+  position: relative;
+  /* top: 60%; */
+  content: "";
+  width: 15px;
+  height: 20px;
+}
+
+
+.sidebar-button {
+    @apply tw-text-center tw-bg-content-active tw-border-content-active tw-text-xs tw-border-4 tw-text-black tw-py-1 tw-px-1 tw-rounded
+}
+.sidebar-button:hover {
+    @apply tw-border-teal-700 tw-bg-teal-700
+}
+
+.clear-button {
+    @apply tw-flex tw-text-black tw-text-center tw-text-xs tw-py-2 tw-px-1 tw-ml-2
+}
+
+.clear-button:focus {
+    @apply tw-text-content-active tw-text-content-active
+}
+
+.filter-grid {
+    @apply tw-grid tw-grid-rows-1 tw-grid-cols-4 tw-grid-flow-col 
+}
+
+.filter-options-grid {
+    @apply tw-grid tw-grid-rows-6 tw-grid-cols-3 tw-grid-flow-col tw-mb-2
+}
+
+.format-options-grid {
+    @apply tw-grid tw-grid-rows-6 tw-grid-cols-1 tw-grid-flow-col tw-mb-2
+
+}
+
+.select-column-button {
+    @apply tw-h-8 tw-rounded tw-text-xs tw-px-4 tw-text-center tw-inline-flex tw-items-center 
+            tw-bg-content-sub-header-background tw-border-content-sub-header-background tw-border-4 
+            tw-text-black tw-py-1 tw-px-5
+}
+
+.select-columns-dropdown {
+    @apply tw-absolute tw-bg-white tw-rounded tw-shadow
+            tw-transition tw-ease-out tw-duration-100
+}
+
+.select-columns-dropdown-show{
+    @apply tw-transform tw-opacity-100 tw-scale-100 tw-z-50
+}
+
+.select-columns-dropdown-hide {
+    z-index: -1;
+    @apply tw-transform tw-opacity-0 tw-scale-95
+}
+
+.select-columns-checkbox {
+    @apply tw-w-4 tw-h-4 tw-text-blue-600 tw-bg-gray-100 tw-rounded tw-border-gray-300
+}
+
+.download-file {
+    @apply tw-mt-10 tw-items-center tw-block tw-pt-1 tw-pl-5 tw-pr-5 tw-h-6 tw-ml-2 tw-mr-2 
+        tw-bg-content-sub-header-background tw-shadow tw-text-xs tw-rounded tw-shadow
+}
+
+.simple-search {
+    @apply tw-pl-6 tw-px-4 tw-border
+}
+
+.simple-search:focus {
+    @apply tw-outline-none tw-shadow-outline
+}
+
+/* Tooltip container */
+.tooltip {
+  /* position: relative;
+  display: inline-block; */
+  color: rgb(104, 104, 104); /* If you want dots under the hoverable text */
+}
+
+.add-white {
+    color: white; 
+}
+
+.add-gray {
+    color: rgb(104, 104, 104);
+}
+
+.tooltip-position-relative {
+    position: relative;
+    display: inline-block;
+}
+
+.tooltip-position-absolute {
+    position: absolute;
+}
+
+
+/* Tooltip text */
+.tooltip .tooltiptext {
+  font-family: Arial, Helvetica, sans-serif;
+  visibility: hidden;
+  opacity: 0.9;
+  width: 120px;
+  background-color: rgb(25, 24, 24);
+  color: #fff;
+  text-align: center;
+  padding: 5px 0;
+  border-radius: 6px;
+ 
+  /* Position the tooltip text - see examples below! */
+  position: absolute;
+  z-index: 1;
+}
+
+/* Show the tooltip text when you mouse over the tooltip container */
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+}
+
+.description-options {
+    display:none;
+    position:absolute;
+    border:1px solid #828282;
+    font-family: Arial, Helvetica, sans-serif;
+    overflow-x:visible;
+    overflow-y:visible;
+
+}
+
+.tooltip:hover .description-options {
+    display:block;
+    min-width:100px;
+    min-height:50px;
+    background-color: white;
+    left:40%;
+    top: 50%
+}
+
+.dc-nav {
+    position: absolute;
+    display: flex;
+}
+
+.tiptext-preview {
+    position: absolute;
+    font-size:small;
+    cursor:pointer;
+}
+
+.description {
+    display:none;
+    position:absolute;
+    left: 50%;
+    border:1px solid #000;
+    width:400px;
+    height:400px;
+}
+
+.tiptext-preview:hover .description {
+    display:block;
+}
+
+.param-options-wrapper {
+    display:flex;
+    margin-left: 65%;
+    margin-top: 5px;
+}
+
+
+.param-options-tooltip {
+  cursor:default;
+  font-size:12px;
+  font-weight: bold;
+  margin-top: 2px;
+  color: blue;
+
+  &:hover .param-preview {
+    opacity:1;
+    display: inline;
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+  
+  &:hover {
+    box-shadow: 0 1px 5px rgba(0,0,0,.1);
+    border-color: #333;
+  }
+}
+
+.param-preview {
+  display: none;
+  border-radius: 10px;
+  transition:.2s ease-in-out opacity, .2s ease-in-out transform;
+  opacity:0;
+  z-index: 1;
+  position:absolute;
+  box-shadow:0 1px 5px rgba(0,0,0,.5);
+  width:230px;
+  height:fit-content;
+  border:4px solid #fff;
+  background-color: #fff;
+  color: black;
+  font-weight: normal;
+  overflow-x:hidden;
+  overflow-y:auto;
+  transform-origin:center bottom;
+  transform: translateX(-50%) translateY(10px) scale(.9);
+
+//   div {
+//     transform:scale(.2);
+//     transform-origin:0 0;
+//   }
+  
+}

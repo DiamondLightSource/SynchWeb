@@ -119,7 +119,7 @@ class Image extends Page
                 FROM robotaction r 
                 INNER JOIN blsession s ON r.blsessionid = s.sessionid 
                 INNER JOIN proposal p ON s.proposalid = p.proposalid 
-                WHERE r.robotactionid=:1 AND CONCAT(CONCAT(CONCAT(p.proposalcode, p.proposalnumber), '-'), s.visit_number) LIKE :2", array($this->arg('aid'), $this->arg('visit')));
+                WHERE r.robotactionid=:1 AND CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) LIKE :2", array($this->arg('aid'), $this->arg('visit')));
             
             //print_r($image);
 

@@ -8,6 +8,7 @@ use Slim\Slim;
 use SynchWeb\Model\User;
 
 use SynchWeb\Model\Services\AuthenticationData;
+use SynchWeb\Authentication\AuthenticationTypeFactory;
 
 class AuthenticationController
 {
@@ -15,18 +16,9 @@ class AuthenticationController
     private $app;
     private $dataLayer;
     private $exitOnError;
+    private $authenticationTypeFactory;
 
     private $loginId = "";
-
-    // Array of authentication types and corresponding authentication class names.
-    // Value is class name in SynchWeb\Authentication\Type namespace.
-    // Key is lower case representation of class name.
-    private $authentication_types = array(
-        'cas' => 'CAS',
-        'dummy' => 'Dummy',
-        'ldap' => 'LDAP',
-        'simple' => 'Simple'
-    );
 
     /**
      * Constructor
@@ -35,12 +27,14 @@ class AuthenticationController
      * @param dataLayer: the autherntication data layer object to connect to the database
      * @param exitOnError: Should be true for application but in testing set to false 
      *          and this will throw and exception rather than exiting the thread (and the tests)
+     * @param authenticationTypeFactory: Factory to create the authentication type to use in this controller
      */
-    public function __construct(Slim $app, AuthenticationData $dataLayer, $exitOnError = true)
+    public function __construct(Slim $app, AuthenticationData $dataLayer, $exitOnError = true, $authenticationTypeFactory = null)
     {
         $this->app = $app;
         $this->dataLayer = $dataLayer;
         $this->exitOnError = $exitOnError;
+        $this->authenticationTypeFactory = $authenticationTypeFactory ?: new AuthenticationTypeFactory();
 
         $this->setupRoutes();
     }
@@ -52,9 +46,14 @@ class AuthenticationController
             'password' => '.*',
         ));
 
+        $this->app->post('/authenticate/token', array(&$this, 'authenticateByCode'))->conditions(array(
+            'code' => '[A-z0-9\-]+',
+        ));
+
         $this->app->get('/authenticate/check', array(&$this, 'check'));
         $this->app->get('/authenticate/key', array(&$this, 'returnResponseWithJwtKey'));
         $this->app->get('/authenticate/logout', array(&$this, 'logout'));
+        $this->app->get('/authenticate/authorise', array(&$this, 'authorise'));
     }
 
     function getUser(): User
@@ -76,9 +75,7 @@ class AuthenticationController
     // - if a mechanism exists to do this
     function check()
     {
-        global $authentication_type;
-
-        $userId = $this->authenticateByType($authentication_type)->check();
+        $userId = $this->authenticateByType()->check();
 
         if ($userId)
         {
@@ -309,8 +306,6 @@ class AuthenticationController
     // Calls the relevant Authentication Mechanism
     function authenticate()
     {
-        global $authentication_type;
-
         // urgh
         $login = $this->app->request->post('login');
         $password = $this->app->request->post('password');
@@ -332,7 +327,7 @@ class AuthenticationController
             $this->returnError(400, 'Invalid Credentials');
         }
 
-        if ($this->authenticateByType($authentication_type)->authenticate($login, $password))
+        if ($this->authenticateByType()->authenticate($login, $password))
         {
             $this->returnResponse(200, $this->generateJwtToken($login));
         }
@@ -342,45 +337,63 @@ class AuthenticationController
         }
     }
 
+    function authorise() 
+    {
+        global $cas_sso;
+
+        if ($cas_sso) {
+            header('Location: ' . $this->authenticateByType()->authorise());
+            $this->returnResponse(302, array('status' => "Redirecting to CAS"));
+        } else {
+            $this->returnError(501, "SSO not configured");
+        }
+    }
+
+    function authenticateByCode()
+    {   
+        $code = $this->app->request()->post('code');
+        $fedid = $this->authenticateByType()->authenticateByCode($code);
+        if ($fedid) {
+            /* 
+             * Since the returned username might not be in the database, given it's returned by 
+             * the SSO provider and not our internal authentication logic, we need to double check
+             * if it's valid
+             */
+            if (!$this->dataLayer->isUserLoggedIn($fedid)) {
+                $this->returnError(403, 'User not recognised');
+            }
+            $this->returnResponse(200, $this->generateJwtToken($fedid));
+        } else {
+            $this->returnError(401, 'Invalid Credentials');
+        }
+    }
+
     // Logout
     function logout()
     {
+        global $cookie_key;
+        if (isset($_COOKIE[$cookie_key])) {
+            $cookieOpts = array (
+                'expires' => time() - 3600,
+                'path' => '/',
+                'secure' => true,
+                'httponly' => true,
+                'samesite' => 'Strict'
+            );
 
+            setcookie($cookie_key, null, $cookieOpts);
+        }
     }
 
-    // Return instance of authentication class corresponding to $authentication_type.
-    // The value passed by the calling method derives from $authentication_type, a global variable specified in config.php.
-    private function authenticateByType($authentication_type)
-    {
-        if (!$authentication_type)
-        {
-            error_log("Authentication method not specified in config.php.");
-
-            $authentication_type = 'cas';
+    private function authenticateByType() {
+        global $authentication_type;
+        try {
+            return $this->authenticationTypeFactory->create($authentication_type);
         }
-
-        // Determine fully-qualified class name of authentication class corresponding to $authentication_type.
-        $full_class_name = null;
-
-        if (key_exists(strtolower($authentication_type), $this->authentication_types))
-        {
-            $full_class_name = 'SynchWeb\\Authentication\\Type\\' . $this->authentication_types[$authentication_type];
+        catch(\Exception $e) {
+            error_log($e->getMessage());
+            $this->returnError(500, 'Invalid Authentication Config');
         }
-        else
-        {
-            error_log("Authentication method '$authentication_type' not configured.");
-        }
-
-        // Return instance of authentication class.
-        if (class_exists($full_class_name))
-        {
-            return new $full_class_name();
-        }
-        else
-        {
-            error_log("Authentication class '$full_class_name' does not exist.");
-        }
-
-        $this->returnError(500, 'Authentication not possible due to a configuration error.');
     }
+
 }

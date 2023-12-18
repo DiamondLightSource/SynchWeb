@@ -24,8 +24,11 @@ class DatabaseQueryBuilder
     private $query_bound_values = [];
     /** @var ?string where clause column name */
     private $where_columnName = Null;
-    /** @var ?mixed where vlause value */
+    /** @var ?mixed where clause value */
     private $where_value = Null;
+    /** @var array join clauses*/
+    private $join_clauses = [];
+
     /**
      * @var DatabaseParent database parent to use
      */
@@ -104,6 +107,33 @@ class DatabaseQueryBuilder
         return $this->db->id();
     }
 
+
+    /** 
+     * Add while join clauses with no processing except to remove duplicates
+     * ONLY USED WITH getJoins at the moment
+     * 
+     * @param string $join_clause The join clause to add, e.g. JOIN table t ON t.id = s.id
+     * @return DatabaseQueryBuilder the builder
+     */
+    public function joinClause($join_clause) 
+    {
+        if (!in_array($join_clause, $this->join_clauses))
+            array_push($this->join_clauses, $join_clause);
+        return $this;
+    }
+
+    /**
+     * Pull back the join clauses ready to be added to a SQL statement
+     * 
+     * This is a half-way house into adding join caluses to this builder
+     * 
+     * @return string The join caluses as one long string
+     */
+    public function getJoins()
+    {
+        return implode(" ", $this->join_clauses);
+    }
+
     private function bindArrayAsList($values): string
     {
         $bound_list_sql = "";
@@ -133,5 +163,17 @@ class DatabaseQueryBuilder
     {
         array_push($this->query_bound_values, $value);
         return sizeof($this->query_bound_values);
+    }
+
+    public static function getWhereSearch($searchValue, $fields, &$query_bound_values)
+    {
+        $where = " AND (0=1";
+
+        foreach ($fields as $field) {
+            array_push($query_bound_values, $searchValue);
+            $where .= " OR lower(" . $field . ") LIKE lower(CONCAT('%', :" . sizeof($query_bound_values) . ", '%'))";
+        }
+        $where .= ")";
+        return $where;
     }
 }

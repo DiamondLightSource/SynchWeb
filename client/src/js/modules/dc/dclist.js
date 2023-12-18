@@ -74,10 +74,21 @@ function(Marionette,
     },
                                                           
     getChildView: function(item) {
-      var ty = item.get('TYPE')
+      const ty = item.get('TYPE');
+      const collectionType = item.get('DCT');
+      const views = this.getOption("dcViews");
 
-      if (ty in this.getOption('dcViews')) return this.getOption('dcViews')[ty]
-      else return this.getOption('dcViews').data
+      if ("collectionTypeSpecific" in views) {
+        if(collectionType in views["collectionTypeSpecific"]) {
+          return views["collectionTypeSpecific"][collectionType];
+        }
+      }
+
+      if (ty in views) {
+        return views[ty];
+      } 
+        
+      return views.data
     },
                                                 
     getEmptyView: function() {

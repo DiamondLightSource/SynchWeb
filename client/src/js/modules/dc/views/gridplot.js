@@ -25,9 +25,11 @@ define(['jquery', 'marionette',
             hmt: 'input[name=heatmap]',
             ty: 'select[name=type]',
             ty2: 'select[name=type2]',
+            ty3: 'select[name=type3]',
             xfm: '.xfm',
             flu: 'input[name=fluo]',
             el: 'select[name=element]',
+            sns: 'a[name=snapshots]',
         },
 
         events: {
@@ -36,6 +38,7 @@ define(['jquery', 'marionette',
 
             'change @ui.ty': 'setType',
             'change @ui.ty2': 'loadAttachment',
+            'change @ui.ty3': 'loadImage',
             'change @ui.hmt': 'setHM',
 
             'change @ui.flu': 'toggleFluo',
@@ -67,6 +70,7 @@ define(['jquery', 'marionette',
             this.statusesLoaded = false
             this.listenTo(options.imagestatuses, 'sync', this.setStatues, this)
             this.noHeatMapResult = []
+            this.invertHeatMap = false
 
             this._ready = []
 
@@ -97,6 +101,7 @@ define(['jquery', 'marionette',
             this.offset_h = 0
             this.scale = 1
             this.current = -1
+            this.image_1_width = -1
 
             this.heatmapToggle = false
 
@@ -126,6 +131,8 @@ define(['jquery', 'marionette',
 
         loadAttachment: function() {
             var a = this.attachments.findWhere({ 'DATACOLLECTIONFILEATTACHMENTID': this.ui.ty2.val() })
+            var selectedOption = this.ui.ty2.find('option:selected').text()
+            this.invertHeatMap = selectedOption === 'pia_estimated_d_min'
             if (a) {
                 if (!a.get('DATA')) {
                     var self = this
@@ -144,6 +151,28 @@ define(['jquery', 'marionette',
             }
         },
 
+        populateImageSelect: function() {
+            opts = []
+            for (let i=1; i<=4; i++) {
+                if (this.getOption('parent').get('X'+i)) {
+                    opts.push('<option value='+i+'>Image '+i+'</option>')
+                    if (i === 1) {
+                        // show button to view image full size
+                        this.ui.sns.append('<a class="button" href="'+app.apiurl+'/image/id/'+this.getOption('ID')+'/f/1/n/'+i+'"><i class="fa fa-arrows"></a>')
+                    } else {
+                        this.ui.sns.append('<a class="hidden" href="'+app.apiurl+'/image/id/'+this.getOption('ID')+'/f/1/n/'+i+'"></a>')
+                    }
+                }
+            }
+            if (opts.length > 1) {
+                this.ui.ty3.html(opts).show()
+            }
+        },
+
+        loadImage: function() {
+            var n = this.ui.ty3.val()
+            this.snapshot.load(app.apiurl+'/image/id/'+this.getOption('ID')+'/f/1/n/'+n)
+        },
 
         toggleFluo: function() {
             if (this.ui.flu.is(':checked')) {
@@ -223,6 +252,15 @@ define(['jquery', 'marionette',
                     this.loadAttachment()
                 }
             }
+            var xrcstatus = this.grid.get('XRCSTATUS')
+            var result = this.grid.get('XRAYCENTRINGRESULTID')
+            if (xrcstatus == 'success' && result == 0) {
+                this.trigger('warning', 'No diffraction found');
+            } else if (xrcstatus == 'failed') {
+                this.trigger('warning', 'Xray Centring has failed');
+            } else if (xrcstatus == 'pending') {
+                this.trigger('warning', 'Xray Centring analysis pending');
+            }
         },
 
 
@@ -242,11 +280,18 @@ define(['jquery', 'marionette',
             this.hasSnapshot = true
             this.$el.removeClass('loading')
             this.draw()
+            if (this.ui.ty3.val() == 1) {
+                this.image_1_width = this.snapshot.width
+            }
+            var n = this.ui.ty3.val()
+            this.ui.sns.magnificPopup({ type: 'image', delegate: 'a', gallery: { enabled:true } })
         },
 
         onRender: function() {
             this.ui.xfm.hide()
             this.ui.ty2.hide()
+            this.ui.ty3.hide()
+            this.populateImageSelect()
         },
 
 
@@ -315,6 +360,17 @@ define(['jquery', 'marionette',
                     h *= scalef
                 }
 
+                if (this.image_1_width > 0 && this.snapshot.width != this.image_1_width) {
+                    // Image size is different to image 1, so hide PIA results as they would be in the wrong location
+                    this.ui.ty.val(-1)
+                    this.ui.ty2.val('')
+                    this.ui.ty.prop('disabled', true)
+                    this.ui.ty2.prop('disabled', true)
+                } else {
+                    this.ui.ty.prop('disabled', false)
+                    this.ui.ty2.prop('disabled', false)
+                }
+
                 var cvratio = this.perceivedw / this.perceivedh
                 var snratio = w/h
                 
@@ -358,12 +414,15 @@ define(['jquery', 'marionette',
 
             if (d.length > 0) {
                 let max = 0
+                let power = this.invertHeatMap ? -1 : 1
+                let val = 0
                 _.each(d, function(v) {
-                    if (v[1] > max) max = v[1]
+                    val = Math.pow(v[1], power)
+                    if (val > max) max = val
                 })
 
                 max = max === 0 ? 1 : max
-                if (this.getOption('padMax') && max < 10) max = max * 50
+                if (this.getOption('padMax') && max < 10 && !this.invertHeatMap) max = max * 50
 
                 var sw = (this.perceivedw-(this.offset_w*this.scale))/this.grid.get('STEPS_X')
                 var sh = (this.perceivedh-(this.offset_h*this.scale))/this.grid.get('STEPS_Y')
@@ -374,6 +433,7 @@ define(['jquery', 'marionette',
                 var data = []
                 _.each(d, function(v) {
                     var k = v[0] - 1
+                    val = Math.pow(v[1], power)
 
                     // Account for vertical grid scans
                     let xstep, ystep, x, y
@@ -401,7 +461,10 @@ define(['jquery', 'marionette',
                     }
 
                     // Dont zero values < 1 if data is scaled to max==1
-                    data.push({ x: x, y: y, value: v[1] < 1 && max > 1 ? 0 : v[1],
+                    data.push({
+                        x: x,
+                        y: y,
+                        value: val < 1 && max > 1 ? 0 : val,
                         radius: radius
                     })
 
@@ -461,7 +524,16 @@ define(['jquery', 'marionette',
 
         _getVal: function(pos) {
             var val = null
-            const d = Number(this.ui.ty.val()) > -1 ?  this.distl.get('data')[Number(this.ui.ty.val())] : []
+            let d = []
+            if (this.ui.ty.is(":visible")) {
+                d = Number(this.ui.ty.val()) > -1 ? this.distl.get('data')[Number(this.ui.ty.val())] : []
+            }
+            if (this.ui.ty2.is(":visible")) {
+                let a = this.attachments.findWhere({ 'DATACOLLECTIONFILEATTACHMENTID': this.ui.ty2.val() })
+                if (a && a.get('DATA')) {
+                    d = a.get('DATA')
+                }
+            }
             _.each(d, function(v) {
                 // 1 indexed array
                 if (v[0] === pos+1) {

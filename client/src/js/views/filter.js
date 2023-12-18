@@ -47,6 +47,7 @@ define(['backbone', 'marionette'], function(Backbone, Marionette) {
             
         onRender: function() {
             this.$el.attr('id', this.model.get('id'))
+            this.$el.attr('data-testid', "dc-filter-"+this.model.get('id'))
             if (this.model.get('isSelected')) this.$el.addClass('current')
         },
             

@@ -30,6 +30,7 @@ Slots include:
 
     <!-- The form input itself - bound to the v-model passed in -->
     <select
+      :data-testid="dataTestId"
       v-show="editable"
       :id="id"
       ref="inputRef"
@@ -111,6 +112,10 @@ export default {
       required: false
     },
     name: {
+      type: String,
+      required: false
+    },
+    dataTestId: {
       type: String,
       required: false
     },

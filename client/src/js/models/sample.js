@@ -65,6 +65,7 @@ define(['backbone', 'collections/components',
             CELL_BETA: '',
             CELL_GAMMA: '',
             CENTRINGMETHOD: '',
+            COLOR: '',
             COMMENTS: '',
             COMPOSITION: '',
             CONTAINERID: '',
@@ -181,6 +182,16 @@ define(['backbone', 'collections/components',
             DIMENSION3: {
                 required: false,
                 pattern: 'number'
+            },
+
+            SHAPE: {
+                required: false,
+                pattern: 'word',
+            },
+
+            COLOR: {
+                required: false,
+                pattern: 'word',
             },
 
             LOOPTYPE: {
