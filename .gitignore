@@ -27,6 +27,7 @@ client/index.php
 client/dist
 client/index.html
 client/.env
+client/src/js/config.json
 
 api/config.php
 api/vendor
@@ -38,3 +39,5 @@ entrypoint.bash
 php-fpm.conf
 php-fpm.pid
 php.ini
+
+*~
