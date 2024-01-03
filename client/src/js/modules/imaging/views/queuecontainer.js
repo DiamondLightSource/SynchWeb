@@ -567,12 +567,18 @@ define(['marionette',
         queueAllSamples: function(e) {
             e.preventDefault()
 
+            var data = {}
+            current = this.$el.find('.afilt').find('.current')
+            if (current.length > 0) {
+                data.filter = current.attr('id')
+            }
+
             var self = this
             this.$el.addClass('loading');
             Backbone.ajax({
                 url: app.apiurl+'/sample/sub/queue/cid/'+this.model.get('CONTAINERID'),
                 method: "post",
-                data: {},
+                data: data,
                 success: function(resp) {
                     _.each(resp, function (r) {
                         var ss = self.subsamples.fullCollection.findWhere({ BLSUBSAMPLEID: r.BLSUBSAMPLEID })
