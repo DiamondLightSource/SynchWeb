@@ -5,7 +5,7 @@
       class="tw-flex tw-justify-between tw-items-center tw-h-10 tw-bg-header-background"
     />
 
-    <div class="tw-w-10/12 tw-mx-auto">
+    <div class="tw-w-11/12 tw-mx-auto">
       <!-- Sets the main width of the content on screen -->
       <h1 class="tw-mt-4 tw-py-4 tw-text-xl">
         The site is currently undergoing maintenance
