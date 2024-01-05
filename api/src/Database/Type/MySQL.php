@@ -458,8 +458,6 @@ class MySQL extends DatabaseParent {
                         {
                             if ($val !== null)
                             {
-                                if (gettype($val) == gettype(0.1))
-                                    $val = round($val, 5);
                                 $val = strval($val);
                             }
                             if ($upperCaseKeys)
