@@ -434,9 +434,6 @@ export default {
   @apply tw-bg-white tw-h-8 tw-rounded tw-border tw-border-content-dark-background tw-flex tw-items-center tw-cursor-pointer
 }
 
-.select-selected-multiple {
-  @apply tw-bg-white tw-h-8 tw-rounded tw-border tw-border-content-dark-background tw-flex tw-items-center tw-cursor-pointer
-}
 .select-selected.disabled {
   @apply tw-bg-content-page-background
 }
@@ -522,6 +519,8 @@ export default {
 .item-multiple-selected {
   @apply tw-bg-content-active tw-text-white;
 }
+
+
 .select-search-input.small {
   @apply tw-h-8;
 }
@@ -531,7 +530,7 @@ export default {
 
 .pill-input {
   white-space: nowrap;
-  @apply tw-rounded-full tw-h-6 tw-max-w-xs tw-ml-1 tw-px-2 tw-py-1 tw-bg-content-active tw-text-sm
+  @apply tw-rounded-md tw-h-6 tw-max-w-xs tw-ml-1 tw-px-2 tw-py-1 tw-bg-gray-300 tw-text-sm
 }
 
 ::-webkit-scrollbar {
