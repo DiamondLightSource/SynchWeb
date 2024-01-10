@@ -240,7 +240,7 @@ final class AssignControllerTest extends TestCase
         $this->assignController->args['prop'] = 3;
         $this->assignController->args['bl'] = 'i03';
         $this->assignController->proposalid = 3;
-        $this->assignController->shouldReceive('pv')->times(1)->andReturn(array('PUCK_1_NAME' => 'puck1', 'PUCK_12_NAME' => 'puck12'));
+        $this->assignController->shouldReceive('pv')->times(1)->andReturn(array('BL03I-MO-ROBOT-01:PUCK_01_NAME' => 'puck1', 'BL03I-MO-ROBOT-01:PUCK_12_NAME' => 'puck12'));
         $this->dataLayerStub->expects($this->exactly(1))->method('getContainerBarcodesForProposal')->with(3)->willReturn(array(['BARCODE' => 1230, 'BL' => 'test03']));
 
         $this->assignController->getPuckNames();
@@ -253,7 +253,7 @@ final class AssignControllerTest extends TestCase
         $this->assignController->args['prop'] = 3;
         $this->assignController->args['bl'] = 'i03';
         $this->assignController->proposalid = 3;
-        $this->assignController->shouldReceive('pv')->times(1)->andReturn(array('PUCK_1_NAME' => array(11), 'PUCK_12_NAME' => array(12)));
+        $this->assignController->shouldReceive('pv')->times(1)->andReturn(array('BL03I-MO-ROBOT-01:PUCK_01_NAME' => array(11), 'BL03I-MO-ROBOT-01:PUCK_12_NAME' => array(12)));
         $this->dataLayerStub->expects($this->exactly(1))->method('getContainerBarcodesForProposal')->with(3)->willReturn(array(['BARCODE' => 1230, 'BL' => 'test03']));
 
         $this->assignController->getPuckNames();
@@ -266,7 +266,7 @@ final class AssignControllerTest extends TestCase
         $this->assignController->args['prop'] = 3;
         $this->assignController->args['bl'] = 'i03';
         $this->assignController->proposalid = 3;
-        $this->assignController->shouldReceive('pv')->times(1)->andReturn(array('PUCK_1_NAME' => array(11), 'PUCK_12_NAME' => array(1230)));
+        $this->assignController->shouldReceive('pv')->times(1)->andReturn(array('BL03I-MO-ROBOT-01:PUCK_01_NAME' => array(11), 'BL03I-MO-ROBOT-01:PUCK_12_NAME' => array(1230)));
         $this->dataLayerStub->expects($this->exactly(1))->method('getContainerBarcodesForProposal')->with(3)->willReturn(array(['BARCODE' => 1230, 'BL' => 'test03']));
 
         $this->assignController->getPuckNames();
@@ -280,7 +280,7 @@ final class AssignControllerTest extends TestCase
         $this->assignController->args['bl'] = 'i03';
         $this->assignController->proposalid = 3;
         $this->assignController->staff = true;
-        $this->assignController->shouldReceive('pv')->times(1)->andReturn(array('PUCK_1_NAME' => array(11), 'PUCK_12_NAME' => array(1231)));
+        $this->assignController->shouldReceive('pv')->times(1)->andReturn(array('BL03I-MO-ROBOT-01:PUCK_01_NAME' => array(11), 'BL03I-MO-ROBOT-01:PUCK_12_NAME' => array(1231)));
         $this->dataLayerStub->expects($this->exactly(1))->method('getContainerBarcodesForProposal')->with(3)->willReturn(array(['BARCODE' => 1230, 'BL' => 'test03']));
 
         $this->assignController->getPuckNames();
