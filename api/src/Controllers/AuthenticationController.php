@@ -168,10 +168,11 @@ class AuthenticationController
                 $token = $token[0];
                 if ($token['AGE'] > $max_token_age)
                 {
-                    $err = 'Authorisation token too old. Age: '.$token['AGE'].'s. Max age: '.$max_token_age.'s.';
-                    $err .= ' Please press back and then try again.';
+                    $err = 'Authorisation token too old. Please press back and then try again.';
                     $err .= ' If this problem persists, please try clearing your cookies or using a different browser.';
-                    $this->returnError(400, $err, true);
+                    error_log('Authorisation token too old. Age: '.$token['AGE'].'s. Max age: '.$max_token_age.'s.');
+                    error_log('User-agent: ' . $_SERVER['HTTP_USER_AGENT']);
+                    $this->returnError(400, $err);
                 }
                 $qs = $_SERVER['QUERY_STRING'] ? (preg_replace('/(&amp;)?token=\w+/', '', str_replace('&', '&amp;', $_SERVER['QUERY_STRING']))) : null;
                 if ($qs)
@@ -197,7 +198,9 @@ class AuthenticationController
             {
                 $err = 'No authorisation token found. ';
                 $err .= 'If this error persists, please try clearing your cookies or using a different browser.';
-                $this->returnError(400, $err, true);
+                error_log('No authorisation token found.');
+                error_log('User-agent: ' . $_SERVER['HTTP_USER_AGENT']);
+                $this->returnError(400, $err);
             }
             # Remove tokens more than $max_token_age seconds old, they should have been used
             $this->dataLayer->deleteOldOneTimeUseTokens($max_token_age);
@@ -315,13 +318,8 @@ class AuthenticationController
         }
     }
 
-    private function returnError($code, $message, $logError = false)
+    private function returnError($code, $message)
     {
-        if ($logError)
-        {
-            error_log('Authentication error: ' . $message);
-            error_log('User-agent: ' . $_SERVER['HTTP_USER_AGENT']);
-        }
         $this->returnResponse($code, array('error' => $message));
     }
 
