@@ -103,22 +103,21 @@ class AssignController extends Page
     # BL03I-MO-ROBOT-01:PUCK_01_NAME
     function getPuckNames()
     {
-        global $bl_pv_map;
+        global $bl_puck_names;
         session_write_close();
         if (!$this->has_arg('prop'))
             $this->_error('No proposal specified');
 
         if (!$this->has_arg('bl'))
             $this->_error('No beamline specified');
-        if (!array_key_exists($this->arg('bl'), $bl_pv_map))
+        if (!array_key_exists($this->arg('bl'), $bl_puck_names))
             $this->_error('No such beamline');
-        $pv_prefix = $bl_pv_map[$this->arg('bl')];
+        $pv_names = $bl_puck_names[$this->arg('bl')];
 
         $pvs = array();
         for ($i = 1; $i < 38; $i++)
         {
-            $id = $i < 10 ? '0' . $i : $i;
-            array_push($pvs, $pv_prefix . '-MO-ROBOT-01:PUCK_' . $id . '_NAME');
+            array_push($pvs, sprintf($pv_names, $i));
         }
 
         $rows = $this->assignData->getContainerBarcodesForProposal($this->proposalid);
@@ -132,7 +131,8 @@ class AssignController extends Page
         $vals = $this->pv(array_values($pvs), true, true);
         foreach ($vals as $k => $v)
         {
-            if (preg_match('/PUCK_(\d+)_NAME/', $k, $mat))
+            $zero_id = array_search($k, $pvs);
+            if ($zero_id !== false)
             {
                 if (is_array($v) && sizeof($v))
                 {
@@ -140,7 +140,7 @@ class AssignController extends Page
                 }
                 else
                     $val = '';
-                array_push($return, array('id' => intval($mat[1]), 'name' => $val));
+                array_push($return, array('id' => $zero_id+1, 'name' => $val));
             }
         }
 
