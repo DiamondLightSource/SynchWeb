@@ -48,10 +48,9 @@ final class AssignControllerTest extends TestCase
         global $ip2bl;
         $ip2bl = array(103 => 'i03');
 
-        global $bl_pv_map;
-        $bl_pv_map = array(
-            'i02' => 'BL02I',
-            'i03' => 'BL03I',
+        global $bl_puck_names;
+        $bl_puck_names = array(
+            'i03' => "BL03I-MO-ROBOT-01:PUCK_%'02d_NAME",
         );
         global $bl_pv_env;
         $bl_pv_env = 'EPICS_CA_ADDR_LIST_TEST=666.45.678.9';
