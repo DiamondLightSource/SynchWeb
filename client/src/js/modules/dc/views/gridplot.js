@@ -442,8 +442,8 @@ define(['jquery', 'marionette',
                         ystep = k % this.grid.get('STEPS_Y')
 
                         if (this.grid.get('SNAKED') === 1) {
-                             if (xstep % 2 === 1) ystep = (this.grid.get('STEPS_Y')-1) - ystep
-                         }
+                            if (xstep % 2 === 1) ystep = (this.grid.get('STEPS_Y')-1) - ystep
+                        }
 
                         x = xstep * sw + sw/2 + (this.offset_w*this.scale)/2
                         y = ystep * sh + sh/2 + (this.offset_h*this.scale)/2
@@ -453,7 +453,7 @@ define(['jquery', 'marionette',
                         ystep = Math.floor(k / this.grid.get('STEPS_X'))
 
                         if (this.grid.get('SNAKED') === 1) {
-                             if (ystep % 2 === 1) xstep = (this.grid.get('STEPS_X')-1) - xstep
+                            if (ystep % 2 === 1) xstep = (this.grid.get('STEPS_X')-1) - xstep
                         }
 
                         x = xstep * sw + sw/2 + (this.offset_w*this.scale)/2
@@ -500,9 +500,15 @@ define(['jquery', 'marionette',
             if (this.vertical) {
                 xp = Math.floor(pos / this.grid.get('STEPS_Y'))
                 yp = pos % this.grid.get('STEPS_Y')
+                if (this.grid.get('SNAKED') === 1) {
+                    if (xp % 2 === 1) yp = (this.grid.get('STEPS_Y')-1) - yp
+                }
             } else {
                 xp = pos % this.grid.get('STEPS_X')
                 yp = Math.floor(pos / this.grid.get('STEPS_X'))
+                if (this.grid.get('SNAKED') === 1) {
+                    if (yp % 2 === 1) xp = (this.grid.get('STEPS_X')-1) - xp
+                }
             }
 
             var rad = Math.PI/180
