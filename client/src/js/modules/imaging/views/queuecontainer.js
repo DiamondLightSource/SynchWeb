@@ -590,9 +590,9 @@ define(['marionette',
         unqueueSelectedSamples: function(e) {
             e.preventDefault()
 
-            var self = this
+            let self = this
             this.$el.addClass('loading');
-            var sids = _.map(this.qsubsamples.where({ isGridSelected: true }), function(ss) {return ss.get('BLSUBSAMPLEID')})
+            let sids = _.map(this.qsubsamples.where({ isGridSelected: true }), function(ss) {return ss.get('BLSUBSAMPLEID')})
 
             Backbone.ajax({
                 url: app.apiurl+'/sample/sub/queue',
@@ -602,7 +602,7 @@ define(['marionette',
                 },
                 success: function(resp) {
                     _.each(resp, function (r) {
-                        var ss = self.qsubsamples.findWhere({ BLSUBSAMPLEID: r.BLSUBSAMPLEID })
+                        let ss = self.qsubsamples.findWhere({ BLSUBSAMPLEID: r.BLSUBSAMPLEID })
                         ss.set({ READYFORQUEUE: '0' })
                     })
                 },
@@ -616,7 +616,7 @@ define(['marionette',
         unqueueAllSamples: function(e) {
             e.preventDefault()
 
-            var self = this
+            let self = this
             this.$el.addClass('loading');
             Backbone.ajax({
                 url: app.apiurl+'/sample/sub/queue/cid/'+this.model.get('CONTAINERID'),
@@ -626,7 +626,7 @@ define(['marionette',
                 },
                 success: function(resp) {
                     _.each(resp, function (r) {
-                        var ss = self.qsubsamples.fullCollection.findWhere({ BLSUBSAMPLEID: r.BLSUBSAMPLEID })
+                        let ss = self.qsubsamples.fullCollection.findWhere({ BLSUBSAMPLEID: r.BLSUBSAMPLEID })
                         ss.set({ READYFORQUEUE: '0' })
                     })
                 },
