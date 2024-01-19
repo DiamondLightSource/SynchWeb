@@ -122,6 +122,7 @@ class Sample extends Page
         'UNQUEUE' => '\d',
         'nodata' => '\d',
         'notcompleted' => '\d',
+        'filter' => '\w+',
 
         // external is a flag to indicate this protein/sample has a user office system id
         // whereas externalid is the actual reference
@@ -594,6 +595,17 @@ class Sample extends Page
 
         $args = array($this->proposalid, $this->arg('cid'), $this->arg('cid'), $this->arg('cid'));
         $where = ' AND c.containerid=:2 AND cq2.completedtimestamp IS NULL';
+
+        if ($this->has_arg('filter')) {
+            $filters = array(
+                'manual' => " AND ss.source='manual'",
+                'auto' => " AND ss.source='auto'",
+                'point' => " AND dp.experimentkind='SAD'",
+                'region' => " AND dp.experimentkind='MESH'",
+            );
+            $where .= $filters[$this->arg('filter')];
+        }
+
         $first_inner_select_where = ' AND s.containerid=:3';
         $second_inner_select_where = ' AND s.containerid=:4';
 
