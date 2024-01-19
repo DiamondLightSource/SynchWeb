@@ -567,7 +567,7 @@ define(['marionette',
         queueAllSamples: function(e) {
             e.preventDefault()
 
-            var data = {}
+            const data = {}
             current = this.$el.find('.afilt').find('.current')
             if (current.length > 0) {
                 data.filter = current.attr('id')
