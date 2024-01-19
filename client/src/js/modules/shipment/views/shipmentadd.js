@@ -155,6 +155,10 @@ define(['marionette', 'views/form',
             this.checkFCodes()
         },
 
+        onShow: function() {
+            this.ui.name.focus()
+        },
+
         refreshDewars: function() {
             this.dewars.fetch()
         },

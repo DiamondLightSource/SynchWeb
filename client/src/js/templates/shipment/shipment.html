@@ -19,7 +19,7 @@
             <a class="button send" href="#"><i class="fa fa-plane"></i> Mark as Sent</a>
         <% } %>
 
-        <% if (!DELIVERYAGENT_AGENTNAME || (DHL_ENABLE && DELIVERYAGENT_AGENTNAME.toLowerCase() == 'dhl')) { %>
+        <% if (!DELIVERYAGENT_AGENTNAME || (DHL_ENABLE && DELIVERYAGENT_AGENTNAME.toLowerCase().trim() == 'dhl')) { %>
         <% if (DELIVERYAGENT_HAS_LABEL == '1') { %>
             <a class="button pdf" href="<%-APIURL%>/pdf/awb/sid/<%-SHIPPINGID%>"><i class="fa fa-print"></i> Print Air Waybill</a>
             <!-- <a class="button cancel" href="#"><i class="fa fa-truck"></i> Cancel Pickup</a> -->
@@ -146,7 +146,7 @@
             </li>
 
             <li>
-                <span class="label">Responsive Remote</span>
+                <span class="label">Responsive</span>
                 <span class="DYNAMIC"><%-DYNAMIC %></span>
             </li>
 

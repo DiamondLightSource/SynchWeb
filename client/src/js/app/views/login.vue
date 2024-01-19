@@ -3,7 +3,12 @@
     <hero-title v-show="!skipHome" />
 
     <h1>Login</h1>
-    <p v-if="sso" class="tw-text-center tw-text-lg">Redirecting to CAS single sign on...</p>
+    <p v-if="sso && !authError" class="tw-text-center tw-text-lg">Redirecting to CAS single sign on...</p>
+    <p v-if="authError === 'not-recognised'" class="tw-text-center tw-text-lg">
+      <b>User not recognised</b>. If you have logged in with your email address,
+      <a :href="logoutUrl" target="_blank">log out of the SSO provider</a> and <a href="/login">log in</a> again with
+      your FedID.
+    </p>
 
     <!-- Wrap the form in an observer component so we can check validation state on submission -->
     <validation-observer ref="observer" v-if="!sso" v-slot="{ invalid }">
@@ -101,6 +106,7 @@ export default {
       username: "",
       password: "",
       redirectUrl: "/current",
+      authError: null,
     };
   },
 
@@ -119,6 +125,9 @@ export default {
     },
     apiUrl: function () {
       return this.$store.getters.apiUrl;
+    },
+    logoutUrl: function () {
+      return `https://${this.$store.getters.sso_url}/logout`;
     },
   },
 
@@ -186,7 +195,14 @@ export default {
           });
         } else {
           const token = location.href.substring(tokenLocation + ("code".length + 1));
-          this.$store.dispatch("auth/getToken", token).then(() => this.$router.push(actualRedirectUrl));
+          this.$store
+            .dispatch("auth/getToken", token)
+            .then(() => this.$router.push(actualRedirectUrl))
+            .catch((e) => {
+              if (e === "Forbidden") {
+                this.authError = "not-recognised";
+              }
+            });
         }
       }
     },

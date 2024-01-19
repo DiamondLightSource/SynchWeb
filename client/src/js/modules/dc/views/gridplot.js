@@ -70,6 +70,7 @@ define(['jquery', 'marionette',
             this.statusesLoaded = false
             this.listenTo(options.imagestatuses, 'sync', this.setStatues, this)
             this.noHeatMapResult = []
+            this.invertHeatMap = false
 
             this._ready = []
 
@@ -130,6 +131,8 @@ define(['jquery', 'marionette',
 
         loadAttachment: function() {
             var a = this.attachments.findWhere({ 'DATACOLLECTIONFILEATTACHMENTID': this.ui.ty2.val() })
+            var selectedOption = this.ui.ty2.find('option:selected').text()
+            this.invertHeatMap = selectedOption === 'pia_estimated_d_min'
             if (a) {
                 if (!a.get('DATA')) {
                     var self = this
@@ -411,12 +414,15 @@ define(['jquery', 'marionette',
 
             if (d.length > 0) {
                 let max = 0
+                let power = this.invertHeatMap ? -1 : 1
+                let val = 0
                 _.each(d, function(v) {
-                    if (v[1] > max) max = v[1]
+                    val = Math.pow(v[1], power)
+                    if (val > max) max = val
                 })
 
                 max = max === 0 ? 1 : max
-                if (this.getOption('padMax') && max < 10) max = max * 50
+                if (this.getOption('padMax') && max < 10 && !this.invertHeatMap) max = max * 50
 
                 var sw = (this.perceivedw-(this.offset_w*this.scale))/this.grid.get('STEPS_X')
                 var sh = (this.perceivedh-(this.offset_h*this.scale))/this.grid.get('STEPS_Y')
@@ -427,6 +433,7 @@ define(['jquery', 'marionette',
                 var data = []
                 _.each(d, function(v) {
                     var k = v[0] - 1
+                    val = Math.pow(v[1], power)
 
                     // Account for vertical grid scans
                     let xstep, ystep, x, y
@@ -435,8 +442,8 @@ define(['jquery', 'marionette',
                         ystep = k % this.grid.get('STEPS_Y')
 
                         if (this.grid.get('SNAKED') === 1) {
-                             if (xstep % 2 === 1) ystep = (this.grid.get('STEPS_Y')-1) - ystep
-                         }
+                            if (xstep % 2 === 1) ystep = (this.grid.get('STEPS_Y')-1) - ystep
+                        }
 
                         x = xstep * sw + sw/2 + (this.offset_w*this.scale)/2
                         y = ystep * sh + sh/2 + (this.offset_h*this.scale)/2
@@ -446,7 +453,7 @@ define(['jquery', 'marionette',
                         ystep = Math.floor(k / this.grid.get('STEPS_X'))
 
                         if (this.grid.get('SNAKED') === 1) {
-                             if (ystep % 2 === 1) xstep = (this.grid.get('STEPS_X')-1) - xstep
+                            if (ystep % 2 === 1) xstep = (this.grid.get('STEPS_X')-1) - xstep
                         }
 
                         x = xstep * sw + sw/2 + (this.offset_w*this.scale)/2
@@ -454,7 +461,10 @@ define(['jquery', 'marionette',
                     }
 
                     // Dont zero values < 1 if data is scaled to max==1
-                    data.push({ x: x, y: y, value: v[1] < 1 && max > 1 ? 0 : v[1],
+                    data.push({
+                        x: x,
+                        y: y,
+                        value: val < 1 && max > 1 ? 0 : val,
                         radius: radius
                     })
 
@@ -490,9 +500,15 @@ define(['jquery', 'marionette',
             if (this.vertical) {
                 xp = Math.floor(pos / this.grid.get('STEPS_Y'))
                 yp = pos % this.grid.get('STEPS_Y')
+                if (this.grid.get('SNAKED') === 1) {
+                    if (xp % 2 === 1) yp = (this.grid.get('STEPS_Y')-1) - yp
+                }
             } else {
                 xp = pos % this.grid.get('STEPS_X')
                 yp = Math.floor(pos / this.grid.get('STEPS_X'))
+                if (this.grid.get('SNAKED') === 1) {
+                    if (yp % 2 === 1) xp = (this.grid.get('STEPS_X')-1) - xp
+                }
             }
 
             var rad = Math.PI/180
@@ -514,7 +530,16 @@ define(['jquery', 'marionette',
 
         _getVal: function(pos) {
             var val = null
-            const d = Number(this.ui.ty.val()) > -1 ?  this.distl.get('data')[Number(this.ui.ty.val())] : []
+            let d = []
+            if (this.ui.ty.is(":visible")) {
+                d = Number(this.ui.ty.val()) > -1 ? this.distl.get('data')[Number(this.ui.ty.val())] : []
+            }
+            if (this.ui.ty2.is(":visible")) {
+                let a = this.attachments.findWhere({ 'DATACOLLECTIONFILEATTACHMENTID': this.ui.ty2.val() })
+                if (a && a.get('DATA')) {
+                    d = a.get('DATA')
+                }
+            }
             _.each(d, function(v) {
                 // 1 indexed array
                 if (v[0] === pos+1) {

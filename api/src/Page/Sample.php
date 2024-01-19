@@ -122,6 +122,7 @@ class Sample extends Page
         'UNQUEUE' => '\d',
         'nodata' => '\d',
         'notcompleted' => '\d',
+        'filter' => '\w+',
 
         // external is a flag to indicate this protein/sample has a user office system id
         // whereas externalid is the actual reference
@@ -355,8 +356,8 @@ class Sample extends Page
                 $isCapillary = sizeof($crystals) > 1 ? true : false;
 
                 foreach ($crystals as $sample) {
-                    $c = array();
-                    foreach (array('SPACEGROUP', 'COMMENTS', 'NAME') as $f)
+                    $c = array('NAME' => $phase->ACRONYM . '-sample');
+                    foreach (array('SPACEGROUP', 'COMMENTS') as $f)
                         $c[$f] = array_key_exists($f, $sample) ? $sample->$f : '';
                     foreach (array('ABUNDANCE', 'THEORETICALDENSITY') as $f)
                         $c[$f] = array_key_exists($f, $sample) ? $sample->$f : null;
@@ -412,7 +413,7 @@ class Sample extends Page
                 if (array_key_exists('CAPILLARYID', $ids[$model]) && $capillary->CRYSTALID == null && !$capillary->CONTAINERLESS)
                     $blSamples['capillary'] = array('CONTAINERID' => $ids[$model]['CONTAINERID'], 'CRYSTALID' => $ids[$model]['CAPILLARYID'], 'PROTEINID' => $ids[$model]['CAPILLARYPHASEID'], 'LOCATION' => ++$maxLocation, 'NAME' => $capillary->NAME, 'PACKINGFRACTION' => 1, 'COMMENTS' => array_key_exists('COMMENTS', $capillary) ? $capillary->COMMENTS : '', 'DIMENSION1' => $capillary->OUTERDIAMETER, 'DIMENSION2' => $capillary->INNERDIAMETER, 'DIMENSION3' => $capillary->LENGTH, 'SHAPE' => $capillary->SHAPE, 'LOOPTYPE' => 1);
 
-                $blSamples['sample'] = array('CONTAINERID' => $ids[$model]['CONTAINERID'], 'CRYSTALID' => $ids[$model]['CRYSTALID'], 'PROTEINID' => $ids[$model]['PHASEID'], 'LOCATION' => ++$maxLocation, 'NAME' => $crystal->NAME, 'PACKINGFRACTION' => $attrs->PACKINGFRACTION ? $attrs->PACKINGFRACTION : null, 'COMMENTS' => array_key_exists('COMMENTS', $crystal) ? $crystal->COMMENTS : '');
+                $blSamples['sample'] = array('CONTAINERID' => $ids[$model]['CONTAINERID'], 'CRYSTALID' => $ids[$model]['CRYSTALID'], 'PROTEINID' => $ids[$model]['PHASEID'], 'LOCATION' => ++$maxLocation, 'NAME' => $phase->ACRONYM, 'PACKINGFRACTION' => $attrs->PACKINGFRACTION ? $attrs->PACKINGFRACTION : null, 'COMMENTS' => array_key_exists('COMMENTS', $crystal) ? $crystal->COMMENTS : '');
 
                 foreach ($blSamples as $key => $blSample) {
                     $a = $this->_prepare_sample_args($blSample);
@@ -594,6 +595,17 @@ class Sample extends Page
 
         $args = array($this->proposalid, $this->arg('cid'), $this->arg('cid'), $this->arg('cid'));
         $where = ' AND c.containerid=:2 AND cq2.completedtimestamp IS NULL';
+
+        if ($this->has_arg('filter')) {
+            $filters = array(
+                'manual' => " AND ss.source='manual'",
+                'auto' => " AND ss.source='auto'",
+                'point' => " AND dp.experimentkind='SAD'",
+                'region' => " AND dp.experimentkind='MESH'",
+            );
+            $where .= $filters[$this->arg('filter')];
+        }
+
         $first_inner_select_where = ' AND s.containerid=:3';
         $second_inner_select_where = ' AND s.containerid=:4';
 
@@ -1177,7 +1189,7 @@ class Sample extends Page
                 $order = $cols[$this->arg('sort_by')] . ' ' . $dir;
         }
 
-        $rows = $this->db->paginate("SELECT distinct b.blsampleid, b.crystalid, b.screencomponentgroupid, ssp.blsampleid as parentsampleid, ssp.name as parentsample, b.blsubsampleid, count(distinct si.blsampleimageid) as inspections, CONCAT(p.proposalcode,p.proposalnumber) as prop, b.code, b.location, b.sublocation, pr.acronym, pr.proteinid, cr.spacegroup,b.comments,b.name,s.shippingname as shipment,s.shippingid,d.dewarid,d.code as dewar, c.code as container, c.containerid, c.samplechangerlocation as sclocation, count(distinct IF(dc.overlap != 0,dc.datacollectionid,NULL)) as sc, count(distinct IF(dc.overlap = 0 AND dc.axisrange = 0,dc.datacollectionid,NULL)) as gr, count(distinct IF(dc.overlap = 0 AND dc.axisrange > 0,dc.datacollectionid,NULL)) as dc, count(distinct IF(dcg.experimenttype LIKE 'XRF map', dc.datacollectionid, NULL)) as xm, count(distinct IF(dcg.experimenttype LIKE 'XRF spectrum', dc.datacollectionid, NULL)) as xs, count(distinct IF(dcg.experimenttype LIKE 'Energy scan', dc.datacollectionid, NULL)) as es, count(distinct so.screeningid) as ai, count(distinct app.autoprocprogramid) as ap, count(distinct r.robotactionid) as r, round(min(st.rankingresolution),2) as scresolution, max(ssw.completeness) as sccompleteness, round(min(apss.resolutionlimithigh),2) as dcresolution, round(max(apss.completeness),1) as dccompleteness, dp.anomalousscatterer, dp.requiredresolution, cr.cell_a, cr.cell_b, cr.cell_c, cr.cell_alpha, cr.cell_beta, cr.cell_gamma, b.packingfraction, b.dimension1, b.dimension2, b.dimension3, b.shape, cr.color, cr.theoreticaldensity, cr.name as crystal, pr.name as protein, b.looptype, dp.centringmethod, dp.experimentkind, cq.containerqueueid, TO_CHAR(cq.createdtimestamp, 'DD-MM-YYYY HH24:MI') as queuedtimestamp
+        $rows = $this->db->paginate("SELECT distinct b.blsampleid, b.crystalid, b.screencomponentgroupid, ssp.blsampleid as parentsampleid, ssp.name as parentsample, b.blsubsampleid, count(distinct si.blsampleimageid) as inspections, CONCAT(p.proposalcode,p.proposalnumber) as prop, b.code, b.location, pr.acronym, pr.proteinid, cr.spacegroup,b.comments,b.name,s.shippingname as shipment,s.shippingid,d.dewarid,d.code as dewar, c.code as container, c.containerid, c.samplechangerlocation as sclocation, count(distinct IF(dc.overlap != 0,dc.datacollectionid,NULL)) as sc, count(distinct IF(dc.overlap = 0 AND dc.axisrange = 0,dc.datacollectionid,NULL)) as gr, count(distinct IF(dc.overlap = 0 AND dc.axisrange > 0,dc.datacollectionid,NULL)) as dc, count(distinct IF(dcg.experimenttype LIKE 'XRF map', dc.datacollectionid, NULL)) as xm, count(distinct IF(dcg.experimenttype LIKE 'XRF spectrum', dc.datacollectionid, NULL)) as xs, count(distinct IF(dcg.experimenttype LIKE 'Energy scan', dc.datacollectionid, NULL)) as es, count(distinct so.screeningid) as ai, count(distinct app.autoprocprogramid) as ap, count(distinct r.robotactionid) as r, round(min(st.rankingresolution),2) as scresolution, max(ssw.completeness) as sccompleteness, round(min(apss.resolutionlimithigh),2) as dcresolution, round(max(apss.completeness),1) as dccompleteness, dp.anomalousscatterer, dp.requiredresolution, cr.cell_a, cr.cell_b, cr.cell_c, cr.cell_alpha, cr.cell_beta, cr.cell_gamma, b.packingfraction, b.dimension1, b.dimension2, b.dimension3, b.shape, cr.color, cr.theoreticaldensity, cr.name as crystal, pr.name as protein, b.looptype, dp.centringmethod, dp.experimentkind, cq.containerqueueid, TO_CHAR(cq.createdtimestamp, 'DD-MM-YYYY HH24:MI') as queuedtimestamp
                                   , $cseq $sseq string_agg(cpr.name) as componentnames, string_agg(cpr.density) as componentdensities
                                   ,string_agg(cpr.proteinid) as componentids, string_agg(cpr.acronym) as componentacronyms, string_agg(cpr.global) as componentglobals, string_agg(chc.abundance) as componentamounts, string_agg(ct.symbol) as componenttypesymbols, b.volume, pct.symbol,ROUND(cr.abundance,3) as abundance, TO_CHAR(b.recordtimestamp, 'DD-MM-YYYY') as recordtimestamp, dp.radiationsensitivity, dp.energy, dp.userpath, dp.strategyoption, dp.minimalresolution as minimumresolution
                                     ,count(distinct dc.dataCollectionId) as dcc            

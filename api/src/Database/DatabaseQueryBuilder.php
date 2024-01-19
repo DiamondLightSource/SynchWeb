@@ -164,4 +164,16 @@ class DatabaseQueryBuilder
         array_push($this->query_bound_values, $value);
         return sizeof($this->query_bound_values);
     }
+
+    public static function getWhereSearch($searchValue, $fields, &$query_bound_values)
+    {
+        $where = " AND (0=1";
+
+        foreach ($fields as $field) {
+            array_push($query_bound_values, $searchValue);
+            $where .= " OR lower(" . $field . ") LIKE lower(CONCAT('%', :" . sizeof($query_bound_values) . ", '%'))";
+        }
+        $where .= ")";
+        return $where;
+    }
 }

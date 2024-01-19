@@ -915,10 +915,17 @@ class Page
         global $ldap_server, $ldap_search;
 
         $ret = array();
+        if (is_null($ldap_server)) {
+            error_log("Ldap server is not configured, not looking up user.");
+            return $ret;
+        }
         $ds = ldap_connect($ldap_server);
         if ($ds)
         {
             // Explictly set the protocol version to prevent bind errors
+            /**
+             * @psalm-suppress UndefinedConstant
+             */
             ldap_set_option($ds, LDAP_OPT_PROTOCOL_VERSION, 3);
             $r = ldap_bind($ds);
             $sr = ldap_search($ds, $ldap_search, $search);

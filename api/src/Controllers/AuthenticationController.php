@@ -161,12 +161,19 @@ class AuthenticationController
         $tokenId = $this->app->request()->get('token');
         if ($tokenId)
         {
-            # Remove tokens more than 10 seconds old, they should have been used
-            $this->dataLayer->deleteOldOneTimeUseTokens();
+            $max_token_age = 10;
             $token = $this->dataLayer->getOneTimeUseToken($tokenId);
             if (sizeof($token))
             {
                 $token = $token[0];
+                if ($token['AGE'] > $max_token_age)
+                {
+                    $err = 'Authorisation token too old. Please press back and then try again.';
+                    $err .= ' If this problem persists, please try clearing your cookies or using a different browser.';
+                    error_log('Authorisation token too old. Age: '.$token['AGE'].'s. Max age: '.$max_token_age.'s.');
+                    error_log('User-agent: ' . $_SERVER['HTTP_USER_AGENT']);
+                    $this->returnError(400, $err);
+                }
                 $qs = $_SERVER['QUERY_STRING'] ? (preg_replace('/(&amp;)?token=\w+/', '', str_replace('&', '&amp;', $_SERVER['QUERY_STRING']))) : null;
                 if ($qs)
                     $qs = '?' . $qs;
@@ -178,13 +185,26 @@ class AuthenticationController
                     $need_auth = false;
                     $this->dataLayer->deleteOneTimeUseToken($tokenId);
                 }
+                else
+                {
+                    error_log('Authorisation token not valid for this URL.');
+                    error_log('Requested site: ' . $this->app->request->getResourceUri() . $qs);
+                    error_log('Token valid for: ' . $token['VALIDITY']);
+                    $err = 'Invalid one-time authorisation token.';
+                    $this->returnError(400, $err);
+                }
             }
             else
             {
-                $this->returnError(400, 'Invalid one time authorisation token');
+                $err = 'No authorisation token found. ';
+                $err .= 'If this error persists, please try clearing your cookies or using a different browser.';
+                error_log('No authorisation token found.');
+                error_log('User-agent: ' . $_SERVER['HTTP_USER_AGENT']);
+                $this->returnError(400, $err);
             }
+            # Remove tokens more than $max_token_age seconds old, they should have been used
+            $this->dataLayer->deleteOldOneTimeUseTokens($max_token_age);
         }
-                
         return $need_auth;
     }
 
@@ -354,6 +374,14 @@ class AuthenticationController
         $code = $this->app->request()->post('code');
         $fedid = $this->authenticateByType()->authenticateByCode($code);
         if ($fedid) {
+            /* 
+             * Since the returned username might not be in the database, given it's returned by 
+             * the SSO provider and not our internal authentication logic, we need to double check
+             * if it's valid
+             */
+            if (!$this->dataLayer->isUserLoggedIn($fedid)) {
+                $this->returnError(403, 'User not recognised');
+            }
             $this->returnResponse(200, $this->generateJwtToken($fedid));
         } else {
             $this->returnError(401, 'Invalid Credentials');

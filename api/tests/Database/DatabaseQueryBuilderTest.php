@@ -6,11 +6,13 @@ use PHPUnit\Framework\TestCase;
 use SynchWeb\Database\DatabaseParent;
 use SynchWeb\Database\DatabaseQueryBuilder;
 
-final class DatabaseHelperTest extends TestCase
+use function PHPUnit\Framework\assertEquals;
+
+final class DatabaseQueryBuilderTest extends TestCase
 {
     use \phpmock\phpunit\PHPMock;
 
-    private function create_database_helper($fields, $expected_sql, $expected_id_value = null)
+    private function create_database_helper($fields, $expected_sql=null, $expected_id_value = null)
     {
         $expected_values = [];
         foreach ($fields as $field)
@@ -168,4 +170,18 @@ final class DatabaseHelperTest extends TestCase
         }
         $dbh->insert($expected_table);
     }
+
+    public function testWithSingleIdWhereClauseGetWhereClauseReturnIt() {
+        $fields = ["a.field1", "b.field2"];
+        $expected_sql = " AND (0=1 OR lower({$fields[0]}) LIKE lower(CONCAT('%', :2, '%')) OR lower({$fields[1]}) LIKE lower(CONCAT('%', :3, '%')))";
+        $expectedSearchValue = "searchVal";
+        
+        $element1 = "first";
+        $args=[$element1];
+        $sql = DatabaseQueryBuilder::getWhereSearch($expectedSearchValue, $fields, $args);
+
+        assertEquals($expected_sql, $sql);
+        assertEquals([$element1, $expectedSearchValue, $expectedSearchValue], $args);
+    }
+
 }
