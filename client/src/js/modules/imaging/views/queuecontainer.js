@@ -573,6 +573,7 @@ define(['marionette',
             this.$el.addClass('loading');
             Backbone.ajax({
                 url: app.apiurl+'/sample/sub/queue/cid/'+this.model.get('CONTAINERID'),
+                method: 'post',
                 data: {},
                 success: function(resp) {
                     _.each(resp, function (r) {
@@ -620,6 +621,7 @@ define(['marionette',
             this.$el.addClass('loading');
             Backbone.ajax({
                 url: app.apiurl+'/sample/sub/queue/cid/'+this.model.get('CONTAINERID'),
+                method: 'post',
                 data: {
                     queued: 1,
                     UNQUEUE: 1,
