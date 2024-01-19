@@ -52,6 +52,7 @@ class Sample extends Page
         'CRYSTALID' => '\d+',
         'CONTAINERID' => '\d+',
         'LOCATION' => '\d+',
+        'SUBLOCATION' => '\d+',
         'CODE' => '(\w|\s|\-)+|^$', // Change validation to work for dashes as well as numbers
         'ACRONYM' => '([\w\-])+',
         'SEQUENCE' => '[\s\w\(\)\.>\|;\n]+',
@@ -102,7 +103,7 @@ class Sample extends Page
 
         'EXPERIMENTKIND' => '[\w|\s]+',
         'CENTRINGMETHOD' => '\w+',
-        'RADIATIONSENSITIVITY' => '\w+',
+        'RADIATIONSENSITIVITY' => '\d+(.\d+)?',
         'USERPATH' => '(?=.{0,40}$)(\w|-)+\/?(\w|-)+', // Up to two folders as a path, 40 characters maximum
         'EXPOSURETIME' => '\d+(.\d+)?',
         'PREFERREDBEAMSIZEX' => '\d+(.\d+)?',
@@ -138,6 +139,7 @@ class Sample extends Page
         'TYPE' => '\w+',
         'BLSAMPLEGROUPSAMPLEID' => '\d+-\d+',
         'PLANORDER' => '\d',
+        'SHIPPINGID' => '\d+',
 
         'SAMPLEGROUPID' => '\d+',
         'SCREENINGMETHOD' => '\w+',
@@ -146,6 +148,7 @@ class Sample extends Page
         'INITIALSAMPLEGROUP' => '\d+',
         'STRATEGYOPTION' => '',
         'MINIMUMRESOLUTION' => '\d+(.\d+)?',
+        'OBSERVEDRESOLUTION' => '\d+(.\d+)?',
         'groupSamplesType' => '.*' // query parameter to query sample groups by sample types. Should be comma separated values like so: groupSamplesType=container,capillary
     );
 
@@ -1053,6 +1056,12 @@ class Sample extends Page
             array_push($args, $this->arg('BLSAMPLEGROUPID'));
         }
 
+        # For a specific shipment
+        if ($this->has_arg('SHIPPINGID')) {
+            $where .= ' AND d.shippingid=:'.(sizeof($args)+1);
+            array_push($args, $this->arg('SHIPPINGID'));
+        }
+
         # For a specific container
         if ($this->has_arg('cid')) {
             $where .= ' AND c.containerid=:' . (sizeof($args) + 1);
@@ -1455,6 +1464,7 @@ class Sample extends Page
             'COLOR',
             'THEORETICALDENSITY',
             'LOOPTYPE',
+            'SUBLOCATION',
             'ENERGY',
             'USERPATH',
             'SCREENINGMETHOD',
@@ -1462,6 +1472,7 @@ class Sample extends Page
             'SAMPLEGROUP',
             'STRATEGYOPTION',
             'MINIMUMRESOLUTION',
+            'OBSERVEDRESOLUTION',
             'INITIALSAMPLEGROUP'
         ) as $f) {
             if ($s)
@@ -1479,8 +1490,8 @@ class Sample extends Page
         $a = $this->_prepare_strategy_option_for_sample($s);
 
         $this->db->pq(
-            "INSERT INTO diffractionplan (diffractionplanid, requiredresolution, anomalousscatterer, centringmethod, experimentkind, radiationsensitivity, energy, userpath, strategyoption, minimalresolution) VALUES (s_diffractionplan.nextval, :1, :2, :3, :4, :5, :6, :7, :8, :9) RETURNING diffractionplanid INTO :id",
-            array($a['REQUIREDRESOLUTION'], $a['ANOMALOUSSCATTERER'], $a['CENTRINGMETHOD'], $a['EXPERIMENTKIND'], $a['RADIATIONSENSITIVITY'], $a['ENERGY'], $a['USERPATH'], $a['STRATEGYOPTION'], $a['MINIMUMRESOLUTION'])
+            "INSERT INTO diffractionplan (diffractionplanid, requiredresolution, anomalousscatterer, centringmethod, experimentkind, radiationsensitivity, energy, userpath, strategyoption, minimalresolution, observedresolution) VALUES (s_diffractionplan.nextval, :1, :2, :3, :4, :5, :6, :7, :8, :9, :10) RETURNING diffractionplanid INTO :id",
+            array($a['REQUIREDRESOLUTION'], $a['ANOMALOUSSCATTERER'], $a['CENTRINGMETHOD'], $a['EXPERIMENTKIND'], $a['RADIATIONSENSITIVITY'], $a['ENERGY'], $a['USERPATH'], $a['STRATEGYOPTION'], $a['MINIMUMRESOLUTION'], $a['OBSERVEDRESOLUTION'])
         );
         $did = $this->db->id();
 
@@ -1513,8 +1524,8 @@ class Sample extends Page
         }
 
         $this->db->pq(
-            "INSERT INTO blsample (blsampleid,crystalid,diffractionplanid,containerid,location,comments,name,code,blsubsampleid,screencomponentgroupid,volume,packingfraction,dimension1,dimension2,dimension3,shape,looptype) VALUES (s_blsample.nextval,:1,:2,:3,:4,:5,:6,:7,:8,:9,:10,:11,:12,:13,:14,:15,:16) RETURNING blsampleid INTO :id",
-            array($crysid, $did, $a['CONTAINERID'], $a['LOCATION'], $a['COMMENTS'], $a['NAME'], $a['CODE'], $a['BLSUBSAMPLEID'], $a['SCREENCOMPONENTGROUPID'], $a['VOLUME'], $a['PACKINGFRACTION'], $a['DIMENSION1'], $a['DIMENSION2'], $a['DIMENSION3'], $a['SHAPE'], $a['LOOPTYPE'])
+            "INSERT INTO blsample (blsampleid,crystalid,diffractionplanid,containerid,location,comments,name,code,blsubsampleid,screencomponentgroupid,volume,packingfraction,dimension1,dimension2,dimension3,shape,looptype,sublocation) VALUES (s_blsample.nextval,:1,:2,:3,:4,:5,:6,:7,:8,:9,:10,:11,:12,:13,:14,:15,:16,:17) RETURNING blsampleid INTO :id",
+            array($crysid, $did, $a['CONTAINERID'], $a['LOCATION'], $a['COMMENTS'], $a['NAME'], $a['CODE'], $a['BLSUBSAMPLEID'], $a['SCREENCOMPONENTGROUPID'], $a['VOLUME'], $a['PACKINGFRACTION'], $a['DIMENSION1'], $a['DIMENSION2'], $a['DIMENSION3'], $a['SHAPE'], $a['LOOPTYPE'], $a['SUBLOCATION'])
         );
         $sid = $this->db->id();
 

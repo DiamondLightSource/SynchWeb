@@ -204,12 +204,26 @@ define(['backbone', 'collections/components',
                 pattern: 'twopath',
                 maxLength: 40,
             },
+            ENERGY: {
+                required: false,
+                pattern: 'number',
+            },
             SCREENINGMETHOD: {
                 required: false,
-                pattern: 'word'
+                oneOf: ['none', 'all', 'best']
             },
             SCREENINGCOLLECTVALUE: {
-                required: false,
+                required: function() {
+                    return this.get('SCREENINGMETHOD') == 'best'
+                },
+                pattern: 'digits',
+                min: 1,
+                max: 5
+            },
+            MINIMUMRESOLUTION: {
+                required: function() {
+                    return this.get('SCREENINGMETHOD') == 'all'
+                },
                 pattern: 'number'
             },
             SAMPLEGROUP: {
@@ -218,7 +232,7 @@ define(['backbone', 'collections/components',
             },
             EXPERIMENTKIND: {
                 required: false,
-                pattern: 'word'
+                pattern: 'wwsdash'
             },
 
             COMPONENTAMOUNTS: function(from_ui, attr, all_values) {
