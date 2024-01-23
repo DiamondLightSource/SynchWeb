@@ -533,7 +533,7 @@
                     })
 
                     let crystal = new Crystal({
-                        NAME: self.name,
+                        NAME: item.acronym,
                         COMMENTS: item.comments,
                         THEORETICALDENSITY: item.density,
                         ABUNDANCE: 1
@@ -611,7 +611,7 @@
                 })
 
                 let crystal = new Crystal({
-                    NAME: this.name,
+                    NAME: this.acronym,
                     COMMENTS: this.comments,
                     THEORETICALDENSITY: this.density,
                     ABUNDANCE: 1
