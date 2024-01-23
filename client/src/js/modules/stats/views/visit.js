@@ -39,8 +39,8 @@ define(['marionette',
             this.bd.show(new BreakdownView({ model: this.getOption('breakdown'), params: this.getOption('params') }))
             this.det.show(new DetailsView({ model: this.getOption('breakdown') }))
             this.hrs.show(new HourliesView({ visit: this.model.get('VISIT') }))
-            if (app.staff) this.call.show(new EHCLogView({ visit: this.model.get('VISIT') }))
-            if (app.staff) this.ehc.show(new CalloutView({ visit: this.model.get('VISIT') }))
+            if (app.staff) this.ehc.show(new EHCLogView({ visit: this.model.get('VISIT') }))
+            if (app.staff) this.call.show(new CalloutView({ visit: this.model.get('VISIT') }))
             
             this.pie = new PieView({ visit: this.model.get('VISIT'), el: this.$el.find('#visit_pie') })
             

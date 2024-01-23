@@ -3,6 +3,7 @@
 namespace SynchWeb\Page;
 
 use SynchWeb\Page;
+use SynchWeb\Database\DatabaseQueryBuilder;
 
 class Contact extends Page
 {
@@ -46,9 +47,17 @@ class Contact extends Page
                 $where .= ' AND c.labcontactid=:'.(sizeof($args)+1);
                 array_push($args, $this->arg('cid'));
             }
-            
 
-            $tot = $this->db->pq("SELECT count(c.labcontactid) as tot FROM labcontact c  $where", $args);
+            if ($this->has_arg('s')) {
+                $fields = array('pe.givenname', 'pe.familyname', 'c.cardname',
+                    'l.name', 'l.address', 'l.city', 'l.country', 'pe.phonenumber', 'l.postcode');
+                $where = $where . DatabaseQueryBuilder::getWhereSearch($this->arg('s'), $fields, $args);
+            }
+
+            $tot = $this->db->pq("SELECT count(c.labcontactid) as tot FROM labcontact c
+                                    INNER JOIN person pe ON c.personid = pe.personid
+                                    INNER JOIN laboratory l ON l.laboratoryid = pe.laboratoryid
+                                    $where", $args);
             $tot = intval($tot[0]['TOT']);
 
             $pp = $this->has_arg('per_page') ? $this->arg('per_page') : 15;

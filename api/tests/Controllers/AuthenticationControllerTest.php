@@ -170,6 +170,8 @@ final class AuthenticationControllerTest extends TestCase
         $expectedFedID = "FedId012";
         $_SERVER['HTTP_HOST'] = "host";
 
+        $this->dataLayerStub->method("isUserLoggedIn")->willReturn(true);
+
         $this->setupSlimStubsRequestAndResponse(1, 1);
         $authService = $this->setUpAuthControllerWithMockedAuthType("authenticateByCode", $expectedFedID);
         
@@ -213,5 +215,20 @@ final class AuthenticationControllerTest extends TestCase
         });
         $this->assertContains('Content-Type: application/json', Output::$headers);
         $this->assertContains('X-PHP-Response-Code: 302', Output::$headers);
+    }
+
+    public function testReturnForbiddenIfUserIsNotRecognised(): void
+    {
+        $this->setupSlimStubsRequestAndResponse(1, 1);
+
+        $this->dataLayerStub->method("isUserLoggedIn")->willReturn(false);
+        $authService = $this->setUpAuthControllerWithMockedAuthType("authenticateByCode", "invalidFedId");
+
+        $this->expectExceptionOn( function () use ($authService){
+            $authService->authenticateByCode();
+        });
+        
+        $this->assertContains('Content-Type: application/json', Output::$headers);
+        $this->assertContains('X-PHP-Response-Code: 403', Output::$headers);
     }
 }

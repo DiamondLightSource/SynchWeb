@@ -597,7 +597,7 @@ class Shipment extends Page
         $tot = $this->db->pq("SELECT count(r.facilitycode) as tot 
               FROM dewarregistry r 
               LEFT OUTER JOIN dewarregistry_has_proposal rhp ON r.dewarregistryid = rhp.dewarregistryid
-              LEFT OUTER JOIN proposal p ON p.proposalid = r.proposalid 
+              LEFT OUTER JOIN proposal p ON p.proposalid = rhp.proposalid
               WHERE $where", $args);
         $tot = intval($tot[0]['TOT']);
 
@@ -672,7 +672,11 @@ class Shipment extends Page
         if (!$this->has_arg('FACILITYCODE'))
             $this->_error('No dewar code specified');
 
-        $dew = $this->db->pq("SELECT facilitycode FROM dewarregistry WHERE facilitycode LIKE :1 AND proposalid = :2", array($this->arg('FACILITYCODE'), $this->proposalid));
+        $dew = $this->db->pq("SELECT facilitycode FROM dewarregistry dr
+              INNER JOIN dewarregistry_has_proposal drhp ON dr.dewarregistryid = drhp.dewarregistryid
+              WHERE dr.facilitycode LIKE :1
+              AND drhp.proposalid = :2",
+              array($this->arg('FACILITYCODE'), $this->proposalid));
 
         if (!sizeof($dew))
             $this->_error('No such dewar');
@@ -2891,7 +2895,12 @@ class Shipment extends Page
 
                 $ship['DELIVERYAGENT_FLIGHTCODE'] = $awb['awb'];
             } catch (\Exception $e) {
-                $this->_error($e->getMessage());
+                if (Utils::getValueOrDefault($use_shipping_service_incoming_shipments) && $accno === $dhl_acc){
+                    $error_response = json_decode($e->getMessage());
+                    $this->_error($error_response->content->detail, $error_response->status);
+                } else {
+                    $this->_error($e->getMessage());
+                }
             }
         }
         $pickup = null;
