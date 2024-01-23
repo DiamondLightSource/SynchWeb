@@ -38,7 +38,7 @@
     "imports-loader": "^0.8.0",
     "jest-environment-jsdom": "^29.5.0",
     "mini-css-extract-plugin": "^2.6.1",
-    "postcss": "^8.1.14",
+    "postcss": "^8.4.31",
     "postcss-color-function": "^4.1.0",
     "postcss-extend-rule": "^3.0.0",
     "postcss-import": "^13.0.0",
