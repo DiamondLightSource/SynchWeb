@@ -24,6 +24,19 @@
             </li>
             <% } %>
 
+            <li>
+                <label>Email Address<span class="small">The contact email for the Dewar return</span></label>
+                <input type="email" name="EMAILADDRESS" data-testid="dispatch-email-address"/>
+            </li>
+            <li>
+                <label>Destination country
+                    <span class="small">The country the Dewar is being dispatched to</span>
+                </label>
+                <select name="DISPATCHCOUNTRY"></select>
+            </li>
+
+        </ul>
+        <ul class="courierSection">
             
             <li class="head">
                 Courier Details
@@ -117,11 +130,6 @@
             <li>
                 <label>Phone Number</label>
                 <input type="text" name="PHONENUMBER" data-testid="dispatch-phone-number" />
-            </li>
-
-            <li>
-                <label>Email Address</label>
-                <input type="email" name="EMAILADDRESS" data-testid="dispatch-email-address"/>
             </li>
 
             <li>
