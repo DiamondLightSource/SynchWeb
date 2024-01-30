@@ -52,6 +52,7 @@ define(['marionette', 'views/form',
             return {
                 DHL_ENABLE: app.options.get('dhl_enable'),
                 DHL_LINK: app.options.get('dhl_link'),
+                FACILITY_COURIER_COUNTRIES_LINK: app.options.get('facility_courier_countries_link'),
             }
         },
         
