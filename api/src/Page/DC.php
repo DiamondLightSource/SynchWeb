@@ -975,7 +975,7 @@ class DC extends Page
 
             // Data collections
             if ($dc['TYPE'] == 'data') {
-                $nf = array(1 => array('AXISSTART'), 2 => array('RESOLUTION', 'TRANSMISSION', 'AXISRANGE', 'TOTALDOSE'), 4 => array('WAVELENGTH', 'EXPOSURETIME'));
+                $nf = array(1 => array('AXISSTART', 'CHISTART', 'PHI', 'OVERLAP'), 2 => array('RESOLUTION', 'TRANSMISSION', 'AXISRANGE', 'TOTALDOSE'), 4 => array('WAVELENGTH', 'EXPOSURETIME'));
 
                 $dc['DIRFULL'] = $dc['DIR'];
                 $dc['DIR'] = preg_replace('/.*\/' . $this->arg('prop') . '-' . $dc['VN'] . '\//', '', $dc['DIR']);
