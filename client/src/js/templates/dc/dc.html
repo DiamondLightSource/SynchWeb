@@ -29,7 +29,7 @@
         <% if (DCT == 'SAD' || DCT == 'OSC' || DCT == 'Diamond Anvil High Pressure') { %>
             <%if (TOTALABSDOSE) { %>
                 <%if (DCC > 1) { %>
-                <li data-testid="dc-dose">Total Dose:  <%-TOTALABSDOSE * DCC%>MGy</li>
+                <li data-testid="dc-dose">Total Dose:  <%-TOTALDOSE%>MGy</li>
                 <% } else { %>
                 <li data-testid="dc-dose">Dose:  <%-TOTALABSDOSE%>MGy</li>
         <% } } }%>
