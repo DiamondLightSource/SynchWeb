@@ -374,10 +374,9 @@
                                            ),
     );
 
-    # Map of beamlinename to pv prefix
-    $bl_pv_map = array(
-        'i02' => 'BL02I',
-        'i03' => 'BL03I',
+    # Map of beamlinename to puck name pv
+    $bl_puck_names = array(
+        'i03' => "BL03I-MO-ROBOT-01:PUCK_%02d_NAME"
     );
 
     # Dials server values
