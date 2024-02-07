@@ -260,9 +260,6 @@
           },
           {
             "$ref": "#/parameters/SortOrderParam"
-          },
-          {
-            "$ref": "#/parameters/ProposalParam"
           }
         ],
         "responses": {
@@ -493,6 +490,9 @@
         "summary": "Get a single visit",
         "parameters": [
           {
+            "$ref": "#/parameters/ProposalParam"
+          },
+          {
             "name": "visit",
             "in": "path",
             "type": "string",
@@ -519,6 +519,9 @@
         ],
         "summary": "Update a visit, pass one Visit property",
         "parameters": [
+          {
+            "$ref": "#/parameters/ProposalParam"
+          },
           {
             "name": "visit",
             "in": "path",
@@ -2859,7 +2862,7 @@
         }
       }
     },
-    "/dc/id/{id}": {
+    "/dc/{id}": {
       "get": {
         "security": [
           {
@@ -2874,6 +2877,9 @@
         "parameters": [
           {
             "$ref": "#/parameters/DCIDPathParam"
+          },
+          {
+            "$ref": "#/parameters/ProposalParam"
           }
         ],
         "responses": {
@@ -2889,38 +2895,7 @@
         }
       }
     },
-    "/dc/t/{type}/id/{id}": {
-      "get": {
-        "security": [
-          {
-            "Bearer": []
-          }
-        ],
-        "tags": [
-          "datacollections"
-        ],
-        "summary": "Get a particular beamline event",
-        "description": "Returns array",
-        "parameters": [
-          {
-            "$ref": "#/parameters/DCIDPathParam"
-          },
-          {
-            "$ref": "#/parameters/DCTypePathParam"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Array containing single beamline event",
-            "schema": {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/DataCollections"
-              }
-            }
-          }
-        }
-      },
+    "/dc/single/t/{type}/{id}": {
       "patch": {
         "security": [
           {
@@ -3008,7 +2983,20 @@
             "name": "body",
             "in": "body",
             "schema": {
-              "$ref": "#/definitions/DataCollectionComment"
+              "properties": {
+                "DATACOLLECTIONID": {
+                  "type": "number",
+                  "example": 593
+                },
+                "PERSONID": {
+                  "type": "number",
+                  "example": 593
+                },
+                "COMMENTS": {
+                  "type": "string",
+                  "example": "a new comment"
+                }
+              }
             }
           }
         ],
@@ -3087,7 +3075,7 @@
         }
       }
     },
-    "/dc/aps": {
+    "/processing/status": {
       "post": {
         "security": [
           {
@@ -3227,7 +3215,7 @@
         }
       }
     },
-    "/dc/ap/{id}": {
+    "/processing/{id}": {
       "get": {
         "security": [
           {
@@ -7168,16 +7156,10 @@
       "type": "string",
       "pattern": "\\w+",
       "enum": [
-        "dc",
-        "sc",
-        "fc",
-        "gr",
+        "data",
+        "grid",
         "edge",
-        "mca",
-        "rb",
-        "ac",
-        "flag",
-        "ap"
+        "mca"
       ]
     },
     "DCIDsBodyParam": {
