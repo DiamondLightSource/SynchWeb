@@ -3016,7 +3016,7 @@
         }
       }
     },
-    "/dc/comments/{dcid}": {
+    "/dc/comments/{dccid}": {
       "get": {
         "security": [
           {
@@ -3029,7 +3029,7 @@
         "summary": "Get a single data collection comment",
         "parameters": [
           {
-            "name": "dcid",
+            "name": "dccid",
             "in": "path",
             "description": "Data collection comment id",
             "type": "number",
