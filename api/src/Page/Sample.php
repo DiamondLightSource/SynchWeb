@@ -1727,12 +1727,24 @@ class Sample extends Page
 
         // Only display original UAS approved proteins (not clones which have the same externalId)
         if ($this->has_arg('original') && $this->arg('original') == 1) {
-            $group = 'pr.externalId';
-            $order .= ', pr.bltimeStamp DESC';
+            $where .= ' AND pr.proteintype = "ORIGIN:UAS"';
         }
 
         if ($this->has_arg('sort_by')) {
-            $cols = array('NAME' => 'pr.name', 'ACRONYM' => 'pr.acronym', 'MOLECULARMASS' => 'pr.molecularmass', 'HASSEQ' => "CASE WHEN sequence IS NULL THEN 'No' ELSE 'Yes' END");
+            $cols = array(
+                'NAME' => 'pr.name',
+                'ACRONYM' => 'pr.acronym',
+                'MOLECULARMASS' => 'pr.molecularmass',
+                'DENSITY' => 'pr.density',
+                'SEQUENCE' => 'pr.sequence',
+                'SAFETYLEVEL' => 'pr.safetylevel',
+                'HASSEQ' => "CASE WHEN sequence IS NULL THEN 'No' ELSE 'Yes' END",
+                'PDBS' => 'pdbs',
+                'CONCENTRATIONTYPE' => 'concentrationtype',
+                'COMPONENTTYPE' => 'componenttype',
+                'DCOUNT' => 'dcount',
+                'SCOUNT' => 'scount'
+            );
             $dir = $this->has_arg('order') ? ($this->arg('order') == 'asc' ? 'ASC' : 'DESC') : 'ASC';
             if (array_key_exists($this->arg('sort_by'), $cols))
                 $order = $cols[$this->arg('sort_by')] . ' ' . $dir;
@@ -1748,55 +1760,22 @@ class Sample extends Page
                                 HEX(pr.externalid) as externalid,
                                 pr.density,
                                 count(php.proteinid) as pdbs,
-                                pr.safetylevel
+                                pr.safetylevel,
+                                count(dc.datacollectionid) as dcount,
+                                count(b.blsampleid) as scount
 
                                 FROM protein pr
                                 LEFT OUTER JOIN concentrationtype ct ON ct.concentrationtypeid = pr.concentrationtypeid
                                 LEFT OUTER JOIN componenttype cmt ON cmt.componenttypeid = pr.componenttypeid
                                 LEFT OUTER JOIN protein_has_pdb php ON php.proteinid = pr.proteinid
-                                /*LEFT OUTER JOIN crystal cr ON cr.proteinid = pr.proteinid
+                                LEFT OUTER JOIN crystal cr ON cr.proteinid = pr.proteinid
                                 LEFT OUTER JOIN blsample b ON b.crystalid = cr.crystalid
-                                LEFT OUTER JOIN datacollection dc ON b.blsampleid = dc.blsampleid*/
+                                LEFT OUTER JOIN datacollection dc ON b.blsampleid = dc.blsampleid
                                 INNER JOIN proposal p ON p.proposalid = pr.proposalid
                                 $join
                                 WHERE $where
                                 GROUP BY $group
                                 ORDER BY $order", $args);
-
-        $ids = array();
-        $wcs = array();
-        foreach ($rows as $r) {
-            array_push($ids, $r['PROTEINID']);
-            array_push($wcs, 'pr.proteinid=:' . sizeof($ids));
-        }
-
-        $dcs = array();
-        $scs = array();
-
-        if (sizeof($ids)) {
-            $dcst = $this->db->pq('SELECT pr.proteinid, count(dc.datacollectionid) as dcount FROM datacollection dc INNER JOIN blsample s ON s.blsampleid=dc.blsampleid INNER JOIN crystal cr ON cr.crystalid = s.crystalid INNER JOIN protein pr ON pr.proteinid = cr.proteinid WHERE ' . implode(' OR ', $wcs) . ' GROUP BY pr.proteinid', $ids);
-
-
-            foreach ($dcst as $d) {
-                $dcs[$d['PROTEINID']] = $d['DCOUNT'];
-            }
-
-            $scst = $this->db->pq('SELECT pr.proteinid, count(s.blsampleid) as scount FROM blsample s INNER JOIN crystal cr ON cr.crystalid = s.crystalid INNER JOIN protein pr ON pr.proteinid = cr.proteinid WHERE ' . implode(' OR ', $wcs) . ' GROUP BY pr.proteinid', $ids);
-
-            foreach ($scst as $d) {
-                $scs[$d['PROTEINID']] = $d['SCOUNT'];
-            }
-        }
-
-        foreach ($rows as &$r) {
-            $dcount = array_key_exists($r['PROTEINID'], $dcs) ? $dcs[$r['PROTEINID']] : 0;
-            $r['DCOUNT'] = $dcount;
-            $scount = array_key_exists($r['PROTEINID'], $scs) ? $scs[$r['PROTEINID']] : 0;
-            $r['SCOUNT'] = $scount;
-
-            if ($this->has_arg('pid'))
-                $r['SEQUENCE'] = $this->db->read($r['SEQUENCE']);
-        }
 
         if ($this->has_arg('pid')) {
             if (sizeof($rows))
