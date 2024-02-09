@@ -327,6 +327,10 @@ define(['jquery', 'marionette',
             if (this.hasSnapshot && utils.inView(this.$el)) this.draw()
         },
 
+        displayResolution: function(val) {
+            if (val < 0) { return 0 }
+            return 100 / val
+        },
 
         draw: function() {
             if (!this.ctx || !this.gridFetched) return
@@ -414,15 +418,17 @@ define(['jquery', 'marionette',
 
             if (d.length > 0) {
                 let max = 0
-                let power = this.invertHeatMap ? -1 : 1
                 let val = 0
+
                 _.each(d, function(v) {
-                    val = Math.pow(v[1], power)
-                    if (val > max) max = val
+                    if (v[1] > max) max = v[1]
                 })
 
                 max = max === 0 ? 1 : max
-                if (this.getOption('padMax') && max < 10 && !this.invertHeatMap) max = max * 50
+                if (this.getOption('padMax') && max < 10) max = max * 50
+
+                // 1.4Å
+                if (this.invertHeatMap) max = 100 / 1.4
 
                 var sw = (this.perceivedw-(this.offset_w*this.scale))/this.grid.get('STEPS_X')
                 var sh = (this.perceivedh-(this.offset_h*this.scale))/this.grid.get('STEPS_Y')
@@ -433,7 +439,7 @@ define(['jquery', 'marionette',
                 var data = []
                 _.each(d, function(v) {
                     var k = v[0] - 1
-                    val = Math.pow(v[1], power)
+                    val = this.invertHeatMap ? this.displayResolution(v[1]) : v[1]
 
                     // Account for vertical grid scans
                     let xstep, ystep, x, y
