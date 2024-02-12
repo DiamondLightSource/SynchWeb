@@ -151,7 +151,7 @@ class DC extends Page
                 $where = " AND appm.autoprocprogrammessageid IS NOT NULL AND (appm.severity = 'WARNING' OR appm.severity = 'ERROR')";
                 $extj[0] .= "LEFT OUTER JOIN autoprocintegration api ON dc.datacollectionid = api.datacollectionid
                         LEFT OUTER JOIN processingjob pj ON dc.datacollectionid = pj.datacollectionid
-                        LEFT OUTER JOIN autoprocprogram app ON (app.autoprocprogramid = api.autoprocprogramid OR dc.datacollectionid = pj.datacollectionid)
+                        LEFT OUTER JOIN autoprocprogram app ON app.autoprocprogramid = api.autoprocprogramid
                         INNER JOIN autoprocprogrammessage appm ON appm.autoprocprogramid = app.autoprocprogramid";
             } else if ($this->arg('t') == "scrystal" || $this->arg('t') == "nscrystal") {
                 // Single crystal or explicitly non-single-crystal fields
@@ -615,6 +615,7 @@ class DC extends Page
             $groupby = "GROUP BY dc.datacollectiongroupid";
         }
 
+        // We don't want to remove duplicates, since if two counts are equal, one might go uncounted
         $total_query = "SELECT sum(tot) as t FROM (
                 $with
                 SELECT count($count_field) as tot
@@ -625,21 +626,21 @@ class DC extends Page
                     $extj[0]
                     WHERE $sess[0] $where
             
-                UNION SELECT count(es.energyscanid) as tot
+                UNION ALL SELECT count(es.energyscanid) as tot
                     FROM energyscan es
                     INNER JOIN blsession ses ON ses.sessionid = es.sessionid
                     $sample_joins[1]
                     $extj[1]
                     WHERE $sess[1] $where2
                             
-                UNION SELECT count(xrf.xfefluorescencespectrumid) as tot
+                UNION ALL SELECT count(xrf.xfefluorescencespectrumid) as tot
                     FROM xfefluorescencespectrum xrf
                     INNER JOIN blsession ses ON ses.sessionid = xrf.sessionid
                     $sample_joins[3]
                     $extj[3]
                     WHERE $sess[3] $where4
                             
-                UNION SELECT count(r.robotactionid) as tot
+                UNION ALL SELECT count(r.robotactionid) as tot
                     FROM robotaction r
                     INNER JOIN blsession ses ON ses.sessionid = r.blsessionid
                     $sample_joins[2]
