@@ -244,7 +244,7 @@ export default {
           all: 1,
         }
 
-        queryParams.ty = this.proposalType
+        if (app.staff) queryParams.ty = this.proposalType
         if (this.selectedBeamline !== 'all') queryParams.bl = this.selectedBeamline
 
         const visitsCollection = new Visits(null, {
@@ -477,10 +477,14 @@ export default {
   },
   watch: {
     currentYear: {
-      handler: 'fetchVisitsCalendar'
+      handler: function(newVal, oldVal) {
+          if (oldVal != null) this.fetchVisitsCalendar()
+      }
     },
     currentMonth: {
-      handler: 'fetchVisitsCalendar'
+      handler: function(newVal, oldVal) {
+          if (oldVal != null) this.fetchVisitsCalendar()
+      }
     }
   }
 }
