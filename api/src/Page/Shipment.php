@@ -324,20 +324,68 @@ class Shipment extends Page
                 $order = $cols[$this->arg('sort_by')] . ' ' . $dir;
         }
 
-        $rows = $this->db->paginate("SELECT s.deliveryagent_agentname, s.deliveryagent_agentcode, TO_CHAR(s.deliveryagent_shippingdate, 'DD-MM-YYYY') as deliveryagent_shippingdate, TO_CHAR(s.deliveryagent_deliverydate, 'DD-MM-YYYY') as deliveryagent_deliverydate, s.safetylevel, count(d.dewarid) as dcount,s.sendinglabcontactid, c.cardname as lcout, c2.cardname as lcret, s.returnlabcontactid, s.shippingid, s.shippingname, s.shippingstatus,TO_CHAR(s.creationdate, 'DD-MM-YYYY') as created, s.isstorageshipping, s.shippingtype, s.comments, s.deliveryagent_flightcode, IF(s.deliveryAgent_label IS NOT NULL, 1, 0) as deliveryagent_has_label, TO_CHAR(s.readybytime, 'HH24:MI') as readybytime, TO_CHAR(s.closetime, 'HH24:MI') as closetime, s.physicallocation, s.deliveryagent_pickupconfirmation, TO_CHAR(s.deliveryagent_readybytime, 'HH24:MI') as deliveryAgent_readybytime, TO_CHAR(s.deliveryAgent_callintime, 'HH24:MI') as deliveryAgent_callintime, CONCAT(p.proposalcode, p.proposalnumber) as prop, TO_CHAR(s.deliveryagent_flightcodetimestamp, 'HH24:MI DD-MM-YYYY') as deliveryagent_flightcodetimestamp, sum(d.weight) as weight, pe.givenname, pe.familyname, l.name as labname, l.address, l.city, l.postcode, l.country, CONCAT(p.proposalcode, p.proposalnumber) as prop, GROUP_CONCAT(IF(d.facilitycode, d.facilitycode, d.code)) as dewars, s.deliveryagent_productcode, IF(cta.couriertermsacceptedid,1,0) as termsaccepted, GROUP_CONCAT(d.deliveryagent_barcode) as deliveryagent_barcode, pe2.login as deliveryagent_flightcodeperson, s.extra,
-                SUM(IF(d.dewarstatus = 'processing', 1, 0)) as processing
-              FROM proposal p 
-              INNER JOIN shipping s ON p.proposalid = s.proposalid 
-              LEFT OUTER JOIN labcontact c2 ON s.returnlabcontactid = c2.labcontactid 
-              LEFT OUTER JOIN dewar d ON d.shippingid = s.shippingid 
-              LEFT OUTER JOIN couriertermsaccepted cta ON cta.shippingid = s.shippingid
-              LEFT OUTER JOIN labcontact c ON c.labcontactid = s.sendinglabcontactid
-              LEFT OUTER JOIN person pe ON c.personid = pe.personid 
-              LEFT OUTER JOIN laboratory l ON l.laboratoryid = pe.laboratoryid 
-              LEFT OUTER JOIN person pe2 ON pe2.personid = s.deliveryagent_flightcodepersonid
-              WHERE $where 
-              GROUP BY s.sendinglabcontactid, s.returnlabcontactid, s.deliveryagent_agentname, s.deliveryagent_agentcode, s.deliveryagent_shippingdate, s.deliveryagent_deliverydate, s.safetylevel, c.cardname, c2.cardname, s.shippingid, s.shippingname, s.shippingstatus,TO_CHAR(s.creationdate, 'DD-MM-YYYY'), s.isstorageshipping, s.shippingtype, s.comments, s.creationdate 
-              ORDER BY $order", $args);
+        $rows = $this->db->paginate(
+            "SELECT
+                s.deliveryagent_agentname,
+                s.deliveryagent_agentcode,
+                TO_CHAR(s.deliveryagent_shippingdate, 'DD-MM-YYYY') as deliveryagent_shippingdate,
+                TO_CHAR(s.deliveryagent_deliverydate, 'DD-MM-YYYY') as deliveryagent_deliverydate,
+                s.safetylevel,
+                count(d.dewarid) as dcount,s.sendinglabcontactid,
+                c.cardname as lcout,
+                c2.cardname as lcret,
+                s.returnlabcontactid,
+                s.shippingid,
+                s.shippingname,
+                s.shippingstatus,
+                TO_CHAR(s.creationdate, 'DD-MM-YYYY') as created,
+                s.isstorageshipping,
+                s.shippingtype,
+                s.comments,
+                s.deliveryagent_flightcode,
+                IF(s.deliveryAgent_label IS NOT NULL, 1, 0) as deliveryagent_has_label,
+                TO_CHAR(s.readybytime, 'HH24:MI') as readybytime,
+                TO_CHAR(s.closetime, 'HH24:MI') as closetime,
+                s.physicallocation, s.deliveryagent_pickupconfirmation,
+                TO_CHAR(s.deliveryagent_readybytime, 'HH24:MI') as deliveryAgent_readybytime,
+                TO_CHAR(s.deliveryAgent_callintime, 'HH24:MI') as deliveryAgent_callintime,
+                CONCAT(p.proposalcode, p.proposalnumber) as prop,
+                TO_CHAR(s.deliveryagent_flightcodetimestamp, 'HH24:MI DD-MM-YYYY') as deliveryagent_flightcodetimestamp,
+                sum(d.weight) as weight,
+                pe.givenname,
+                pe.familyname,
+                l.name as labname,
+                l.address,
+                l.city,
+                l.postcode,
+                l.country,
+                CONCAT(p.proposalcode, p.proposalnumber) as prop,
+                GROUP_CONCAT(IF(d.facilitycode, d.facilitycode, d.code)) as dewars,
+                s.deliveryagent_productcode,
+                IF(cta.couriertermsacceptedid,1,0) as termsaccepted,
+                GROUP_CONCAT(d.deliveryagent_barcode) as deliveryagent_barcode,
+                pe2.login as deliveryagent_flightcodeperson,
+                s.extra,
+                SUM(IF(d.dewarstatus = 'processing', 1, 0)) as processing,
+                s.externalShippingIdToSynchrotron
+            FROM proposal p 
+            INNER JOIN shipping s ON p.proposalid = s.proposalid 
+            LEFT OUTER JOIN labcontact c2 ON s.returnlabcontactid = c2.labcontactid 
+            LEFT OUTER JOIN dewar d ON d.shippingid = s.shippingid 
+            LEFT OUTER JOIN couriertermsaccepted cta ON cta.shippingid = s.shippingid
+            LEFT OUTER JOIN labcontact c ON c.labcontactid = s.sendinglabcontactid
+            LEFT OUTER JOIN person pe ON c.personid = pe.personid 
+            LEFT OUTER JOIN laboratory l ON l.laboratoryid = pe.laboratoryid 
+            LEFT OUTER JOIN person pe2 ON pe2.personid = s.deliveryagent_flightcodepersonid
+            WHERE $where 
+            GROUP BY
+                s.sendinglabcontactid, s.returnlabcontactid, s.deliveryagent_agentname, s.deliveryagent_agentcode,
+                s.deliveryagent_shippingdate, s.deliveryagent_deliverydate, s.safetylevel, c.cardname, c2.cardname,
+                s.shippingid, s.shippingname, s.shippingstatus,TO_CHAR(s.creationdate, 'DD-MM-YYYY'),
+                s.isstorageshipping, s.shippingtype, s.comments, s.creationdate 
+            ORDER BY $order",
+            $args
+        );
 
         foreach ($rows as &$s) {
             $s['DELIVERYAGENT_BARCODE'] = str_replace(',', ', ', $s['DELIVERYAGENT_BARCODE']);
@@ -924,53 +972,75 @@ class Shipment extends Page
         $this->_output(1);
     }
 
+    function _create_dewars_shipment_request(
+        array $dewars,
+        string $proposal,
+        int $external_id,
+        int $shipping_id
+    ): int {
+        $packages = [];
+
+        foreach (array_values($dewars) as $dew) {
+            $package = [
+                "external_id" => (int) $dew['DEWARID'],
+                "shippable_item_type" => "CRYOGENIC_DRY_SHIPPER_CASE",
+                "line_items" => [
+                    [
+                        "shippable_item_type" => "CRYOGENIC_DRY_SHIPPER",
+                        "quantity" => 1
+                    ],
+                    [
+                        "shippable_item_type" => "SHELVED_UNI_PUCK_SHIPPING_CANE",
+                        "quantity" => 1
+                    ],
+                ]
+            ];
+            if ((int) $dew['NUM_PUCKS'] > 0) {
+                array_push(
+                    $package["line_items"],
+                    [
+                        "shippable_item_type"=> "UNI_PUCK",
+                        "quantity" => (int) $dew['NUM_PUCKS']
+                    ]
+                );
+            }
+            if ((int) $dew['NUM_SAMPLES'] > 0) {
+                array_push(
+                    $package["line_items"],
+                    [
+                        "shippable_item_type"=> "SPINE_SAMPLE_HOLDER",
+                        "quantity" => (int) $dew['NUM_SAMPLES']
+                    ]
+                );
+            }
+            array_push($packages, $package);
+
+        }
+
+        $server_port = ($_SERVER['SERVER_PORT']==='443') ? '' : ":{$_SERVER['SERVER_PORT']}";
+        $shipment_request_info = array(
+            "proposal" => $proposal,
+            "external_id" => $external_id,
+            "origin_url" => "https://{$_SERVER['SERVER_NAME']}{$server_port}/shipments/sid/{$shipping_id}",
+            "packages" => $packages
+        );
+        $response = $this->shipping_service->create_shipment_request($shipment_request_info);
+        $external_shipping_id = $response['shipmentRequestId'];
+        return $external_shipping_id;
+    }
+
     function _dispatch_dewar_shipment_request($dewar)
     {
         if (!is_null($dewar['EXTERNALSHIPPINGIDFROMSYNCHROTRON'])) {
             return $dewar['EXTERNALSHIPPINGIDFROMSYNCHROTRON'];
         }
-        $server_port = ($_SERVER['SERVER_PORT']==='443') ? '' : ":{$_SERVER['SERVER_PORT']}";
-        $shipment_request_info = array(
-            "proposal" => $dewar['PROPOSAL'],
-            "external_id" => (int) $dewar['DEWARID'],
-            "origin_url" => "https://{$_SERVER['SERVER_NAME']}{$server_port}/shipments/sid/{$dewar['SHIPPINGID']}",
-            "packages" => [
-                [
-                    "external_id" => (int) $dewar['DEWARID'],
-                    "shippable_item_type" => "CRYOGENIC_DRY_SHIPPER_CASE",
-                    "line_items" => [
-                        [
-                            "shippable_item_type" => "CRYOGENIC_DRY_SHIPPER",
-                            "quantity" => 1
-                        ],
-                        [
-                            "shippable_item_type" => "SHELVED_UNI_PUCK_SHIPPING_CANE",
-                            "quantity" => 1
-                        ],
-                    ]
-                ]
-            ]
-        );
-        if ((int) $dewar['NUM_PUCKS'] > 0) {
-            array_push(
-                $shipment_request_info["packages"][0]["line_items"],
-                [
-                    "shippable_item_type"=> "UNI_PUCK",
-                    "quantity" => (int) $dewar['NUM_PUCKS']
-                ]
-            );
-        }
-        if ((int) $dewar['NUM_SAMPLES'] > 0) {
-            array_push(
-                $shipment_request_info["packages"][0]["line_items"],
-                [
-                    "shippable_item_type"=> "SPINE_SAMPLE_HOLDER",
-                    "quantity" => (int) $dewar['NUM_SAMPLES']
-                ]
-            );
-        }
-        $response = $this->shipping_service->create_shipment_request($shipment_request_info);
-        $external_shipping_id = $response['shipmentRequestId'];
+
+        $dewars = [$dewar];
+        $proposal = $dewar['PROPOSAL'];
+        $external_id = (int) $dewar['DEWARID'];
+        $shipping_id = (int) $dewar['SHIPPINGID'];
+        $external_shipping_id = $this->_create_dewars_shipment_request($dewars, $proposal, $external_id, $shipping_id);
+
         $this->db->pq(
             "UPDATE dewar SET externalShippingIdFromSynchrotron=:1 WHERE dewarid=:2",
             array($external_shipping_id, $dewar['DEWARID'])
@@ -2812,11 +2882,33 @@ class Shipment extends Page
         );
     }
 
+    function _create_shipment_shipment_request($shipment, array $dewars): int
+    {
+
+        // if (!is_null($shipment['EXTERNALSHIPPINGIDTOSYNCHROTRON'])) {
+        //     return $shipment['EXTERNALSHIPPINGIDTOSYNCHROTRON'];
+        // }
+
+        $external_shipping_id = $this->_create_dewars_shipment_request(
+            $dewars,
+            $shipment['PROP'],
+            (int) $shipment['SHIPPINGID'],
+            (int) $shipment['SHIPPINGID']
+        );
+
+        $this->db->pq(
+            "UPDATE shipping SET externalShippingIdToSynchrotron=:1 WHERE shippingId=:2",
+            array($external_shipping_id, $shipment['SHIPPINGID'])
+        );
+        return $external_shipping_id;
+    }
+
 
     function _create_awb()
     {
-        global $dhl_service, $dhl_service_eu, $dhl_acc, $dhl_acc_import, $facility_courier_countries, $facility_courier_countries_nde, $use_shipping_service_incoming_shipments;
-
+        global $dhl_service, $dhl_service_eu, $dhl_acc, $dhl_acc_import, $facility_courier_countries,
+            $facility_courier_countries_nde, $use_shipping_service_incoming_shipments,
+            $use_shipping_service_redirect_incoming_shipments;
         if (!$this->has_arg('prop'))
             $this->_error('No proposal specified');
         if (!$this->has_arg('sid'))
@@ -2831,7 +2923,7 @@ class Shipment extends Page
         if (!is_array($this->arg('DEWARS')))
             $this->_error('No dewars specified');
 
-        $ship = $this->db->pq("SELECT s.shippingid,s.sendinglabcontactid,s.returnlabcontactid, s.deliveryagent_agentcode, s.deliveryagent_flightcode, TO_CHAR(s.deliveryagent_shippingdate, 'YYYY-MM-DD') as deliveryagent_shippingdate, s.deliveryagent_pickupconfirmation, TO_CHAR(s.readybytime, 'HH24:MI') as readybytime, TO_CHAR(s.closetime, 'HH24:MI') as closetime, s.physicallocation, CONCAT(p.proposalcode, p.proposalnumber) as prop, s.shippingname
+        $ship = $this->db->pq("SELECT s.shippingid,s.sendinglabcontactid,s.returnlabcontactid, s.deliveryagent_agentcode, s.deliveryagent_flightcode, TO_CHAR(s.deliveryagent_shippingdate, 'YYYY-MM-DD') as deliveryagent_shippingdate, s.deliveryagent_pickupconfirmation, TO_CHAR(s.readybytime, 'HH24:MI') as readybytime, TO_CHAR(s.closetime, 'HH24:MI') as closetime, s.physicallocation, CONCAT(p.proposalcode, p.proposalnumber) as prop, s.shippingname, s.externalShippingIdToSynchrotron
                 FROM shipping s 
                 INNER JOIN proposal p ON p.proposalid = s.proposalid
                 WHERE s.proposalid = :1 AND s.shippingid = :2", array($this->proposalid, $this->arg('sid')));
@@ -2841,9 +2933,32 @@ class Shipment extends Page
 
         $ids = range(2, sizeof($this->arg('DEWARS')) + 1);
         $args = array_merge(array($ship['SHIPPINGID']), $this->arg('DEWARS'));
-        $dewars = $this->db->pq("SELECT d.dewarid, d.weight, IF(d.facilitycode, d.facilitycode, d.code) as name
-                FROM dewar d
-                WHERE d.shippingid=:1 AND d.dewarid IN (:" . implode(',:', $ids) . ")", $args);
+
+        // Update this query to get num pucks, num pins
+        $dewars = $this->db->pq(
+            "SELECT d.dewarid, d.weight, IF(d.facilitycode, d.facilitycode, d.code) as name, count(distinct c.containerId) as num_pucks, count(b.blsampleId) as num_samples
+            FROM dewar d
+            LEFT JOIN container c on c.dewarid = d.dewarid
+            LEFT JOIN BLSample b on b.containerId = c.containerId
+            WHERE d.shippingid=:1 AND d.dewarid IN (:" . implode(',:', $ids) . ")",
+            $args
+        );
+
+        if (
+            Utils::getValueOrDefault($use_shipping_service_incoming_shipments)
+            && in_array($this->arg('COUNTRY'), $facility_courier_countries)
+            && Utils::getValueOrDefault($use_shipping_service_redirect_incoming_shipments)
+        ) {
+            try {
+                $this->_create_shipment_shipment_request($ship, $dewars);
+                $this->_output(array('EXTERNAL' => "1"));
+                return;
+            } catch (\Exception $e) {
+                $error_response = json_decode($e->getMessage());
+                $this->_error($error_response->content->detail, $error_response->status);
+            }
+        }
+        $this->_error(json_encode($dewars));
 
         $terms = $this->db->pq("SELECT cta.couriertermsacceptedid
                 FROM couriertermsaccepted cta
