@@ -146,16 +146,23 @@ define(['marionette',
         
         showDewar: function(did, force) {
             if (did == this.lastDewarID && !force) return
-                
             this.$el.find('.dewar_name').text(this.dewars.findWhere({ DEWARID: did }).get('CODE'))
-            if (app.proposal && app.proposal.get('ACTIVE') == '1') this.$el.find('.add_container').html('<a class="button" data-testid="shipment-add-container" href="/containers/add/did/'+did+'"><i class="fa fa-plus"></i> Add Container</a>')
+            if (app.proposal && app.proposal.get('ACTIVE') == '1') {
+                if (app.type == "xpdf"){
+                    this.$el.find('.add_container').html('<a class="button" data-testid="shipment-add-container" href="/containers/add/did/'+did+'"><i class="fa fa-plus"></i> Add Puck</a>')
+                    this.$el.find('.add-container-small').prop('title', 'Click to add a puck')
+                    this.$el.find('.add-container-text').text('Add Puck')
+                } else {
+                    this.$el.find('.add_container').html('<a class="button" data-testid="shipment-add-container" href="/containers/add/did/'+did+'"><i class="fa fa-plus"></i> Add Container</a>')
+                }
+            }
             this.dewarcontent.dewarID = did
             this.dewarcontent.fetch()
             this.dewarhistory.id = did
             this.dewarhistory.fetch()
 
             var d = this.dewars.findWhere({ DEWARID: did })
-            if (d && (d.get('TRACKINGNUMBERTOSYNCHROTRON') || d.get('TRACKINGNUMBERTOSYNCHROTRON'))) {
+            if (d && (d.get('TRACKINGNUMBERTOSYNCHROTRON') || d.get('TRACKINGNUMBERFROMSYNCHROTRON'))) {
                 this.dewartracking.queryParams.DEWARID = did
                 this.dewartracking.fetch()
 
@@ -163,9 +170,8 @@ define(['marionette',
                 this.dewartracking.ORIGIN = 'N/A'
                 this.dewartracking.DESTINATION = 'N/A'
                 this.dewartracking.reset()
-                
-            this.lastDewarID = did
             }
+            this.lastDewarID = did
         },
 
         refreshDewar: function() {
