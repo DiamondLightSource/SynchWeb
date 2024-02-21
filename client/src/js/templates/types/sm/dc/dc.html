@@ -44,7 +44,7 @@
     
     <div class="holder">
     <% if (parseFloat(AXISRANGE)) { %>
-        <% if (OVERLAP) { %>
+        <% if (parseFloat(OVERLAP)) { %>
         <h1 title="Click to show EDNA/mosflm/xia2 strategies" class="strat">Strategies<span><i class="fa fa-spinner fa-spin"></i></span></h1>
         <div class="strategies"></div>
         <% } else { %>
