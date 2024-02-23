@@ -124,7 +124,7 @@ export default {
       // Anything other than Box, Puck or PCRStrip
       // TODO - get container types from data base
       let puckTypes = ['cartridge', 'box', 'puck', 'pcrstrip', 'block-4']
-      let is_plate = containerType != null && (!puckTypes.some(v => containerType.includes(v)))
+      let is_plate = containerType !== null && (!puckTypes.some(v => containerType.includes(v)))
 
       return is_plate
     },
