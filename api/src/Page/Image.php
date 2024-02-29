@@ -133,10 +133,9 @@ class Image extends Page
             if ($n < sizeof($images)) {
                 $this->_browser_cache();
                 $ext = pathinfo($images[$n], PATHINFO_EXTENSION);
-                $file = $this->has_arg('f') ? $images[$n] : str_replace('.'.$ext, 't.'.$ext, $images[$n]);
-                if (file_exists($file)) {
+                if (file_exists($images[$n])) {
                     $this->app->contentType('image/'.$ext);
-                    readfile($file);
+                    readfile($images[$n]);
                 } else {
                     $this->_error('Not found', 'That image is no longer available');
                 }
@@ -161,11 +160,10 @@ class Image extends Page
             if ($n < sizeof($images)) {
                 $ext = pathinfo($images[$n], PATHINFO_EXTENSION);
 
-                $file = $this->has_arg('f') ? $images[$n] : str_replace('.'.$ext, 't.'.$ext, $images[$n]);
-                if (file_exists($file)) {
+                if (file_exists($images[$n])) {
                     $this->_browser_cache();
                     $this->app->contentType('image/'.$ext);
-                    readfile($file);
+                    readfile($images[$n]);
 
                 } else {
                     $this->_error('Not found', 'That image is no longer available');
