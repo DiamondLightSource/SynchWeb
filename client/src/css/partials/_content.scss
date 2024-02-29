@@ -19,6 +19,10 @@
 .content {
     padding-bottom: 1%;
 
+    .nopadding {
+        padding-bottom: 0%;
+    }
+
     & > h1 {
         padding: 10px 0;
         margin-bottom: 15px;
@@ -1503,13 +1507,6 @@ div.status {
 
     @media (max-width: $breakpoint-small) {
         @mixin cols 1,0,0.5%;
-    }
-}
-
-.status.three {
-    .webcam {
-        @mixin cols 3,0,0.5%;
-        float: left;
     }
 }
 
