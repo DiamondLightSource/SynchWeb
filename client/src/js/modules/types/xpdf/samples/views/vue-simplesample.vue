@@ -492,8 +492,6 @@
                 let self = this
 
                 this.csvData.forEach(function(item, index){
-                    if(index === 0)
-                        return;
 
                     console.log(item)
                     var shortName = ''
