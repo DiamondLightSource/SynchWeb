@@ -152,9 +152,7 @@ class Vstat extends Page
                     FROM datacollection dc 
                     INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
                     INNER JOIN blsession s ON s.sessionid = dcg.sessionid
-                    INNER JOIN proposal p ON p.proposalid = s.proposalid
                     INNER JOIN screening sc ON sc.datacollectionid = dc.datacollectionid 
-                    INNER JOIN v_run vr ON s.startdate BETWEEN vr.startdate AND vr.enddate
                     WHERE 1=1 $where
                     GROUP BY dc.datacollectionid, dc.endtime ORDER BY dc.endtime DESC", $args);
 
@@ -163,8 +161,6 @@ class Vstat extends Page
                     INNER JOIN datacollection dc ON r.blsampleid = dc.blsampleid AND r.endtimestamp < dc.starttime 
                     INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
                     INNER JOIN blsession s ON s.sessionid = dcg.sessionid
-                    INNER JOIN proposal p ON p.proposalid = s.proposalid
-                    INNER JOIN v_run vr ON s.startdate BETWEEN vr.startdate AND vr.enddate
                     WHERE 1=1 $where 
                     GROUP BY r.endtimestamp ORDER BY r.endtimestamp) inq WHERE dctime < 1000", $args);
 
@@ -178,8 +174,6 @@ class Vstat extends Page
                     INNER JOIN datacollection dc ON dc.datacollectionid = m.datacollectionid
                     INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
                     INNER JOIN blsession s ON s.sessionid = dcg.sessionid
-                    INNER JOIN proposal p ON p.proposalid = s.proposalid
-                    INNER JOIN v_run vr ON s.startdate BETWEEN vr.startdate AND vr.enddate
                     WHERE 1=1 $where ORDER BY m.createdtimestamp", $args);
 
             $newargs = array($info['SID'], $info['SID']);
