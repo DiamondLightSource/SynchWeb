@@ -69,7 +69,7 @@ function setupApplication($mode): Slim
     $app->get('/options', function () use ($app) {
         global $motd, $authentication_type, $cas_url, $cas_sso, $sso_url, $package_description,
             $facility_courier_countries, $facility_courier_countries_nde,
-            $dhl_enable, $dhl_link, $scale_grid, $scale_grid_end_date, $preset_proposal, $timezone,
+            $dhl_enable, $scale_grid, $scale_grid_end_date, $preset_proposal, $timezone,
             $valid_components, $enabled_container_types, $ifsummary, $synchweb_version;
         $app->contentType('application/json');
         $options = $app->container['options'];
@@ -83,7 +83,6 @@ function setupApplication($mode): Slim
             'facility_courier_countries' => $facility_courier_countries,
             'facility_courier_countries_nde' => $facility_courier_countries_nde,
             'dhl_enable' => $dhl_enable,
-            'dhl_link' => $dhl_link,
             'scale_grid' => $scale_grid,
             'scale_grid_end_date' => $scale_grid_end_date,
             'preset_proposal' => $preset_proposal,
