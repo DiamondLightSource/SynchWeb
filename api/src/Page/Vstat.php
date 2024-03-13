@@ -152,9 +152,7 @@ class Vstat extends Page
                     FROM datacollection dc 
                     INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
                     INNER JOIN blsession s ON s.sessionid = dcg.sessionid
-                    INNER JOIN proposal p ON p.proposalid = s.proposalid
                     INNER JOIN screening sc ON sc.datacollectionid = dc.datacollectionid 
-                    INNER JOIN v_run vr ON s.startdate BETWEEN vr.startdate AND vr.enddate
                     WHERE 1=1 $where
                     GROUP BY dc.datacollectionid, dc.endtime ORDER BY dc.endtime DESC", $args);
 
@@ -163,24 +161,10 @@ class Vstat extends Page
                     INNER JOIN datacollection dc ON r.blsampleid = dc.blsampleid AND r.endtimestamp < dc.starttime 
                     INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
                     INNER JOIN blsession s ON s.sessionid = dcg.sessionid
-                    INNER JOIN proposal p ON p.proposalid = s.proposalid
-                    INNER JOIN v_run vr ON s.startdate BETWEEN vr.startdate AND vr.enddate
                     WHERE 1=1 $where 
                     GROUP BY r.endtimestamp ORDER BY r.endtimestamp) inq WHERE dctime < 1000", $args);
 
             $sched = array();
-
-            $ctf = $this->db->pq("SELECT TO_CHAR(m.createdtimestamp, 'DD-MM-YYYY HH24:MI:SS') as st, c.astigmatism, c.estimatedresolution, c.estimateddefocus
-                    FROM ctf c
-                    INNER JOIN autoprocprogram app ON app.autoprocprogramid = c.autoprocprogramid
-                    INNER JOIN motioncorrection mc ON mc.motioncorrectionid = c.motioncorrectionid
-                    INNER JOIN movie m ON m.movieid = mc.movieid
-                    INNER JOIN datacollection dc ON dc.datacollectionid = m.datacollectionid
-                    INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
-                    INNER JOIN blsession s ON s.sessionid = dcg.sessionid
-                    INNER JOIN proposal p ON p.proposalid = s.proposalid
-                    INNER JOIN v_run vr ON s.startdate BETWEEN vr.startdate AND vr.enddate
-                    WHERE 1=1 $where ORDER BY m.createdtimestamp", $args);
 
             $newargs = array($info['SID'], $info['SID']);
             $missed = $this->db->pq("SELECT COUNT(smp.name) as samplecount,
@@ -196,7 +180,6 @@ class Vstat extends Page
         } else {
             $ai = array();
             $cent = array();
-            $ctf = array();
             $missed = array();
 
             $sched = $this->db->pq("SELECT CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) as visit, TO_CHAR(s.enddate, 'DD-MM-YYYY HH24:MI:SS') as en, TO_CHAR(s.startdate, 'DD-MM-YYYY HH24:MI:SS') as st, p.title, s.scheduled, p.proposalcode
@@ -245,21 +228,6 @@ class Vstat extends Page
         $lines = array();
         foreach ($linecols as $c)
             array_push($lines, array('data' => array()));
-
-        $scattercols = array('ASTIGMATISM', 'ESTIMATEDDEFOCUS', 'ESTIMATEDRESOLUTION');
-        $scatters = array();
-        foreach ($scattercols as $c)
-            array_push($scatters, array('data' => array()));
-
-        foreach ($ctf as $c) {
-            foreach ($scattercols as $i => $f) {
-                $scatters[$i]['label'] = $f;
-                if ($i > 0)
-                    $scatters[$i]['yaxis'] = $i + 1;
-                if (floatval($c[$f]) < 1e38)
-                    array_push($scatters[$i]['data'], array($this->jst($c['ST']), floatval(round($c[$f], 4))));
-            }
-        }
 
         $queued = 0;
         $vis_map = array();
@@ -422,7 +390,7 @@ class Vstat extends Page
         $info['start'] = $this->jst($first);
         $info['end'] = $this->jst($last);
 
-        $this->_output(array('info' => $info, 'data' => $data, 'lines' => $lines, 'scatters' => $scatters));
+        $this->_output(array('info' => $info, 'data' => $data, 'lines' => $lines));
     }
 
 
