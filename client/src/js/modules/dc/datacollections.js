@@ -8,9 +8,6 @@ define(['marionette',
         
         'views/search',
         'views/filter',
-    
-        'modules/stats/views/stack',
-    
         'views/dialog',
         'modules/dc/views/queuebuilder',
         'modules/proposal/views/users', 
@@ -21,7 +18,7 @@ define(['marionette',
         'templates/dc/dclist.html',
         ],
 function(Marionette, Pages, DCListView,
-         SampleChanger, DCLogView, StatusView, Search, Filter, StackView, DialogView, QueueBuilderView, UserView, DewarsView, 
+         SampleChanger, DCLogView, StatusView, Search, Filter, DialogView, QueueBuilderView, UserView, DewarsView,
          ReprocessOverview,
          template) {
 
@@ -144,10 +141,6 @@ function(Marionette, Pages, DCListView,
         this.search.show(this.filter)
         if (this.getOption('filters')) {
             this.type.show(this.ty)
-        }
-        
-        if (this.options.params.visit) {
-            this.use.show(new StackView({ visit: this.options.params.visit }))
         }
         
         if (this.model && this.model.get('ACTIVE') == 1) {
