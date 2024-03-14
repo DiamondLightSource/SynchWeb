@@ -355,13 +355,15 @@ class Download extends Page
             array_push($args, $this->arg('blsampleid'));
         }
 
-        $rows = $this->db->pq("SELECT dca.filefullpath, dca.filetype, dca.datacollectionfileattachmentid, dca.datacollectionid, CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) as visit, dc.blsampleid, dc.blsubsampleid, g.dx_mm, g.dy_mm, g.steps_x, g.steps_y, g.orientation, g.snaked
+        $rows = $this->db->pq("SELECT dca.filefullpath, dca.filetype, dca.datacollectionfileattachmentid, dca.datacollectionid, CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) as visit, dc.blsampleid, dc.blsubsampleid,
+                IFNULL(g.dx_mm, g2.dx_mm) as dx_mm, IFNULL(g.dy_mm, g2.dy_mm) as dy_mm, IFNULL(g.steps_x, g2.steps_x) as steps_x, IFNULL(g.steps_y, g2.steps_y) as steps_y, IFNULL(g.orientation, g2.orientation) as orientation, IFNULL(g.snaked, g2.snaked) as snaked
                 FROM datacollectionfileattachment dca
                 INNER JOIN datacollection dc ON dc.datacollectionid = dca.datacollectionid
                 INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
                 INNER JOIN blsession s ON s.sessionid = dcg.sessionid
                 INNER JOIN proposal p ON p.proposalid = s.proposalid
                 LEFT OUTER JOIN gridinfo g ON g.datacollectiongroupid = dc.datacollectiongroupid
+                LEFT OUTER JOIN gridinfo g2 ON g2.datacollectionid = dc.datacollectionid
                 WHERE $where", $args);
 
         foreach ($rows as &$r) {
