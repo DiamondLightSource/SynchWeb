@@ -22,8 +22,8 @@
     "ralouphie/getallheaders": "2.0.5",
     "slim/slim": "2.6.2",
     "stomp-php/stomp-php": "3.0.6",
-    "symfony/http-foundation": "^2.8",
-    "symfony/filesystem": "^2.8",
+    "symfony/http-foundation": "^5.4",
+    "symfony/filesystem": "^5.4",
     "mpdf/qrcode": "^1.2",
     "mtcmedia/dhl-api": "dev-master#9b4b6315",
     "maennchen/zipstream-php": "2.1.0"
