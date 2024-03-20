@@ -394,6 +394,7 @@ const INITIAL_CONTAINER_TYPE = {
   DROPPERWELLY: null,
   DROPHEIGHT: null,
   DROPWIDTH: null,
+  NAME: null,
   WELLDROP: -1,
   WELLPERROW: null,
 }
@@ -506,8 +507,9 @@ export default {
           this.CONTAINERTYPE = type.get('NAME')
           const nameToLower = this.CONTAINERTYPE.toLowerCase()
           this.containerType = Object.assign(INITIAL_CONTAINER_TYPE, type.toJSON())
+          const puckTypes = ['cartridge', 'box', 'puck', 'block-4']
 
-          if (nameToLower.includes('puck') || nameToLower.includes('block')) {
+          if (puckTypes.some(v => nameToLower.includes(v))) {
             this.plateType = 'puck'
           } else if (nameToLower.includes('pcrstrip')) {
             this.plateType = 'pcr'

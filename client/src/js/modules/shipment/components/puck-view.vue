@@ -50,16 +50,38 @@ export default {
     }
   },
   data() {
-    let sampleCentres, sampleRadius, sampleHighlightRadius
-    if (this.container.capacity === "4") {
+    let sampleCentres, sampleRadius, sampleHighlightRadius, containerImage
+    if (this.container.containerType === "VMXm-Cartridge") {
       sampleCentres = [
-        [200, 150],
-        [320, 150],
-        [200, 270],
-        [320, 270],
+        [235, 75],
+        [235, 155],
+        [235, 235],
+        [235, 315],
+        [235, 395],
+      ]
+      sampleRadius = 35
+      sampleHighlightRadius = 30
+      containerImage = '/assets/images/cartridge_no_labels_470x470.png'
+    } else if (this.container.containerType === "VMXm-GridBox") {
+      sampleCentres = [
+        [315, 310],
+        [315, 160],
+        [155, 160],
+        [155, 310],
       ]
       sampleRadius = 50
+      sampleHighlightRadius = 19
+      containerImage = '/assets/images/gridbox_no_labels_470x470.png'
+    } else if (this.container.capacity === "4") {
+      sampleCentres = [
+        [152.5, 152.5],
+        [317.5, 152.5],
+        [152.5, 317.5],
+        [317.5, 317.5],
+      ]
+      sampleRadius = 75
       sampleHighlightRadius = 60
+      containerImage = '/assets/images/block-4_no_labels_470x470.png'
     } else {
       sampleCentres = [
         [235, 157],
@@ -81,6 +103,7 @@ export default {
       ]
       sampleRadius = 44
       sampleHighlightRadius = 35
+      containerImage = '/assets/images/puck_no_labels_470x470.png'
     }
     return {
       // Define geometry of puck locations
@@ -91,7 +114,7 @@ export default {
       // Centre coordinates of puck 470x470 pixels
       // Changing the background image would require changing the centres
       centres: sampleCentres,
-      puckImage: '/assets/images/puck_no_labels_470x470.png',
+      puckImage: containerImage,
       // Holders for svg elements used in updates
       graphic: null, // Holder for svg puck graphic
       labels: null, // Holder for text labels
@@ -147,6 +170,11 @@ export default {
           .append('svg')
           .attr('viewBox', viewBox.join(','))
           .attr('preserveAspectRatio', 'xMaxYMax meet')
+      // Add the background image
+      svg.append('image')
+          .attr('href', this.puckImage)
+          .attr('width', 470)
+          .attr('height', 470)
       // Chart area
       this.graphic = svg.append('g')
       this.labels = svg.append('g')
