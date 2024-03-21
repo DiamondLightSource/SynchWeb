@@ -264,6 +264,7 @@
     # Shipping service details
     $use_shipping_service = null;
     $use_shipping_service_incoming_shipments = null;
+    $use_shipping_service_redirect = null;
     $shipping_service_api_url = null;
     $shipping_service_api_user = null;
     $shipping_service_api_password = null;

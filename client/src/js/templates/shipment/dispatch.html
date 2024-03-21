@@ -23,6 +23,69 @@
                 <span class="" data-testid="dispatch-facility-code"><%-DEWAR.FACILITYCODE%></span>
             </li>
             <% } %>
+
+            <li>
+                <label>Email Address<span class="small">The contact email for the Dewar return</span></label>
+                <input type="email" name="EMAILADDRESS" data-testid="dispatch-email-address"/>
+            </li>
+            <li>
+                <label>Destination country
+                    <span class="small">The country the Dewar is being dispatched to</span>
+                </label>
+                <select name="DISPATCHCOUNTRY"></select>
+            </li>
+
+        </ul>
+        <ul class="courierSection">
+            
+            <li class="head">
+                Courier Details
+                <span></span>
+                <a href="#" class="facc button" data-testid="dispatch-use-facility-courier"><i class="fa fa-envelope"></i> Use Facility Account</a>
+            </li>
+
+            <% if (SHIPPING.TERMSACCEPTED == 0) { %>
+
+            <li class="courierDetails">
+                <label>Courier
+                    <span class="small">Courier Name</span>
+                </label>
+                <input type="text" name="DELIVERYAGENT_AGENTNAME" data-testid="dispatch-courier-name"/>
+            </li>
+
+            <li class="courierDetails">
+                <label>Account Number
+                    <span class="small">Courier account number</span>
+                </label>
+                <input type="text" name="DELIVERYAGENT_AGENTCODE" data-testid="dispatch-courier-account"/>
+            </li>
+
+            <% if (SHIPPING.DELIVERYAGENT_AGENTNAME && SHIPPING.DELIVERYAGENT_AGENTCODE) { %>
+            <li class="courierDetails">
+                <label>
+                    Use another account
+                    <span class="small">Use another courier account instead</span>
+                </label>
+                <input type="checkbox" name="USE_ANOTHER_COURIER_ACCOUNT" value="0" data-testid="dispatch-use-another-account"/>
+            </li>
+            <% } %>
+
+            <li class="courierDetails">
+                <label>Air Waybill Number
+                    <span class="small">Air waybill no. if you have generated your own</span>
+                </label>
+                <input type="text" name="AWBNUMBER" data-testid="dispatch-air-waybill"/>
+            </li>
+
+            <% } %>
+
+            <li class="facilityCourier">
+                <label>Courier</label>
+                <span class="small" data-testid="dispatch-facility-courier">This dewar will be returned using the facility's courier account</span>
+            </li>
+            
+        </ul>
+        <ul class="dispatchDetails">
             
             <li class="head">Visit Details</li>
             <li>
@@ -67,11 +130,6 @@
             <li>
                 <label>Phone Number</label>
                 <input type="text" name="PHONENUMBER" data-testid="dispatch-phone-number" />
-            </li>
-
-            <li>
-                <label>Email Address</label>
-                <input type="email" name="EMAILADDRESS" data-testid="dispatch-email-address"/>
             </li>
 
             <li>
@@ -125,53 +183,6 @@
                 </label>
                 <input class="half" type="text" name="DELIVERYAGENT_SHIPPINGDATE" data-testid="dispatch-shipping-date"/>
             </li>
-
-            
-            <li class="head">
-                Courier Details
-                <span></span>
-                <a href="#" class="facc button" data-testid="dispatch-use-facility-courier"><i class="fa fa-envelope"></i> Use Facility Account</a>
-            </li>
-
-            <% if (SHIPPING.TERMSACCEPTED == 0) { %>
-
-            <li class="courierDetails">
-                <label>Courier
-                    <span class="small">Courier Name</span>
-                </label>
-                <input type="text" name="DELIVERYAGENT_AGENTNAME" data-testid="dispatch-courier-name"/>
-            </li>
-
-            <li class="courierDetails">
-                <label>Account Number
-                    <span class="small">Courier account number</span>
-                </label>
-                <input type="text" name="DELIVERYAGENT_AGENTCODE" data-testid="dispatch-courier-account"/>
-            </li>
-
-            <% if (SHIPPING.DELIVERYAGENT_AGENTNAME && SHIPPING.DELIVERYAGENT_AGENTCODE) { %>
-            <li class="courierDetails">
-                <label>
-                    Use another account
-                    <span class="small">Use another courier account instead</span>
-                </label>
-                <input type="checkbox" name="USE_ANOTHER_COURIER_ACCOUNT" value="0" data-testid="dispatch-use-another-account"/>
-            </li>
-            <% } %>
-
-            <li class="courierDetails">
-                <label>Air Waybill Number
-                    <span class="small">Air waybill no. if you have generated your own</span>
-                </label>
-                <input type="text" name="AWBNUMBER" data-testid="dispatch-air-waybill"/>
-            </li>
-
-            <% } %>
-
-            <li class="facilityCourier">
-                <label>Courier</label>
-                <span class="small" data-testid="dispatch-facility-courier">This dewar will be returned using the facility's courier account</span>
-            </li>
     
 
             <li>
@@ -180,10 +191,10 @@
                 </label>
                 <textarea name="COMMENTS" data-testid="dispatch-comments"></textarea>
             </li>
-
-            <button name="submit" value="1" type="submit" class="button submit" data-testid="dispatch-submit">Request Dewar Dispatch</button>
-            
         </ul>
+
+        <button name="submit" value="1" class="button submit" data-testid="dispatch-submit">Request Dewar Dispatch</button>
+            
     </div>
     
 </form>

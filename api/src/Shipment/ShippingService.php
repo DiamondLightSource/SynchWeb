@@ -151,4 +151,14 @@ class ShippingService
     {
         return $this->shipping_app_url . '/shipments/' . $shipment_id . '/awb';
     }
+
+    function create_shipment_request($shipment_request_data)
+    {
+        return $this->_send_request(
+            $this->shipping_api_url . '/shipment_requests/',
+            "POST",
+            $shipment_request_data,
+            201
+        );
+    }
 }
