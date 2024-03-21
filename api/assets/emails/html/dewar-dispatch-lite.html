@@ -1,0 +1,30 @@
+<h1 style="font-size: 16px; font-weight: normal; border-bottom: 1px solid #000; margin: 1%; margin-bottom: 1.5%">Dewar ready to leave diamond</h1>
+
+<div class="inset" style="margin: 1%; padding: 1%; margin-bottom: 2%; border-radius: 5px; background: #82d180">
+	Goods Handling, please arrange dispatch of the following Dewar.
+</div>
+
+<table class="details" style="background: #f4f4f4; margin: 1%">
+	<tbody>
+		<tr>
+			<td style="padding: 1.5%; font-weight: bold">Proposal</td>
+			<td><?php echo $data['prop'] ?></td>
+		</tr>
+		<tr>
+			<td style="padding: 1.5%; font-weight: bold">Air Waybill</td>
+			<td><a href="<?php echo $data['AWBURL']; ?>"><?php echo $data['AWBURL']; ?></a></td>
+		</tr>
+		<tr>
+			<td style="padding: 1.5%; font-weight: bold">Dewar Facility Code</td>
+			<td><?php echo $data['FACILITYCODE'] ?></td>
+		</tr>
+		<tr>
+			<td style="padding: 1.5%; font-weight: bold">Dewar Barcode</td>
+			<td><?php echo $data['BARCODE'] ?></td>
+		</tr>
+		<tr>
+			<td style="padding: 1.5%; font-weight: bold">Current Location</td>
+			<td><?php echo $data['LOCATION'] ?></td>
+		</tr>
+	</tbody>
+</table>
