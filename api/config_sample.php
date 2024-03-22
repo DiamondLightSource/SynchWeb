@@ -309,7 +309,7 @@
 
     # These map proposal types to their proposalcode
     # - If these are not defined for a proposal type, the api then uses bl_types below
-    $prop_types = array('mx', 'em');
+    $prop_types = array('mx');
 
     # This maps beamlinename in blsession to a proposal type
     # - Internal maps a beamline to an api "type", there are currently:
