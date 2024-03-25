@@ -125,16 +125,27 @@
                 />
               </validation-provider>
 
-              <base-input-select
-                v-model="REQUESTEDIMAGERID"
-                outer-class="tw-mb-2 tw-py-2"
-                label="Requested Imager"
-                description="Imager this container should go into"
-                name="REQUESTERIMAGER"
-                :options="imagingImagers"
-                option-value-key="IMAGERID"
-                option-text-key="NAME"
-              />
+              <validation-provider
+                v-if="plateType === 'plate'"
+                v-slot="{ errors }"
+                tag="div"
+                class="tw-mb-2 tw-py-2"
+                rules="required"
+                name="Requested Imager"
+              >
+
+                <base-input-select
+                  v-model="REQUESTEDIMAGERID"
+                  outer-class="tw-mb-2 tw-py-2"
+                  label="Requested Imager"
+                  description="Imager this container should go into"
+                  name="REQUESTERIMAGER"
+                  :options="imagingImagers"
+                  option-value-key="IMAGERID"
+                  option-text-key="NAME"
+                  :error-message="errors[0]"
+                />
+              </validation-provider>
 
               <base-input-select
                 v-model="SCHEDULEID"
