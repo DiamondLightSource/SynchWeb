@@ -14,12 +14,16 @@ export default {
             'type': Number,
             'required': true,
         },
+        'model': {
+            'type': Object,
+            'required': true,
+        },
     },
     'computed': {
         redirectUrl: function () {
             const visitStr = this.collection.queryParams.visit;
             const [proposal, visit] = visitStr.split("-");
-            return `https://ebic-pato.diamond.ac.uk/proposals/${proposal}/sessions/${visit}`
+            return `${this.$store.state.appOptions.redirects.em}/proposals/${proposal}/sessions/${visit}`
         }
     },
 }

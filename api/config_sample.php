@@ -338,6 +338,9 @@
         )
     );
 
+    # Redirects, used internally when incrementally replacing parts of the application
+    $redirects = array('em' => 'https://ebic-pato.diamond.ac.uk');
+
     # Web-conexs URLs
     $conexs_url = '';
     $conexs_mpapi_url = '';
