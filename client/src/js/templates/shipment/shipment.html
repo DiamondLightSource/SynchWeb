@@ -6,8 +6,10 @@
     <% if (DHL_ENABLE) { %>
         <% if (DELIVERYAGENT_HAS_LABEL == '1') { %>
             <p class="message notify">You can print your Air Waybill by clicking &quot;Print Air Waybill&quot; below</p>
-        <% } else if (COUNTRY && COUNTRY !="United Kingdom" ) { %>
-            <p class="message alert">International shipping is currently disabled from this application. Please see <a href="https://www.diamond.ac.uk/Instruments/Mx/I03/I03-Manual/Shipping-Samples.html">here</a></p>
+        <% } else if (COUNTRY && FACILITY_COURIER_COUNTRIES_NDE.includes(COUNTRY) ) { %>
+            <p class="message alert">International shipping is not available through this application. If you're arranging your own shipping (e.g. industrial users), enter your tracking numbers below after booking and include printed return labels in the dewar case. European academic users, please see <a href="<%-FACILITY_COURIER_COUNTRIES_LINK%>">here</a>.</p>
+        <% } else if (COUNTRY && !FACILITY_COURIER_COUNTRIES.includes(COUNTRY) ) { %>
+            <p class="message alert">International shipping is not available through this application. If you're arranging your own shipping, enter your tracking numbers below after booking and include printed return labels in the dewar case.</p>
         <% } else { %>
             <p class="message notify">You can now book your shipment with DHL using &quot;Create Air Waybill&quot; below</p>
         <% } %>

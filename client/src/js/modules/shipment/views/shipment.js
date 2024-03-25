@@ -43,6 +43,9 @@ define(['marionette',
                 APIURL: app.apiurl,
                 PROP: app.prop,
                 DHL_ENABLE: app.options.get('dhl_enable'),
+                FACILITY_COURIER_COUNTRIES: app.options.get('facility_courier_countries'),
+                FACILITY_COURIER_COUNTRIES_NDE: app.options.get('facility_courier_countries_nde'),
+                FACILITY_COURIER_COUNTRIES_LINK: app.options.get('facility_courier_countries_link'),
             }
         },
 
