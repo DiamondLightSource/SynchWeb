@@ -7,7 +7,6 @@ define(['marionette',
     'modules/stats/views/proposal',
     
     'modules/types/gen/stats/views/visit',
-    'modules/types/em/stats/views/visit',
 
     'modules/stats/views/overview',
     'modules/stats/views/overview2',
@@ -16,7 +15,7 @@ define(['marionette',
     'modules/stats/views/runs_overview'
     
     ], function(Marionette, Visit, BreakDown, Pies, VisitView, ProposalView, 
-        GenericVisitView, EMVisitView,
+        GenericVisitView,
         BAGOverviewView, BLSOverviewView, BeamlineHLOverview, BeamlineOverview, RunsOverview) {
     
     var bc = { title: 'Visit Statistics', url: '/stats' }
@@ -37,7 +36,6 @@ define(['marionette',
                         success: function() {
                             var views = {
                                 mx: VisitView,
-                                em: EMVisitView,
                             }
                             
                             if (vis.get('TYPE') in views) view = views[vis.get('TYPE')]

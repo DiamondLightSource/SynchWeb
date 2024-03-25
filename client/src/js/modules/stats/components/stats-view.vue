@@ -17,14 +17,12 @@ import MarionetteView from 'app/views/marionette/marionette-wrapper.vue'
 
 import VisitView from 'modules/stats/views/visit'
 import GenericVisitView from 'modules/types/gen/stats/views/visit'
-import EMVisitView from 'modules/types/em/stats/views/visit'
 
 import BreakDown from 'modules/stats/models/breakdown'
 import Visit from 'models/visit'
 
 let StatsViews = {
   mx: VisitView,
-  em: EMVisitView,
   gen: GenericVisitView
 }
 
