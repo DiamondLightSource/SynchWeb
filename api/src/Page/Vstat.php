@@ -167,16 +167,16 @@ class Vstat extends Page
             $sched = array();
 
             $newargs = array($info['SID'], $info['SID']);
-            $missed = $this->db->pq("SELECT COUNT(smp.name) as samplecount,
-                GROUP_CONCAT(smp.name SEPARATOR ', ') as missed
+            $missed = $this->db->pq("SELECT smp.blsampleid,
+                smp.name
                 FROM blsample smp
                 INNER JOIN robotaction r ON r.blsampleid = smp.blsampleid
-                INNER JOIN blsession s ON s.sessionid = r.blsessionid
-                WHERE 1=1 $where
-                AND smp.blsampleid not in
-                    (SELECT blsmp.blSampleId FROM blsample blsmp
-                    INNER JOIN datacollection dc ON dc.blsampleid = blsmp.blsampleid
-                    WHERE dc.sessionId=:2)", $newargs);
+                WHERE r.blsessionid=:1
+                AND NOT EXISTS
+                    (SELECT 1 FROM datacollection dc
+                    WHERE dc.blsampleid = smp.blsampleid
+                    AND dc.sessionId=:2)
+                GROUP BY smp.blsampleid", $newargs);
         } else {
             $ai = array();
             $cent = array();
@@ -189,7 +189,6 @@ class Vstat extends Page
                     WHERE 1=1 $where
                     ORDER BY p.proposalcode, s.startdate", $args);
         }
-
 
         # Get Faults
         $faultl = $this->db->pq("SELECT f.faultid, f.beamtimelost, f.title, TO_CHAR(f.beamtimelost_starttime, 'DD-MM-YYYY HH24:MI:SS') as st, TO_CHAR(f.beamtimelost_endtime, 'DD-MM-YYYY HH24:MI:SS') as en
@@ -206,8 +205,11 @@ class Vstat extends Page
         $info['DC_TOT'] = sizeof($dc);
         $info['DC_GRID'] = sizeof($grid) ? $grid[0]['COUNT'] : 0;
         $info['DC_GRID_SAMPLES'] = $grid[0]['SAMPLECOUNT'] ? $grid[0]['SAMPLECOUNT'] : 0;
-        $info['DC_MISSED'] = sizeof($missed) ? $missed[0]['MISSED'] : '';
-        $info['DC_MISSED_SAMPLES'] = sizeof($missed) ? $missed[0]['SAMPLECOUNT'] : 0;
+        $missed_sample_names = array();
+        foreach ($missed as $m)
+            array_push($missed_sample_names, $m['NAME']);
+        $info['DC_MISSED'] = sizeof($missed_sample_names) ? $missed_sample_names : '';
+        $info['DC_MISSED_SAMPLES'] = sizeof($missed) ? sizeof($missed) : 0;
         $info['DC_STOPPED'] = 0;
         $info['E_TOT'] = sizeof($edge);
         $info['FL_TOT'] = sizeof($fl);
