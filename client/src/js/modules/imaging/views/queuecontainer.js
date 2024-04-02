@@ -569,6 +569,12 @@ define(['marionette',
         queueAllSamples: function(e) {
             e.preventDefault()
 
+            const data = {}
+            current = this.$el.find('.afilt').find('.current')
+            if (current.length > 0) {
+                data.filter = current.attr('id')
+            }
+
             var self = this
             this.$el.addClass('loading');
             Backbone.ajax({
