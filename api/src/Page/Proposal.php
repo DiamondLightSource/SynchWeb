@@ -170,6 +170,8 @@ class Proposal extends Page
                 $where .= " AND (shp.personid=:" . (sizeof($args) + 1) . " OR s.beamlinename in ('" . implode("','", $bls) . "'))";
                 array_push($args, $this->user->personId);
             }
+        } else if ($this->user->hasPermission('all_shipments')) {
+            // allow to see shipments on all proposals
         } else {
             $where = " INNER JOIN session_has_person shp ON shp.sessionid = s.sessionid  " . $where;
             $where .= " AND shp.personid=:" . (sizeof($args) + 1);
@@ -919,6 +921,8 @@ class Proposal extends Page
 
                 $where .= " AND ses.beamlinename in ('" . implode("','", $bls) . "')";
             }
+        } else if ($field == 'SHIPPINGID' && $this->user->hasPermission('all_shipments')) {
+            // allow to see shipments
         } else {
             $where = " INNER JOIN session_has_person shp ON shp.sessionid = ses.sessionid  " . $where;
             $where .= " AND shp.personid=:" . (sizeof($args) + 1);

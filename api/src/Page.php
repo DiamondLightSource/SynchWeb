@@ -366,6 +366,9 @@ class Page
                     {
                         if (sizeof(array_intersect($vis, $this->visits)))
                             $auth = True;
+                        if ($this->user->hasPermission('all_shipments'))
+                            // allow to see anything without an id or a visit
+                            $auth = True;
                     }
 
                     // No id or visit, anyone ok to view
