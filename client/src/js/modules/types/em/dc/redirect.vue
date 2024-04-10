@@ -21,9 +21,25 @@ export default {
     },
     'computed': {
         redirectUrl: function () {
+            let redirectLocation = this.$store.state.appOptions.redirects.em;
             const visitStr = this.collection.queryParams.visit;
-            const [proposal, visit] = visitStr.split("-");
-            return `${this.$store.state.appOptions.redirects.em}/proposals/${proposal}/sessions/${visit}`
+
+            if (visitStr) {
+                const [proposal, visit] = visitStr.split("-");
+                redirectLocation += `/proposals/${proposal}/sessions/${visit}`;
+            } else {
+                const pathParams = window.location.pathname.split("/");
+                const lastParam = pathParams[pathParams.length - 1].split("-");
+
+                if(lastParam.length === 2) {
+                    redirectLocation += `/proposals/${lastParam[0]}`
+                    if(!isNaN(lastParam[1])) {
+                        redirectLocation += `/sessions/${lastParam[1]}`;
+                    }
+                }
+            }
+
+            return redirectLocation;
         }
     },
 }
