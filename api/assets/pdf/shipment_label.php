@@ -8,7 +8,7 @@
             <ol>
                 <li><span class="bold">Dewar Label:</span> affix this label to your dewar which ensures it can be identified at all times at the facility</li>
                 <li><span class="bold">Outbound Address label:</span> To be attached to the outside of your transport container for shipment to facility</li>
-                <li><span class="bold">Return Address Label:</span> The return address for your shipment (Please include this in your shipment, e.g. put it behind the outward bound address or in the transport container)</li>
+                <li><span class="bold">Return Address Label:</span> The return address for your shipment (Please include this in your shipment, e.g. put it behind the outbound label or in the transport container)</li>
             </ol>
             Please remove old paperwork immediately after you receive your dewar back from Diamond.
         </div>
