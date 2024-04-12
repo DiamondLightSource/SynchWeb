@@ -10,10 +10,9 @@
                 <li><span class="bold">Outbound Address label:</span> To be attached to the outside of your transport container for shipment to facility</li>
                 <li><span class="bold">Return Address Label:</span> The return address for your shipment (Please include this in your shipment, e.g. put it behind the outward bound address or in the transport container)</li>
             </ol>
+            Please remove old paperwork immediately after you receive your dewar back from Diamond.
         </div>
 
-
-        <br />
         <br />
 
         <p class="ca bold red">1. Dewar Tracking Label</p>
@@ -49,10 +48,6 @@
                     <td class="grey px150">Safety Level</td>
                     <td><?php echo $ship['SAFETYLEVEL'] ?></td>
                 </tr>
-                <tr>
-                    <td class="grey px150">No. Parcels</td>
-                    <td><?php echo sizeof($dewars) ?></td>
-                </tr>
             </table>
 
             <table class="center px500">
@@ -68,6 +63,10 @@
                     <td class="grey px150">Local Contact</td>
                     <td><?php echo $d['BEAMLINEOPERATOR'] ?></td>
                 </tr>
+                <tr>
+                    <td class="grey px150">Printed on</td>
+                    <td><?php echo date('j M o') ?></td>
+                </tr>
             </table>
 
             <div class="float-left px150 title-wrapper">
@@ -79,7 +78,7 @@
                 <?php foreach(explode(',', $d['CONTAINERSBARCODE']) as $bar_code) { ?>
                     <div class="container-item"><?php echo strlen($bar_code) > 15 ? substr($bar_code,0,14).'+' : $bar_code ?></div>
                 <?php }?>
-                <?php if ($d['CONTAINERS'] > 10) { ?>
+                <?php if ($d['CONTAINERS'] > count(explode(',', $d['CONTAINERSBARCODE']))) { ?>
                     <div class="container-item"><?php echo " plus " . ($d['CONTAINERS'] - count(explode(',', $d['CONTAINERSBARCODE']))) . " more" ?></div>
                 <?php }?>
             </div>
@@ -157,6 +156,10 @@
                     <tr>
                         <td class="grey px150">Local Contact</td>
                         <td><?php echo $d['BEAMLINEOPERATOR'] ?></td>
+                    </tr>
+                    <tr>
+                        <td class="grey px150">Printed on</td>
+                        <td><?php echo date('j M o') ?></td>
                     </tr>
                 </table>
 
@@ -249,6 +252,10 @@
                     <tr>
                         <td class="grey px150">Transport Value</td>
                         <td><?php echo $d['TRANSPORTVALUE'] ?></td>
+                    </tr>
+                    <tr>
+                        <td class="grey px150">Printed on</td>
+                        <td><?php echo date('j M o') ?></td>
                     </tr>
                 </table>
 
