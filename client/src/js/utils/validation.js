@@ -3,7 +3,6 @@ define(['backbone', 'backbone-validation'], function(Backbone) {
 
     _.extend(Backbone.Validation.patterns, {
         wwsdash: /^(\w|\s|\-)+$/,
-        wwsddash: /^(\w|\s|\-|\.)+$/,
         wwsldash: /^(\w|\s|\-|\/)+$/,
         wwsbdash: /^(\w|\s|\-|\(|\))+$/,
         wwsbddash: /^(\w|\s|\-|\.|\(|\))+$/,
@@ -26,7 +25,6 @@ define(['backbone', 'backbone-validation'], function(Backbone) {
     _.extend(Backbone.Validation.messages, {
         required: 'This field is required',
         wwsdash: 'This field must contain only letters, numbers, spaces, underscores, and dashes',
-        wwsddash: 'This field must contain only letters, numbers, spaces, underscores, dots, and dashes',
         wwsldash: 'This field must contain only letters, numbers, spaces, underscores, slashes, and dashes',
         wwsbdash: 'This field must contain only letters, numbers, spaces, underscores, brackets, and dashes',
         wwsbddash: 'This field must contain only letters, numbers, spaces, underscores, dots, brackets, and dashes',
