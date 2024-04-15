@@ -29,7 +29,7 @@ export default {
                 redirectLocation += `/proposals/${proposal}/sessions/${visit}`;
             } else {
                 const pathParams = window.location.pathname.split("/");
-                const lastParam = pathParams[pathParams.length - 1].split("-");
+                const lastParam = pathParams.pop().split("-");
 
                 if(lastParam.length === 2) {
                     redirectLocation += `/proposals/${lastParam[0]}`
