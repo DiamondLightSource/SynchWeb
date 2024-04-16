@@ -27,7 +27,6 @@ class Sample extends Page
         'ty' => '\w+',
         't' => '\w+',
         'pjid' => '\d+',
-        'imp' => '\d',
         'lt' => '\w+',
         'existing_pdb' => '\d+',
         'pdb_code' => '\w\w\w\w',
@@ -1034,14 +1033,6 @@ class Sample extends Page
                     INNER JOIN session_has_person shp ON shp.sessionid = ses.sessionid AND shp.personid=:" . (sizeof($args) + 1);
 
                 array_push($args, $this->user->personId);
-            }
-
-            if ($this->has_arg('imp')) {
-                if ($this->arg('imp')) {
-                    array_push($args, $this->arg('pjid'));
-                    $join .= ' LEFT OUTER JOIN project_has_protein pji ON pji.proteinid=pr.proteinid';
-                    $where = preg_replace('/\(pj/', '(pji.projectid=:' . sizeof($args) . ' OR pj', $where);
-                }
             }
         }
 
