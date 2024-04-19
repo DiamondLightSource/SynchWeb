@@ -8,7 +8,7 @@ define(['marionette', 'views/table', 'utils/table'], function(Marionette, TableV
   return Marionette.LayoutView.extend({
     className: 'content',
     // TODO - move this into its own template file and use a templateHelper CAN_CREATE for consistency with proteins
-    template: '<div><h1>Home Lab Contacts</h1><p class="help">This page shows registered home laboratory contacts. This information is generally used to return shipments back after an experiment</p><div class="ra"><a class="button add" href="/contacts/add"><i class="fa fa-plus"></i> Add Home Lab Contact</a></div><div class="wrapper"></div></div>',
+    template: '<div><h1>Home Lab Contacts</h1><p class="help">This page shows registered home laboratory contacts. This information is generally used to return shipments back after an experiment</p><div class="ra"><a class="button add" href="/contacts/add"><i class="fa fa-plus"></i> Add Home Lab Contact</a> <a class="button add" href="/migrate"><i class="fa fa-arrow-right"></i> Migrate Lab Contacts</a></div><div class="wrapper"></div></div>',
     regions: { 'wrap': '.wrapper' },
     ui: {
       add: 'a.add',

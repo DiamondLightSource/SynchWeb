@@ -14,7 +14,6 @@ define([], function() {
             proteins: 'Proteins',
             contacts: 'Lab Contacts',
             stats: 'Statistics',
-            migrate: 'Migrate',
         },
 
         extra: {
