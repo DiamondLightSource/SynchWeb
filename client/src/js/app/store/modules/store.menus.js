@@ -1,4 +1,3 @@
-import EmMenu from 'modules/types/em/menu.js'
 import GenMenu from 'modules/types/gen/menu.js'
 import MxMenu from 'modules/types/mx/menu.js'
 import PowMenu from 'modules/types/pow/menu.js'
@@ -13,7 +12,6 @@ const menuStore = {
     namespaced: true,
     state: () => ({
       menus: {
-        'em': EmMenu,
         'gen': GenMenu,
         'mx': MxMenu,
         'pow': PowMenu,
