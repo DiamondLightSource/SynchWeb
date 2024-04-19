@@ -4,7 +4,6 @@ define([], function() {
         menu: {
             dc: 'View All Data',
             visits: 'Visits',
-            cal: 'Calendar',
             assign: 'Assign Containers',
             'samples/groups': 'Sample Group Management',
             shipments: 'Shipments',
