@@ -177,7 +177,12 @@ class DC extends Page
         $info = array();
         # Visits
         if ($this->has_arg('visit')) {
-            $info = $this->db->pq("SELECT TO_CHAR(s.startdate, 'HH24') as sh, TO_CHAR(s.startdate, 'DDMMYYYY') as dmy, s.sessionid, s.beamlinename as bl FROM blsession s INNER JOIN proposal p ON (p.proposalid = s.proposalid) WHERE CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) LIKE :1", array($this->arg('visit')));
+            $pattern = '/([A-z]+)(\d+)-(\d+)/';
+            preg_match($pattern, $this->arg('visit'), $matches);
+            if (!sizeof($matches))
+                $this->_error('No such visit');
+
+            $info = $this->db->pq("SELECT TO_CHAR(s.startdate, 'HH24') as sh, TO_CHAR(s.startdate, 'DDMMYYYY') as dmy, s.sessionid, s.beamlinename as bl FROM blsession s INNER JOIN proposal p ON (p.proposalid = s.proposalid) WHERE p.proposalcode=:1 AND p.proposalnumber=:2 AND s.visit_number=:3", array($matches[1], $matches[2], $matches[3]));
 
             if (!sizeof($info)) {
                 $this->_error('No such visit');
