@@ -180,7 +180,7 @@ class Sample extends Page
         array('/proteins(/:pid)', 'get', '_proteins'),
         array('/proteins', 'post', '_add_protein'),
         array('/proteins/:pid', 'patch', '_update_protein'),
-        array('/proteins/distinct', 'get', '_disinct_proteins'),
+        array('/proteins/distinct', 'get', '_distinct_proteins'),
 
         array('/proteins/lattice(/:lid)', 'get', '_protein_lattices'),
         array('/proteins/lattice', 'post', '_add_protein_lattice'),
@@ -1759,10 +1759,10 @@ class Sample extends Page
                                 IF(pr.externalid IS NOT NULL, 1, 0) as external,
                                 HEX(pr.externalid) as externalid,
                                 pr.density,
-                                count(php.proteinid) as pdbs,
+                                count(distinct php.pdbid) as pdbs,
                                 pr.safetylevel,
-                                count(dc.datacollectionid) as dcount,
-                                count(b.blsampleid) as scount
+                                count(distinct dc.datacollectionid) as dcount,
+                                count(distinct b.blsampleid) as scount
 
                                 FROM protein pr
                                 LEFT OUTER JOIN concentrationtype ct ON ct.concentrationtypeid = pr.concentrationtypeid
@@ -1792,7 +1792,7 @@ class Sample extends Page
 
     # ------------------------------------------------------------------------
     # Return distinct proteins for a proposal
-    function _disinct_proteins()
+    function _distinct_proteins()
     {
         if (!$this->has_arg('prop'))
             $this->_error('No proposal specified');
