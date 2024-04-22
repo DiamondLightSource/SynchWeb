@@ -513,7 +513,7 @@
 
                     let capillaryCrystal = new Crystal({
                         CRYSTALID: self.existingCapillaryID,
-                        NAME: self.name + shortName + '_CP',
+                        NAME: item.acronym + shortName + '_CP',
                         THEORETICALDENSITY: self.getCapillaryInfo('density') != null ? self.getCapillaryInfo('density') : null,
                         ABUNDANCE: 1,
                         CONTAINERLESS: self.containerless,
@@ -591,7 +591,7 @@
 
                 let capillaryCrystal = new Crystal({
                     CRYSTALID: this.existingCapillaryID,
-                    NAME: this.name + shortName + '_CP',
+                    NAME: this.acronym + shortName + '_CP',
                     THEORETICALDENSITY: this.getCapillaryInfo('density') != null ? this.getCapillaryInfo('density') : null,
                     ABUNDANCE: 1,
                     CONTAINERLESS: this.containerless,
