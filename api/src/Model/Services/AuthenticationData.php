@@ -28,7 +28,8 @@ class AuthenticationData
 
     function getOneTimeUseToken($tokenId)
     {
-        return $this->db->pq("SELECT o.validity, pe.personid, pe.login, CONCAT(p.proposalcode, p.proposalnumber) as prop 
+        return $this->db->pq("SELECT o.validity, pe.personid, pe.login, CONCAT(p.proposalcode, p.proposalnumber) as prop,
+                    NOW() - o.recordTimeStamp as age
 		    		FROM SW_onceToken o
 		    		INNER JOIN proposal p ON p.proposalid = o.proposalid
 		    		INNER JOIN person pe ON pe.personid = o.personid
@@ -40,10 +41,10 @@ class AuthenticationData
         $this->db->pq("DELETE FROM SW_onceToken WHERE token=:1", array($tokenId));
     }
 
-    function deleteOldOneTimeUseTokens()
+    function deleteOldOneTimeUseTokens($max_token_age)
     {
-        # Remove tokens more than 10 seconds old, they should have been used
-        $this->db->pq("DELETE FROM SW_onceToken WHERE recordTimeStamp < NOW() - INTERVAL 10 SECOND");
+        # Remove tokens more than $max_token_age seconds old, they should have been used
+        $this->db->pq("DELETE FROM SW_onceToken WHERE recordTimeStamp < NOW() - INTERVAL :1 SECOND", array($max_token_age));
     }
 
 

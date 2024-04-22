@@ -215,17 +215,7 @@ define(['marionette', 'templates/stats/breakdown.html',
                     yaxes: [{ position: 'right' }, { position: 'right' }, { position: 'right' }],
                 }
 
-                if (this.scatters) {
-
-                    this.options3.series = { 
-                        lines: { show: false },
-                        points: { show: true, radius: 1 }
-                    }
-
-                    this.extra = $.plot(this.$el.find('#dc_hist'), this.model.get('scatters'), this.options3)
-                } else {
-                    this.extra = $.plot(this.$el.find('#dc_hist'), this.model.get('lines'), this.options3)
-                }
+                this.extra = $.plot(this.$el.find('#dc_hist'), this.model.get('lines'), this.options3)
                 this.showSpan()
 
                 console.log('rend bd', this.params, this.first)
