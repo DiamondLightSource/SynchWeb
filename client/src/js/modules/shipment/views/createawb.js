@@ -202,7 +202,6 @@ define(['backbone',
             this.quotes.queryParams.sid = this.shipment.get('SHIPPINGID')
 
             this.shipment.validation = JSON.parse(JSON.stringify(this.shipment.__proto__.validation))
-            console.log("VALIDATION", JSON.stringify(this.shipment.__proto__.validation))
             if (this.shipment.get('TERMSACCEPTED') === '0') {
                 this.shipment.validation.DELIVERYAGENT_AGENTCODE.required = true;
             }
