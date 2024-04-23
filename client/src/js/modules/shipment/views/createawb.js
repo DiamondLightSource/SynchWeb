@@ -139,7 +139,6 @@ define(['backbone',
 
         toggleFacilityCourier: function() {
             const shipmentCountry = this.ui.shipmentCountry.val();
-            console.log("SHIPMENT COUNTRY", this.ui.shipmentCountry);
             if (
                 app.options.get('facility_courier_countries').indexOf(shipmentCountry) > -1
                 || app.options.get('facility_courier_countries_nde').indexOf(shipmentCountry) > -1 
