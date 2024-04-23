@@ -2954,8 +2954,9 @@ class Shipment extends Page
                 $this->_output(array('EXTERNAL' => "1"));
                 return;
             } catch (\Exception $e) {
-                $error_response = json_decode($e->getMessage());
-                $this->_error($error_response->content->detail, $error_response->status);
+                // TODO: Use null access operator when we upgrade to PHP 8
+                $error_response = json_decode($e->getMessage())->content->detail ?? $e->getMessage();
+                $this->_error($error_response, $error_response->status ?? 400);
             }
         }
         $this->_error(json_encode($dewars));
