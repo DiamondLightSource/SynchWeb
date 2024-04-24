@@ -2959,7 +2959,6 @@ class Shipment extends Page
                 $this->_error($error_response, $error_response->status ?? 400);
             }
         }
-        $this->_error(json_encode($dewars));
 
         $terms = $this->db->pq("SELECT cta.couriertermsacceptedid
                 FROM couriertermsaccepted cta
