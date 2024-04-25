@@ -73,7 +73,7 @@ class UAS
             ),
         ));
 
-        if ($this->code == 200) {
+        if ($this->code != 200) {
             error_log("UAS::update_session error from UAS, code: " . $this->code);
             error_log(print_r($resp), true);
         }
