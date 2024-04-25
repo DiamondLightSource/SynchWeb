@@ -35,7 +35,7 @@ define([], function() {
         // Import transforms
         transforms: {
             SPACEGROUP: function(v, m) {
-                m.SPACEGROUP = v.replace(/[\(\)]/g, '').toUpperCase()
+                m.SPACEGROUP = v.replace(/[()]/g, '').toUpperCase()
             }
         },
 

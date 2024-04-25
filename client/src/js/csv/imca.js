@@ -38,7 +38,7 @@ define([], function() {
                 if (m.AXISRANGE) m.NUMBEROFIMAGES = m.AXISROTATION / m.AXISRANGE
             },
             SPACEGROUP: function(v, m) {
-                m.SPACEGROUP = v.replace(/[\(\)]/g, '')
+                m.SPACEGROUP = v.replace(/[()]/g, '')
             },
             LOCATION: function(v, m) {
                 if (!this.xcount) this.xcount = 1
