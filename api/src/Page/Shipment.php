@@ -1212,9 +1212,10 @@ class Shipment extends Page
                     try {
                         $shipment_id = $this->_dispatch_dewar_shipment_request($dew);
                     } catch (Exception $e) {
-                        error_log("Error returned from shipping service: " . $e . "\nDewar data: " . json_encode($dew));
-                        $error_response = json_decode($e->getMessage());
-                        $this->_error($error_response->content->detail, $error_response->status);
+                        $error_json = json_decode($e->getMessage());
+                        $error_response = $error_json->content->detail ?? $e->getMessage();
+                        $error_status = $error_json->status ? $error_json->status : 400; // Status can be 0
+                        $this->_error("Shipping service error: $error_response", $error_status);
                     }
                     if (Utils::getValueOrDefault($shipping_service_links_in_emails)) {
                         $data['AWBURL'] = "{$shipping_service_app_url}/shipment-requests/{$shipment_id}/outgoing";
@@ -2954,9 +2955,11 @@ class Shipment extends Page
                 $this->_output(array('EXTERNAL' => "1"));
                 return;
             } catch (\Exception $e) {
+                $error_json = json_decode($e->getMessage());
                 // TODO: Use null access operator when we upgrade to PHP 8
-                $error_response = json_decode($e->getMessage())->content->detail ?? $e->getMessage();
-                $this->_error($error_response, $error_response->status ?? 400);
+                $error_response = $error_json->content->detail ?? $e->getMessage();
+                $error_status = $error_json->status ? $error_json->status : 400; // Status can be 0
+                $this->_error("Shipping service error: $error_response", $error_status);
             }
         }
 

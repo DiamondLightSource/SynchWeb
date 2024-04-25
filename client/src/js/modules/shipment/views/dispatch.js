@@ -119,7 +119,6 @@ define(['marionette', 'views/form',
         },
         
         success: function() {
-            app.trigger('shipment:show', this.getOption('dewar').get('SHIPPINGID'))
             if (
                 app.options.get("shipping_service_app_url")
                 && (Number(this.terms.get('ACCEPTED')) === 1) // terms.ACCPETED could be undefined, 1, or "1"
@@ -127,15 +126,25 @@ define(['marionette', 'views/form',
             ) {
                 this.getOption('dewar').fetch().done((dewar) => {
                     const external_id = dewar.EXTERNALSHIPPINGIDFROMSYNCHROTRON;
+                    if (external_id === null){
+                        app.alert({message: "Error performing redirect: external shipping id is null"})
+                        return;
+                    }
                     window.location.assign(
                         `${app.options.get("shipping_service_app_url")}/shipment-requests/${external_id}/outgoing`
                     )
                 })
+            } else {
+                app.trigger('shipment:show', this.getOption('dewar').get('SHIPPINGID'))
             }
         },
 
-        failure: function() {
-            app.alert({ message: 'Something went wrong registering this dispatch request, please try again'})
+        failure: function(_model, response, _options) {
+            app.alert({
+                message: `Something went wrong registering this dispatch request, please try again<br/>
+                          Detail: ${response.responseJSON.message}`,
+                persist: true
+            })
         },
         
         onRender: function() {
@@ -282,6 +291,7 @@ define(['marionette', 'views/form',
             this.dispatchCountry = this.ui.dispatchCountry.val()
             this.ui.courierSection.show();
             this.ui.dispatchDetails.show();
+            this.model.dispatchDetailsRequired = true
             this.ui.submit.show();
             if (
                 this.terms.get("ACCEPTED")
@@ -290,6 +300,7 @@ define(['marionette', 'views/form',
             ){
                 this.model.visitRequired = false
                 this.ui.dispatchDetails.hide()
+                this.model.dispatchDetailsRequired = false
                 this.ui.submit.text("Proceed")
             }
         },

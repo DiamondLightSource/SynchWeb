@@ -83,9 +83,16 @@ class ShippingService
                 break;
         }
         $response = json_decode(curl_exec($ch), TRUE);
-        $status_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $status_code = curl_getinfo($ch, CURLINFO_HTTP_CODE); // Will be 0 if request itself fails
         curl_close($ch);
         if ($status_code != $expected_status_code) {
+            error_log(
+                "Shipping service unexpected status code." . PHP_EOL .
+                "Request: $type $url" . PHP_EOL .
+                "Status code: $status_code" . PHP_EOL .
+                "Response: $response" . PHP_EOL .
+                "Request data:" . json_encode($data)
+            );
             throw new \Exception(json_encode(array('status' => $status_code, 'content' => $response)));
         }
         return $response;

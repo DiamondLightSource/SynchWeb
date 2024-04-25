@@ -498,6 +498,11 @@ define(['backbone',
                     ) {
                         self.shipment.fetch().done((shipment) => {
                             const external_id = shipment.EXTERNALSHIPPINGIDTOSYNCHROTRON;
+                            if (external_id === null){
+                                self.$el.removeClass('loading')
+                                app.alert({message: "Error performing redirect: external shipping id is null"})
+                                return;
+                            }
                             window.location.assign(
                                 `${app.options.get("shipping_service_app_url")}/shipment-requests/${external_id}/incoming`
                             )
