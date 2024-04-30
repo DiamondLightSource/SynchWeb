@@ -34,6 +34,7 @@ define(['marionette',
     initialize: function(options) {
       var columns = [{ name: 'SHIPPINGNAME', label: 'Name', cell: 'string', editable: false },
                      { name: 'CREATED', label: 'Creation Date', cell: 'string', editable: false },
+                     { name: 'VISIT', label: 'Visit', cell: 'string', editable: false },
                      { name: 'LCOUT', label: 'Outgoing Contact', cell: 'string', editable: false },
                      { name: 'LCRET', label: 'Return Contact', cell: 'string', editable: false },
                      { name: 'SHIPPINGSTATUS', label: 'Status', cell: 'string', editable: false },
