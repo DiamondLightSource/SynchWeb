@@ -166,6 +166,10 @@ export default {
         }
     },
     created() {
+        if(this.proposal === '') {
+            console.log('No proposal found, redirecting');
+            window.location.href = '/proposals/';
+        }
         this.fetchData()
     },
     methods: {
