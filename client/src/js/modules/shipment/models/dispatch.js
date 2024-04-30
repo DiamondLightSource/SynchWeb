@@ -79,12 +79,12 @@ define(['backbone'], function(Backbone) {
 
 
         DESCRIPTION: {
-            required: true,
+            required: function () {return this.dispatchDetailsRequired},
         },
 
         DELIVERYAGENT_SHIPPINGDATE: {
             pattern: 'edate',
-            required: true,
+            required: function () {return this.dispatchDetailsRequired},
         },
 
         
