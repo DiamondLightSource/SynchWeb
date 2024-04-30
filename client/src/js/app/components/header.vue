@@ -20,7 +20,7 @@
         </p>
       </router-link>
       <router-link
-        v-if="isStaff"
+        v-if="isLoggedIn"
         class="tw-mx-1 tw-text-header-color hover:tw-text-header-hover-color"
         to="/cal"
       >
