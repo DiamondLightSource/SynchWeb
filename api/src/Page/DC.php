@@ -18,7 +18,6 @@ class DC extends Page
         'sid' => '\d+',
         'aid' => '\d+',
         'pjid' => '\d+',
-        'imp' => '\d',
         'pid' => '\d+',
         'h' => '\d\d',
         'dmy' => '\d\d\d\d\d\d\d\d',
@@ -71,7 +70,7 @@ class DC extends Page
     #   - a proposal /
     #   - a visit /visit/
     #   - a particular sample id /sid/
-    #   - a project (explicit or implicit) /pjid/(imp/1/)
+    #   - a project (explicit only) /pjid/
     #   - a protein /pid/
     #   Its also searchable (A-z0-9-/) and filterable
     function _data_collections($single = null)
@@ -237,22 +236,10 @@ class DC extends Page
                 $extj[$i] .= " LEFT OUTER JOIN $t[0] prj ON $t[1].$t[2] = prj.$ct INNER JOIN proposal prop ON ses.proposalid = prop.proposalid";
                 $sess[$i] = 'prj.projectid=:' . ($i + 1);
 
-                if ($this->has_arg('imp')) {
-                    if ($this->arg('imp')) {
-                        $extj[$i] .= " LEFT OUTER JOIN crystal cr ON cr.crystalid = smp.crystalid LEFT OUTER JOIN protein pr ON pr.proteinid = cr.proteinid LEFT OUTER JOIN project_has_protein prj2 ON prj2.proteinid = pr.proteinid LEFT OUTER JOIN project_has_blsample prj3 ON prj3.blsampleid = smp.blsampleid";
-                        $sess[$i] = '(prj.projectid=:' . ($i * 3 + 1) . ' OR prj2.projectid=:' . ($i * 3 + 2) . ' OR prj3.projectid=:' . ($i * 3 + 3) . ')';
-                    }
-                }
             }
 
-
-            $n = 4;
-            if ($this->has_arg('imp'))
-                if ($this->arg('imp'))
-                    $n = 12;
-            for ($i = 0; $i < $n; $i++)
+            for ($i = 0; $i < 4; $i++)
                 array_push($args, $this->arg('pjid'));
-
 
             # Proteins
         } else if ($this->has_arg('pid')) {
