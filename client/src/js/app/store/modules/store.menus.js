@@ -7,11 +7,13 @@ import TomoMenu from 'modules/types/tomo/menu.js'
 import XpdfMenu from 'modules/types/xpdf/menu.js'
 import GenProcMenu from 'modules/types/genproc/menu.js'
 import ConexsMenu from 'modules/types/conexs/menu.js'
+import EmMenu from 'modules/types/em/menu.js'
 
 const menuStore = {
     namespaced: true,
     state: () => ({
       menus: {
+        'em': EmMenu,
         'gen': GenMenu,
         'mx': MxMenu,
         'pow': PowMenu,
