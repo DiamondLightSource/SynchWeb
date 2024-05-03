@@ -197,7 +197,9 @@ define(['backbone',
                 var nearest = reg.findWhere({ LASTNAME: this.model.get('NAME') })
                 this.model.set({ CONTAINERREGISTRYID: nearest ? nearest.get('CONTAINERREGISTRYID') : '!' })
             }
-            this.ui.registry.val(this.model.get('CONTAINERREGISTRYID')) 
+            this.ui.registry.val(this.model.get('CONTAINERREGISTRYID'))
+
+            this.model.set({ SOURCE: 'SynchWeb-CSV-Upload' })
 
             this.model.isValid(true)
         }
