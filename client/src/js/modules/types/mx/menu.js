@@ -4,18 +4,15 @@ define([], function() {
         menu: {
             dc: 'View All Data',
             visits: 'Visits',
-            cal: 'Calendar',
-            assign: 'Assign Containers',
-            'samples/groups': 'Sample Group Management',
+            contacts: 'Lab Contacts',
             shipments: 'Shipments',
             'dewars/registry': 'Registered Dewars',
             'containers/registry': 'Registered Containers',
             containers: 'Containers',
-            samples: 'Samples',
             proteins: 'Proteins',
-            contacts: 'Lab Contacts',
+            samples: 'Samples',
+            'samples/groups': 'Sample Groups',
             stats: 'Statistics',
-            migrate: 'Migrate',
         },
 
         extra: {

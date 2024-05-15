@@ -492,8 +492,6 @@
                 let self = this
 
                 this.csvData.forEach(function(item, index){
-                    if(index === 0)
-                        return;
 
                     console.log(item)
                     var shortName = ''
@@ -727,7 +725,7 @@
                             if(self.commaInComments)
                                 self.csvErrors.push("Column count is greater than expected, you likely have a comma in a comment. Please remove any additional commas")
 
-                            if(self.csvData.length === 1 && self.csvErrors.length === 0){
+                            if(self.csvData.length < 1 && self.csvErrors.length === 0){
                                 self.csvErrors.push("Only headers have been submitted, please add some sample information")
                             }
 
