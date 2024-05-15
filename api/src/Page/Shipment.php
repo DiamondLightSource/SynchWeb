@@ -331,7 +331,8 @@ class Shipment extends Page
                 TO_CHAR(s.deliveryagent_shippingdate, 'DD-MM-YYYY') as deliveryagent_shippingdate,
                 TO_CHAR(s.deliveryagent_deliverydate, 'DD-MM-YYYY') as deliveryagent_deliverydate,
                 s.safetylevel,
-                count(d.dewarid) as dcount,s.sendinglabcontactid,
+                count(d.dewarid) as dcount,
+                s.sendinglabcontactid,
                 c.cardname as lcout,
                 c2.cardname as lcret,
                 s.returnlabcontactid,
@@ -366,23 +367,25 @@ class Shipment extends Page
                 GROUP_CONCAT(d.deliveryagent_barcode) as deliveryagent_barcode,
                 pe2.login as deliveryagent_flightcodeperson,
                 s.extra,
+                GROUP_CONCAT(DISTINCT CONCAT(p.proposalcode, p.proposalnumber, '-', b.visit_number)) as visit,
                 SUM(IF(d.dewarstatus = 'processing', 1, 0)) as processing,
                 s.externalShippingIdToSynchrotron
-            FROM proposal p 
-            INNER JOIN shipping s ON p.proposalid = s.proposalid 
-            LEFT OUTER JOIN labcontact c2 ON s.returnlabcontactid = c2.labcontactid 
-            LEFT OUTER JOIN dewar d ON d.shippingid = s.shippingid 
+            FROM proposal p
+            INNER JOIN shipping s ON p.proposalid = s.proposalid
+            LEFT OUTER JOIN labcontact c2 ON s.returnlabcontactid = c2.labcontactid
+            LEFT OUTER JOIN dewar d ON d.shippingid = s.shippingid
+            LEFT OUTER JOIN blsession b ON b.sessionid = d.firstexperimentid
             LEFT OUTER JOIN couriertermsaccepted cta ON cta.shippingid = s.shippingid
             LEFT OUTER JOIN labcontact c ON c.labcontactid = s.sendinglabcontactid
-            LEFT OUTER JOIN person pe ON c.personid = pe.personid 
-            LEFT OUTER JOIN laboratory l ON l.laboratoryid = pe.laboratoryid 
+            LEFT OUTER JOIN person pe ON c.personid = pe.personid
+            LEFT OUTER JOIN laboratory l ON l.laboratoryid = pe.laboratoryid
             LEFT OUTER JOIN person pe2 ON pe2.personid = s.deliveryagent_flightcodepersonid
-            WHERE $where 
+            WHERE $where
             GROUP BY
                 s.sendinglabcontactid, s.returnlabcontactid, s.deliveryagent_agentname, s.deliveryagent_agentcode,
                 s.deliveryagent_shippingdate, s.deliveryagent_deliverydate, s.safetylevel, c.cardname, c2.cardname,
                 s.shippingid, s.shippingname, s.shippingstatus,TO_CHAR(s.creationdate, 'DD-MM-YYYY'),
-                s.isstorageshipping, s.shippingtype, s.comments, s.creationdate 
+                s.isstorageshipping, s.shippingtype, s.comments, s.creationdate
             ORDER BY $order",
             $args
         );
@@ -777,8 +780,7 @@ class Shipment extends Page
             $this->_error('No dewar specified');
         if (!$this->has_arg('PROPOSALID'))
             $this->_error('No proposal specified');
-        if (!$this->has_arg('LABCONTACTID'))
-            $this->_error('No lab contact specified');
+        $lc = $this->has_arg('LABCONTACTID') ? $this->arg('LABCONTACTID') : null;
 
         $chk = $this->db->pq("SELECT dewarregistryid 
               FROM dewarregistry_has_proposal
@@ -787,7 +789,7 @@ class Shipment extends Page
             $this->_error('That dewar is already registered to that proposal');
 
         $this->db->pq("INSERT INTO dewarregistry_has_proposal (dewarregistryid,proposalid,personid,labcontactid) 
-              VALUES (:1,:2,:3,:4)", array($this->arg('DEWARREGISTRYID'), $this->arg('PROPOSALID'), $this->user->personId, $this->arg('LABCONTACTID')));
+              VALUES (:1,:2,:3,:4)", array($this->arg('DEWARREGISTRYID'), $this->arg('PROPOSALID'), $this->user->personId, $lc));
 
         $this->_output(array('DEWARREGISTRYHASPROPOSALID' => $this->db->id()));
     }
@@ -2836,10 +2838,10 @@ class Shipment extends Page
             "address_line3" => isset($address_lines[2]) ? $address_lines[2] : null,
             "city" => $user["city"],
             "country" => $user["country"],
-            "post_code" => rtrim($user["postcode"]),
+            "post_code" => trim($user["postcode"]),
             "contact_name" => $user["name"],
             "contact_phone_number" => $user["phone"],
-            "contact_email" => rtrim($user["email"])
+            "contact_email" => trim($user["email"])
         );
         $shipment_data = array(
             "shipment_reference" => $shipment["PROP"],

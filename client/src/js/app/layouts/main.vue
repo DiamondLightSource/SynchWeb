@@ -20,7 +20,7 @@
       Main panel to store proposal menu, messages and content
       Sets the main width of the content area on screen
     -->
-    <div class="tw-w-full tw-px-2 lg:tw-w-10/12 lg:tw-mx-auto">
+    <div class="tw-w-full tw-px-2 lg:tw-w-11/12 lg:tw-mx-auto">
       <navbar-menu
         :proposal-menu="proposalMenu"
         :extras-menu="extraMenu"

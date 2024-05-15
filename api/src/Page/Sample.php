@@ -27,7 +27,6 @@ class Sample extends Page
         'ty' => '\w+',
         't' => '\w+',
         'pjid' => '\d+',
-        'imp' => '\d',
         'lt' => '\w+',
         'existing_pdb' => '\d+',
         'pdb_code' => '\w\w\w\w',
@@ -122,6 +121,7 @@ class Sample extends Page
         'UNQUEUE' => '\d',
         'nodata' => '\d',
         'notcompleted' => '\d',
+        'filter' => '\w+',
 
         // external is a flag to indicate this protein/sample has a user office system id
         // whereas externalid is the actual reference
@@ -179,7 +179,7 @@ class Sample extends Page
         array('/proteins(/:pid)', 'get', '_proteins'),
         array('/proteins', 'post', '_add_protein'),
         array('/proteins/:pid', 'patch', '_update_protein'),
-        array('/proteins/distinct', 'get', '_disinct_proteins'),
+        array('/proteins/distinct', 'get', '_distinct_proteins'),
 
         array('/proteins/lattice(/:lid)', 'get', '_protein_lattices'),
         array('/proteins/lattice', 'post', '_add_protein_lattice'),
@@ -355,7 +355,7 @@ class Sample extends Page
                 $isCapillary = sizeof($crystals) > 1 ? true : false;
 
                 foreach ($crystals as $sample) {
-                    $c = array('NAME' => $phase->ACRONYM . '-sample');
+                    $c = $isCapillary ? array('NAME' => $sample->NAME) : array('NAME' => $phase->ACRONYM . '-sample');
                     foreach (array('SPACEGROUP', 'COMMENTS') as $f)
                         $c[$f] = array_key_exists($f, $sample) ? $sample->$f : '';
                     foreach (array('ABUNDANCE', 'THEORETICALDENSITY') as $f)
@@ -412,7 +412,7 @@ class Sample extends Page
                 if (array_key_exists('CAPILLARYID', $ids[$model]) && $capillary->CRYSTALID == null && !$capillary->CONTAINERLESS)
                     $blSamples['capillary'] = array('CONTAINERID' => $ids[$model]['CONTAINERID'], 'CRYSTALID' => $ids[$model]['CAPILLARYID'], 'PROTEINID' => $ids[$model]['CAPILLARYPHASEID'], 'LOCATION' => ++$maxLocation, 'NAME' => $capillary->NAME, 'PACKINGFRACTION' => 1, 'COMMENTS' => array_key_exists('COMMENTS', $capillary) ? $capillary->COMMENTS : '', 'DIMENSION1' => $capillary->OUTERDIAMETER, 'DIMENSION2' => $capillary->INNERDIAMETER, 'DIMENSION3' => $capillary->LENGTH, 'SHAPE' => $capillary->SHAPE, 'LOOPTYPE' => 1);
 
-                $blSamples['sample'] = array('CONTAINERID' => $ids[$model]['CONTAINERID'], 'CRYSTALID' => $ids[$model]['CRYSTALID'], 'PROTEINID' => $ids[$model]['PHASEID'], 'LOCATION' => ++$maxLocation, 'NAME' => $phase->ACRONYM, 'PACKINGFRACTION' => $attrs->PACKINGFRACTION ? $attrs->PACKINGFRACTION : null, 'COMMENTS' => array_key_exists('COMMENTS', $crystal) ? $crystal->COMMENTS : '');
+                $blSamples['sample'] = array('CONTAINERID' => $ids[$model]['CONTAINERID'], 'CRYSTALID' => $ids[$model]['CRYSTALID'], 'PROTEINID' => $ids[$model]['PHASEID'], 'LOCATION' => ++$maxLocation, 'NAME' => $crystal->NAME, 'PACKINGFRACTION' => $attrs->PACKINGFRACTION ? $attrs->PACKINGFRACTION : null, 'COMMENTS' => array_key_exists('COMMENTS', $crystal) ? $crystal->COMMENTS : '');
 
                 foreach ($blSamples as $key => $blSample) {
                     $a = $this->_prepare_sample_args($blSample);
@@ -594,6 +594,17 @@ class Sample extends Page
 
         $args = array($this->proposalid, $this->arg('cid'), $this->arg('cid'), $this->arg('cid'));
         $where = ' AND c.containerid=:2 AND cq2.completedtimestamp IS NULL';
+
+        if ($this->has_arg('filter')) {
+            $filters = array(
+                'manual' => " AND ss.source='manual'",
+                'auto' => " AND ss.source='auto'",
+                'point' => " AND dp.experimentkind='SAD'",
+                'region' => " AND dp.experimentkind='MESH'",
+            );
+            $where .= $filters[$this->arg('filter')];
+        }
+
         $first_inner_select_where = ' AND s.containerid=:3';
         $second_inner_select_where = ' AND s.containerid=:4';
 
@@ -1022,14 +1033,6 @@ class Sample extends Page
                     INNER JOIN session_has_person shp ON shp.sessionid = ses.sessionid AND shp.personid=:" . (sizeof($args) + 1);
 
                 array_push($args, $this->user->personId);
-            }
-
-            if ($this->has_arg('imp')) {
-                if ($this->arg('imp')) {
-                    array_push($args, $this->arg('pjid'));
-                    $join .= ' LEFT OUTER JOIN project_has_protein pji ON pji.proteinid=pr.proteinid';
-                    $where = preg_replace('/\(pj/', '(pji.projectid=:' . sizeof($args) . ' OR pj', $where);
-                }
             }
         }
 
@@ -1715,12 +1718,24 @@ class Sample extends Page
 
         // Only display original UAS approved proteins (not clones which have the same externalId)
         if ($this->has_arg('original') && $this->arg('original') == 1) {
-            $group = 'pr.externalId';
-            $order .= ', pr.bltimeStamp DESC';
+            $where .= ' AND pr.proteintype = "ORIGIN:UAS"';
         }
 
         if ($this->has_arg('sort_by')) {
-            $cols = array('NAME' => 'pr.name', 'ACRONYM' => 'pr.acronym', 'MOLECULARMASS' => 'pr.molecularmass', 'HASSEQ' => "CASE WHEN sequence IS NULL THEN 'No' ELSE 'Yes' END");
+            $cols = array(
+                'NAME' => 'pr.name',
+                'ACRONYM' => 'pr.acronym',
+                'MOLECULARMASS' => 'pr.molecularmass',
+                'DENSITY' => 'pr.density',
+                'SEQUENCE' => 'pr.sequence',
+                'SAFETYLEVEL' => 'pr.safetylevel',
+                'HASSEQ' => "CASE WHEN sequence IS NULL THEN 'No' ELSE 'Yes' END",
+                'PDBS' => 'pdbs',
+                'CONCENTRATIONTYPE' => 'concentrationtype',
+                'COMPONENTTYPE' => 'componenttype',
+                'DCOUNT' => 'dcount',
+                'SCOUNT' => 'scount'
+            );
             $dir = $this->has_arg('order') ? ($this->arg('order') == 'asc' ? 'ASC' : 'DESC') : 'ASC';
             if (array_key_exists($this->arg('sort_by'), $cols))
                 $order = $cols[$this->arg('sort_by')] . ' ' . $dir;
@@ -1735,56 +1750,23 @@ class Sample extends Page
                                 IF(pr.externalid IS NOT NULL, 1, 0) as external,
                                 HEX(pr.externalid) as externalid,
                                 pr.density,
-                                count(php.proteinid) as pdbs,
-                                pr.safetylevel
+                                count(distinct php.pdbid) as pdbs,
+                                pr.safetylevel,
+                                count(distinct dc.datacollectionid) as dcount,
+                                count(distinct b.blsampleid) as scount
 
                                 FROM protein pr
                                 LEFT OUTER JOIN concentrationtype ct ON ct.concentrationtypeid = pr.concentrationtypeid
                                 LEFT OUTER JOIN componenttype cmt ON cmt.componenttypeid = pr.componenttypeid
                                 LEFT OUTER JOIN protein_has_pdb php ON php.proteinid = pr.proteinid
-                                /*LEFT OUTER JOIN crystal cr ON cr.proteinid = pr.proteinid
+                                LEFT OUTER JOIN crystal cr ON cr.proteinid = pr.proteinid
                                 LEFT OUTER JOIN blsample b ON b.crystalid = cr.crystalid
-                                LEFT OUTER JOIN datacollection dc ON b.blsampleid = dc.blsampleid*/
+                                LEFT OUTER JOIN datacollection dc ON b.blsampleid = dc.blsampleid
                                 INNER JOIN proposal p ON p.proposalid = pr.proposalid
                                 $join
                                 WHERE $where
                                 GROUP BY $group
                                 ORDER BY $order", $args);
-
-        $ids = array();
-        $wcs = array();
-        foreach ($rows as $r) {
-            array_push($ids, $r['PROTEINID']);
-            array_push($wcs, 'pr.proteinid=:' . sizeof($ids));
-        }
-
-        $dcs = array();
-        $scs = array();
-
-        if (sizeof($ids)) {
-            $dcst = $this->db->pq('SELECT pr.proteinid, count(dc.datacollectionid) as dcount FROM datacollection dc INNER JOIN blsample s ON s.blsampleid=dc.blsampleid INNER JOIN crystal cr ON cr.crystalid = s.crystalid INNER JOIN protein pr ON pr.proteinid = cr.proteinid WHERE ' . implode(' OR ', $wcs) . ' GROUP BY pr.proteinid', $ids);
-
-
-            foreach ($dcst as $d) {
-                $dcs[$d['PROTEINID']] = $d['DCOUNT'];
-            }
-
-            $scst = $this->db->pq('SELECT pr.proteinid, count(s.blsampleid) as scount FROM blsample s INNER JOIN crystal cr ON cr.crystalid = s.crystalid INNER JOIN protein pr ON pr.proteinid = cr.proteinid WHERE ' . implode(' OR ', $wcs) . ' GROUP BY pr.proteinid', $ids);
-
-            foreach ($scst as $d) {
-                $scs[$d['PROTEINID']] = $d['SCOUNT'];
-            }
-        }
-
-        foreach ($rows as &$r) {
-            $dcount = array_key_exists($r['PROTEINID'], $dcs) ? $dcs[$r['PROTEINID']] : 0;
-            $r['DCOUNT'] = $dcount;
-            $scount = array_key_exists($r['PROTEINID'], $scs) ? $scs[$r['PROTEINID']] : 0;
-            $r['SCOUNT'] = $scount;
-
-            if ($this->has_arg('pid'))
-                $r['SEQUENCE'] = $this->db->read($r['SEQUENCE']);
-        }
 
         if ($this->has_arg('pid')) {
             if (sizeof($rows))
@@ -1801,7 +1783,7 @@ class Sample extends Page
 
     # ------------------------------------------------------------------------
     # Return distinct proteins for a proposal
-    function _disinct_proteins()
+    function _distinct_proteins()
     {
         if (!$this->has_arg('prop'))
             $this->_error('No proposal specified');

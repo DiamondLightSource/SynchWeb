@@ -22,13 +22,6 @@ define(['backbone'], function(Backbone) {
             pattern: 'visit',
         },
 
-        LOCALCONTACT: {
-            required: false,
-            pattern: 'wwsddash'
-        },
-
-
-
         GIVENNAME: {
             required: function () {return this.dispatchDetailsRequired},
             pattern: 'wwdash',

@@ -33,12 +33,10 @@ define(['marionette',
         },
         
         events: {
-            'click @ui.imp': 'toggleImplicit',
             'keypress @ui.user': 'keypressUser',
         },
         
         ui: {
-            imp: 'a.imp',
             user: 'input[name=adduser]',
         },
         
@@ -71,33 +69,16 @@ define(['marionette',
             this.users.queryParams.pjid = this.model.get('PROJECTID')
             this.users.fetch()
             
-            this.implicit = 1
-            
-            this.proteins = new Proteins(null, { queryParams: { pjid: this.model.get('PROJECTID'), imp: this.isImplicit.bind(this) }, state: { pageSize: 5 } })
+            this.proteins = new Proteins(null, { queryParams: { pjid: this.model.get('PROJECTID') }, state: { pageSize: 5 } })
             this.proteins.fetch()
             
-            this.samples = new Samples(null, { queryParams: { pjid: this.model.get('PROJECTID'), imp: this.isImplicit.bind(this) }, state: { pageSize: 5 } })
+            this.samples = new Samples(null, { queryParams: { pjid: this.model.get('PROJECTID') }, state: { pageSize: 5 } })
             this.samples.fetch()
             
-            this.dcs = new DCCol(null, { queryParams: { pjid: this.model.get('PROJECTID'), imp: this.isImplicit.bind(this), pp: 5 } })
+            this.dcs = new DCCol(null, { queryParams: { pjid: this.model.get('PROJECTID'), pp: 5 } })
             this.dcs.fetch()
         },
-        
-        
-        isImplicit: function() {
-            return this.implicit
-        },
-        
-        toggleImplicit: function(e) {
-            e.preventDefault()
-            this.implicit = this.implicit ? 0 : 1
-            this.ui.imp.children('span').text(this.implicit ? 'Implicit' : 'Explicit')
-            this.proteins.fetch()
-            this.samples.fetch()
-            this.dcs.fetch()
-        },
-        
-        
+
         getUsers: function(req, resp) {
             var self = this
             this.allusers.queryParams.s = req.term
