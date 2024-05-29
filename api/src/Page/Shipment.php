@@ -1014,7 +1014,7 @@ class Shipment extends Page
         }
 
         $dew = $this->db->pq(
-            "SELECT d.dewarid, d.barcode, d.storagelocation, d.dewarstatus, s.shippingid, CONCAT(p.proposalcode, p.proposalnumber) as proposal
+            "SELECT d.dewarid, d.barcode, d.storagelocation, d.dewarstatus, s.shippingid, p.proposalcode, CONCAT(p.proposalcode, p.proposalnumber) as proposal
                 FROM dewar d 
                 INNER JOIN shipping s ON s.shippingid = d.shippingid 
                 INNER JOIN proposal p ON p.proposalid = s.proposalid
@@ -1122,7 +1122,14 @@ class Shipment extends Page
             $data['LCEMAIL'] = '';
         $email->data = $data;
 
-        if ($country != $facility_country && !is_null($dispatch_email_intl)) {
+        if (
+            $country != $facility_country &&
+            array_key_exists('DELIVERYAGENT_AGENTNAME', $data) &&
+            $data['DELIVERYAGENT_AGENTNAME'] === 'DHL' &&
+            array_key_exists('PROPOSALCODE', $dew) &&
+            in_array($dew['PROPOSALCODE'], array('bi','cm','mx')) &&
+            !is_null($dispatch_email_intl)
+        ) {
             $recpts = $dispatch_email_intl;
         } else {
             $recpts = $dispatch_email;
