@@ -28,8 +28,8 @@ define([], function() {
             'stats/overview/beamlines': { title: 'Reporting', icon: 'fa-line-chart', permission: 'all_prop_stats' },
             'admin/imaging': { title: 'Imaging', icon: 'fa-image', permission: 'imaging_dash' },
             'dewars/overview': { title: 'Logistics', icon: 'fa-truck', permission: 'all_dewars' },
-            statistics: { title: 'Stats', icon: 'fa-pie-chart' },
-            faults: { title: 'Fault Reports', icon: 'fa-tasks' },
+            statistics: { title: 'Stats', icon: 'fa-pie-chart', permission: 'mx_admin' },
+            faults: { title: 'Fault Reports', icon: 'fa-tasks', permission: 'fault_view' },
         },
     }
 })

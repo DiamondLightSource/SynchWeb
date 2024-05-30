@@ -50,7 +50,6 @@
       </router-link>
     </div>
     <div
-      v-if="isStaff"
       class="tw-flex"
     >
       <!-- Only show those links with correct permission -->
