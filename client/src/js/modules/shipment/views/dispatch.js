@@ -60,7 +60,8 @@ define(['marionette', 'views/form',
             'click @ui.facc': 'showTerms',
             'blur @ui.postCode': 'stripPostCode',
             'blur @ui.addr': 'formatAddress',
-            'change @ui.country': 'checkPostCodeRequired'
+            'change @ui.country': 'checkPostCodeRequired',
+            'change @ui.dispatchCountry': 'showDispatchForm'
         },
         
         ui: {
@@ -80,17 +81,24 @@ define(['marionette', 'views/form',
             ph: 'input[name=PHONENUMBER]',
             lab: 'input[name=LABNAME]',
 
+            submit: 'button[name=submit]',
+
             facc: 'a.facc',
             accountNumber: 'input[NAME=DELIVERYAGENT_AGENTCODE]',
             courier: 'input[name=DELIVERYAGENT_AGENTNAME]',
             courierDetails: '.courierDetails',
+            dispatchDetails: '.dispatchDetails',
             facilityCourier: '.facilityCourier',
             awbNumber: 'input[name=AWBNUMBER]',
             useAnotherCourierAccount: 'input[name=USE_ANOTHER_COURIER_ACCOUNT]',
-            dispatchState: '.dispatch-state'
+            dispatchState: '.dispatch-state',
+
+            dispatchCountry: 'select[name=DISPATCHCOUNTRY]',
+            courierSection: '.courierSection'
         },
 
         labContactCountry : null,
+        dispatchCountry: null,
 
         templateHelpers: function() {
             return {
@@ -111,15 +119,37 @@ define(['marionette', 'views/form',
         },
         
         success: function() {
-            app.trigger('shipment:show', this.getOption('dewar').get('SHIPPINGID'))
+            if (
+                app.options.get("shipping_service_app_url")
+                && (Number(this.terms.get('ACCEPTED')) === 1) // terms.ACCPETED could be undefined, 1, or "1"
+                && app.options.get("facility_courier_countries").includes(this.dispatchCountry)
+            ) {
+                this.getOption('dewar').fetch().done((dewar) => {
+                    const external_id = dewar.EXTERNALSHIPPINGIDFROMSYNCHROTRON;
+                    if (external_id === null){
+                        app.alert({message: "Error performing redirect: external shipping id is null"})
+                        return;
+                    }
+                    window.location.assign(
+                        `${app.options.get("shipping_service_app_url")}/shipment-requests/${external_id}/outgoing`
+                    )
+                })
+            } else {
+                app.trigger('shipment:show', this.getOption('dewar').get('SHIPPINGID'))
+            }
         },
 
-        failure: function() {
-            app.alert({ message: 'Something went wrong registering this dispatch request, please try again'})
+        failure: function(_model, response, _options) {
+            app.alert({
+                message: `Something went wrong registering this dispatch request, please try again<br/>
+                          Detail: ${response.responseJSON.message}`,
+                persist: true
+            })
         },
         
         onRender: function() {
             this.date('input[name=DELIVERYAGENT_SHIPPINGDATE]')
+            this.$el.hide()
 
             var d = new Date()
             var today = (d.getDate() < 10 ? '0'+d.getDate() : d.getDate()) + '-' + (d.getMonth() < 9 ? '0'+(d.getMonth()+1) : d.getMonth()+1) + '-' + d.getFullYear()
@@ -147,9 +177,20 @@ define(['marionette', 'views/form',
         doOnRender: function() {
             this.ui.exp.html(this.visits.opts()).val(this.model.get('VISIT'))
             this.updateLC()
+            this.populateDispatchCountries()
             this.populateCountries()
             this.stripPostCode()
             this.formatAddress()
+            this.$el.show()
+            this.hideDispatchForm();
+        },
+
+        populateDispatchCountries: function () {
+            const dispatchCountryOptions = [...app.options.get("facility_courier_countries"), 'Other']
+                .map((country) => `<option>${country}</option>`)
+                .join("");
+            this.ui.dispatchCountry.html(dispatchCountryOptions);
+            this.ui.dispatchCountry.val('');
         },
 
         populateCountries: function() {
@@ -240,6 +281,30 @@ define(['marionette', 'views/form',
             }
         },
 
+        hideDispatchForm: function () {
+            this.ui.courierSection.hide();
+            this.ui.dispatchDetails.hide();
+            this.ui.submit.hide();
+        },
+
+        showDispatchForm: function() {
+            this.dispatchCountry = this.ui.dispatchCountry.val()
+            this.ui.courierSection.show();
+            this.ui.dispatchDetails.show();
+            this.model.dispatchDetailsRequired = true
+            this.ui.submit.show();
+            if (
+                this.terms.get("ACCEPTED")
+                && app.options.get("shipping_service_app_url")
+                && app.options.get("facility_courier_countries").includes(this.dispatchCountry)
+            ){
+                this.model.visitRequired = false
+                this.ui.dispatchDetails.hide()
+                this.model.dispatchDetailsRequired = false
+                this.ui.submit.text("Proceed")
+            }
+        },
+
         showTerms: function() {
             var terms = new TCDialog({ model: this.terms })
             this.listenTo(terms, 'terms:accepted', this.termsAccepted, this)
@@ -266,6 +331,14 @@ define(['marionette', 'views/form',
             this.ui.courierDetails.hide()
             this.ui.facilityCourier.show()
             this.model.courierDetailsRequired = false
+            if (
+                app.options.get("shipping_service_app_url")
+                && app.options.get("facility_courier_countries").includes(this.ui.dispatchCountry.val())
+            ){
+                this.model.visitRequired = false
+                this.ui.dispatchDetails.hide()
+                this.ui.submit.text("Proceed")
+            }
         },
 
         checkPostCodeRequired: function() {

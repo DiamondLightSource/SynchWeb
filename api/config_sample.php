@@ -263,6 +263,8 @@
     # Shipping service details
     $use_shipping_service = null;
     $use_shipping_service_incoming_shipments = null;
+    $use_shipping_service_redirect = null;
+    $use_shipping_service_redirect_incoming_shipments = null;
     $shipping_service_api_url = null;
     $shipping_service_api_user = null;
     $shipping_service_api_password = null;
@@ -308,7 +310,7 @@
 
     # These map proposal types to their proposalcode
     # - If these are not defined for a proposal type, the api then uses bl_types below
-    $prop_types = array('mx', 'em');
+    $prop_types = array('mx');
 
     # This maps beamlinename in blsession to a proposal type
     # - Internal maps a beamline to an api "type", there are currently:
@@ -336,6 +338,9 @@
             'archived' => False
         )
     );
+
+    # Redirects, used internally when incrementally replacing parts of the application
+    $redirects = array('em' => 'https://ebic-pato.diamond.ac.uk');
 
     # Web-conexs URLs
     $conexs_url = '';

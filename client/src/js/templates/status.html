@@ -1,11 +1,8 @@
-<h1 class="status"><%-BL%> Webcams &amp; Beamline Status</h1>
-<div class="status <% if (BL =='i02') { %>three<% } %>">
+<h1 class="status"><span class="showhide">Show</span> <%-BL%> Webcams &amp; Beamline Status <span class="arrows">&#11167;</span></h1>
+<div class="status">
     <div class="pvs"></div>
     <div class="streamed-pvs"></div>
 
     <div class="webcam"><img src="#" alt="webcam1" /></div>
     <div class="webcam"><img src="#" alt="webcam2" /></div>
-    <% if (BL =='i02') { %>
-	<div class="webcam"><img src="#" alt="webcam3" /></div>
-    <% } %>
 </div>

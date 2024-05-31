@@ -1,26 +1,39 @@
 <h1>Create Air Waybill: <% if (RETURN) { %>From Facility<% } else { %>To Facility<% } %></h1>
 
-<h2>Shipment Details</h2>
 <div class="form">
     <ul>
         <li>
             <span class="label">Shipment</span>
             <span class="SHIPPINGNAME"><%-SHIPPINGNAME%></span>
         </li>
-
+    
         <li class="clearfix">
             <span class="label">Dewars</span>
             <span class="DEWARS floated"></span>
         </li>
-
+    
         <li>
-            <span class="label">Weight</span>
-            <span class="WEIGHT"></span> <span>Kg</span>
+            <span class="label">Country
+                <br />
+                <span class="small">The country the shipment is being sent from</span>
+            </span>
+            <select name="SHIPMENTCOUNTRY"></select>
         </li>
-
+    
         <li>
             <span class="label">DHL Account Number</span>
             <span class="DELIVERYAGENT_AGENTCODE"><%-DELIVERYAGENT_AGENTCODE%></span> <a href="#" class="facc button"><i class="fa fa-envelope"></i> Use Facility Account</a> <span class="acc_msg"></span>
+        </li>
+    </ul>
+</div>
+
+<div class="createAWBForm">
+<h2>Shipment Details</h2>
+<div class="form">
+    <ul>
+        <li>
+            <span class="label">Weight</span>
+            <span class="WEIGHT"></span> <span>Kg</span>
         </li>
 
         <li>
@@ -127,6 +140,7 @@
     I understand that use of DHL’s services is entirely at my own risk and that Diamond makes no representations or warranties of any kind (express or implied) about the reliability or availability of the DHL service. Any reliance that I place on the DHL service is strictly at my own risk. It is my responsibility to ensure that samples arrive at Diamond in advance of any beamtime that Diamond may have awarded me and I hereby indemnify and hold Diamond harmless for any loss or damage arising out of my use of DHL’s services.</p>
 
     <p class="terms-quote justify">I understand that use of DHL's services is entirely at my own risk and that Diamond makes no representations or warranties of any kind (express or implied)about the reliability or availability of the DHL service. Any reliance that I place on the DHL service is strictly at my own risk. It is my responsibility to ensure that I am authorised to use the DHL account that I provide to Diamond and to ensure that the samples arrive at Diamond in advance of any beamtime that Diamond may have awarded me. I hereby indemnify and hold Diamond harmless for any loss or damage arising out of my use of DHL’s services.</p>
+</div>
 </div>
 
 <div class="form">
