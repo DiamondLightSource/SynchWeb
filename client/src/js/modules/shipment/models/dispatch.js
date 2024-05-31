@@ -16,29 +16,24 @@ define(['backbone'], function(Backbone) {
         },
 
         VISIT: {
-            required: true,
+            required: function() {
+                return this.visitRequired
+            },
             pattern: 'visit',
         },
 
-        LOCALCONTACT: {
-            required: false,
-            pattern: 'wwsddash'
-        },
-
-
-
         GIVENNAME: {
-            required: true,
+            required: function () {return this.dispatchDetailsRequired},
             pattern: 'wwdash',
         },
 
         FAMILYNAME: {
-            required: true,
+            required: function () {return this.dispatchDetailsRequired},
             pattern: 'wwdash',
         },
 
         PHONENUMBER: {
-            required: true,
+            required: function () {return this.dispatchDetailsRequired},
         },
 
         EMAILADDRESS: {
@@ -47,26 +42,26 @@ define(['backbone'], function(Backbone) {
         },
 
         LABNAME: {
-            required: true,
+            required: function () {return this.dispatchDetailsRequired},
             pattern: 'wwsdash',
         },
 
         ADDRESS: {
-            required: true
+            required: function () {return this.dispatchDetailsRequired}
         },
 
         CITY: {
-            required: true
+            required: function () {return this.dispatchDetailsRequired}
         },
 
         POSTCODE: {
             required: function() {
-                return this.postCodeRequired
+                return this.postCodeRequired && this.dispatchDetailsRequired
             }
         },
 
         COUNTRY: {
-            required: true,
+            required: function () {return this.dispatchDetailsRequired},
             pattern: 'country',
             fn: function (value, attr, state) {
                 if (value === null) {
@@ -77,12 +72,12 @@ define(['backbone'], function(Backbone) {
 
 
         DESCRIPTION: {
-            required: true,
+            required: function () {return this.dispatchDetailsRequired},
         },
 
         DELIVERYAGENT_SHIPPINGDATE: {
             pattern: 'edate',
-            required: true,
+            required: function () {return this.dispatchDetailsRequired},
         },
 
         
@@ -106,8 +101,10 @@ define(['backbone'], function(Backbone) {
 
     },
 
+    dispatchDetailsRequired: true,
     courierDetailsRequired: false, // We want to set this default to false unless 'DELIVERYAGENT_AGENTCODE' has a value in the shipment model
     postCodeRequired: false,
+    visitRequired: true,
   })
        
 })

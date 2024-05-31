@@ -3,7 +3,6 @@ define(['marionette',
     
         'modules/dc/dclist',
         'modules/dc/views/samplechanger',
-        'modules/dc/views/dclog',
         'views/status',
         
         'views/search',
@@ -18,7 +17,7 @@ define(['marionette',
         'templates/dc/dclist.html',
         ],
 function(Marionette, Pages, DCListView,
-         SampleChanger, DCLogView, StatusView, Search, Filter, DialogView, QueueBuilderView, UserView, DewarsView,
+         SampleChanger, StatusView, Search, Filter, DialogView, QueueBuilderView, UserView, DewarsView,
          ReprocessOverview,
          template) {
 
@@ -37,7 +36,6 @@ function(Marionette, Pages, DCListView,
         search: '.srch',
         type: '.type',
         sc: '.sc',
-        log: '.lg',
         status: '.st',
         use: '.usage',
     },
@@ -147,12 +145,6 @@ function(Marionette, Pages, DCListView,
             // Sample changer
             console.log('get sc', this.getOption('sampleChanger'))
             if (this.getOption('sampleChanger') && this.options.params.visit && !app.mobile()) this.sc.show(new SampleChanger({ visit: this.options.params.visit, dcs: this.collection, bl: this.model.get('BL') }))
-          
-            // Log View
-            this.log.show(new DCLogView({ collection: this.collection }))
-          
-            // Status Display
-                
         }
         
         if (this.model && this.model.get('CAMS') == 1) {
