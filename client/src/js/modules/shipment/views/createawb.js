@@ -140,8 +140,10 @@ define(['backbone',
         toggleFacilityCourier: function() {
             const shipmentCountry = this.ui.shipmentCountry.val();
             if (
-                app.options.get('facility_courier_countries').indexOf(shipmentCountry) > -1
-                || app.options.get('facility_courier_countries_nde').indexOf(shipmentCountry) > -1 
+                app.options.get("shipping_service_app_url_incoming") && (
+                    app.options.get('facility_courier_countries').indexOf(shipmentCountry) > -1
+                    || app.options.get('facility_courier_countries_nde').indexOf(shipmentCountry) > -1
+                )
             ) {
                 if (this.terms.get('ACCEPTED')) {
                     this.$el.find('.DELIVERYAGENT_AGENTCODE').hide()
@@ -493,7 +495,7 @@ define(['backbone',
                 success: function(resp) {
                     if (
                         app.options.get("shipping_service_app_url_incoming")
-                        && (Number(self.terms.get('ACCEPTED')) === 1) // terms.ACCPETED could be undefined, 1, or "1"
+                        && (Number(self.terms.get('ACCEPTED')) === 1) // terms.ACCEPTED could be undefined, 1, or "1"
                         && app.options.get("facility_courier_countries").includes(self.ui.shipmentCountry.val())
                     ) {
                         self.shipment.fetch().done((shipment) => {
