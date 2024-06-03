@@ -112,6 +112,7 @@ define(['backbone',
             terms: '.terms',
             termsq: '.terms-quote',
             shipmentCountry: 'select[name=SHIPMENTCOUNTRY]',
+            countrySelect: '.countrySelect',
 
             createAWBForm: '.createAWBForm',
         },
@@ -140,10 +141,11 @@ define(['backbone',
         toggleFacilityCourier: function() {
 
             if (app.options.get("shipping_service_app_url_incoming")) {
+                this.ui.countrySelect.show()
                 const shipmentCountry = this.ui.shipmentCountry.val();
                 if (
-                        app.options.get('facility_courier_countries').indexOf(shipmentCountry) > -1
-                        || app.options.get('facility_courier_countries_nde').indexOf(shipmentCountry) > -1
+                    app.options.get('facility_courier_countries').indexOf(shipmentCountry) > -1
+                    || app.options.get('facility_courier_countries_nde').indexOf(shipmentCountry) > -1
                 ) {
                     if (this.terms.get('ACCEPTED')) {
                         this.$el.find('.DELIVERYAGENT_AGENTCODE').hide()
@@ -309,6 +311,7 @@ define(['backbone',
             this.ui.submit.hide()
             this.ui.qwrap.hide()
             this.ui.terms.hide()
+            this.ui.countrySelect.hide()
 
             if (
                 app.options.get('facility_courier_countries').length
