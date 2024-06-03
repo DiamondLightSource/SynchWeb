@@ -138,37 +138,59 @@ define(['backbone',
         _lcFields: ['PHONENUMBER', 'EMAILADDRESS', 'LABNAME', 'ADDRESS', 'CITY', 'POSTCODE','COUNTRY', 'GIVENNAME', 'FAMILYNAME'],
 
         toggleFacilityCourier: function() {
-            const shipmentCountry = this.ui.shipmentCountry.val();
-            if (
-                app.options.get("shipping_service_app_url_incoming") && (
-                    app.options.get('facility_courier_countries').indexOf(shipmentCountry) > -1
-                    || app.options.get('facility_courier_countries_nde').indexOf(shipmentCountry) > -1
-                )
-            ) {
-                if (this.terms.get('ACCEPTED')) {
-                    this.$el.find('.DELIVERYAGENT_AGENTCODE').hide()
-                    this.ui.acc_msg.text('Paid for by Facility')
-                    this.ui.facc.hide()
-                    this.ui.quote.hide()
-                    this.ui.submit.show()
-                    this.ui.termsq.hide()
-                    this.ui.terms.show()
-                    this.shipment.validation.DELIVERYAGENT_AGENTCODE.required = false
-                    this.setPickupDetailsRequired(false)
-                    this.setEmailRequired(false)
-                    this.ui.createAWBForm.hide()
-                    this.ui.submit.text("Proceed")
+
+            if (app.options.get("shipping_service_app_url_incoming")) {
+                const shipmentCountry = this.ui.shipmentCountry.val();
+                if (
+                        app.options.get('facility_courier_countries').indexOf(shipmentCountry) > -1
+                        || app.options.get('facility_courier_countries_nde').indexOf(shipmentCountry) > -1
+                ) {
+                    if (this.terms.get('ACCEPTED')) {
+                        this.$el.find('.DELIVERYAGENT_AGENTCODE').hide()
+                        this.ui.acc_msg.text('Paid for by Facility')
+                        this.ui.facc.hide()
+                        this.ui.quote.hide()
+                        this.ui.submit.show()
+                        this.ui.termsq.hide()
+                        this.ui.terms.show()
+                        this.shipment.validation.DELIVERYAGENT_AGENTCODE.required = false
+                        this.setPickupDetailsRequired(false)
+                        this.setEmailRequired(false)
+                        this.ui.createAWBForm.hide()
+                        this.ui.submit.text("Proceed")
+                    } else {
+                        this.ui.facc.show()
+                        this.ui.createAWBForm.show()
+                        this.setPickupDetailsRequired(true)
+                        this.setEmailRequired(true)
+                    }
                 } else {
-                    this.ui.facc.show()
+                    this.ui.facc.hide()
                     this.ui.createAWBForm.show()
                     this.setPickupDetailsRequired(true)
                     this.setEmailRequired(true)
                 }
+
             } else {
-                this.ui.facc.hide()
-                this.ui.createAWBForm.show()
-                this.setPickupDetailsRequired(true)
-                this.setEmailRequired(true)
+                if (
+                    app.options.get('facility_courier_countries').indexOf(this.lc.get('COUNTRY')) > -1 ||
+                    app.options.get('facility_courier_countries_nde').indexOf(this.lc.get('COUNTRY')) > -1
+                ) {
+                    if (this.terms.get('ACCEPTED')) {
+                        this.$el.find('.DELIVERYAGENT_AGENTCODE').hide()
+                        this.ui.acc_msg.text('Paid for by Facility')
+                        this.ui.facc.hide()
+                        this.ui.quote.hide()
+                        this.ui.submit.show()
+                        this.ui.termsq.hide()
+                        this.ui.terms.show()
+                        this.shipment.validation.DELIVERYAGENT_AGENTCODE.required = false
+                    } else {
+                        this.ui.facc.show()
+                    }
+                } else {
+                    this.ui.facc.hide()
+                }
             }
         },
 
@@ -282,7 +304,7 @@ define(['backbone',
         
         onRender: function() {
             this.$el.hide()
-            this.ui.createAWBForm.hide()
+            this.ui.createAWBForm.show()
             this.ui.facc.hide()
             this.ui.submit.hide()
             this.ui.qwrap.hide()
