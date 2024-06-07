@@ -1020,10 +1020,11 @@ class Shipment extends Page
         }
 
         $server_port = ($_SERVER['SERVER_PORT']==='443') ? '' : ":{$_SERVER['SERVER_PORT']}";
+        $protocol = isset($_SERVER["HTTPS"]) ? 'https' : 'http';
         $shipment_request_info = array(
             "proposal" => $proposal,
             "external_id" => $external_id,
-            "origin_url" => "https://{$_SERVER['SERVER_NAME']}{$server_port}/shipments/sid/{$shipping_id}",
+            "origin_url" => "{$protocol}://{$_SERVER['SERVER_NAME']}{$server_port}/shipments/sid/{$shipping_id}",
             "packages" => $packages
         );
         $response = $this->shipping_service->create_shipment_request($shipment_request_info);
