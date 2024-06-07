@@ -2969,7 +2969,7 @@ class Shipment extends Page
                 // TODO: Use null access operator when we upgrade to PHP 8
                 $error_response = $error_json->content->detail ?? $e->getMessage();
                 $error_status = $error_json->status ? $error_json->status : 400; // Status can be 0
-                $this->_error("Shipping service error: $error_response", $error_status);
+                $this->_error("Shipping service error: " . json_encode($error_response), $error_status);
             }
         }
 

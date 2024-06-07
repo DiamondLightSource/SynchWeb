@@ -111,8 +111,7 @@ define(['backbone',
             qwrap: '.qwrap',
             terms: '.terms',
             termsq: '.terms-quote',
-            shipmentCountry: 'select[name=SHIPMENTCOUNTRY]',
-            countrySelect: '.countrySelect',
+            country: '.COUNTRY',
 
             createAWBForm: '.createAWBForm',
         },
@@ -124,7 +123,6 @@ define(['backbone',
             'change input':  'validateField',
             'blur input':  'validateField',
             'keyup input':  'validateField',
-            'change @ui.shipmentCountry': 'toggleFacilityCourier',
         },
 
         templateHelpers: function() {
@@ -139,13 +137,10 @@ define(['backbone',
         _lcFields: ['PHONENUMBER', 'EMAILADDRESS', 'LABNAME', 'ADDRESS', 'CITY', 'POSTCODE','COUNTRY', 'GIVENNAME', 'FAMILYNAME'],
 
         toggleFacilityCourier: function() {
-
             if (app.options.get("shipping_service_app_url_incoming")) {
-                this.ui.countrySelect.show()
-                const shipmentCountry = this.ui.shipmentCountry.val();
                 if (
-                    app.options.get('facility_courier_countries').indexOf(shipmentCountry) > -1
-                    || app.options.get('facility_courier_countries_nde').indexOf(shipmentCountry) > -1
+                    app.options.get('facility_courier_countries').indexOf(this.lc.get('COUNTRY')) > -1
+                    || app.options.get('facility_courier_countries_nde').indexOf(this.lc.get('COUNTRY')) > -1
                 ) {
                     if (this.terms.get('ACCEPTED')) {
                         this.$el.find('.DELIVERYAGENT_AGENTCODE').hide()
@@ -311,7 +306,6 @@ define(['backbone',
             this.ui.submit.hide()
             this.ui.qwrap.hide()
             this.ui.terms.hide()
-            this.ui.countrySelect.hide()
 
             if (
                 app.options.get('facility_courier_countries').length
@@ -361,7 +355,6 @@ define(['backbone',
         },
 
         doOnRender: function() {
-            this.populateShipmentCountries();
             this.populateLC()
 
             var cedit = new Editable({ model: this.lc, el: this.$el })
@@ -396,14 +389,6 @@ define(['backbone',
             _.each(this._lcFields, function(a) {
                 if (this.lc.get(a)) this.$el.find('.'+a).text(this.lc.get(a))
             }, this)
-        },
-
-        populateShipmentCountries: function () {
-            const shipmentCountryOptions = [...app.options.get("facility_courier_countries"), 'Other']
-                .map((country) => `<option>${country}</option>`)
-                .join("");
-            this.ui.shipmentCountry.html(shipmentCountryOptions);
-            this.ui.shipmentCountry.val(this.lc.get('COUNTRY'));
         },
 
         showTerms: function() {
@@ -507,6 +492,7 @@ define(['backbone',
             app.alert({ message: 'Creating Air Waybill and Booking Pickup, Please Wait...'})
 
             var self = this
+            var country = this.lc.get('COUNTRY')
             Backbone.ajax({
                 url: app.apiurl+'/shipment/awb/'+this.shipment.get('SHIPPINGID'),
                 method: 'POST',
@@ -515,13 +501,13 @@ define(['backbone',
                     DECLAREDVALUE: this.ui.DECLAREDVALUE.val(),
                     DESCRIPTION: this.ui.DESCRIPTION.val(),
                     PRODUCTCODE: prod,
-                    COUNTRY: this.ui.shipmentCountry.val(),
+                    COUNTRY: country,
                 },
                 success: function(resp) {
                     if (
                         app.options.get("shipping_service_app_url_incoming")
                         && (Number(self.terms.get('ACCEPTED')) === 1) // terms.ACCEPTED could be undefined, 1, or "1"
-                        && app.options.get("facility_courier_countries").includes(self.ui.shipmentCountry.val())
+                        && app.options.get("facility_courier_countries").includes(country)
                     ) {
                         self.shipment.fetch().done((shipment) => {
                             const external_id = shipment.EXTERNALSHIPPINGIDTOSYNCHROTRON;
@@ -548,12 +534,12 @@ define(['backbone',
                     if (xhr.responseText) {
                         try {
                             json = $.parseJSON(xhr.responseText)
+                            app.alert({ message: json.message, persist:true })
+                            app.alert({ message: json.message})
                         } catch(err) {
                             console.error("Error parsing response: ", err)
                         }
                     }
-                    app.alert({ message: json.message, persist:true })
-                    app.alert({ message: json.message})
                     self.ui.submit.prop('disabled', false)
                     self.$el.removeClass('loading')
                 }
