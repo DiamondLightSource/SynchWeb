@@ -1218,7 +1218,7 @@ class Shipment extends Page
                         $error_json = json_decode($e->getMessage());
                         $error_response = $error_json->content->detail ?? $e->getMessage();
                         $error_status = $error_json->status ? $error_json->status : 400; // Status can be 0
-                        $this->_error("Shipping service error: $error_response", $error_status);
+                        $this->_error("Shipping service error: " . json_encode($error_response), $error_status);
                     }
                     if (Utils::getValueOrDefault($shipping_service_links_in_emails)) {
                         $data['AWBURL'] = "{$shipping_service_app_url}/shipment-requests/{$shipment_id}/outgoing";

@@ -60,8 +60,7 @@ define(['marionette', 'views/form',
             'click @ui.facc': 'showTerms',
             'blur @ui.postCode': 'stripPostCode',
             'blur @ui.addr': 'formatAddress',
-            'change @ui.country': 'checkPostCodeRequired',
-            'change @ui.dispatchCountry': 'showDispatchForm'
+            'change @ui.country': 'showDispatchForm',
         },
         
         ui: {
@@ -93,7 +92,6 @@ define(['marionette', 'views/form',
             useAnotherCourierAccount: 'input[name=USE_ANOTHER_COURIER_ACCOUNT]',
             dispatchState: '.dispatch-state',
 
-            dispatchCountry: 'select[name=DISPATCHCOUNTRY]',
             courierSection: '.courierSection'
         },
 
@@ -121,7 +119,7 @@ define(['marionette', 'views/form',
         success: function() {
             if (
                 app.options.get("shipping_service_app_url")
-                && (Number(this.terms.get('ACCEPTED')) === 1) // terms.ACCPETED could be undefined, 1, or "1"
+                && (Number(this.terms.get('ACCEPTED')) === 1) // terms.ACCEPTED could be undefined, 1, or "1"
                 && app.options.get("facility_courier_countries").includes(this.dispatchCountry)
             ) {
                 this.getOption('dewar').fetch().done((dewar) => {
@@ -177,20 +175,11 @@ define(['marionette', 'views/form',
         doOnRender: function() {
             this.ui.exp.html(this.visits.opts()).val(this.model.get('VISIT'))
             this.updateLC()
-            this.populateDispatchCountries()
             this.populateCountries()
             this.stripPostCode()
             this.formatAddress()
             this.$el.show()
-            this.hideDispatchForm();
-        },
-
-        populateDispatchCountries: function () {
-            const dispatchCountryOptions = [...app.options.get("facility_courier_countries"), 'Other']
-                .map((country) => `<option>${country}</option>`)
-                .join("");
-            this.ui.dispatchCountry.html(dispatchCountryOptions);
-            this.ui.dispatchCountry.val('');
+            this.showDispatchForm();
         },
 
         populateCountries: function() {
@@ -281,18 +270,21 @@ define(['marionette', 'views/form',
             }
         },
 
-        hideDispatchForm: function () {
-            this.ui.courierSection.hide();
-            this.ui.dispatchDetails.hide();
-            this.ui.submit.hide();
-        },
-
         showDispatchForm: function() {
-            this.dispatchCountry = this.ui.dispatchCountry.val()
+            this.checkPostCodeRequired()
+            this.dispatchCountry = this.ui.country.val()
             this.ui.courierSection.show();
             this.ui.dispatchDetails.show();
             this.model.dispatchDetailsRequired = true
             this.ui.submit.show();
+            if (
+                this.terms.get("ACCEPTED") ||
+                !app.options.get("facility_courier_countries").includes(this.dispatchCountry)
+            ) {
+                this.ui.facc.hide()
+            } else {
+                this.ui.facc.show()
+            }
             if (
                 this.terms.get("ACCEPTED")
                 && app.options.get("shipping_service_app_url")
@@ -302,6 +294,8 @@ define(['marionette', 'views/form',
                 this.ui.dispatchDetails.hide()
                 this.model.dispatchDetailsRequired = false
                 this.ui.submit.text("Proceed")
+            } else {
+                this.ui.submit.text("Request Dewar Dispatch")
             }
         },
 
@@ -333,7 +327,7 @@ define(['marionette', 'views/form',
             this.model.courierDetailsRequired = false
             if (
                 app.options.get("shipping_service_app_url")
-                && app.options.get("facility_courier_countries").includes(this.ui.dispatchCountry.val())
+                && app.options.get("facility_courier_countries").includes(this.ui.country.val())
             ){
                 this.model.visitRequired = false
                 this.ui.dispatchDetails.hide()
