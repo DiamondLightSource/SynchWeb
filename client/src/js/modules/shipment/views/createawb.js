@@ -136,57 +136,52 @@ define(['backbone',
 
         _lcFields: ['PHONENUMBER', 'EMAILADDRESS', 'LABNAME', 'ADDRESS', 'CITY', 'POSTCODE','COUNTRY', 'GIVENNAME', 'FAMILYNAME'],
 
+
+        updateFormAsTermsAccepted: function() {
+            this.$el.find('.DELIVERYAGENT_AGENTCODE').hide()
+            this.ui.acc_msg.text('Paid for by Facility')
+            this.ui.facc.hide()
+            this.ui.quote.hide()
+            this.ui.submit.show()
+            this.ui.termsq.hide()
+            this.ui.terms.show()
+            this.shipment.validation.DELIVERYAGENT_AGENTCODE.required = false
+        },
+
         toggleFacilityCourier: function() {
+            this.ui.createAWBForm.show()
+            this.setPickupDetailsRequired(true)
+            this.setEmailRequired(true)
             if (app.options.get("shipping_service_app_url_incoming")) {
                 if (
                     app.options.get('facility_courier_countries').indexOf(this.lc.get('COUNTRY')) > -1
                     || app.options.get('facility_courier_countries_nde').indexOf(this.lc.get('COUNTRY')) > -1
                 ) {
                     if (this.terms.get('ACCEPTED')) {
-                        this.$el.find('.DELIVERYAGENT_AGENTCODE').hide()
-                        this.ui.acc_msg.text('Paid for by Facility')
-                        this.ui.facc.hide()
-                        this.ui.quote.hide()
-                        this.ui.submit.show()
-                        this.ui.termsq.hide()
-                        this.ui.terms.show()
-                        this.shipment.validation.DELIVERYAGENT_AGENTCODE.required = false
+                        this.updateFormAsTermsAccepted()
                         this.setPickupDetailsRequired(false)
                         this.setEmailRequired(false)
                         this.ui.createAWBForm.hide()
                         this.ui.submit.text("Proceed")
                     } else {
                         this.ui.facc.show()
-                        this.ui.createAWBForm.show()
-                        this.setPickupDetailsRequired(true)
-                        this.setEmailRequired(true)
                     }
                 } else {
                     this.ui.facc.hide()
-                    this.ui.createAWBForm.show()
-                    this.setPickupDetailsRequired(true)
-                    this.setEmailRequired(true)
                 }
-
             } else {
                 if (
                     app.options.get('facility_courier_countries').indexOf(this.lc.get('COUNTRY')) > -1 ||
                     app.options.get('facility_courier_countries_nde').indexOf(this.lc.get('COUNTRY')) > -1
                 ) {
                     if (this.terms.get('ACCEPTED')) {
-                        this.$el.find('.DELIVERYAGENT_AGENTCODE').hide()
-                        this.ui.acc_msg.text('Paid for by Facility')
-                        this.ui.facc.hide()
-                        this.ui.quote.hide()
-                        this.ui.submit.show()
-                        this.ui.termsq.hide()
-                        this.ui.terms.show()
-                        this.shipment.validation.DELIVERYAGENT_AGENTCODE.required = false
+                        this.updateFormAsTermsAccepted()
                     } else {
                         this.ui.facc.show()
                     }
                 } else {
                     this.ui.facc.hide()
+
                 }
             }
         },
