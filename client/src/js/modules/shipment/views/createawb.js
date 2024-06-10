@@ -168,6 +168,8 @@ define(['backbone',
                     }
                 } else {
                     this.ui.facc.hide()
+                    this.ui.quote.show()
+                    this.ui.submit.hide()
                 }
             } else {
                 if (
@@ -181,7 +183,8 @@ define(['backbone',
                     }
                 } else {
                     this.ui.facc.hide()
-
+                    this.ui.quote.show()
+                    this.ui.submit.hide()
                 }
             }
         },
