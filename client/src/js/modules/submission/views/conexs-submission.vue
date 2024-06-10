@@ -119,7 +119,7 @@
           </p>
           <br>
 
-          <p>! BLYP DKH2 def2-SVP def2/J SlowConv NoFinalGrid # This is a comment</p>
+          <p>! BLYP DKH2 def2-SVP SARC/J # This is a comment</p>
           <br>
 
           <p>%maxcore 5024 # global scratch memory limit (in MB) per processing core.</p>
@@ -154,8 +154,6 @@
           <p>def2/J &nbsp; - Coulomb-fitting auxiliary basis sets (AuxJ); see Table 9.8: Basis sets availability.</p>
           <p>UKS &nbsp; - selects spin unrestricted SCF method; Table 6.1: Main keywords that can be used in the simple input of ORCA.</p>
           <p>RKS &nbsp; - selects restricted closed-shell SCF method.</p>
-          <p>SlowConv &nbsp; - selects appropriate SCF converger criteria for difficult cases. Most transition metal complexes fall into this category.</p>
-          <p>NoFinalGrid &nbsp; - turns the final integration grid feature off.</p>
           <br>
 
 
@@ -207,12 +205,13 @@
             <select
               v-model="functional"
               name="functional"
-              title="BLYP is a generalized gradient approximation (GGA) DFT functional;
+              title="BP86 and BLYP are generalized gradient approximation (GGA) DFT functionals;
 B3LYP is a hybrid DFT GGA functional (20% HF exchange)."
               @change="overviewBuilder()"
             >
+              <option>BP86</option>
               <option>BLYP</option>
-              <option>B3LYP</option>
+              <option>B3LYP RIJCOSX</option>
             </select>
                         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 
@@ -222,11 +221,12 @@ B3LYP is a hybrid DFT GGA functional (20% HF exchange)."
               name="basis"
               title="These basis sets are all-electron for elements H-Kr, and automatically load Stuttgart-Dresden effective core potentials for elements Rb-Rn.
 def2-SVP is a valence double-zeta basis set with 'new' polarization functions.
-def2-SV(P) is the same with slightly reduced polarization."
+def2-SV(P) is the same with slightly reduced polarization. For elements beyond Ar in the periodic table we recommend using the def2-TZVP basis set."
               @change="overviewBuilder()"
             >
               <option>def2-SVP</option>
               <option>def2-SV(P)</option>
+              <option>def2-TZVP</option>
             </select>
           </li>
           <li>
@@ -937,7 +937,7 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
             :class="{ferror: errors.has('orcaStopValue')}"
           >
                     &nbsp;
-          <label class="notLeft">Broadening (eV):</label>
+          <label class="notLeft">Gaussian Broadening (eV):</label>
                     &nbsp;
           <input
             v-model="orcaBroadening"
@@ -1144,9 +1144,8 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
                 orbWin1Stop: 0,
                 orcaSpectrumType: '',
                 orcaMapKeyword: [
-                    "", "ABS", "ABSV", "ABSQ", "ABSOI", "SOCABS", "SOCABSQ", "SOCABSOI", "XES", "XESV", "XESQ",
-                    "CD", "IR", "RAMAN", "NRVS", "VDOS", "MCD", "XESOI", "XAS", "XASV", "XASQ", "XASOI", "XESSOC", "XASSOC",
-                    "RIXS", "RIXSSOC"
+                    "", "ABS", "ABSQ", "XES", "XESQ",
+                    "XAS", "XASQ"
                 ],
                 orcaStartValue: 0,
                 orcaStopValue: 1000,
@@ -1449,13 +1448,12 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
             // Build Orca overview file/string based on form inputs or files uploaded
             orcaOverviewBuilder: function(event){
                 if (this.technique == 'Xas') {
-                    this.output = '! ' + this.functional + ' DKH2 ' + this.basis + ' def2/J '
+                    this.output = '! ' + this.functional + ' DKH2 ' + this.basis + ' SARC/J '
 
                     if (this.solvent != 'None') {
                         this.output += 'CPCM(' + this.solvent + ') '
                     }
 
-                    this.output += 'SlowConv NoFinalGrid' + "\n"
                     this.output += '%maxcore 5024' + "\n\n"
                     this.output += '%pal nprocs ' + this.cpus + "\n"
                     this.output += 'end' + "\n\n"
@@ -1472,13 +1470,11 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
                     this.output += 'end' + "\n\n"
                 }
                 else if (this.technique == 'Xes') {
-                    this.output = '! UKS ' + this.functional + ' DKH2 ' + this.basis + ' def2/J '
+                    this.output = '! UKS ' + this.functional + ' DKH2 ' + this.basis + ' SARC/J '
 
                     if (this.solvent != 'None') {
                         this.output += 'CPCM(' + this.solvent + ') '
                     }
-                    this.output += 'SlowConv' + "\n"
-                    this.output += '! NoFinalGrid' + "\n\n"
                     this.output += '%maxcore 5024' + "\n\n"
                     this.output += '%pal nprocs ' + this.cpus + "\n"
                     this.output += 'end' + "\n\n"
@@ -1494,7 +1490,6 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
 
                 if (this.solvent != 'None') {
                     this.output += '%cpcm' + "\n"
-
                     var solventArr = []
 
                     for(var i=0; i < this.orca_solvents.length; i++){
