@@ -1020,10 +1020,11 @@ class Shipment extends Page
         }
 
         $server_port = ($_SERVER['SERVER_PORT']==='443') ? '' : ":{$_SERVER['SERVER_PORT']}";
+        $protocol = isset($_SERVER["HTTPS"]) ? 'https' : 'http';
         $shipment_request_info = array(
             "proposal" => $proposal,
             "external_id" => $external_id,
-            "origin_url" => "https://{$_SERVER['SERVER_NAME']}{$server_port}/shipments/sid/{$shipping_id}",
+            "origin_url" => "{$protocol}://{$_SERVER['SERVER_NAME']}{$server_port}/shipments/sid/{$shipping_id}",
             "packages" => $packages
         );
         $response = $this->shipping_service->create_shipment_request($shipment_request_info);
@@ -1217,7 +1218,7 @@ class Shipment extends Page
                         $error_json = json_decode($e->getMessage());
                         $error_response = $error_json->content->detail ?? $e->getMessage();
                         $error_status = $error_json->status ? $error_json->status : 400; // Status can be 0
-                        $this->_error("Shipping service error: $error_response", $error_status);
+                        $this->_error("Shipping service error: " . json_encode($error_response), $error_status);
                     }
                     if (Utils::getValueOrDefault($shipping_service_links_in_emails)) {
                         $data['AWBURL'] = "{$shipping_service_app_url}/shipment-requests/{$shipment_id}/outgoing";
@@ -2968,7 +2969,7 @@ class Shipment extends Page
                 // TODO: Use null access operator when we upgrade to PHP 8
                 $error_response = $error_json->content->detail ?? $e->getMessage();
                 $error_status = $error_json->status ? $error_json->status : 400; // Status can be 0
-                $this->_error("Shipping service error: $error_response", $error_status);
+                $this->_error("Shipping service error: " . json_encode($error_response), $error_status);
             }
         }
 
