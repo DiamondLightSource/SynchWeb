@@ -109,64 +109,30 @@
           <p>If you publish calculation results performed with ORCA code please cite the original papers:</p>
           <p><i>F. Neese, Wiley Interdisciplinary Reviews: Computational Molecular Science 2, 73 (2012).</i></p>
           <p><i>F. Neese, Wiley Interdisciplinary Reviews: Computational Molecular Science 8, e1327 (2018).</i></p>
-          <br>
-          <p>
-            In general, the input file is a free format ASCII file and can contain one or more keyword lines that start with a
-            "!" sign, one or more input blocks enclosed between an "%" sign and "end" that provide finer control over specific
-            aspects of the calculation, and finally the specification of the coordinates for the system along with the charge and
-            multiplicity provided either with a %coords block, or more usually enclosed within two "*" symbols. Here is an
-            example of a simple input file that contains all three input elements:
-          </p>
-          <br>
-
-          <p>! BLYP DKH2 def2-SVP SARC/J # This is a comment</p>
-          <br>
-
-          <p>%maxcore 5024 # global scratch memory limit (in MB) per processing core.</p>
-          <br>
-
-          <p>%pal nprocs 4 # requested number of CPUs</p>
-          <span>end</span>
           <br><br>
-
-          <span>* xyz 0 1</span>
-          <br>
-          <span>C &nbsp; 0.0 &nbsp; 0.0 &nbsp; 0.0</span>
-          <br>
-          <span>O &nbsp; 0.0 &nbsp; 0.0 &nbsp; 1.13</span>
-          <br>
-          <span>*</span>
+          <p>Performing X-Ray Spectral Calculations with ORCA</p>
           <br><br>
-
-          <p>
-            The input may contain several blocks, which consist of logically related data that can be user controlled. The program tries to choose sensible default values for all of these variables.
-            However, it is impossible to give defaults that are equally sensible for all systems. In general the defaults are slightly on the conservative side and more aggressive cutoffs etc. can
-            be chosen by the user and may help to speed things up for actual systems or give higher accuracy if desired. One-liner explanation (starts with !, order of the keywords is not important)
-          </p>
+          <p>For X-Ray Absorption Spectroscopy (XAS) calculations, we use the Time-Dependent Density Functional Theory (TD-DFT) approach.</p>
+          <p>In TD-DFT we must define the set of donor (core) and acceptor (empty) orbitals using the Orbital Window parameter orbwin[0] (and orbWin[1] in an open shell system), which defines the range of orbitals included in the calculation of the transitions. The 1s orbital is usually the lowest energy orbital and so has the index 0. We can specify the all of the empty orbitals using the flag -1 so:</p>
           <br>
-
-          <p>!Keywords Functional Hamiltonian BasisSet AuxBasisSet</p>
+          <p>orbwin[0] 0, 0, -1, -1</p>
           <br>
-
-          <p>BLYP &nbsp; - generalized gradient approximation (GGA) DFT functional; see Table 6.2: Density functionals available in ORCA.</p>
-          <p>DKH2 &nbsp; - scalar relativistic Douglas-Kroll-Hess Hamiltonian of 2nd order; see Table 6.2: Density functionals available in ORCA.</p>
-          <p>def2-SVP &nbsp; - basis set for H-Rn; see Table 9.8: Basis sets availability.</p>
-          <p>def2/J &nbsp; - Coulomb-fitting auxiliary basis sets (AuxJ); see Table 9.8: Basis sets availability.</p>
-          <p>UKS &nbsp; - selects spin unrestricted SCF method; Table 6.1: Main keywords that can be used in the simple input of ORCA.</p>
-          <p>RKS &nbsp; - selects restricted closed-shell SCF method.</p>
+          <p>requests a calculation of the transitions (or roots) between the 0 index orbital (1s) and all of the empty orbitals. If you require a transition from a 1s orbital that is not the lowest index orbital, search for the appropriate index in the output file under the section ORBITAL ENERGIES and use this in place of “0, 0”</p>
           <br>
-
-
-          <p>Reading geometry from file.xyz in XMol format with coordinates in Ångström and a 2-line header that contains the number of atoms and a description line:</p>
+          <p>Two other parameters important for the calculation of the XAS spectrum are doquad, which when set to true, tells ORCA to compute quadrupole-allowed transitions and nroots which determines the number of transitions to compute. A higher value of nroot corresponds to increasingly higher energy transitions.</p>
           <br>
-
-          <p>4</p>
-          <p>description line</p>
-          <p>C &nbsp; 0.000000000 &nbsp; 0.000000000 &nbsp; 0.000000000</p>
-          <p>O &nbsp; 2.362157486 &nbsp; 0.000000000 &nbsp; 0.000000000</p>
-          <p>H &nbsp; -1.109548835 &nbsp; 1.774545300 &nbsp; 0.000000000</p>
-          <p>H &nbsp; -1.109548835 &nbsp; -1.774545300 &nbsp; 0.000000000</p>
+          <p>The main ORCA TD-DFT program computes a set of discrete transition energies and oscillator strengths. A post-processing tool orca_mapspc translates ORCA output files into plottable spectra. The post-processing tool is used to prepare many different spectra, for the XAS spectrum you can use the options ABSQ and XASQ for quadrupole inclusive spectra.</p>
           <br>
+          <p>The spectrum can be plotted within a given energy range and with a given (Gaussian) broadening to approximate the core-hole lifetime broadening effects.</p>
+          <br><br>
+          <p>A note on the computation of XES spectra:</p>
+          <br>
+          <p>In XES mode, Web-CONEXS sets the acceptor core orbitals (final state) to the lowest energy orbitals through the keyword “CoreOrb 0,1”. In some cases, the final state could be to higher energy orbitals.</p>
+          <br>
+          <p>In this instance, the user must manually modify the core acceptor orbital within the input file. To do so, navigate to the ORBITAL ENERGIES section of the orca_result.txt and identify the index of the orbital with the correct energy. Using a plain text editor, update the “CoreOrb” keyword with the index of the desired orbital. You can run this calculation on your own computing facility or upload the new input file to Web-CONEXS for simulation.</p>
+          <br>
+          <p>The post processing tool orca_mapspc can be used to covert the main ORCA output into a plottable spectrum. For XES you can use either the XES or XESQ options to compute the spectrum with or without quadrupole transitions.<p>
+          <br><br>
         </div>
         <ul>
           <li>
@@ -360,9 +326,21 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
         :style="{display: fdmnesDisplay}"
       >
         <div style="float:right; width:40%; height:30%">
-          <p>FDMNES (Finite Difference Method Near Edge Structure) is to provide a user friendly code, which is able to simulate a broad range of x-ray spectroscopies, beyond the muffin tin approximation. This ab initio (first principles) approach which is based upon the finite difference method, aims to eliminate all methodological parameters and go beyond the limitations of the spherical muffin tin approximation. It includes density functional theory and time-dependent density functional theory.</p>
-          <span>FDMNES webpage: <a href="http://fdmnes.neel.cnrs.fr/">http://fdmnes.neel.cnrs.fr/</a></span>
+          <p>FDMNES (Finite Difference Method Near Edge Structure) is a user friendly software that provides access to x-ray spectra over a broad energy range. It uses the finite differences approach to go beyond the muffin tin approximation. This ab initio (first principles) approach, which is based upon the finite difference method, aims to eliminate all methodological parameters and go beyond the limitations of the spherical muffin tin approximation. It includes density functional theory and time-dependent density functional theory. It is still possible to compute the spectrum using the multiple-scattering muffin tin approach by specifying the keyword Green in the input file.</p>
+          <br><br>
+          <p>How to build upon an FDMNES simulated spectra<p>
           <br>
+          <p>Once you have generated a run an FDMNES calculation with Web-CONEXS there are a set of logical steps you can take to improves the spectrum as detailed in the FDMNES instructions manual, which we reproduce here for your convenience. </p>
+          <span><a href="https://cloud.neel.cnrs.fr/index.php/s/nL2c6kH2PLwcB5r">https://cloud.neel.cnrs.fr/index.php/s/nL2c6kH2PLwcB5r</a></span>
+          <br><br>
+          <p>If the system has elements heavier than Z = 50 add the keyword “Relativism” or “Spinorbit” to the input file. Note that this will increase the cost of the simulation.</p>
+          <br>
+          <p>For systems not in the gas phase, add the keyword “Vmax” equal to -6 eV.</p>
+          <p>Check how the spectrum changes as the size of the calculation radius is increased. The calculation radius is controlled by the parameter “Radius”.<p>
+          <p>By default the FDMNES uses an LDA exchange-correlation potential. Use the keyword “PBE96” to use a GGA functional instead.</p>
+          <p>Include Quadrupole transitions using the keyword “Quadrupole”</p>
+          <br><br>
+          <span>FDMNES webpage: <a href="http://fdmnes.neel.cnrs.fr/">http://fdmnes.neel.cnrs.fr/</a></span>
           <span>FDMNES theory and input: <a href="https://research.ncl.ac.uk/media/sites/researchwebsites/collaborativenetworkforx-rayspectroscopy/Joly_FDMNES_CONEXS_Newcastle.pdf">HJoly_FDMNES_CONEXS_Newcastle.pdf</a></span>
           <br><br>
           <p>If you publish calculation results performed with FDMNES code please cite the original papers:</p>
@@ -373,7 +351,7 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
         <br>
         <ul>
           <li>
-            <label class="left">Green?</label>
+            <label class="left">Use Green's function approach</label>
             <input
               v-model="fdmnes_method"
               type="checkbox"
