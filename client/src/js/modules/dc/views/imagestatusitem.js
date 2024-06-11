@@ -69,7 +69,7 @@ define(['marionette',
                 var sns = ''
                 for (var i = 1; i < this.model.get('SNS').length; i++) {
                     if (this.model.get('SNS')[i]) {
-                        sns += ('<a href="'+app.apiurl+'/image/id/'+id+'/f/1/n/'+(i+1)+'" title="Crystal Snapshot '+(i+1)+'"></a>')
+                        sns += ('<a href="'+app.apiurl+'/image/id/'+id+'/n/'+(i+1)+'" title="Crystal Snapshot '+(i+1)+'"></a>')
                     }
                 }
            

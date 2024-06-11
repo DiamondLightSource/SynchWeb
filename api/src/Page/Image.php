@@ -22,13 +22,13 @@ class Image extends Page
             'thresh' => '\d',
         );
 
-        public static $dispatch = array(array('/id/:id(/f/:f)(/n/:n)', 'get', '_xtal_image'),
+        public static $dispatch = array(array('/id/:id(/n/:n)', 'get', '_xtal_image'),
                               array('/diff/id/:id(/f/:f)(/n/:n)', 'get', '_diffraction_image'),
                               array('/di/id/:id(/thresh/:thresh)(/n/:n)', 'get', '_diffraction_viewer'),
                               array('/cam/bl/:bl(/n/:n)', 'get', '_forward_webcam'),
                               array('/oav/bl/:bl(/n/:n)', 'get', '_forward_oav'),
                               array('/fa/fid/:id', 'get', '_fault_attachment'),
-                              array('/ai/visit/:visit/aid/:aid(/n/:n)(/f/:f)', 'get', '_action_image'),
+                              array('/ai/visit/:visit/aid/:aid(/n/:n)', 'get', '_action_image'),
                               array('/dr/:drid', 'get', '_dewar_report_image'),
                               array('/cr/:crid', 'get', '_container_report_image'),
                             );
@@ -121,8 +121,6 @@ class Image extends Page
                 INNER JOIN proposal p ON s.proposalid = p.proposalid 
                 WHERE r.robotactionid=:1 AND CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) LIKE :2", array($this->arg('aid'), $this->arg('visit')));
             
-            //print_r($image);
-
             if (!sizeof($image)) return;
             else $image = $image[0];
             
@@ -133,10 +131,9 @@ class Image extends Page
             if ($n < sizeof($images)) {
                 $this->_browser_cache();
                 $ext = pathinfo($images[$n], PATHINFO_EXTENSION);
-                $file = $this->has_arg('f') ? $images[$n] : str_replace('.'.$ext, 't.'.$ext, $images[$n]);
-                if (file_exists($file)) {
+                if (file_exists($images[$n])) {
                     $this->app->contentType('image/'.$ext);
-                    readfile($file);
+                    readfile($images[$n]);
                 } else {
                     $this->_error('Not found', 'That image is no longer available');
                 }
@@ -161,11 +158,10 @@ class Image extends Page
             if ($n < sizeof($images)) {
                 $ext = pathinfo($images[$n], PATHINFO_EXTENSION);
 
-                $file = $this->has_arg('f') ? $images[$n] : str_replace('.'.$ext, 't.'.$ext, $images[$n]);
-                if (file_exists($file)) {
+                if (file_exists($images[$n])) {
                     $this->_browser_cache();
                     $this->app->contentType('image/'.$ext);
-                    readfile($file);
+                    readfile($images[$n]);
 
                 } else {
                     $this->_error('Not found', 'That image is no longer available');
