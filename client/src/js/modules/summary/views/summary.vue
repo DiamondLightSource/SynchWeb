@@ -9,15 +9,6 @@
             
         </div>
 
-        <!-- <div style="position:relative;border:1px solid blue;">
-            <div style="height: 100px; width: 100px; background: red; overflow: auto;">
-                if there is some really long content here, it will cause overflow, but the green box will not
-                <div style="position:absolute; z-index:1; left: 20px; top:0; height: 200px; width: 200px; background: green;">
-                </div>
-            </div>
-        </div> -->
-
-
         <div>
             <i class="tooltip fa fa-info-circle" aria-hidden="true">
                 <span class="tooltiptext">Use the Advanced Filter Search bar to filter your values</span>
@@ -72,120 +63,76 @@
                 </template>
 
                 <template v-slot:filter-bar-content>
-                    <div class="filter-grid tw-divide-x tw-divide-white">
-                        <div class="filter-options-grid tw-col-span-3 ">
+                    <div class="flex-thirds">
+                        <div class="tw-m-2" v-for="(value, index) in filters.slice(2)" :key="value.id">
+                            <div class="tw-flex">
+                                        <multi-input-dia 
+                                            class="tw-w-full"
+                                            :mult-input-selected="multiInputDicts[index+2]"
+                                            @selected-changed-multiinput="handleSelectedChange"
+                                        > 
+                                        <template v-slot:default>
+                                            <div>
+                                                <combo-box
+                                                    v-if="value.title!='Proposal'"
+                                                        class="combo-box t-mr-1 tw-text-black"
+                                                        :data="summaryParameters"
+                                                        textField="title"
+                                                        valueField="valueField"
+                                                        size="small"
+                                                        :can-create-new-item="false"
+                                                        v-model="value.selected"
+                                                        :defaultText="value.title"
+                                                ></combo-box>
 
-                                <div class="tw-flex" v-for="(value, index) in filters.slice(2)" :key="value.id">
-                                    <combo-box
-                                    v-if="value.title!='Proposal'"
-                                    class="combo-box tw-w-7/12 t-mr-1 tw-text-black"
-                                    :data="summaryParameters"
-                                    textField="title"
-                                    valueField="valueField"
-                                    size="small"
-                                    :can-create-new-item="false"
-                                    v-model="value.selected"
-                                    :defaultText="value.title"
-                                    ></combo-box>
-
-                                    <div class="param-options-wrapper">
-                                        <div class="param-options-tooltip">
-                                            Add Values
-                                            <div class="param-preview">
                                                 <combo-box v-if="value.inputtype == 'combo-box' & value.title != 'Proposal'"
-                                            class="combo-box-description tw-px-4 tw-my-5"
-                                            :data="value.data"
-                                            :textField="value.textField"
-                                            :valueField="value.valueField"
-                                            size="small"
-                                            :can-create-new-item="false"
-                                            v-model="value.selected"
-                                            defaultText='Select Multiple'
-                                            :multiple="true"
-                                            :valueArray="value.selectedArr"
-                                            :searchArray="value.selectedArr"
-                                            ></combo-box>
+                                                    class="combo-box-description tw-my-5"
+                                                    :data="value.data"
+                                                    :textField="value.textField"
+                                                    :valueField="value.valueField"
+                                                    size="small"
+                                                    :can-create-new-item="false"
+                                                    v-model="value.selected"
+                                                    defaultText='Select Multiple'
+                                                    :multiple="true"
+                                                    :valueArray="value.selectedArr"
+                                                    :searchArray="value.selectedArr"
+                                                ></combo-box>
 
-                                            <combo-box v-if="value.inputtype == 'search-operands'"
-                                            class="combo-box-description tw-px-4 tw-my-5"
-                                            :data="operands"
-                                            textField="title"
-                                            valueField="value"
-                                            size="small"
-                                            :can-create-new-item="false"
-                                            v-model="value.operand"
-                                            defaultText='Select Operand'
-                                            ></combo-box>
+                                                <combo-box v-if="value.inputtype == 'search-operands'"
+                                                    class="combo-box-description tw-my-5"
+                                                    :data="operands"
+                                                    textField="title"
+                                                    valueField="value"
+                                                    size="small"
+                                                    :can-create-new-item="false"
+                                                    v-model="value.operand"
+                                                    defaultText='Select Operand'
+                                                    ></combo-box>
 
-                                            <input  v-if="value.inputtype == 'search-operands'"
-                                            v-model="value.value"
-                                            class="input-description tw-mb-4 tw-mx-4"
-                                            placeholder="Enter Value"
-                                            >
-                                                
+                                                <input v-if="value.inputtype == 'search-operands'"
+                                                    v-model="value.value"
+                                                    class="input-description tw-mb-4"
+                                                    placeholder="Enter Value"
+                                                    @click.stop>
                                             </div>
-                                        </div>
-                                        <button v-if="value.textField != 'PROP'" v-on:click="popArr(filters, index+1)" 
-                                            class="fa fa-times-circle tw-text-red-600 tw-ml-2 tw-mb-3"></button>
-
-                                    </div>
-
-
-                                    <!-- <i class="tooltip tooltip-position-relative fa fa-ellipsis-v tw-ml-1 tw-text-base tw-my-2" aria-hidden="true">
-                                        <div class="description-options">
-  
-                                        </div>
-                                    </i> -->
-
-
-
-      
-                                    
+                                        </template>
+                                    </multi-input-dia>
+                                    <button v-if="value.textField != 'PROP'" v-on:click="popArr(filters, index+1)" 
+                                        class="fa fa-times-circle tw-text-red-600 tw-ml-2">
+                                    </button>
                                 </div>
-                                <div class="button_plus tw-h-3 tw-mt-2" v-if="filters.length < 18" v-on:click="addFilterOption($event)">
-                                <i class="button-plus-icon fa fa-plus"></i>
-                                </div>
-
-                                <i class="tooltip tooltip-position-absolute fa fa-info-circle tw-ml-6" v-if="filters.length < 3" aria-hidden="true">
-                                    <span class="tooltiptext">Click to add filter options</span>
-                                </i>
-
                         </div>
-
-                        <!-- <div class="format-options-grid">
-
-
-                            <div class="tw-flex" v-for="value in format.slice(2)" :key="value.id">
-                                    <combo-box
-                                    v-if="value.title!='Proposal'"
-                                    class="combo-box tw-w-7/12 t-mx-2 tw-text-black"
-                                    :data="summaryParameters.slice(3)"
-                                    textField="title"
-                                    valueField="valueField"
-                                    size="small"
-                                    :can-create-new-item="false"
-                                    v-model="value.selected"
-                                    :defaultText="value.title"
-                                    ></combo-box>
-
-                                    <i class="tooltip fa fa-ellipsis-v tw-ml-1 tw-text-base tw-my-2" aria-hidden="true">
-                                        <div class="description-options">
-                                            <input type="range" min="0" max="100" step="1" v-model="value.maxColor">
-                                            <input v-model="value.maxColor" type="number" class="input" /> 
-                                        </div>
-                                    </i>
-
-                                    <button v-if="value.textField != 'PROP'" v-on:click="popFormat(index+1)" 
-                                            class="fa fa-times-circle tw-text-red-600 tw-ml-2"></button>
-                            </div>
-
-                            <div class="button_plus tw-h-3 tw-mt-2" v-if="format.length < 6" v-on:click="addFormatOption($event)">
-                            <i class="button-plus-icon fa fa-plus"></i>
-                            </div>
-                            
-                        </div> -->
-
                     </div>
+                    <div class="button_plus tw-h-3 tw-mt-2 tw-mb-3" v-if="filters.length < 18" v-on:click="addFilterOption($event)">
+                        <i class="button-plus-icon fa fa-plus"></i>
+                        <i class="tooltip tooltip-position-absolute fa fa-info-circle tw-ml-6" v-if="filters.length < 3" aria-hidden="true">
+                            <span class="tooltiptext">Click to add filter options</span>
+                         </i>
+                    </div>
+
+                <!-- </div> -->
+
                     
 
                 </template>
@@ -435,8 +382,7 @@
         @page-changed="handlePageChange"
         />
 
-  
-    
+
 
 
     </div>
@@ -460,6 +406,7 @@ import CustomTableRow from 'app/components/custom-table-row.vue'
 import ComboBox from 'app/components/combo-box.vue'
 import DialogModal from 'app/components/dialog-modal.vue'
 import ExpandableSidebar from 'app/components/expandable-sidebar.vue'
+import MultiInputDialogue from 'app/components/multi-input-dialogue.vue'
 
 import { popArr, convertToCSV, exportCSV } from 'modules/summary/utils/utils.js'
 
@@ -475,7 +422,8 @@ export default {
     'expandable-sidebar': ExpandableSidebar,
     'dialog-modal': DialogModal,
     'base-input-select': BaseInputSelect,
-    'base-input-text' : BaseInputText
+    'base-input-text' : BaseInputText,
+    'multi-input-dia' : MultiInputDialogue
     },
     props: {
 
@@ -502,6 +450,7 @@ export default {
             beamLines: [],
             searchedSamplePrefix: [],
             selectedColumns: [],
+            multiInputDicts: [],
             operands: [
                 {   
                     "title": "greater than",
@@ -717,6 +666,7 @@ export default {
         this.addFormatOption()
         this.toggleSidebar()
         this.popSelectedColumns()
+        this.updateMultiInputDicts();
     },
     mounted() {
         window.onerror = (msg) => {
@@ -739,7 +689,8 @@ export default {
                 "operand": "",
                 "value": "",
                 "checked": true,
-                "data": [] };
+                "data": [],           
+             };
         })
         },
         addFilterOption(event) {
@@ -788,6 +739,41 @@ export default {
                 )
             } 
 
+        },
+        createMultiInputDict(filterItem) {
+            let resultDict = {
+                selected: filterItem.selected,
+                operand: filterItem.operand,
+                value: filterItem.value
+            };
+
+            // Spread values from selectedArr into the result dictionary
+            filterItem.selectedArr.forEach((item, index) => {
+                resultDict[`selectedArr${index + 1}`] = item;
+            });
+
+            return resultDict;
+        },
+        updateMultiInputDicts() {
+            this.multiInputDicts = this.filters.map(filterItem => {
+                let resultDict = {
+                    selected: filterItem.title,
+                    operand: filterItem.operand,
+                    value: filterItem.value
+                };
+
+                // Spread values from selectedArr into the result dictionary
+                filterItem.selectedArr.forEach((item, index) => {
+                    // Check if the item is an object and has a property matching filterItem.valueField
+                    if (typeof item === 'object' && item[filterItem.valueField]) {
+                        resultDict[`selectedArr${index + 1}`] = item[filterItem.valueField];
+                    } else {
+                        resultDict[`selectedArr${index + 1}`] = item;
+                    }
+                });
+
+                return resultDict;
+            });
         },
         async searchProposal() {
 
@@ -1286,14 +1272,7 @@ export default {
                 this.$refs.iframeref[index].setAttribute('src', src)
 
             }
-
-        }
-
-
-
-    },
-    computed: {
-
+        },
     },
     watch: {
         windowWidth: {
@@ -1320,6 +1299,8 @@ export default {
                         }
                     }
                 }
+
+                this.updateMultiInputDicts();
             },
             deep: true
         },
@@ -1359,8 +1340,8 @@ export default {
 
     .combo-box {
         font-size: small;
-        position: absolute;
-        width: 15%
+        position: relative;
+        width: 200px;
     }
 
     .combo-box-description {
@@ -1369,7 +1350,7 @@ export default {
     }
 
     .input-description {
-        width: 170px;
+        width: 200px;
         font-size: small;
     }
 
