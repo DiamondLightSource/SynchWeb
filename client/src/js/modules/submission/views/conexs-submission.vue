@@ -131,7 +131,7 @@
           <br>
           <p>In this instance, the user must manually modify the core acceptor orbital within the input file. To do so, navigate to the ORBITAL ENERGIES section of the orca_result.txt and identify the index of the orbital with the correct energy. Using a plain text editor, update the “CoreOrb” keyword with the index of the desired orbital. You can run this calculation on your own computing facility or upload the new input file to Web-CONEXS for simulation.</p>
           <br>
-          <p>The post processing tool orca_mapspc can be used to covert the main ORCA output into a plottable spectrum. For XES you can use either the XES or XESQ options to compute the spectrum with or without quadrupole transitions.<p>
+          <p>The post processing tool orca_mapspc can be used to covert the main ORCA output into a plottable spectrum. For XES you can use either the XES or XESQ options to compute the spectrum with or without quadrupole transitions.</p>
           <br><br>
         </div>
         <ul>
