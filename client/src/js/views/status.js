@@ -42,7 +42,7 @@ define(['marionette',
             this.ui.status.slideToggle('fast', 'swing', function() {
                 if (self.ui.status.is(':visible')) {
                     self.ui.showhide.html('Hide')
-                    self.ui.arrows.html('&#11165;')
+                    self.ui.arrows.html('&uarr;')
                     self.pvs.show(new PVView({ bl: self.getOption('bl') }))
                     self['streamed-pvs'].show(new StreamedPVView({ bl: self.getOption('bl') }))
                     self.$el.find('.webcam img').each(function(i,w) {
@@ -64,7 +64,7 @@ define(['marionette',
                         clearTimeout(self.timeoutHandler)
                     }
                     self.ui.showhide.html('Show')
-                    self.ui.arrows.html('&#11167;')
+                    self.ui.arrows.html('&darr;')
                     self.pvs.empty()
                     self.$el.find('.webcam img').each(function(i,w) {
                         $(w).attr('src', '')
