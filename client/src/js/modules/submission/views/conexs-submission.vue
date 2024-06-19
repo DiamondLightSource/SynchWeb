@@ -1214,7 +1214,7 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
             this.startCluster()
 
             // orca
-            this.functional = 'BLYP'
+            this.functional = 'BP86'
             this.basis = 'def2-SVP'
             this.solvent = this.orca_solvents[0]['name']
             this.technique = 'Xas'
@@ -1432,6 +1432,7 @@ e.g. 0,0,-1,-1 # Selecting the beta set in the same way as the alpha set. Not ne
                         this.output += 'CPCM(' + this.solvent + ') '
                     }
 
+                    this.output += '\n'
                     this.output += '%maxcore 5024' + "\n\n"
                     this.output += '%pal nprocs ' + this.cpus + "\n"
                     this.output += 'end' + "\n\n"
