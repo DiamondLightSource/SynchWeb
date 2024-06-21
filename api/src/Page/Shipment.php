@@ -2951,7 +2951,8 @@ class Shipment extends Page
             FROM dewar d
             LEFT JOIN container c on c.dewarid = d.dewarid
             LEFT JOIN BLSample b on b.containerId = c.containerId
-            WHERE d.shippingid=:1 AND d.dewarid IN (:" . implode(',:', $ids) . ")",
+            WHERE d.shippingid=:1 AND d.dewarid IN (:" . implode(',:', $ids) . ")
+            GROUP BY d.dewarid",
             $args
         );
 
