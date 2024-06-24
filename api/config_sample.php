@@ -255,7 +255,6 @@
     $dhl_acc_import = '12345678';
 
     $dhl_terms = '/path/to/terms.html';
-    $dhl_link = 'http://link/to/dhl/instructions';
     // N = Domestic Express, P = Worldwide Express
     $dhl_service = 'N';
     // Non dom service (eu)
@@ -264,6 +263,8 @@
     # Shipping service details
     $use_shipping_service = null;
     $use_shipping_service_incoming_shipments = null;
+    $use_shipping_service_redirect = null;
+    $use_shipping_service_redirect_incoming_shipments = null;
     $shipping_service_api_url = null;
     $shipping_service_api_user = null;
     $shipping_service_api_password = null;
