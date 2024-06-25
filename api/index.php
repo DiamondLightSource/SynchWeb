@@ -92,7 +92,7 @@ function setupApplication($mode): Slim
             'enabled_container_types' => $enabled_container_types,
             'ifsummary' => $ifsummary,
             'synchweb_version' => $synchweb_version,
-            'shipping_service_app_url' => $use_shipping_service_redirect ? $shipping_service_app_url : null,
+            'shipping_service_app_url' => $use_shipping_service_redirect || $use_shipping_service_redirect_incoming_shipments ? $shipping_service_app_url : null,
             'shipping_service_app_url_incoming' => $use_shipping_service_redirect_incoming_shipments ? $shipping_service_app_url : null,
             'redirects' => $redirects
         )));

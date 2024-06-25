@@ -90,7 +90,7 @@ class ShippingService
                 "Shipping service unexpected status code." . PHP_EOL .
                 "Request: $type $url" . PHP_EOL .
                 "Status code: $status_code" . PHP_EOL .
-                "Response: $response" . PHP_EOL .
+                "Response: " . json_encode($response) . PHP_EOL .
                 "Request data:" . json_encode($data)
             );
             throw new \Exception(json_encode(array('status' => $status_code, 'content' => $response)));
