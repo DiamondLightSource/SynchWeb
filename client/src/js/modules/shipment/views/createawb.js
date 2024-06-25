@@ -111,8 +111,7 @@ define(['backbone',
             qwrap: '.qwrap',
             terms: '.terms',
             termsq: '.terms-quote',
-            shipmentCountry: 'select[name=SHIPMENTCOUNTRY]',
-
+            country: '.COUNTRY',
             createAWBForm: '.createAWBForm',
         },
 
@@ -137,36 +136,56 @@ define(['backbone',
 
         _lcFields: ['PHONENUMBER', 'EMAILADDRESS', 'LABNAME', 'ADDRESS', 'CITY', 'POSTCODE','COUNTRY', 'GIVENNAME', 'FAMILYNAME'],
 
+
+        updateFormAsTermsAccepted: function() {
+            this.$el.find('.DELIVERYAGENT_AGENTCODE').hide()
+            this.ui.acc_msg.text('Paid for by Facility')
+            this.ui.facc.hide()
+            this.ui.quote.hide()
+            this.ui.submit.show()
+            this.ui.termsq.hide()
+            this.ui.terms.show()
+            this.shipment.validation.DELIVERYAGENT_AGENTCODE.required = false
+        },
+
         toggleFacilityCourier: function() {
-            const shipmentCountry = this.ui.shipmentCountry.val();
-            if (
-                app.options.get('facility_courier_countries').indexOf(shipmentCountry) > -1
-                || app.options.get('facility_courier_countries_nde').indexOf(shipmentCountry) > -1 
-            ) {
-                if (this.terms.get('ACCEPTED')) {
-                    this.$el.find('.DELIVERYAGENT_AGENTCODE').hide()
-                    this.ui.acc_msg.text('Paid for by Facility')
-                    this.ui.facc.hide()
-                    this.ui.quote.hide()
-                    this.ui.submit.show()
-                    this.ui.termsq.hide()
-                    this.ui.terms.show()
-                    this.shipment.validation.DELIVERYAGENT_AGENTCODE.required = false
-                    this.setPickupDetailsRequired(false)
-                    this.setEmailRequired(false)
-                    this.ui.createAWBForm.hide()
-                    this.ui.submit.text("Proceed")
+            this.ui.createAWBForm.show()
+            this.setPickupDetailsRequired(true)
+            this.setEmailRequired(true)
+            if (app.options.get("shipping_service_app_url_incoming")) {
+                if (
+                    app.options.get('facility_courier_countries').indexOf(this.lc.get('COUNTRY')) > -1
+                    || app.options.get('facility_courier_countries_nde').indexOf(this.lc.get('COUNTRY')) > -1
+                ) {
+                    if (this.terms.get('ACCEPTED')) {
+                        this.updateFormAsTermsAccepted()
+                        this.setPickupDetailsRequired(false)
+                        this.setEmailRequired(false)
+                        this.ui.createAWBForm.hide()
+                        this.ui.submit.text("Proceed")
+                    } else {
+                        this.ui.facc.show()
+                    }
                 } else {
-                    this.ui.facc.show()
-                    this.ui.createAWBForm.show()
-                    this.setPickupDetailsRequired(true)
-                    this.setEmailRequired(true)
+                    this.ui.facc.hide()
+                    this.ui.quote.show()
+                    this.ui.submit.hide()
                 }
             } else {
-                this.ui.facc.hide()
-                this.ui.createAWBForm.show()
-                this.setPickupDetailsRequired(true)
-                this.setEmailRequired(true)
+                if (
+                    app.options.get('facility_courier_countries').indexOf(this.lc.get('COUNTRY')) > -1 ||
+                    app.options.get('facility_courier_countries_nde').indexOf(this.lc.get('COUNTRY')) > -1
+                ) {
+                    if (this.terms.get('ACCEPTED')) {
+                        this.updateFormAsTermsAccepted()
+                    } else {
+                        this.ui.facc.show()
+                    }
+                } else {
+                    this.ui.facc.hide()
+                    this.ui.quote.show()
+                    this.ui.submit.hide()
+                }
             }
         },
 
@@ -280,7 +299,7 @@ define(['backbone',
         
         onRender: function() {
             this.$el.hide()
-            this.ui.createAWBForm.hide()
+            this.ui.createAWBForm.show()
             this.ui.facc.hide()
             this.ui.submit.hide()
             this.ui.qwrap.hide()
@@ -480,6 +499,7 @@ define(['backbone',
             app.alert({ message: 'Creating Air Waybill and Booking Pickup, Please Wait...'})
 
             var self = this
+            var country = this.lc.get('COUNTRY')
             Backbone.ajax({
                 url: app.apiurl+'/shipment/awb/'+this.shipment.get('SHIPPINGID'),
                 method: 'POST',
@@ -488,13 +508,13 @@ define(['backbone',
                     DECLAREDVALUE: this.ui.DECLAREDVALUE.val(),
                     DESCRIPTION: this.ui.DESCRIPTION.val(),
                     PRODUCTCODE: prod,
-                    COUNTRY: this.ui.shipmentCountry.val(),
+                    COUNTRY: country,
                 },
                 success: function(resp) {
                     if (
                         app.options.get("shipping_service_app_url_incoming")
-                        && (Number(self.terms.get('ACCEPTED')) === 1) // terms.ACCPETED could be undefined, 1, or "1"
-                        && app.options.get("facility_courier_countries").includes(self.ui.shipmentCountry.val())
+                        && (Number(self.terms.get('ACCEPTED')) === 1) // terms.ACCEPTED could be undefined, 1, or "1"
+                        && app.options.get("facility_courier_countries").includes(country)
                     ) {
                         self.shipment.fetch().done((shipment) => {
                             const external_id = shipment.EXTERNALSHIPPINGIDTOSYNCHROTRON;
@@ -521,12 +541,12 @@ define(['backbone',
                     if (xhr.responseText) {
                         try {
                             json = $.parseJSON(xhr.responseText)
+                            app.alert({ message: json.message, persist:true })
+                            app.alert({ message: json.message})
                         } catch(err) {
                             console.error("Error parsing response: ", err)
                         }
                     }
-                    app.alert({ message: json.message, persist:true })
-                    app.alert({ message: json.message})
                     self.ui.submit.prop('disabled', false)
                     self.$el.removeClass('loading')
                 }

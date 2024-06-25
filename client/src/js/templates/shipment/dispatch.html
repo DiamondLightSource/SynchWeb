@@ -28,13 +28,16 @@
                 <label>Email Address<span class="small">The contact email for the Dewar return</span></label>
                 <input type="email" name="EMAILADDRESS" data-testid="dispatch-email-address"/>
             </li>
-            <li>
-                <label>Destination country
-                    <span class="small">The country the Dewar is being dispatched to</span>
-                </label>
-                <select name="DISPATCHCOUNTRY"></select>
-            </li>
 
+            <li>
+                <label>Laboratory Country
+                    <span class="small">The contact's laboratory country</span>
+                </label>
+                <select name="COUNTRY" data-testid="dispatch-lab-country">
+                    <option value="United Kingdom">United Kingdom</option>
+                    <option value="Other">Other</option>
+                </select>
+            </li>
         </ul>
         <ul class="courierSection">
             
@@ -158,16 +161,6 @@
                     <span class="small">Laboratory Post Code</span>
                 </label>
                 <input type="text" name="POSTCODE" data-testid="dispatch-post-code"/>
-            </li>
-
-            <li>
-                <label>Laboratory Country
-                    <span class="small">The contact's laboratory country</span>
-                </label>
-                <select name="COUNTRY" data-testid="dispatch-lab-country">
-                    <option value="United Kingdom">United Kingdom</option>
-                    <option value="Other">Other</option>
-                </select>
             </li>
 
              <li>

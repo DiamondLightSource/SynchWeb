@@ -76,6 +76,10 @@ export default {
       type: Array,
       default: () => ([])
     },
+    manuallySelectedSamples: {
+      type: Array,
+      default: () => ([])
+    },
     addedColorAttribute: {
       type: String,
       default: ''
@@ -425,7 +429,7 @@ export default {
         }
       }
       else {
-        if (this.selectedDrops.includes(itemsWithSample[0])) {
+        if (this.manuallySelectedSamples.some(e => Number(e.LOCATION) === itemsWithSample[0])) {
           this.$emit('unselect-cell', itemsWithSample)
           this.currentSelectedDropIndex = -1
         }
