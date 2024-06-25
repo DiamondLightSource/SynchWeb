@@ -122,7 +122,6 @@ define(['backbone',
             'change input':  'validateField',
             'blur input':  'validateField',
             'keyup input':  'validateField',
-            'change @ui.shipmentCountry': 'toggleFacilityCourier',
         },
 
         templateHelpers: function() {
@@ -353,7 +352,6 @@ define(['backbone',
         },
 
         doOnRender: function() {
-            this.populateShipmentCountries();
             this.populateLC()
 
             var cedit = new Editable({ model: this.lc, el: this.$el })
@@ -388,14 +386,6 @@ define(['backbone',
             _.each(this._lcFields, function(a) {
                 if (this.lc.get(a)) this.$el.find('.'+a).text(this.lc.get(a))
             }, this)
-        },
-
-        populateShipmentCountries: function () {
-            const shipmentCountryOptions = [...app.options.get("facility_courier_countries"), 'Other']
-                .map((country) => `<option>${country}</option>`)
-                .join("");
-            this.ui.shipmentCountry.html(shipmentCountryOptions);
-            this.ui.shipmentCountry.val(this.lc.get('COUNTRY'));
         },
 
         showTerms: function() {
