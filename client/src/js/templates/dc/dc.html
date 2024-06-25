@@ -26,13 +26,11 @@
         <li data-testid="dc-resolution">Resolution: <%-RESOLUTION%>&#197;</li>
         <li data-testid="dc-wavelength">Wavelength: <%-WAVELENGTH%>&#197;</li>
         <li data-testid="dc-exposure-time">Exposure: <%-EXPOSURETIME%>s</li>
-        <% if (DCT == 'SAD' || DCT == 'OSC' || DCT == 'Diamond Anvil High Pressure') { %>
-            <%if (TOTALABSDOSE) { %>
-                <%if (DCC > 1) { %>
-                <li data-testid="dc-dose">Total Dose:  <%-TOTALDOSE%>MGy</li>
-                <% } else { %>
-                <li data-testid="dc-dose">Dose:  <%-TOTALABSDOSE%>MGy</li>
-        <% } } }%>
+        <%if (DCC > 1 && TOTALDOSE) { %>
+            <li data-testid="dc-dose">Total Dose:  <%-TOTALDOSE%>MGy</li>
+        <% } else if (DCC == 1 && TOTALABSDOSE) { %>
+            <li data-testid="dc-dose">Dose:  <%-TOTALABSDOSE%>MGy</li>
+        <% } %>
         <li data-testid="dc-transmission">Transmission: <%-TRANSMISSION%>%</li>
         <li data-testid="dc-beam-size">Beamsize: <%-BSX%>x<%-BSY%>&mu;m</li>
         <li data-testid="dc-type">Type: <% if (DCT) print(DCT) %></li>
