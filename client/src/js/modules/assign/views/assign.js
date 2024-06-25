@@ -301,6 +301,7 @@ define(['marionette', 'backbone', 'views/pages',
         templateHelpers: function() {
             return {
                 VISIT: this.getOption('visit').toJSON(),
+                APP_TYPE: app.type,
             }
         },
         
