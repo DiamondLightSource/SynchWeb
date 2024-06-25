@@ -112,6 +112,7 @@ define(['backbone',
             terms: '.terms',
             termsq: '.terms-quote',
             country: '.COUNTRY',
+
             createAWBForm: '.createAWBForm',
         },
 

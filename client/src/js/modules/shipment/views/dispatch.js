@@ -175,7 +175,6 @@ define(['marionette', 'views/form',
         doOnRender: function() {
             this.ui.exp.html(this.visits.opts()).val(this.model.get('VISIT'))
             this.updateLC()
-            this.populateDispatchCountries()
             this.populateCountries()
             this.stripPostCode()
             this.formatAddress()
