@@ -513,7 +513,6 @@ define(['backbone',
                 success: function(resp) {
                     if (
                         app.options.get("shipping_service_app_url_incoming")
-
                         && (Number(self.terms.get('ACCEPTED')) === 1) // terms.ACCEPTED could be undefined, 1, or "1"
                         && app.options.get("facility_courier_countries").includes(country)
                     ) {
