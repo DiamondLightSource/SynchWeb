@@ -181,6 +181,7 @@ define(['marionette',
         onRender: function() {  
             var edit = new Editable({ model: this.model, el: this.$el })
             edit.create('PURCHASEDATE', 'date')
+            edit.create('MANUFACTURERSERIALNUMBER', 'text')
 
             var self = this
             this.contacts = new LabContacts(null, { state: { pageSize: 9999 } })
