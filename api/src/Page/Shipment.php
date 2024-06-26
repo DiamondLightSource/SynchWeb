@@ -126,6 +126,7 @@ class Shipment extends Page
         'PUCK' => '\d',
         'PROCESSINGPIPELINEID' => '\d+',
         'OWNERID' => '\d+',
+        'SOURCE' => '[\w\-]+',
 
         'CONTAINERREGISTRYID' => '\d+',
         'PROPOSALID' => '\d+',
@@ -2185,11 +2186,12 @@ class Shipment extends Page
         $crid = $this->has_arg('CONTAINERREGISTRYID') ? $this->arg('CONTAINERREGISTRYID') : null;
 
         $pipeline = $this->has_arg('PROCESSINGPIPELINEID') ? $this->arg('PROCESSINGPIPELINEID') : null;
+        $source = $this->has_arg('SOURCE') ? $this->arg('SOURCE') : null;
 
         $this->db->pq(
-            "INSERT INTO container (containerid,dewarid,code,bltimestamp,capacity,containertype,scheduleid,screenid,ownerid,requestedimagerid,comments,barcode,experimenttype,storagetemperature,containerregistryid,prioritypipelineid)
-              VALUES (s_container.nextval,:1,:2,CURRENT_TIMESTAMP,:3,:4,:5,:6,:7,:8,:9,:10,:11,:12,:13,:14) RETURNING containerid INTO :id",
-            array($this->arg('DEWARID'), $this->arg('NAME'), $cap, $this->arg('CONTAINERTYPE'), $sch, $scr, $own, $rid, $com, $bar, $ext, $tem, $crid, $pipeline)
+            "INSERT INTO container (containerid,dewarid,code,bltimestamp,capacity,containertype,scheduleid,screenid,ownerid,requestedimagerid,comments,barcode,experimenttype,storagetemperature,containerregistryid,prioritypipelineid,source)
+              VALUES (s_container.nextval,:1,:2,CURRENT_TIMESTAMP,:3,:4,:5,:6,:7,:8,:9,:10,:11,:12,:13,:14,ifnull(:15,current_user)) RETURNING containerid INTO :id",
+            array($this->arg('DEWARID'), $this->arg('NAME'), $cap, $this->arg('CONTAINERTYPE'), $sch, $scr, $own, $rid, $com, $bar, $ext, $tem, $crid, $pipeline, $source)
         );
 
         $cid = $this->db->id();
@@ -2408,7 +2410,7 @@ class Shipment extends Page
         }
 
         $rows = $this->db->paginate("SELECT r.containerregistryid, r.barcode, GROUP_CONCAT(distinct CONCAT(p.proposalcode,p.proposalnumber) SEPARATOR ', ') as proposals, count(distinct c.containerid) as instances, TO_CHAR(r.recordtimestamp, 'DD-MM-YYYY') as recordtimestamp, 
-              TO_CHAR(max(c.bltimestamp),'DD-MM-YYYY') as lastuse, max(CONCAT(p.proposalcode,p.proposalnumber)) as prop, r.comments, COUNT(distinct cr.containerreportid) as reports
+              TO_CHAR(max(c.bltimestamp),'DD-MM-YYYY') as lastuse, max(CONCAT(p.proposalcode,p.proposalnumber)) as prop, r.comments, COUNT(distinct cr.containerreportid) as reports, c.code as lastname
               FROM containerregistry r 
               LEFT OUTER JOIN containerregistry_has_proposal rhp on rhp.containerregistryid = r.containerregistryid
               LEFT OUTER JOIN proposal p ON p.proposalid = rhp.proposalid 
