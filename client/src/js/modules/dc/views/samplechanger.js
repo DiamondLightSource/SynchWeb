@@ -69,7 +69,7 @@ define(['marionette', 'utils/canvas', 'utils',
             this.rpad = 0 //pad - 25
             
             var sw = 18
-            this.aspectratio = (sw/this.positions) - (this.positions <= 10 ? 0.3 : 0)
+            this.aspectratio = (this.positions <= 10 ? 1.5 : 0.4)
             this.contwidth = (this.positions * sw) + this.pad + this.rpad + 15
             console.log('sc width', this.contwidth, this.aspectratio)
             if (!this.getOption('fullScreen')) {
