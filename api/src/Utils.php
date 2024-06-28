@@ -34,6 +34,6 @@ class Utils
     {
         // Removes search parameter from URL and returns encoded URL
         $redirect_url = preg_replace('/(&|\?)'.preg_quote($param).'=[^&]*$/', '', $url);
-        return urlencode(preg_replace('/(&|\?)'.preg_quote($param).'=[^&]*&/', '$1', $redirect_url));
+        return preg_replace('/(&|\?)'.preg_quote($param).'=[^&]*&/', '$1', $redirect_url);
     }
 }
