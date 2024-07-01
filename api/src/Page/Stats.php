@@ -260,8 +260,12 @@ class Stats extends Page
             
             $t = $this->has_arg('t') ? $this->arg('t') : 'ai';
             
-            if (array_key_exists($t, $types)) $this->$types[$t]();
-            else $this->_error('No such stat type');                 
+            if (array_key_exists($t, $types)) {
+                $func = $types[$t];
+                $this->$func();
+            } else {
+                $this->_error('No such stat type');
+            }
         }
                                  
                                  
@@ -275,7 +279,7 @@ class Stats extends Page
                 INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
                 INNER JOIN blsession ses ON ses.sessionid = dcg.sessionid
                 INNER JOIN v_run vr ON (ses.startdate BETWEEN vr.startdate AND vr.enddate)
-                WHERE s.shortcomments LIKE 'EDNA%' AND TIMESTAMPDIFF('SECOND', dc.endtime, s.bltimestamp) < 10000
+                WHERE s.shortcomments LIKE 'Strategy%' AND TIMESTAMPDIFF('SECOND', dc.endtime, s.bltimestamp) between 0 and 10000
                 AND ses.beamlinename in ('$bls')
                 GROUP BY s.shortcomments, vr.run
                 ORDER BY vr.run

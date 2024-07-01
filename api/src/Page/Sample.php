@@ -818,7 +818,7 @@ class Sample extends Page
                 LEFT OUTER JOIN screening sc ON dc.datacollectionid = sc.datacollectionid
                 LEFT OUTER JOIN screeningoutput so ON sc.screeningid = so.screeningid
                 
-                LEFT OUTER JOIN screeningstrategy st ON st.screeningoutputid = so.screeningoutputid AND sc.shortcomments LIKE '%EDNA%'
+                LEFT OUTER JOIN screeningstrategy st ON st.screeningoutputid = so.screeningoutputid AND sc.programversion = 'EDNA MXv1'
                 LEFT OUTER JOIN screeningstrategywedge ssw ON ssw.screeningstrategyid = st.screeningstrategyid
                 
                 LEFT OUTER JOIN autoprocintegration ap ON ap.datacollectionid = dc.datacollectionid
@@ -1208,7 +1208,7 @@ class Sample extends Page
                                   LEFT OUTER JOIN screening sc ON dc.datacollectionid = sc.datacollectionid
                                   LEFT OUTER JOIN screeningoutput so ON sc.screeningid = so.screeningid
                                   
-                                  LEFT OUTER JOIN screeningstrategy st ON st.screeningoutputid = so.screeningoutputid AND sc.shortcomments LIKE '%EDNA%'
+                                  LEFT OUTER JOIN screeningstrategy st ON st.screeningoutputid = so.screeningoutputid AND sc.programVersion = 'EDNA MXv1'
                                   LEFT OUTER JOIN screeningstrategywedge ssw ON ssw.screeningstrategyid = st.screeningstrategyid
                                   
                                   LEFT OUTER JOIN autoprocintegration ap ON ap.datacollectionid = dc.datacollectionid
