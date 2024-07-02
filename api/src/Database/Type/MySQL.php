@@ -78,6 +78,7 @@ class MySQL extends DatabaseParent {
         'BLSubSample',
         'PDB',
         'Protein_has_PDB',
+        'ExperimentType',
 
         // Stat Views
         'v_logonByHour',
