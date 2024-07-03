@@ -12,7 +12,8 @@
     <td>
         <span class="deactivate"><a class="button deact" title="Deactivate Dewar"><i class="fa fa-power-off"></i> <span class="tw-hidden xl:tw-inline">Deactivate</span></a></span>
         <a class="button print" title="Click to print dewar contents" href="<%-APIURL%>/pdf/container/did/<%-DEWARID%>/prop/<%-PROP%>"><i class="fa fa-print"></i> <span class="tw-hidden xl:tw-inline">Print Report</span></a>
-        <a class="button add add-container-small" data-testid="shipment-add-container" title="Click to add a container" href="/containers/add/did/<%-DEWARID%>"><i class="fa fa-plus"></i> <span class="add-container-text tw-hidden xl:tw-inline">Add Container</span></a>
+        <% const container = (app.type == "xpdf") ? "Puck" : "Container" %>
+        <a class="button add add-container-small" data-testid="shipment-add-container" title="Click to Add a <%-container%>" href="/containers/add/did/<%-DEWARID%>"><i class="fa fa-plus"></i> <span class="add-container-text tw-hidden xl:tw-inline">Add <%-container%></span></a>
         <% if (STORAGELOCATION != 'stores-out') { %>
             <% if (app.options.get("shipping_service_app_url") && EXTERNALSHIPPINGIDFROMSYNCHROTRON) { %>
                 <% const link = `${app.options.get("shipping_service_app_url")}/shipment-requests/${EXTERNALSHIPPINGIDFROMSYNCHROTRON}/outgoing` %>
