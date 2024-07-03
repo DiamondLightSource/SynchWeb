@@ -407,8 +407,15 @@ class Imaging extends Page
                 'STATE' => 'i.state',
                 'SCHEDULECOMPONENTID' => 'i.schedulecomponentid',
                 'MANUAL' => 'i.manual',
-                'IMAGESSCORED' => 'imagesscored',
                 'CONTAINER' => 'c.code',
+                'CONTAINERID' => 'i.containerid',
+                'PROP' => 'prop',
+                'VISIT_NUMBER' => 'ses.visit_number',
+                'CONTAINERINSPECTIONID' => 'i.containerinspectionid',
+                'INSPECTIONTYPE' => 'inspectiontype',
+                'DURATION' => 'duration',
+                'DWELL' => 'dwell',
+                'AGE' => 'age',
             );
             $dir = $this->has_arg('order') ? ($this->arg('order') == 'asc' ? 'ASC' : 'DESC') : 'ASC';
             if (array_key_exists($this->arg('sort_by'), $cols))
@@ -439,11 +446,30 @@ class Imaging extends Page
             $extc = ", ROUND(TIMESTAMPDIFF('MINUTE', min(i2.bltimestamp), i.bltimestamp)/(60*24),1) as delta, CONCAT(CONCAT(CONCAT(CONCAT(TO_CHAR(i.bltimestamp, 'HH24:MI DD-MM-YYYY'), ' (+'), ROUND(TIMESTAMPDIFF('HOUR', case when min(i2.bltimestamp) is not null then min(i2.bltimestamp) else i.bltimestamp end, i.bltimestamp)/24,1)), 'd) '), (case when i.manual=1 then '[Manual]' else (case when i.schedulecomponentid is null then '[Adhoc]' else '' end) end)) as title";
         }
 
-        $inspections = $this->db->paginate("SELECT ROUND(TIMESTAMPDIFF('HOUR', i.bltimestamp, CURRENT_TIMESTAMP)/24,1) as age, ROUND(TIMESTAMPDIFF('MINUTE', i.scheduledtimestamp, i.bltimestamp)/(24*60),2) as dwell, c.code as container, CONCAT(p.proposalcode, p.proposalnumber) as prop, TO_CHAR(min(im.modifiedtimestamp), 'DD-MM-YYYY HH24:MI') as imagesscoredtimestamp, case when count(im.blsampleimageid) > 0 then 1 else 0 end as imagesscored,
-                TO_CHAR(i.scheduledtimestamp, 'DD-MM-YYYY HH24:MI') as scheduledtimestamp, sc.offset_hours, i.priority, i.state, i.schedulecomponentid, i.manual, img.name as imager, it.name as inspectiontype, i.containerinspectionid, i.containerid, i.inspectiontypeid, i.temperature, TO_CHAR(i.bltimestamp, 'DD-MM-YYYY HH24:MI') as bltimestamp, i.imagerid, CONCAT(p.proposalcode, p.proposalnumber, '-', ses.visit_number) as visit, ses.visit_number, TIMESTAMPDIFF('MINUTE', i.bltimestamp, i.completedtimestamp) as duration $extc
+        $inspections = $this->db->paginate("SELECT ROUND(TIMESTAMPDIFF('HOUR', i.bltimestamp, CURRENT_TIMESTAMP)/24,1) as age,
+                ROUND(TIMESTAMPDIFF('MINUTE', i.scheduledtimestamp, i.bltimestamp)/(24*60),2) as dwell,
+                c.code as container,
+                CONCAT(p.proposalcode, p.proposalnumber) as prop,
+                TO_CHAR(i.scheduledtimestamp, 'DD-MM-YYYY HH24:MI') as scheduledtimestamp,
+                sc.offset_hours,
+                i.priority,
+                i.state,
+                i.schedulecomponentid,
+                i.manual,
+                img.name as imager,
+                it.name as inspectiontype,
+                i.containerinspectionid,
+                i.containerid,
+                i.inspectiontypeid,
+                i.temperature,
+                TO_CHAR(i.bltimestamp, 'DD-MM-YYYY HH24:MI') as bltimestamp,
+                i.imagerid,
+                CONCAT(p.proposalcode, p.proposalnumber, '-', ses.visit_number) as visit,
+                ses.visit_number,
+                TIMESTAMPDIFF('MINUTE', i.bltimestamp, i.completedtimestamp) as duration
+                $extc
                 FROM containerinspection i
                 LEFT OUTER JOIN schedulecomponent sc ON sc.schedulecomponentid = i.schedulecomponentid
-                LEFT OUTER JOIN blsampleimage im ON im.containerinspectionid = i.containerinspectionid AND im.blsampleimagescoreid IS NOT NULL
                 INNER JOIN inspectiontype it ON it.inspectiontypeid = i.inspectiontypeid
                 INNER JOIN container c ON c.containerid = i.containerid
                 LEFT OUTER JOIN imager img ON img.imagerid = i.imagerid
@@ -456,6 +482,13 @@ class Imaging extends Page
                 GROUP BY i.containerinspectionid
                 ORDER BY $order", $args);
 
+        foreach ($inspections as &$i) {
+            $args = array($i['CONTAINERINSPECTIONID']);
+            $scored = $this->db->pq("SELECT case when count(im.blsampleimageid) > 0 then 1 else 0 end as imagesscored
+                FROM blsampleimage im
+                WHERE im.containerinspectionid=:1 AND im.blsampleimagescoreid IS NOT NULL", $args);
+            $i['IMAGESSCORED'] = $scored[0]['IMAGESSCORED'];
+        }
 
         if ($this->has_arg('iid')) {
             if (!sizeof($inspections))

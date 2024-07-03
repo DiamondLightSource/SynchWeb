@@ -1082,14 +1082,8 @@ class DC extends Page
             $images = array();
             foreach (array('X1', 'X2', 'X3', 'X4') as $j => $im) {
                 array_push($images, file_exists($dc[$im]) ? 1 : 0);
-                if ($im == 'X1') {
-                    $ext = pathinfo($dc[$im], PATHINFO_EXTENSION);
-                    $thumb = str_replace('.' . $ext, 't.' . $ext, $dc[$im]);
-                    if ($this->staff && $this->has_arg('debug'))
-                        $debug['snapshot_thumb'] = array('file' => $thumb, 'exists' => file_exists($thumb) ? 1 : 0);
-                    if (file_exists($thumb))
-                        $sn = 1;
-                }
+                if ($im == 'X1' && file_exists($dc[$im]))
+                    $sn = 1;
                 unset($dc[$im]);
             }
 
