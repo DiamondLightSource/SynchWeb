@@ -492,8 +492,6 @@
                 let self = this
 
                 this.csvData.forEach(function(item, index){
-                    if(index === 0)
-                        return;
 
                     console.log(item)
                     var shortName = ''
@@ -513,7 +511,7 @@
 
                     let capillaryCrystal = new Crystal({
                         CRYSTALID: self.existingCapillaryID,
-                        NAME: self.name + shortName + '_CP',
+                        NAME: item.acronym + shortName + '_CP',
                         THEORETICALDENSITY: self.getCapillaryInfo('density') != null ? self.getCapillaryInfo('density') : null,
                         ABUNDANCE: 1,
                         CONTAINERLESS: self.containerless,
@@ -533,7 +531,7 @@
                     })
 
                     let crystal = new Crystal({
-                        NAME: self.name,
+                        NAME: item.acronym,
                         COMMENTS: item.comments,
                         THEORETICALDENSITY: item.density,
                         ABUNDANCE: 1
@@ -591,7 +589,7 @@
 
                 let capillaryCrystal = new Crystal({
                     CRYSTALID: this.existingCapillaryID,
-                    NAME: this.name + shortName + '_CP',
+                    NAME: this.acronym + shortName + '_CP',
                     THEORETICALDENSITY: this.getCapillaryInfo('density') != null ? this.getCapillaryInfo('density') : null,
                     ABUNDANCE: 1,
                     CONTAINERLESS: this.containerless,
@@ -611,7 +609,7 @@
                 })
 
                 let crystal = new Crystal({
-                    NAME: this.name,
+                    NAME: this.acronym,
                     COMMENTS: this.comments,
                     THEORETICALDENSITY: this.density,
                     ABUNDANCE: 1
@@ -727,7 +725,7 @@
                             if(self.commaInComments)
                                 self.csvErrors.push("Column count is greater than expected, you likely have a comma in a comment. Please remove any additional commas")
 
-                            if(self.csvData.length === 1 && self.csvErrors.length === 0){
+                            if(self.csvData.length < 1 && self.csvErrors.length === 0){
                                 self.csvErrors.push("Only headers have been submitted, please add some sample information")
                             }
 

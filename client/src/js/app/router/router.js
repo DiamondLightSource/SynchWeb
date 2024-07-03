@@ -37,7 +37,6 @@ import CellRoutes from 'modules/cell/routes.js'
 import StatusRoutes from 'modules/status/routes.js'
 import FaultRoutes from 'modules/fault/routes.js'
 import StatsRoutes from 'modules/stats/routes.js'
-import EMRoutes from 'modules/types/em/routes.js'
 import SubmissionRoutes from 'modules/submission/routes.js'
 import VisitsRoutes from 'modules/visits/routes.js'
 import SummaryRoutes from 'modules/summary/routes.js'
@@ -98,7 +97,6 @@ router.addRoutes(ProposalRoutes)
 router.addRoutes(TutorialRoutes)
 router.addRoutes(FeedbackRoutes)
 router.addRoutes(ShipmentRoutes)
-router.addRoutes(EMRoutes)
 router.addRoutes(DCRoutes)
 router.addRoutes(BLStatsRoutes)
 router.addRoutes(ProjectRoutes)

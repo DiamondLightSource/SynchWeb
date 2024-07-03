@@ -49,12 +49,20 @@
 </div>
 
 <h2>Queued Samples</h2>
-<div class="r rpreset">
+
+<div class="filter">
+<span class="r">
+<a href="#" class="button unqueuesel" title="Remove the selected samples from the queue"><i class="fa fa-minus"></i> Unqueue Selected</a>
+<a href="#" class="button unqueueall" title="Remove all samples from the queue"><i class="fa fa-minus"></i> Unqueue All</a>
+</span></div>
+<div>
+<span class="r rpreset">
 Presets: <select name="preset"></select>
 <a href="#" class="button apply" title="Apply this preset to the selected samples"><i class="fa fa-check-square-o"></i> Apply to Selected</a>
 <a href="#" class="button applyall" title="Apply this preset to all samples"><i class="fa fa-file-text-o"></i> Apply to All</a>
+</span>
+<span class="filter filter-nohide qfilt"></span>
 </div>
-<div class="filter filter-nohide qfilt"></div>
 <div class="qsamples"></div>
 
 <% if (!CONTAINERQUEUEID) { %>

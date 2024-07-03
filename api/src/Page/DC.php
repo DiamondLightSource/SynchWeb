@@ -18,7 +18,6 @@ class DC extends Page
         'sid' => '\d+',
         'aid' => '\d+',
         'pjid' => '\d+',
-        'imp' => '\d',
         'pid' => '\d+',
         'h' => '\d\d',
         'dmy' => '\d\d\d\d\d\d\d\d',
@@ -71,7 +70,7 @@ class DC extends Page
     #   - a proposal /
     #   - a visit /visit/
     #   - a particular sample id /sid/
-    #   - a project (explicit or implicit) /pjid/(imp/1/)
+    #   - a project (explicit only) /pjid/
     #   - a protein /pid/
     #   Its also searchable (A-z0-9-/) and filterable
     function _data_collections($single = null)
@@ -151,7 +150,7 @@ class DC extends Page
                 $where = " AND appm.autoprocprogrammessageid IS NOT NULL AND (appm.severity = 'WARNING' OR appm.severity = 'ERROR')";
                 $extj[0] .= "LEFT OUTER JOIN autoprocintegration api ON dc.datacollectionid = api.datacollectionid
                         LEFT OUTER JOIN processingjob pj ON dc.datacollectionid = pj.datacollectionid
-                        LEFT OUTER JOIN autoprocprogram app ON (app.autoprocprogramid = api.autoprocprogramid OR dc.datacollectionid = pj.datacollectionid)
+                        LEFT OUTER JOIN autoprocprogram app ON app.autoprocprogramid = api.autoprocprogramid
                         INNER JOIN autoprocprogrammessage appm ON appm.autoprocprogramid = app.autoprocprogramid";
             } else if ($this->arg('t') == "scrystal" || $this->arg('t') == "nscrystal") {
                 // Single crystal or explicitly non-single-crystal fields
@@ -177,7 +176,12 @@ class DC extends Page
         $info = array();
         # Visits
         if ($this->has_arg('visit')) {
-            $info = $this->db->pq("SELECT TO_CHAR(s.startdate, 'HH24') as sh, TO_CHAR(s.startdate, 'DDMMYYYY') as dmy, s.sessionid, s.beamlinename as bl FROM blsession s INNER JOIN proposal p ON (p.proposalid = s.proposalid) WHERE CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) LIKE :1", array($this->arg('visit')));
+            $pattern = '/([A-z]+)(\d+)-(\d+)/';
+            preg_match($pattern, $this->arg('visit'), $matches);
+            if (!sizeof($matches))
+                $this->_error('No such visit');
+
+            $info = $this->db->pq("SELECT TO_CHAR(s.startdate, 'HH24') as sh, TO_CHAR(s.startdate, 'DDMMYYYY') as dmy, s.sessionid, s.beamlinename as bl FROM blsession s INNER JOIN proposal p ON (p.proposalid = s.proposalid) WHERE p.proposalcode=:1 AND p.proposalnumber=:2 AND s.visit_number=:3", array($matches[1], $matches[2], $matches[3]));
 
             if (!sizeof($info)) {
                 $this->_error('No such visit');
@@ -237,22 +241,10 @@ class DC extends Page
                 $extj[$i] .= " LEFT OUTER JOIN $t[0] prj ON $t[1].$t[2] = prj.$ct INNER JOIN proposal prop ON ses.proposalid = prop.proposalid";
                 $sess[$i] = 'prj.projectid=:' . ($i + 1);
 
-                if ($this->has_arg('imp')) {
-                    if ($this->arg('imp')) {
-                        $extj[$i] .= " LEFT OUTER JOIN crystal cr ON cr.crystalid = smp.crystalid LEFT OUTER JOIN protein pr ON pr.proteinid = cr.proteinid LEFT OUTER JOIN project_has_protein prj2 ON prj2.proteinid = pr.proteinid LEFT OUTER JOIN project_has_blsample prj3 ON prj3.blsampleid = smp.blsampleid";
-                        $sess[$i] = '(prj.projectid=:' . ($i * 3 + 1) . ' OR prj2.projectid=:' . ($i * 3 + 2) . ' OR prj3.projectid=:' . ($i * 3 + 3) . ')';
-                    }
-                }
             }
 
-
-            $n = 4;
-            if ($this->has_arg('imp'))
-                if ($this->arg('imp'))
-                    $n = 12;
-            for ($i = 0; $i < $n; $i++)
+            for ($i = 0; $i < 4; $i++)
                 array_push($args, $this->arg('pjid'));
-
 
             # Proteins
         } else if ($this->has_arg('pid')) {
@@ -615,6 +607,7 @@ class DC extends Page
             $groupby = "GROUP BY dc.datacollectiongroupid";
         }
 
+        // We don't want to remove duplicates, since if two counts are equal, one might go uncounted
         $total_query = "SELECT sum(tot) as t FROM (
                 $with
                 SELECT count($count_field) as tot
@@ -625,21 +618,21 @@ class DC extends Page
                     $extj[0]
                     WHERE $sess[0] $where
             
-                UNION SELECT count(es.energyscanid) as tot
+                UNION ALL SELECT count(es.energyscanid) as tot
                     FROM energyscan es
                     INNER JOIN blsession ses ON ses.sessionid = es.sessionid
                     $sample_joins[1]
                     $extj[1]
                     WHERE $sess[1] $where2
                             
-                UNION SELECT count(xrf.xfefluorescencespectrumid) as tot
+                UNION ALL SELECT count(xrf.xfefluorescencespectrumid) as tot
                     FROM xfefluorescencespectrum xrf
                     INNER JOIN blsession ses ON ses.sessionid = xrf.sessionid
                     $sample_joins[3]
                     $extj[3]
                     WHERE $sess[3] $where4
                             
-                UNION SELECT count(r.robotactionid) as tot
+                UNION ALL SELECT count(r.robotactionid) as tot
                     FROM robotaction r
                     INNER JOIN blsession ses ON ses.sessionid = r.blsessionid
                     $sample_joins[2]
@@ -975,7 +968,7 @@ class DC extends Page
 
             // Data collections
             if ($dc['TYPE'] == 'data') {
-                $nf = array(1 => array('AXISSTART'), 2 => array('RESOLUTION', 'TRANSMISSION', 'AXISRANGE'), 4 => array('WAVELENGTH', 'EXPOSURETIME'));
+                $nf = array(1 => array('AXISSTART', 'CHISTART', 'PHI', 'OVERLAP'), 2 => array('RESOLUTION', 'TRANSMISSION', 'AXISRANGE', 'TOTALDOSE'), 4 => array('WAVELENGTH', 'EXPOSURETIME'));
 
                 $dc['DIRFULL'] = $dc['DIR'];
                 $dc['DIR'] = preg_replace('/.*\/' . $this->arg('prop') . '-' . $dc['VN'] . '\//', '', $dc['DIR']);
@@ -1089,14 +1082,8 @@ class DC extends Page
             $images = array();
             foreach (array('X1', 'X2', 'X3', 'X4') as $j => $im) {
                 array_push($images, file_exists($dc[$im]) ? 1 : 0);
-                if ($im == 'X1') {
-                    $ext = pathinfo($dc[$im], PATHINFO_EXTENSION);
-                    $thumb = str_replace('.' . $ext, 't.' . $ext, $dc[$im]);
-                    if ($this->staff && $this->has_arg('debug'))
-                        $debug['snapshot_thumb'] = array('file' => $thumb, 'exists' => file_exists($thumb) ? 1 : 0);
-                    if (file_exists($thumb))
-                        $sn = 1;
-                }
+                if ($im == 'X1' && file_exists($dc[$im]))
+                    $sn = 1;
                 unset($dc[$im]);
             }
 

@@ -71,6 +71,7 @@
             v-else-if="selectedContainerType.NAME && selectedContainerType.NAME.toLowerCase() !== 'puck'"
             :container-type="selectedContainerType"
             :valid-samples="validSamples"
+            :manually-selected-samples="manuallySelectedSamples"
             :container-identifier="selectedContainerName"
             color-attribute="VALID"
             added-color-attribute="ADDED"
@@ -218,11 +219,14 @@ export default {
     validSamples() {
       if (this.selectedContainerId) {
         const selectedContainer = this.selectedSamplesInGroups[this.selectedContainerId] || []
-        const difference = differenceBy(selectedContainer, this.selectedContainerAddedSamples, 'BLSAMPLEID')
-        return [...this.selectedContainerAddedSamples, ...difference]
+        const uniqueSelectedContainer = uniqBy(selectedContainer.concat(this.selectedContainerAddedSamples), 'BLSAMPLEID')
+        return uniqueSelectedContainer
       }
 
       return []
+    },
+    manuallySelectedSamples() {
+      return this.selectedSamplesInGroups[this.selectedContainerId] || []
     }
   },
   created: function () {
