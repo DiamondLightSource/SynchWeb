@@ -143,6 +143,7 @@ class Sample extends Page
         'SCREENINGMETHOD' => '\w+',
         'SCREENINGCOLLECTVALUE' => '\d+',
         'SAMPLEGROUP' => '\d+',
+        'currentuser' => '\d',
         'INITIALSAMPLEGROUP' => '\d+',
         'STRATEGYOPTION' => '',
         'MINIMUMRESOLUTION' => '\d+(.\d+)?',
@@ -2578,6 +2579,16 @@ class Sample extends Page
         $from_table = '';
         $group_by = '';
 
+        if ($this->has_arg('currentuser') && $this->arg('currentuser') == 1) {
+            $where .= ' AND bsg.ownerid = :' . (sizeof($args) + 1);
+            array_push($args, $this->user->personId);
+        }
+        if ($this->has_arg('s')) {
+            $st = sizeof($args) + 1;
+            $where .= " AND bsg.name LIKE CONCAT('%',:" . $st . ",'%')";
+            array_push($args, $this->arg('s'));
+        }
+
         // Check if we are grouping the result by BlSAMPLEID or BLSAMPLEGROUPID.
         // This is currently being used by xpdf when fetching the list of sample group samples.
         if ($this->has_arg('groupSamplesType') && $this->arg('groupSamplesType') === 'BLSAMPLEGROUPID') {
@@ -2660,7 +2671,8 @@ class Sample extends Page
     function _create_sample_group()
     {
         $name = $this->has_arg('NAME') ? $this->arg('NAME') : NULL;
-        $this->db->pq("INSERT INTO blsamplegroup (blsamplegroupid, name, proposalid) VALUES(NULL, :1, :2)", array($name, $this->proposalid));
+        $this->db->pq("INSERT INTO blsamplegroup (blsamplegroupid, name, proposalid, ownerid) VALUES(NULL, :1, :2, :3)",
+            array($name, $this->proposalid, $this->user->personId));
         return $this->db->id();
     }
 
