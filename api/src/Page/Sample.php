@@ -116,6 +116,7 @@ class Sample extends Page
         'MONOCHROMATOR' => '\w+',
         'PRESET' => '\d',
         'BEAMLINENAME' => '[\w\-]+',
+        'SOURCE' => '[\w\-]+',
 
         'queued' => '\d',
         'UNQUEUE' => '\d',
@@ -1467,7 +1468,8 @@ class Sample extends Page
             'SAMPLEGROUP',
             'STRATEGYOPTION',
             'MINIMUMRESOLUTION',
-            'INITIALSAMPLEGROUP'
+            'INITIALSAMPLEGROUP',
+            'SOURCE'
         ) as $f) {
             if ($s)
                 $a[$f] = array_key_exists($f, $s) ? $s[$f] : null;
@@ -1518,8 +1520,8 @@ class Sample extends Page
         }
 
         $this->db->pq(
-            "INSERT INTO blsample (blsampleid,crystalid,diffractionplanid,containerid,location,comments,name,code,blsubsampleid,screencomponentgroupid,volume,packingfraction,dimension1,dimension2,dimension3,shape,looptype) VALUES (s_blsample.nextval,:1,:2,:3,:4,:5,:6,:7,:8,:9,:10,:11,:12,:13,:14,:15,:16) RETURNING blsampleid INTO :id",
-            array($crysid, $did, $a['CONTAINERID'], $a['LOCATION'], $a['COMMENTS'], $a['NAME'], $a['CODE'], $a['BLSUBSAMPLEID'], $a['SCREENCOMPONENTGROUPID'], $a['VOLUME'], $a['PACKINGFRACTION'], $a['DIMENSION1'], $a['DIMENSION2'], $a['DIMENSION3'], $a['SHAPE'], $a['LOOPTYPE'])
+            "INSERT INTO blsample (blsampleid,crystalid,diffractionplanid,containerid,location,comments,name,code,blsubsampleid,screencomponentgroupid,volume,packingfraction,dimension1,dimension2,dimension3,shape,looptype,source) VALUES (s_blsample.nextval,:1,:2,:3,:4,:5,:6,:7,:8,:9,:10,:11,:12,:13,:14,:15,:16,IFNULL(:17,CURRENT_USER)) RETURNING blsampleid INTO :id",
+            array($crysid, $did, $a['CONTAINERID'], $a['LOCATION'], $a['COMMENTS'], $a['NAME'], $a['CODE'], $a['BLSUBSAMPLEID'], $a['SCREENCOMPONENTGROUPID'], $a['VOLUME'], $a['PACKINGFRACTION'], $a['DIMENSION1'], $a['DIMENSION2'], $a['DIMENSION3'], $a['SHAPE'], $a['LOOPTYPE'], $a['SOURCE'])
         );
         $sid = $this->db->id();
 
