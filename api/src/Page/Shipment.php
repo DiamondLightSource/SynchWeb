@@ -917,26 +917,25 @@ class Shipment extends Page
         if (!$this->has_arg('LOCATION'))
             $this->_error('No location specified');
 
-        $dew = $this->db->pq("SELECT d.dewarid,s.shippingid
+        $dew = $this->db->pq("SELECT d.dewarid,s.shippingid,c.containerid
               FROM dewar d
               INNER JOIN shipping s ON s.shippingid = d.shippingid
               INNER JOIN proposal p ON p.proposalid = s.proposalid
+              LEFT JOIN container c ON d.dewarid = c.dewarid
               WHERE d.dewarid=:1 and p.proposalid=:2", array($this->arg('DEWARID'), $this->proposalid));
 
         if (!sizeof($dew))
             $this->_error('No such dewar');
-        else
-            $dew = $dew[0];
 
 
         $this->db->pq(
             "INSERT INTO dewartransporthistory (dewartransporthistoryid,dewarid,dewarstatus,storagelocation,arrivaldate) 
               VALUES (s_dewartransporthistory.nextval,:1,'transfer-requested',:2,CURRENT_TIMESTAMP) RETURNING dewartransporthistoryid INTO :id",
-            array($dew['DEWARID'], $this->arg('LOCATION'))
+            array($this->arg('DEWARID'), $this->arg('LOCATION'))
         );
 
         // Update dewar status to transfer-requested to keep consistent with history
-        $this->db->pq("UPDATE dewar set dewarstatus='transfer-requested' WHERE dewarid=:1", array($dew['DEWARID']));
+        $this->db->pq("UPDATE dewar set dewarstatus='transfer-requested' WHERE dewarid=:1", array($this->arg('DEWARID')));
 
         if ($this->has_arg('NEXTVISIT')) {
             $sessions = $this->db->pq(
@@ -949,7 +948,13 @@ class Shipment extends Page
 
             $sessionId = !empty($sessions) ? $sessions[0]['SESSIONID'] : NULL;
 
-            $this->db->pq("UPDATE dewar SET firstexperimentid=:1 WHERE dewarid=:2", array($sessionId, $dew['DEWARID']));
+            $this->db->pq("UPDATE dewar SET firstexperimentid=:1 WHERE dewarid=:2", array($sessionId, $this->arg('DEWARID')));
+
+            if (is_null($sessionId)) {
+                foreach ($dew as $container) {
+                    $this->db->pq("UPDATE container SET sessionid=:1 WHERE containerid=:2", array($sessionId, $container['CONTAINERID']));
+                }
+            }
         }
 
         $email = new Email('dewar-transfer', '*** Dewar ready for internal transfer ***');
