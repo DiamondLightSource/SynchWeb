@@ -19,6 +19,7 @@ define(['backbone', 'backbone-validation'], function(Backbone) {
         visit: /^\w+\d+-\d+$/,
         visitornull: /^\w+\d+-\d+$|^(?![\s\S])/,
         twopath: /^(\w|-)+\/?(\w|-)+$/,
+        smiles: /^[A-Za-z0-9.:%=#$@+\-\[\]\(\)\/\\\\]+$/,
         numberorword: /(^\w+$)|(^\d+$)/
     })
     
@@ -41,6 +42,7 @@ define(['backbone', 'backbone-validation'], function(Backbone) {
         visit: 'This field must be of the format xxx123-123',
         visitornull: 'This field must be of the format xxx123-123 or a null value',
         twopath: 'This field can hold a path with two folders',
+        smiles: 'Can only be letters, numbes, or .:%=#$@+-[]()/\\',
         numberorword: 'This field can either hold numbers or a word'
     })
 
