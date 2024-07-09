@@ -18,6 +18,7 @@
           :samples="samples"
           :selectedDrops="selectedDrops"
           :selectedSamples="validSamples"
+          :manuallySelectedSamples="manuallySelectedSamples"
           color-scale="rgb"
           :colorAttribute="colorAttribute"
           :addedColorAttribute="addedColorAttribute"
@@ -50,6 +51,10 @@ export default {
       default: []
     },
     validSamples: {
+      type: Array,
+      default: []
+    },
+    manuallySelectedSamples: {
       type: Array,
       default: []
     },
@@ -91,6 +96,7 @@ export default {
       geometry.drops.w = this.containerType.DROPWIDTH
       geometry.well = this.containerType.WELLDROP
       geometry.columns = this.containerType.WELLPERROW
+      geometry.containerType = this.containerType.NAME
       return geometry
     },
     selectedDrops() {

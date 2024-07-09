@@ -158,9 +158,9 @@ define(['jquery', 'marionette',
                     opts.push('<option value='+i+'>Image '+i+'</option>')
                     if (i === 1) {
                         // show button to view image full size
-                        this.ui.sns.append('<a class="button" href="'+app.apiurl+'/image/id/'+this.getOption('ID')+'/f/1/n/'+i+'"><i class="fa fa-arrows"></a>')
+                        this.ui.sns.append('<a class="button" href="'+app.apiurl+'/image/id/'+this.getOption('ID')+'/n/'+i+'"><i class="fa fa-arrows"></a>')
                     } else {
-                        this.ui.sns.append('<a class="hidden" href="'+app.apiurl+'/image/id/'+this.getOption('ID')+'/f/1/n/'+i+'"></a>')
+                        this.ui.sns.append('<a class="hidden" href="'+app.apiurl+'/image/id/'+this.getOption('ID')+'/n/'+i+'"></a>')
                     }
                 }
             }
@@ -171,7 +171,7 @@ define(['jquery', 'marionette',
 
         loadImage: function() {
             var n = this.ui.ty3.val()
-            this.snapshot.load(app.apiurl+'/image/id/'+this.getOption('ID')+'/f/1/n/'+n)
+            this.snapshot.load(app.apiurl+'/image/id/'+this.getOption('ID')+'/n/'+n)
         },
 
         toggleFluo: function() {
@@ -270,7 +270,7 @@ define(['jquery', 'marionette',
                 if (m.get('SNS')[this.getOption('snapshotId')] && !this.hasSnapshot) {
                     this.snapshotLoading = true
                     this.$el.addClass('loading')
-                    this.snapshot.load(app.apiurl+'/image/id/'+this.getOption('ID')+'/f/1')
+                    this.snapshot.load(app.apiurl+'/image/id/'+this.getOption('ID'))
                 }
             }
         },

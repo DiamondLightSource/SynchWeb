@@ -83,9 +83,16 @@ class ShippingService
                 break;
         }
         $response = json_decode(curl_exec($ch), TRUE);
-        $status_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $status_code = curl_getinfo($ch, CURLINFO_HTTP_CODE); // Will be 0 if request itself fails
         curl_close($ch);
         if ($status_code != $expected_status_code) {
+            error_log(
+                "Shipping service unexpected status code." . PHP_EOL .
+                "Request: $type $url" . PHP_EOL .
+                "Status code: $status_code" . PHP_EOL .
+                "Response: " . json_encode($response) . PHP_EOL .
+                "Request data:" . json_encode($data)
+            );
             throw new \Exception(json_encode(array('status' => $status_code, 'content' => $response)));
         }
         return $response;
@@ -150,5 +157,15 @@ class ShippingService
     function get_awb_pdf_url($shipment_id)
     {
         return $this->shipping_app_url . '/shipments/' . $shipment_id . '/awb';
+    }
+
+    function create_shipment_request($shipment_request_data)
+    {
+        return $this->_send_request(
+            $this->shipping_api_url . '/shipment_requests/',
+            "POST",
+            $shipment_request_data,
+            201
+        );
     }
 }

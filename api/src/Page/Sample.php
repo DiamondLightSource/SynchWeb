@@ -1343,8 +1343,10 @@ class Sample extends Page
 
     function _add_sample()
     {
-        if (!$this->has_arg('prop'))
-            $this->_error('No proposal specified');
+        if (!$this->has_arg('prop')) {
+            $this->_output(array());
+            return;
+        }
 
         // Register entire container
         if ($this->has_arg('collection')) {
