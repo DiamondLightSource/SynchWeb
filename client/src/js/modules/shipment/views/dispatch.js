@@ -81,6 +81,7 @@ define(['marionette', 'views/form',
             lab: 'input[name=LABNAME]',
 
             submit: 'button[name=submit]',
+            shippingadvice: '.shippingadvice',
 
             facc: 'a.facc',
             accountNumber: 'input[NAME=DELIVERYAGENT_AGENTCODE]',
@@ -294,8 +295,10 @@ define(['marionette', 'views/form',
                 this.ui.dispatchDetails.hide()
                 this.model.dispatchDetailsRequired = false
                 this.ui.submit.text("Proceed")
+                this.ui.shippingadvice.html("<mark>On clicking 'Proceed' you will be redirected to the new Diamond shipping service to book the shipment. Please ensure all stages of the form are completed.</mark><br /><br />")
             } else {
                 this.ui.submit.text("Request Dewar Dispatch")
+                this.ui.shippingadvice.html("")
             }
         },
 
@@ -332,6 +335,7 @@ define(['marionette', 'views/form',
                 this.model.visitRequired = false
                 this.ui.dispatchDetails.hide()
                 this.ui.submit.text("Proceed")
+                this.ui.shippingadvice.html("<mark>On clicking 'Proceed' you will be redirected to the new Diamond shipping service to book the shipment. Please ensure all stages of the form are completed.</mark><br /><br />")
             }
         },
 
