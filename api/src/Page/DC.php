@@ -574,7 +574,7 @@ class DC extends Page
                     max(dc.c2lens) as c2lens,
                     max(dc.objaperture) as objaperture,
                     max(dc.magnification) as magnification,
-                    sum(dc.totalabsorbeddose) as totaldose,
+                    dose.total as totaldose,
                     CAST(dc.totalabsorbeddose AS DECIMAL(5, 2)) as totalabsdose,
                     max(d.detectormanufacturer) as detectormanufacturer,
                     max(d.detectormodel) as detectormodel,
@@ -659,6 +659,9 @@ class DC extends Page
                 SELECT $extcg $fields 
                 FROM datacollection dc
                 INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
+                INNER JOIN (
+                    select datacollectiongroupid, sum(totalabsorbeddose) as total from datacollection group by datacollectiongroupid) dose
+                    ON dc.datacollectiongroupid = dose.datacollectiongroupid
                 INNER JOIN blsession ses ON ses.sessionid = dcg.sessionid
                 $sample_joins[0]
                 LEFT OUTER JOIN datacollectioncomment dcc ON dc.datacollectionid = dcc.datacollectionid
