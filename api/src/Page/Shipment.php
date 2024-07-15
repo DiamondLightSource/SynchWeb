@@ -1113,7 +1113,7 @@ class Shipment extends Page
             $shipment_id = $response['shipmentId'];
             $this->shipping_service->dispatch_shipment($shipment_id, false);
         } catch (Exception $e) {
-            throw new Exception("Error returned from shipping service: " . $e . "\nShipment data: " . json_encode($shipment_data));
+            throw new Exception($e->getMessage());
         }
 
         return $shipment_id;
@@ -1226,12 +1226,13 @@ class Shipment extends Page
                 } else {
                     try {
                         $shipment_id = $this->_dispatch_dewar_in_shipping_service($data, $dew);
+                        if (Utils::getValueOrDefault($shipping_service_links_in_emails)) {
+                            $data['AWBURL'] = $this->shipping_service->get_awb_pdf_url($shipment_id);
+                        }
                     } catch (Exception $e) {
-                        error_log($e);
-                        $data['AWBURL'] = "";
-                    }
-                    if (Utils::getValueOrDefault($shipping_service_links_in_emails)) {
-                        $data['AWBURL'] = $this->shipping_service->get_awb_pdf_url($shipment_id);
+                        $error_json = json_decode($e->getMessage());
+                        $error_response = $error_json->detail;
+                        $this->_error($error_response, 400);
                     }
                 }
             }
