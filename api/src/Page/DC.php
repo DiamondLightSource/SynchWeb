@@ -440,7 +440,7 @@ class DC extends Page
                     dc.c2lens,
                     dc.objaperture,
                     dc.magnification,
-                    dc.totalexposeddose as totaldose,
+                    dose.total as totaldose,
                     CAST(dc.totalabsorbeddose AS DECIMAL(5, 2)) as totalabsdose,
                     d.detectorpixelsizehorizontal,
                     d.detectorpixelsizevertical,
