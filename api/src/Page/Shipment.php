@@ -1230,8 +1230,9 @@ class Shipment extends Page
                             $data['AWBURL'] = $this->shipping_service->get_awb_pdf_url($shipment_id);
                         }
                     } catch (Exception $e) {
+                        error_log($e);
                         $error_json = json_decode($e->getMessage());
-                        $error_response = $error_json->content->detail;
+                        $error_response = $error_json->content->detail ?? $e->getMessage();
                         $error_status = $error_json->status ? $error_json->status : 400;
                         $this->_error($error_response, $error_status);
                     }
