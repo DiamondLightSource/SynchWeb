@@ -1231,8 +1231,9 @@ class Shipment extends Page
                         }
                     } catch (Exception $e) {
                         $error_json = json_decode($e->getMessage());
-                        $error_response = $error_json->detail;
-                        $this->_error($error_response, 400);
+                        $error_response = $error_json->content->detail;
+                        $error_status = $error_json->status ? $error_json->status : 400;
+                        $this->_error($error_response, $error_status);
                     }
                 }
             }

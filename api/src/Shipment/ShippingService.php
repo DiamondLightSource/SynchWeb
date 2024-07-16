@@ -93,7 +93,7 @@ class ShippingService
                 "Response: " . json_encode($response) . PHP_EOL .
                 "Request data:" . json_encode($data)
             );
-            throw new \Exception(json_encode($response));
+            throw new \Exception(json_encode(array('status' => $status_code, 'content' => $response)));
         }
         return $response;
     }
