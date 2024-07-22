@@ -20,6 +20,9 @@
     "maintenance_message": "This is the maintenance message",
     "maintenance": false,
 
+    "csv_profile": "diamond",
+    "csv_message": "This CSV uploader is in Beta mode, use at your own risk.",
+
     "ga_ident": "",
 
     "_data_catalogue_comment": " Remove the data_catalogue object if you don't want a link on the landing page",
