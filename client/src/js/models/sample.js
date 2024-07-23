@@ -90,6 +90,7 @@ define(['backbone', 'collections/components',
             SCREENINGCOLLECTVALUE: '',
             STRATEGYOPTION: '',
             SHAPE: '',
+            SMILES: '',
             SPACEGROUP: '',
             SYMBOL: '',
             THEORETICALDENSITY: '',
@@ -162,6 +163,10 @@ define(['backbone', 'collections/components',
             ABUNDANCE: {
                 required: false,
                 pattern: 'number'
+            },
+            SMILES: {
+                required: false,
+                pattern: 'smiles'
             },
 
             PACKINGFRACTION: {

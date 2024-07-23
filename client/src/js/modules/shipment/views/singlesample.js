@@ -48,6 +48,7 @@ define(['backbone',
             cellga: 'input[name=CELL_GAMMA]',
             reqr: 'input[name=REQUIREDRESOLUTION]',
             anom: 'input[name=ANOMALOUSSCATTERER]',
+            smiles: 'input[name=SMILES]',
         },
 
         events: {
@@ -270,6 +271,7 @@ define(['backbone',
                     this.ui.cellga.val(this.model.get('CELL_GAMMA'))
                     this.ui.reqr.val(this.model.get('REQUIREDRESOLUTION'))
                     this.ui.anom.val(this.model.get('ANOMALOUSSCATTERER'))
+                    this.ui.smiles.val(this.model.get('SMILES'))
                     
                 } else {
                     var edit = new Editable({ model: this.model, el: this.$el })
@@ -290,6 +292,7 @@ define(['backbone',
                     edit.create('CELL_BETA', 'text')
                     edit.create('CELL_GAMMA', 'text')
                     edit.create('ABUNDANCE', 'text')
+                    edit.create('SMILES', 'text')
                 }
 
 
