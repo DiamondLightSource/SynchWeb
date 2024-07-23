@@ -162,7 +162,10 @@ class Image extends Page
                     $this->_browser_cache();
                     $this->app->contentType('image/'.$ext);
                     readfile($images[$n]);
-
+                } else if (file_exists($images[$n].'.gz')) {
+                    $this->_browser_cache();
+                    $this->app->contentType('image/'.$ext);
+                    readgzfile($images[$n].'.gz');
                 } else {
                     $this->_error('Not found', 'That image is no longer available');
                 }

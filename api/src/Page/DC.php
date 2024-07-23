@@ -965,7 +965,7 @@ class DC extends Page
                 $dc['VIS'] = $this->arg('prop') . '-' . $dc['VN'];
 
             foreach (array('X1', 'X2', 'X3', 'X4') as $x) {
-                $dc[$x] = file_exists($dc[$x]) ? 1 : 0;
+                $dc[$x] = file_exists($dc[$x]) || file_exists($dc[$x].'.gz') ? 1 : 0;
             }
 
             // Data collections
@@ -1083,8 +1083,9 @@ class DC extends Page
             $sn = 0;
             $images = array();
             foreach (array('X1', 'X2', 'X3', 'X4') as $j => $im) {
-                array_push($images, file_exists($dc[$im]) ? 1 : 0);
-                if ($im == 'X1' && file_exists($dc[$im]))
+                $exists = file_exists($dc[$im]) || file_exists($dc[$im].'.gz');
+                array_push($images, $exists ? 1 : 0);
+                if ($im == 'X1' && $exists)
                     $sn = 1;
                 unset($dc[$im]);
             }
