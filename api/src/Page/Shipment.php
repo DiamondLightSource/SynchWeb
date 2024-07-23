@@ -53,6 +53,7 @@ class Shipment extends Page
         'STATUS' => '[\w|\s|\-]+',
 
         'PURCHASEDATE' => '\d+-\d+-\d+',
+        'MANUFACTURERSERIALNUMBER' => '.*',
         'LABCONTACTID' => '\d+',
         'REPORT' => '.*',
 
@@ -126,6 +127,7 @@ class Shipment extends Page
         'PUCK' => '\d',
         'PROCESSINGPIPELINEID' => '\d+',
         'OWNERID' => '\d+',
+        'SOURCE' => '[\w\-]+',
 
         'CONTAINERREGISTRYID' => '\d+',
         'PROPOSALID' => '\d+',
@@ -620,7 +622,7 @@ class Shipment extends Page
         $args = array($this->proposalid);
         $where = 'p.proposalid=:1';
 
-        $fields = "r.dewarregistryid, max(CONCAT(p.proposalcode, p.proposalnumber)) as prop, r.facilitycode, TO_CHAR(r.purchasedate, 'DD-MM-YYYY') as purchasedate, ROUND(TIMESTAMPDIFF('DAY',r.purchasedate, CURRENT_TIMESTAMP)/30.42,1) as age, r.labcontactid, count(distinct d.dewarid) as dewars, GROUP_CONCAT(distinct CONCAT(p.proposalcode,p.proposalnumber) SEPARATOR ', ') as proposals, r.bltimestamp, TO_CHAR(max(d.bltimestamp),'DD-MM-YYYY') as lastuse, count(dr.dewarreportid) as reports";
+        $fields = "r.dewarregistryid, max(CONCAT(p.proposalcode, p.proposalnumber)) as prop, r.facilitycode, TO_CHAR(r.purchasedate, 'DD-MM-YYYY') as purchasedate, ROUND(TIMESTAMPDIFF('DAY',r.purchasedate, CURRENT_TIMESTAMP)/30.42,1) as age, r.labcontactid, count(distinct d.dewarid) as dewars, GROUP_CONCAT(distinct CONCAT(p.proposalcode,p.proposalnumber) SEPARATOR ', ') as proposals, r.bltimestamp, TO_CHAR(max(d.bltimestamp),'DD-MM-YYYY') as lastuse, count(dr.dewarreportid) as reports, r.manufacturerserialnumber";
         $group = "r.facilitycode";
 
         if ($this->has_arg('all') && $this->staff) {
@@ -712,7 +714,8 @@ class Shipment extends Page
         }
 
         $purchase = $this->has_arg('PURCHASEDATE') ? $this->arg('PURCHASEDATE') : '';
-        $this->db->pq("INSERT INTO dewarregistry (facilitycode, purchasedate, bltimestamp) VALUES (:1, TO_DATE(:2, 'DD-MM-YYYY'), SYSDATE)", array($fc, $purchase));
+        $serial = $this->has_arg('MANUFACTURERSERIALNUMBER') ? $this->arg('MANUFACTURERSERIALNUMBER') : '';
+        $this->db->pq("INSERT INTO dewarregistry (facilitycode, purchasedate, bltimestamp, manufacturerserialnumber) VALUES (:1, TO_DATE(:2, 'DD-MM-YYYY'), SYSDATE, :3)", array($fc, $purchase, $serial));
 
         $this->_output(array('FACILITYCODE' => $fc, 'DEWARREGISTRYID' => $this->db->id()));
     }
@@ -734,7 +737,7 @@ class Shipment extends Page
         else
             $dew = $dew[0];
 
-        $fields = array('PURCHASEDATE');
+        $fields = array('PURCHASEDATE', 'MANUFACTURERSERIALNUMBER');
         if ($this->staff)
             array_push($fields, 'NEWFACILITYCODE');
         foreach ($fields as $f) {
@@ -915,26 +918,25 @@ class Shipment extends Page
         if (!$this->has_arg('LOCATION'))
             $this->_error('No location specified');
 
-        $dew = $this->db->pq("SELECT d.dewarid,s.shippingid
+        $dew = $this->db->pq("SELECT d.dewarid,s.shippingid,c.containerid
               FROM dewar d
               INNER JOIN shipping s ON s.shippingid = d.shippingid
               INNER JOIN proposal p ON p.proposalid = s.proposalid
+              LEFT JOIN container c ON d.dewarid = c.dewarid
               WHERE d.dewarid=:1 and p.proposalid=:2", array($this->arg('DEWARID'), $this->proposalid));
 
         if (!sizeof($dew))
             $this->_error('No such dewar');
-        else
-            $dew = $dew[0];
 
 
         $this->db->pq(
             "INSERT INTO dewartransporthistory (dewartransporthistoryid,dewarid,dewarstatus,storagelocation,arrivaldate) 
               VALUES (s_dewartransporthistory.nextval,:1,'transfer-requested',:2,CURRENT_TIMESTAMP) RETURNING dewartransporthistoryid INTO :id",
-            array($dew['DEWARID'], $this->arg('LOCATION'))
+            array($this->arg('DEWARID'), $this->arg('LOCATION'))
         );
 
         // Update dewar status to transfer-requested to keep consistent with history
-        $this->db->pq("UPDATE dewar set dewarstatus='transfer-requested' WHERE dewarid=:1", array($dew['DEWARID']));
+        $this->db->pq("UPDATE dewar set dewarstatus='transfer-requested' WHERE dewarid=:1", array($this->arg('DEWARID')));
 
         if ($this->has_arg('NEXTVISIT')) {
             $sessions = $this->db->pq(
@@ -947,7 +949,13 @@ class Shipment extends Page
 
             $sessionId = !empty($sessions) ? $sessions[0]['SESSIONID'] : NULL;
 
-            $this->db->pq("UPDATE dewar SET firstexperimentid=:1 WHERE dewarid=:2", array($sessionId, $dew['DEWARID']));
+            $this->db->pq("UPDATE dewar SET firstexperimentid=:1 WHERE dewarid=:2", array($sessionId, $this->arg('DEWARID')));
+
+            if (is_null($sessionId)) {
+                foreach ($dew as $container) {
+                    $this->db->pq("UPDATE container SET sessionid=:1 WHERE containerid=:2", array($sessionId, $container['CONTAINERID']));
+                }
+            }
         }
 
         $email = new Email('dewar-transfer', '*** Dewar ready for internal transfer ***');
@@ -1113,7 +1121,7 @@ class Shipment extends Page
             $shipment_id = $response['shipmentId'];
             $this->shipping_service->dispatch_shipment($shipment_id, false);
         } catch (Exception $e) {
-            throw new Exception("Error returned from shipping service: " . $e . "\nShipment data: " . json_encode($shipment_data));
+            throw new Exception($e->getMessage());
         }
 
         return $shipment_id;
@@ -1226,12 +1234,15 @@ class Shipment extends Page
                 } else {
                     try {
                         $shipment_id = $this->_dispatch_dewar_in_shipping_service($data, $dew);
+                        if (Utils::getValueOrDefault($shipping_service_links_in_emails)) {
+                            $data['AWBURL'] = $this->shipping_service->get_awb_pdf_url($shipment_id);
+                        }
                     } catch (Exception $e) {
                         error_log($e);
-                        $data['AWBURL'] = "";
-                    }
-                    if (Utils::getValueOrDefault($shipping_service_links_in_emails)) {
-                        $data['AWBURL'] = $this->shipping_service->get_awb_pdf_url($shipment_id);
+                        $error_json = json_decode($e->getMessage());
+                        $error_response = $error_json->content->detail ?? $e->getMessage();
+                        $error_status = $error_json->status ? $error_json->status : 400;
+                        $this->_error($error_response, $error_status);
                     }
                 }
             }
@@ -1550,6 +1561,7 @@ class Shipment extends Page
         $fc = $this->has_arg('FACILITYCODE') ? $this->arg('FACILITYCODE') : '';
         $wg = $this->has_arg('WEIGHT') ? $this->arg('WEIGHT') : $dewar_weight;
         $exp = null;
+        $source = $this->has_arg('SOURCE') ? $this->arg('SOURCE') : null;
 
         if ($this->has_arg('FIRSTEXPERIMENTID')) {
             $experimentId = $this->arg('FIRSTEXPERIMENTID');
@@ -1557,9 +1569,9 @@ class Shipment extends Page
         }
 
         $this->db->pq(
-            "INSERT INTO dewar (dewarid,code,trackingnumbertosynchrotron,trackingnumberfromsynchrotron,shippingid,bltimestamp,dewarstatus,firstexperimentid,facilitycode,weight) 
-              VALUES (s_dewar.nextval,:1,:2,:3,:4,CURRENT_TIMESTAMP,'opened',:5,:6,:7) RETURNING dewarid INTO :id",
-            array($this->arg('CODE'), $to, $from, $this->arg('SHIPPINGID'), $exp, $fc, $wg)
+            "INSERT INTO dewar (dewarid,code,trackingnumbertosynchrotron,trackingnumberfromsynchrotron,shippingid,bltimestamp,dewarstatus,firstexperimentid,facilitycode,weight,source)
+              VALUES (s_dewar.nextval,:1,:2,:3,:4,CURRENT_TIMESTAMP,'opened',:5,:6,:7,IFNULL(:8,CURRENT_USER)) RETURNING dewarid INTO :id",
+            array($this->arg('CODE'), $to, $from, $this->arg('SHIPPINGID'), $exp, $fc, $wg, $source)
         );
 
         $id = $this->db->id();
@@ -1973,7 +1985,7 @@ class Shipment extends Page
         array_push($args, $start);
         array_push($args, $end);
 
-        $order = 'c.bltimestamp DESC';
+        $order = 'c.containerid DESC';
 
         if ($this->has_arg('ty')) {
             if ($this->arg('ty') == 'todispose') {
@@ -2185,11 +2197,12 @@ class Shipment extends Page
         $crid = $this->has_arg('CONTAINERREGISTRYID') ? $this->arg('CONTAINERREGISTRYID') : null;
 
         $pipeline = $this->has_arg('PROCESSINGPIPELINEID') ? $this->arg('PROCESSINGPIPELINEID') : null;
+        $source = $this->has_arg('SOURCE') ? $this->arg('SOURCE') : null;
 
         $this->db->pq(
-            "INSERT INTO container (containerid,dewarid,code,bltimestamp,capacity,containertype,scheduleid,screenid,ownerid,requestedimagerid,comments,barcode,experimenttype,storagetemperature,containerregistryid,prioritypipelineid)
-              VALUES (s_container.nextval,:1,:2,CURRENT_TIMESTAMP,:3,:4,:5,:6,:7,:8,:9,:10,:11,:12,:13,:14) RETURNING containerid INTO :id",
-            array($this->arg('DEWARID'), $this->arg('NAME'), $cap, $this->arg('CONTAINERTYPE'), $sch, $scr, $own, $rid, $com, $bar, $ext, $tem, $crid, $pipeline)
+            "INSERT INTO container (containerid,dewarid,code,bltimestamp,capacity,containertype,scheduleid,screenid,ownerid,requestedimagerid,comments,barcode,experimenttype,storagetemperature,containerregistryid,prioritypipelineid,source)
+              VALUES (s_container.nextval,:1,:2,CURRENT_TIMESTAMP,:3,:4,:5,:6,:7,:8,:9,:10,:11,:12,:13,:14,IFNULL(:15,CURRENT_USER)) RETURNING containerid INTO :id",
+            array($this->arg('DEWARID'), $this->arg('NAME'), $cap, $this->arg('CONTAINERTYPE'), $sch, $scr, $own, $rid, $com, $bar, $ext, $tem, $crid, $pipeline, $source)
         );
 
         $cid = $this->db->id();
@@ -2665,6 +2678,7 @@ class Shipment extends Page
         $rt = $this->has_arg('READYBYTIME') ? $this->arg('READYBYTIME') : null;
         $ct = $this->has_arg('CLOSETIME') ? $this->arg('CLOSETIME') : null;
         $loc = $this->has_arg('PHYSICALLOCATION') ? $this->arg('PHYSICALLOCATION') : null;
+        $source = $this->has_arg('SOURCE') ? $this->arg('SOURCE') : null;
 
         $hard_drive_enclosed = null;
         if ($this->has_arg('ENCLOSEDHARDDRIVE')) {
@@ -2727,9 +2741,9 @@ class Shipment extends Page
         $extra = json_encode($extra_array);
 
         $this->db->pq(
-            "INSERT INTO shipping (shippingid, proposalid, shippingname, deliveryagent_agentname, deliveryagent_agentcode, deliveryagent_shippingdate, deliveryagent_deliverydate, bltimestamp, creationdate, comments, sendinglabcontactid, returnlabcontactid, shippingstatus, safetylevel, readybytime, closetime, physicallocation) 
-        VALUES (s_shipping.nextval,:1,:2,:3,:4,TO_DATE(:5,'DD-MM-YYYY'), TO_DATE(:6,'DD-MM-YYYY'),CURRENT_TIMESTAMP,CURRENT_TIMESTAMP,:7,:8,:9,'opened',:10, :11, :12, :13) RETURNING shippingid INTO :id",
-            array($this->proposalid, $this->arg('SHIPPINGNAME'), $an, $ac, $sd, $dd, $com, $this->arg('SENDINGLABCONTACTID'), $this->arg('RETURNLABCONTACTID'), $this->arg('SAFETYLEVEL'), $rt, $ct, $loc)
+            "INSERT INTO shipping (shippingid, proposalid, shippingname, deliveryagent_agentname, deliveryagent_agentcode, deliveryagent_shippingdate, deliveryagent_deliverydate, bltimestamp, creationdate, comments, sendinglabcontactid, returnlabcontactid, shippingstatus, safetylevel, readybytime, closetime, physicallocation, source)
+        VALUES (s_shipping.nextval,:1,:2,:3,:4,TO_DATE(:5,'DD-MM-YYYY'), TO_DATE(:6,'DD-MM-YYYY'),CURRENT_TIMESTAMP,CURRENT_TIMESTAMP,:7,:8,:9,'opened',:10, :11, :12, :13, IFNULL(:14,CURRENT_USER)) RETURNING shippingid INTO :id",
+            array($this->proposalid, $this->arg('SHIPPINGNAME'), $an, $ac, $sd, $dd, $com, $this->arg('SENDINGLABCONTACTID'), $this->arg('RETURNLABCONTACTID'), $this->arg('SAFETYLEVEL'), $rt, $ct, $loc, $source)
         );
 
         $sid = $this->db->id();
@@ -2756,9 +2770,9 @@ class Shipment extends Page
                     $n = $fc ? $fc : ('Dewar' . ($i + 1));
 
                     $this->db->pq(
-                        "INSERT INTO dewar (dewarid,code,shippingid,bltimestamp,dewarstatus,firstexperimentid,facilitycode,weight) 
-                          VALUES (s_dewar.nextval,:1,:2,CURRENT_TIMESTAMP,'opened',:3,:4,$dewar_weight) RETURNING dewarid INTO :id",
-                        array($n, $sid, $exp, $fc)
+                        "INSERT INTO dewar (dewarid,code,shippingid,bltimestamp,dewarstatus,firstexperimentid,facilitycode,weight,source)
+                          VALUES (s_dewar.nextval,:1,:2,CURRENT_TIMESTAMP,'opened',:3,:4,:5,IFNULL(:6,CURRENT_USER)) RETURNING dewarid INTO :id",
+                        array($n, $sid, $exp, $fc, $dewar_weight, $source)
                     );
 
                     $id = $this->db->id();
