@@ -96,6 +96,7 @@ export default {
       geometry.drops.w = this.containerType.DROPWIDTH
       geometry.well = this.containerType.WELLDROP
       geometry.columns = this.containerType.WELLPERROW
+      geometry.containerType = this.containerType.NAME
       return geometry
     },
     selectedDrops() {

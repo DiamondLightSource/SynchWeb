@@ -23,6 +23,9 @@ define(['backbone'], function(Backbone) {
                 required: false,
                 pattern: 'edate'
             },
+            MANUFACTURERSERIALNUMBER: {
+                required: false,
+            },
         },
 
         validateFacilityCode: function(value, attr, state) {
