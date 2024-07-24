@@ -35,6 +35,11 @@ define(['backbone', 'marionette',
     }, KVCollection))
 
 
+    var IndexingMethods = Backbone.Collection.extend(_.extend({
+        keyAttribute: 'NAME',
+        valueAttribute: 'VALUE',
+    }, KVCollection))
+
 
     return Marionette.LayoutView.extend({
         className: 'content',
@@ -48,12 +53,17 @@ define(['backbone', 'marionette',
     
         events: {
             'click .integrate': 'integrate',
+            'click a.opt': 'toggleOpts',
+            'change @ui.pipeline': 'updatePipeline',
         },
 
         ui: {
             jobs: '.jobs',
             wait: '.wait',
-            met: 'select[name=method]',
+            pipeline: 'select[name=pipeline]',
+            indexingMethod: 'select[name=method]',
+            opts: 'div.options',
+            sm: 'input[name=sm]',
         },
 
         templateHelpers: function() {
@@ -62,6 +72,22 @@ define(['backbone', 'marionette',
             }
         },
 
+        updatePipeline: function() {
+            const isXia2 = this.ui.pipeline.val().startsWith("xia2")
+            this.ui.sm.prop('disabled', !isXia2)
+            for (param of this.xia2params()) {
+                this.$el.find('input[name='+param+'], select[name='+param+']').prop('disabled', !isXia2)
+            }
+        },
+
+        toggleOpts: function(e) {
+            e.preventDefault()
+            this.ui.opts.slideToggle()
+        },
+
+        xia2params: function() {
+            return ['cc_half', 'isigma', 'misigma', 'sigma_strong', 'method']
+        },
 
         integrate: function(e) {
             e.preventDefault()
@@ -74,12 +100,12 @@ define(['backbone', 'marionette',
             }
 
             var self = this
-            var p = this.pipelines.findWhere({ VALUE: self.ui.met.val() })
+            var p = this.pipelines.findWhere({ VALUE: self.ui.pipeline.val() })
             var reprocessing = new Reprocessing({
                 DATACOLLECTIONID: s[0].get('ID'),
                 COMMENTS: 'Multicrystal integrator',
                 DISPLAYNAME: p.get('NAME'),
-                RECIPE: self.ui.met.val(),
+                RECIPE: self.ui.pipeline.val(),
             })
 
             reprocessing.save({}, {
@@ -120,6 +146,15 @@ define(['backbone', 'marionette',
                         PARAMETERKEY: 'small_molecule', 
                         PARAMETERVALUE: 'true'
                     }))
+
+                    for (param of self.xia2params()) {
+                        var val = self.$el.find('input[name='+param+'], select[name='+param+']').val().replace(/\s/g, '')
+                        if (val) reprocessingparams.add(new ReprocessingParameter({
+                            PROCESSINGJOBID: reprocessing.get('PROCESSINGJOBID'),
+                            PARAMETERKEY: param,
+                            PARAMETERVALUE: val
+                        }))
+                    }
 
                     if (reprocessingparams.length) reprocessingparams.save()
 
@@ -181,6 +216,7 @@ define(['backbone', 'marionette',
         onRender: function() {
             this.pages.show(this.paginator)
             this.srch.show(this.search)
+            this.ui.opts.hide()
 
             var distlview = new DCsDISTLView({ collection: this.collection })
             this.dcs.show(distlview)
@@ -195,7 +231,16 @@ define(['backbone', 'marionette',
                 { NAME: 'autoPROC', VALUE: 'autoPROC' },
             ])
 
-            this.ui.met.html(this.pipelines.opts())
+            this.ui.pipeline.html(this.pipelines.opts())
+
+            this.indexingMethods = new IndexingMethods([
+                { NAME: '-', VALUE: '' },
+                { NAME: 'fft3d', VALUE: 'fft3d' },
+                { NAME: 'fft1d', VALUE: 'fft1d' },
+                { NAME: 'Real space grid search', VALUE: 'real_space_grid_search' },
+            ])
+
+            this.ui.indexingMethod.html(this.indexingMethods.opts())
         },
           
         setCell: function(view, ap) {
