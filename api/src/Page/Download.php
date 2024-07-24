@@ -373,7 +373,7 @@ class Download extends Page
 
             $r['FILEFULLPATH'] = preg_replace('/.*\/' . $r['VISIT'] . '\//', '', $r['FILEFULLPATH']);
 
-            foreach (array('DX_MM', 'DY_MM', 'STEPS_X', 'STEPS_Y') as $k) {
+            foreach (array('DX_MM', 'DY_MM', 'STEPS_X', 'STEPS_Y', 'SNAKED') as $k) {
                 $r[$k] = floatval($r[$k]);
             }
         }
