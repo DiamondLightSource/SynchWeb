@@ -2,11 +2,30 @@
   <div class="content">
     <h1>Sample Group Management</h1>
 
+    <base-input-checkbox
+      :outerClass="
+        `l tw-mx-1 tw-mb-3 tw-rounded-md tw-w-40
+        tw-p-2 tw-bg-content-filter-background`
+      "
+      :value="showUserSampleGroups"
+      id="mysamplegroups"
+      description="My Sample Groups"
+      name="currentUserSampleGroups"
+      @input="setUserSampleGroupsState"/>
+
     <div class="r tw-mb-2">
-      <button @click="onAddSampleGroup" class="button tw-text-lg">
+      <button @click="onAddSampleGroup" class="button tw-text-lg tw-p-2">
         <i class="fa fa-plus"></i> Create Sample Group
       </button>
     </div>
+
+    <div class="r tw-mb-2 tw-mx-2 tw-p-2 tw-rounded-md tw-bg-content-filter-background">
+      <input data-testid="sample-groups-table-search"
+        placeholder='Search'
+        v-model = "searchSampleGroups"
+      />
+    </div>
+
     <custom-table-component :data-list="groups" table-class="tw-w-full">
       <template v-slot:tableHeaders>
         <td class="tw-w-3/12 tw-py-2 tw-pl-2">Group Name</td>
@@ -85,9 +104,11 @@
 
 <script>
 import Pagination from 'app/components/pagination.vue'
+import { debounce } from 'lodash-es'
 
 import SampleGroupsCollection from 'collections/samplegroups.js'
 import SampleGroupSamplesCollection from 'collections/samplegroupsamples.js'
+import BaseInputCheckbox from 'app/components/base-input-checkbox.vue'
 import CustomTableComponent from 'app/components/custom-table-component.vue'
 import CustomTableRow from 'app/components/custom-table-row.vue'
 import ValidContainerGraphic from 'modules/types/mx/samples/valid-container-graphic.vue'
@@ -99,6 +120,7 @@ export default {
   components: {
     'auto-processing-jobs-list': AutoProcessingJobsList,
     'valid-container-graphic': ValidContainerGraphic,
+    'base-input-checkbox': BaseInputCheckbox,
     'custom-table-row': CustomTableRow,
     'custom-table-component': CustomTableComponent,
     'pagination-panel': Pagination,
@@ -116,6 +138,9 @@ export default {
       sampleGroupsListState: {},
       selectedSampleGroup: null,
       latestMultiplexJobs: [],
+      showUserSampleGroups: false,
+      searchSampleGroups : '',
+      doSearchSampleGroups: debounce(this.getSampleGroups, 500),
       loadedMultiplex: false
     };
   },
@@ -160,6 +185,7 @@ export default {
     async getSampleGroups() {
       try {
         this.$store.commit('loading', true)
+        this.sampleGroups.queryParams.s = this.searchSampleGroups
   
         const collection = await this.$store.dispatch('getCollection', this.sampleGroups)
   
@@ -205,6 +231,9 @@ export default {
       }, [])
       this.loadedMultiplex = true
     },
+    setUserSampleGroupsState() {
+      this.showUserSampleGroups = !this.showUserSampleGroups
+    },
     async goToSampleGroupsDataCollections() {
       await this.$router.push(`/dc/sgid/${this.sampleGroupId}`)
     }
@@ -212,7 +241,15 @@ export default {
   watch: {
     selectedSampleGroup() {
       this.onSampleGroupSelected()
-    }
+    },
+    searchSampleGroups: {
+      handler: 'doSearchSampleGroups'
+    },
+    showUserSampleGroups() {
+      this.sampleGroups.queryParams.currentuser = this.showUserSampleGroups ? 1 : 0
+      this.sampleGroups.queryParams.page = 1
+      this.getSampleGroups()
+    },
   }
 }
 </script>
