@@ -52,6 +52,16 @@ export default {
           SAFETYLEVEL: item.SAFETYLEVEL
         }));
     },
+    greenProteinsList() {
+      return this.$proteins()
+        .filter(item =>
+          item.SAFETYLEVEL === "GREEN"
+        )
+        .map(item => ({
+          value: item.PROTEINID,
+          text: item.ACRONYM,
+        }));
+    },
     experimentKindList() {
       return this.$experimentKindList();
     },

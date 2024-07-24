@@ -30,6 +30,7 @@
           option-value-key="key"
           :options="mappedEditableColumns"
           :value="selectedEditableColumn.key"
+          :isDisabled="disableUpdateSamples"
           outer-class="tw-mr-2"
           input-class="tw-h-8"
           @input="resetSelectedEditableColumn"
@@ -38,6 +39,7 @@
           :is="selectedEditableColumn.componentType"
           v-model="selectedFieldValue"
           :options="selectedEditableColumn.data"
+          :disabled="disableUpdateSamples"
           input-class="tw-h-8"
           outer-class="tw-mx-2 tw-h-full"
           option-text-key="text"
@@ -47,6 +49,7 @@
           name="submit"
           type="submit"
           :class="['button submit tw-mx-2 tw-text-base tw-px-4 tw-py-1 tw-h-8', invalid ? 'tw-border tw-border-red-500 tw-bg-red-500': '']"
+          :disabled="disableUpdateSamples"
           @click.prevent="onUpdateSamples"
         >
           Update Samples
@@ -176,6 +179,9 @@ export default {
     containerId: {
       type: [Number, String, undefined]
     },
+    disableUpdateSamples: {
+      type: Boolean
+    },
     invalid: {
       type: Boolean
     }
@@ -215,7 +221,7 @@ export default {
         data: '',
         inputType: 'text'
       },
-      updateSamplesFieldWithData: debounce(searchText => this.updateSelectedFieldValue(searchText), 1000),
+      updateSamplesFieldWithData: debounce(searchText => this.updateSelectedFieldValue(searchText), 200),
       currentModal: '',
       selectedSample: null,
       displayedModalTitle: ''
@@ -381,7 +387,16 @@ export default {
     },
     mappedEditableColumns() {
       const list = [...this.basicColumns, ...this.extraFieldsColumns, ...this.udcColumns].filter(column => !['STATUS', 'CELLS'].includes(column.key))
-      list.push({
+      list.push(
+      {
+        title: 'Protein Acronym',
+        key: 'PROTEINID',
+        className: '',
+        componentType: 'base-input-select',
+        data: this.greenProteinsList,
+        inputType: 'select'
+      },
+      {
         title: 'Sample Groups',
         key: 'SAMPLEGROUP',
         className: '',
@@ -446,7 +461,7 @@ export default {
         inputType: 'text'
       })
 
-      return sortBy(uniqBy(list, 'key'), 'key')
+      return sortBy(uniqBy(list, 'key'), 'title')
     },
   },
   watch: {
