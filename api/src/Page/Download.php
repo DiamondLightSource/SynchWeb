@@ -56,6 +56,7 @@ class Download extends Page
 
         array('/ap/attachments(/:AUTOPROCPROGRAMATTACHMENTID)(/dl/:download)', 'get', '_get_autoproc_attachments'),
         array('/ap/archive/:AUTOPROCPROGRAMID', 'get', '_get_autoproc_archive'),
+        array('/ap/log/:AUTOPROCPROGRAMID', 'get', '_get_autoproc_log'),
     );
 
 
@@ -220,7 +221,7 @@ class Download extends Page
                 INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
                 INNER JOIN blsession s ON s.sessionid = dcg.sessionid
                 WHERE s.proposalid=:1 $where
-                ORDER BY importancerank"
+                ORDER BY importancerank, filename"
         ), $args);
 
         return $rows;
@@ -411,6 +412,48 @@ class Download extends Page
             error_log("Download file " . $filename . " not found");
             $this->_error('Attachment not found on filesystem', 404);
         }
+    }
+
+    # ------------------------------------------------------------------------
+    # Get the most important log of an autoprocessing job
+    function _get_autoproc_log()
+    {
+
+        if (!$this->has_arg('prop')) {
+            $this->_error('No proposal specified');
+        }
+        $args = array($this->proposalid, $this->arg('AUTOPROCPROGRAMID'));
+
+        $rows = $this->db->union(array(
+            "SELECT app.autoprocprogramid, appa.filename, appa.filepath
+                FROM autoprocintegration api
+                INNER JOIN autoprocprogram app ON api.autoprocprogramid = app.autoprocprogramid
+                INNER JOIN autoprocprogramattachment appa ON appa.autoprocprogramid = app.autoprocprogramid
+                INNER JOIN datacollection dc ON dc.datacollectionid = api.datacollectionid
+                INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
+                INNER JOIN blsession s ON s.sessionid = dcg.sessionid
+                WHERE s.proposalid=:1
+                AND app.autoprocprogramid=:2
+                AND appa.importancerank=1
+                AND appa.filetype='Log'",
+            "SELECT app.autoprocprogramid, appa.filename, appa.filepath
+                FROM autoprocprogram app
+                INNER JOIN processingjob pj on pj.processingjobid = app.processingjobid
+                INNER JOIN autoprocprogramattachment appa ON appa.autoprocprogramid = app.autoprocprogramid
+                INNER JOIN datacollection dc ON dc.datacollectionid = pj.datacollectionid
+                INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
+                INNER JOIN blsession s ON s.sessionid = dcg.sessionid
+                WHERE s.proposalid=:1
+                AND app.autoprocprogramid=:2
+                AND appa.importancerank=1
+                AND appa.filetype='Log'"
+        ), $args);
+
+        if (!sizeof($rows)) {
+            return $this->_error('No log file found');
+        }
+        $this->_get_file($rows[0]['AUTOPROCPROGRAMID'], $rows[0]);
+
     }
 
 
