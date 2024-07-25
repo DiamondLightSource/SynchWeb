@@ -16,12 +16,13 @@ define(['backbone', 'marionette',
     'utils',
 
     'templates/mc/datacollections.html',
+    'collections/spacegroups',
     ], function(Backbone, Marionette, DCDISTLView, Pages, Search, 
         ReprocessOverview, Reprocessing, Reprocessings, 
         ReprocessingParameter, ReprocessingParameters,
         ReprocessingImageSweep, ReprocessingImageSweeps,
         KVCollection, utils,
-        template) {
+        template, Spacegroups) {
 
 
     var DCsDISTLView = Marionette.CollectionView.extend({
@@ -64,6 +65,7 @@ define(['backbone', 'marionette',
             indexingMethod: 'select[name=method]',
             opts: 'div.options',
             sm: 'input[name=sm]',
+            sg: 'select[name=sg]',
         },
 
         templateHelpers: function() {
@@ -78,6 +80,12 @@ define(['backbone', 'marionette',
             for (param of this.xia2params()) {
                 this.$el.find('input[name='+param+'], select[name='+param+']').prop('disabled', !isXia2)
             }
+        },
+
+        showSpaceGroups: async function() {
+            this.spacegroups = new Spacegroups(null, { state: { pageSize: 9999 } })
+            await this.spacegroups.fetch();
+            this.ui.sg.html('<option value=""> - </option>'+this.spacegroups.opts())
         },
 
         toggleOpts: function(e) {
@@ -133,7 +141,7 @@ define(['backbone', 'marionette',
                         PARAMETERVALUE: cell.join(',')
                     }))
 
-                    var sg = self.$el.find('input[name=sg]').val().replace(/\s/g, '')
+                    var sg = self.$el.find('select[name=sg]').val().replace(/\s/g, '')
                     if (sg) reprocessingparams.add(new ReprocessingParameter({ 
                         PROCESSINGJOBID: reprocessing.get('PROCESSINGJOBID'),
                         PARAMETERKEY: 'spacegroup', 
@@ -224,6 +232,9 @@ define(['backbone', 'marionette',
 
             this.rps.show(new ReprocessOverview({ collection: this.reprocessings, embed: true, results: true }))
 
+            // asynchronously load space groups into the select menu
+            this.showSpaceGroups()
+
             this.pipelines = new Pipelines([
                 { NAME: 'Xia2 DIALS', VALUE: 'xia2-dials' },
                 { NAME: 'Xia2 3dii', VALUE: 'xia2-3dii' },
@@ -249,7 +260,7 @@ define(['backbone', 'marionette',
                 this.$el.find('input[name='+f+']').val(ap.get('CELL')['CELL_'+k.toUpperCase()])
             }, this)
 
-            this.$el.find('input[name=sg]').val(ap.get('SG'))
+            this.$el.find('select[name=sg]').val(ap.get('SG'))
         },
 
         onDestroy: function() {
