@@ -1,4 +1,3 @@
-import EmMenu from 'modules/types/em/menu.js'
 import GenMenu from 'modules/types/gen/menu.js'
 import MxMenu from 'modules/types/mx/menu.js'
 import PowMenu from 'modules/types/pow/menu.js'
@@ -8,6 +7,7 @@ import TomoMenu from 'modules/types/tomo/menu.js'
 import XpdfMenu from 'modules/types/xpdf/menu.js'
 import GenProcMenu from 'modules/types/genproc/menu.js'
 import ConexsMenu from 'modules/types/conexs/menu.js'
+import EmMenu from 'modules/types/em/menu.js'
 
 const menuStore = {
     namespaced: true,

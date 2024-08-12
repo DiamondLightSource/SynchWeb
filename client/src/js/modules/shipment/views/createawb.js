@@ -111,6 +111,9 @@ define(['backbone',
             qwrap: '.qwrap',
             terms: '.terms',
             termsq: '.terms-quote',
+            country: '.COUNTRY',
+
+            createAWBForm: '.createAWBForm',
         },
 
         events: {
@@ -133,24 +136,57 @@ define(['backbone',
 
         _lcFields: ['PHONENUMBER', 'EMAILADDRESS', 'LABNAME', 'ADDRESS', 'CITY', 'POSTCODE','COUNTRY', 'GIVENNAME', 'FAMILYNAME'],
 
-        toggleFacilityCourier: function() {
-            if (app.options.get('facility_courier_countries').indexOf(this.lc.get('COUNTRY')) > -1 || app.options.get('facility_courier_countries_nde').indexOf(this.lc.get('COUNTRY')) > -1 ) {
-                if (this.terms.get('ACCEPTED')) {
-                    this.$el.find('.DELIVERYAGENT_AGENTCODE').hide()
-                    this.ui.acc_msg.text('Paid for by Facility')
-                    this.ui.facc.hide()
-                    this.ui.quote.hide()
-                    this.ui.submit.show()
-                    this.ui.termsq.hide()
-                    this.ui.terms.show()
-                    this.shipment.validation.DELIVERYAGENT_AGENTCODE.required = false
-                } else {
-                    this.ui.facc.show()
 
+        updateFormAsTermsAccepted: function() {
+            this.$el.find('.DELIVERYAGENT_AGENTCODE').hide()
+            this.ui.acc_msg.text('Paid for by Facility')
+            this.ui.facc.hide()
+            this.ui.quote.hide()
+            this.ui.submit.show()
+            this.ui.termsq.hide()
+            this.ui.terms.show()
+            this.shipment.validation.DELIVERYAGENT_AGENTCODE.required = false
+        },
+
+        toggleFacilityCourier: function() {
+            this.ui.createAWBForm.show()
+            this.setPickupDetailsRequired(true)
+            this.setEmailRequired(true)
+            if (app.options.get("shipping_service_app_url_incoming")) {
+                if (
+                    app.options.get('facility_courier_countries').indexOf(this.lc.get('COUNTRY')) > -1
+                    || app.options.get('facility_courier_countries_nde').indexOf(this.lc.get('COUNTRY')) > -1
+                ) {
+                    if (this.terms.get('ACCEPTED')) {
+                        this.updateFormAsTermsAccepted()
+                        this.setPickupDetailsRequired(false)
+                        this.setEmailRequired(false)
+                        this.ui.createAWBForm.hide()
+                        this.ui.submit.text("Proceed")
+                    } else {
+                        this.ui.facc.show()
+                    }
+                } else {
+                    this.ui.facc.hide()
+                    this.ui.quote.show()
+                    this.ui.submit.hide()
                 }
             } else {
-                this.ui.facc.hide()                
-            } 
+                if (
+                    app.options.get('facility_courier_countries').indexOf(this.lc.get('COUNTRY')) > -1 ||
+                    app.options.get('facility_courier_countries_nde').indexOf(this.lc.get('COUNTRY')) > -1
+                ) {
+                    if (this.terms.get('ACCEPTED')) {
+                        this.updateFormAsTermsAccepted()
+                    } else {
+                        this.ui.facc.show()
+                    }
+                } else {
+                    this.ui.facc.hide()
+                    this.ui.quote.show()
+                    this.ui.submit.hide()
+                }
+            }
         },
 
         updateWeight: function() {
@@ -187,13 +223,10 @@ define(['backbone',
             if (this.shipment.get('TERMSACCEPTED') === '0') {
                 this.shipment.validation.DELIVERYAGENT_AGENTCODE.required = true;
             }
-            this.shipment.validation.DELIVERYAGENT_SHIPPINGDATE.required = true
-            this.shipment.validation.PHYSICALLOCATION.required = true
-            this.shipment.validation.READYBYTIME.required = true
-            this.shipment.validation.CLOSETIME.required = true
+            this.setPickupDetailsRequired(true);
 
             this.lc.validation = JSON.parse(JSON.stringify(this.lc.__proto__.validation))
-            this.lc.validation.EMAILADDRESS.required = true
+            this.setEmailRequired(true)
 
             this.awb = new AWBModel()
 
@@ -211,6 +244,17 @@ define(['backbone',
                     view.invalid(view.$el.find('[name="'+attr+'"]'), error)
                 }
             })
+        },
+
+        setEmailRequired: function(value) {
+            this.lc.validation.EMAILADDRESS.required = value;
+        },
+
+        setPickupDetailsRequired: function(value) {
+            this.shipment.validation.DELIVERYAGENT_SHIPPINGDATE.required = value;
+            this.shipment.validation.PHYSICALLOCATION.required = value;
+            this.shipment.validation.READYBYTIME.required = value;
+            this.shipment.validation.CLOSETIME.required = value;
         },
 
         invalid: function(attr, error) {
@@ -245,7 +289,7 @@ define(['backbone',
             var attr = this.$el.find(e.target).attr('name')
             var val = this.$el.find(e.target).val()
             var data = {}
-                data[attr] = val
+            data[attr] = val
             this.awb.set(data, { silent: true })
             var error = this.awb.preValidate(attr, val)
             if (error) this.invalid(e.target, error)
@@ -254,15 +298,23 @@ define(['backbone',
 
         
         onRender: function() {
+            this.$el.hide()
+            this.ui.createAWBForm.show()
             this.ui.facc.hide()
             this.ui.submit.hide()
             this.ui.qwrap.hide()
             this.ui.terms.hide()
 
-            if (app.options.get('facility_courier_countries').length || app.options.get('facility_courier_countries_nde').length) this.ui.free.text('[Free For: '+app.options.get('facility_courier_countries').concat(app.options.get('facility_courier_countries_nde')).sort().join(', ')+']')
-            this.ui.DESCRIPTION.val(app.options.get('package_description'))
-
+            if (
+                app.options.get('facility_courier_countries').length
+                || app.options.get('facility_courier_countries_nde').length
+            ) {
+                this.ui.free.text(
+                    '[Free For: '+app.options.get('facility_courier_countries').concat(app.options.get('facility_courier_countries_nde')).sort().join(', ')+']'
+                )
+            }
             
+            this.ui.DESCRIPTION.val(app.options.get('package_description'))
 
             var sedit = new Editable({ model: this.shipment, el: this.$el })
             sedit.create('DELIVERYAGENT_AGENTCODE', 'text')
@@ -278,19 +330,17 @@ define(['backbone',
 
             this.rdew.show(new DewarsView({ collection: this.dewars }))
             this.updateWeight()
-
-                
+  
             var columns = [
-                    { label: '', cell: RadioCell, editable: false },
-                    { name: 'productname', label: 'Product', cell: 'string', editable: false },
-                    { name: 'deliverydate', label: 'Delivery', cell: 'string', editable: false },
-                    { name: 'deliverytime', label: 'By', cell: 'string', editable: false },
-                    { name: 'cutofftime', label: 'Cut Off Time', cell: 'string', editable: false },
-                    { name: 'bookingtime', label: 'Booking Time', cell: 'string', editable: false },
-                    { name: 'totalprice', label: 'Price', cell: 'string', editable: false },
-                    { name: 'currencycode', label: '', cell: 'string', editable: false },
-                ]
-
+                { label: '', cell: RadioCell, editable: false },
+                { name: 'productname', label: 'Product', cell: 'string', editable: false },
+                { name: 'deliverydate', label: 'Delivery', cell: 'string', editable: false },
+                { name: 'deliverytime', label: 'By', cell: 'string', editable: false },
+                { name: 'cutofftime', label: 'Cut Off Time', cell: 'string', editable: false },
+                { name: 'bookingtime', label: 'Booking Time', cell: 'string', editable: false },
+                { name: 'totalprice', label: 'Price', cell: 'string', editable: false },
+                { name: 'currencycode', label: '', cell: 'string', editable: false },
+            ]
 
             this.qtable = new TableView({
                 collection: this.quotes,
@@ -311,6 +361,7 @@ define(['backbone',
                 cedit.create(a, a == 'ADDRESS'? 'textarea' : 'text')
             }, this)
             cedit.create('COUNTRY', 'select', { data: this.countries.kv() });
+            this.$el.show()
         },
 
         checkAvailability: function() {
@@ -329,7 +380,7 @@ define(['backbone',
                 }
         },
 
-        populateLC: function() {            
+        populateLC: function() {
             this.checkAvailability()
             this.toggleFacilityCourier()
 
@@ -411,7 +462,13 @@ define(['backbone',
             }
 
             var prod = null
-            if ((app.options.get('facility_courier_countries').indexOf(this.lc.get('COUNTRY')) == -1 && app.options.get('facility_courier_countries_nde').indexOf(this.lc.get('COUNTRY')) == -1) || !this.terms.get('ACCEPTED')) {
+            if (
+                (
+                    app.options.get('facility_courier_countries').indexOf(this.lc.get('COUNTRY')) == -1
+                    && app.options.get('facility_courier_countries_nde').indexOf(this.lc.get('COUNTRY')) == -1
+                )
+                || !this.terms.get('ACCEPTED')
+            ) {
                 prod = this.$el.find('input[type=radio]:checked').val()
                 if (!prod) {
                     app.alert({ message: 'You must select a quote' })
@@ -433,6 +490,7 @@ define(['backbone',
             app.alert({ message: 'Creating Air Waybill and Booking Pickup, Please Wait...'})
 
             var self = this
+            var country = this.lc.get('COUNTRY')
             Backbone.ajax({
                 url: app.apiurl+'/shipment/awb/'+this.shipment.get('SHIPPINGID'),
                 method: 'POST',
@@ -441,14 +499,32 @@ define(['backbone',
                     DECLAREDVALUE: this.ui.DECLAREDVALUE.val(),
                     DESCRIPTION: this.ui.DESCRIPTION.val(),
                     PRODUCTCODE: prod,
+                    COUNTRY: country,
                 },
                 success: function(resp) {
-                    app.message({ message: 'Air Waybill Successfully Created'})
-                    setTimeout(function() {
-                        app.trigger('shipment:show', self.shipment.get('SHIPPINGID'))
-                    }, 1000)
-
-                    self.$el.removeClass('loading')
+                    if (
+                        app.options.get("shipping_service_app_url_incoming")
+                        && (Number(self.terms.get('ACCEPTED')) === 1) // terms.ACCEPTED could be undefined, 1, or "1"
+                        && app.options.get("facility_courier_countries").includes(country)
+                    ) {
+                        self.shipment.fetch().done((shipment) => {
+                            const external_id = shipment.EXTERNALSHIPPINGIDTOSYNCHROTRON;
+                            if (external_id === null){
+                                self.$el.removeClass('loading')
+                                app.alert({message: "Error performing redirect: external shipping id is null"})
+                                return;
+                            }
+                            window.location.assign(
+                                `${app.options.get("shipping_service_app_url")}/shipment-requests/${external_id}/incoming`
+                            )
+                        })
+                    } else {
+                        app.message({ message: 'Air Waybill Successfully Created'})
+                        setTimeout(function() {
+                            app.trigger('shipment:show', self.shipment.get('SHIPPINGID'))
+                        }, 1000)
+                        self.$el.removeClass('loading')
+                    }
                 },
 
                 error: function(xhr, status, error) {
@@ -456,12 +532,12 @@ define(['backbone',
                     if (xhr.responseText) {
                         try {
                             json = $.parseJSON(xhr.responseText)
+                            app.alert({ message: json.message, persist:true })
+                            app.alert({ message: json.message})
                         } catch(err) {
                             console.error("Error parsing response: ", err)
                         }
                     }
-                    app.alert({ message: json.message, persist:true })
-                    app.alert({ message: json.message})
                     self.ui.submit.prop('disabled', false)
                     self.$el.removeClass('loading')
                 }

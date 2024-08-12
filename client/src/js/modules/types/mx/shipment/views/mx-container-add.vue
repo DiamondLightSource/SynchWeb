@@ -125,16 +125,27 @@
                 />
               </validation-provider>
 
-              <base-input-select
-                v-model="REQUESTEDIMAGERID"
-                outer-class="tw-mb-2 tw-py-2"
-                label="Requested Imager"
-                description="Imager this container should go into"
-                name="REQUESTERIMAGER"
-                :options="imagingImagers"
-                option-value-key="IMAGERID"
-                option-text-key="NAME"
-              />
+              <validation-provider
+                v-if="plateType === 'plate'"
+                v-slot="{ errors }"
+                tag="div"
+                class="tw-mb-2 tw-py-2"
+                rules="required"
+                name="Requested Imager"
+              >
+
+                <base-input-select
+                  v-model="REQUESTEDIMAGERID"
+                  outer-class="tw-mb-2 tw-py-2"
+                  label="Requested Imager"
+                  description="Imager this container should go into"
+                  name="REQUESTERIMAGER"
+                  :options="imagingImagers"
+                  option-value-key="IMAGERID"
+                  option-text-key="NAME"
+                  :error-message="errors[0]"
+                />
+              </validation-provider>
 
               <base-input-select
                 v-model="SCHEDULEID"
@@ -394,6 +405,7 @@ const INITIAL_CONTAINER_TYPE = {
   DROPPERWELLY: null,
   DROPHEIGHT: null,
   DROPWIDTH: null,
+  NAME: null,
   WELLDROP: -1,
   WELLPERROW: null,
 }
@@ -506,8 +518,9 @@ export default {
           this.CONTAINERTYPE = type.get('NAME')
           const nameToLower = this.CONTAINERTYPE.toLowerCase()
           this.containerType = Object.assign(INITIAL_CONTAINER_TYPE, type.toJSON())
+          const puckTypes = ['cartridge', 'box', 'puck', 'block-4']
 
-          if (nameToLower.includes('puck') || nameToLower.includes('block')) {
+          if (puckTypes.some(v => nameToLower.includes(v))) {
             this.plateType = 'puck'
           } else if (nameToLower.includes('pcrstrip')) {
             this.plateType = 'pcr'

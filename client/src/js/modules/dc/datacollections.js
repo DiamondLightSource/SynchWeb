@@ -3,14 +3,10 @@ define(['marionette',
     
         'modules/dc/dclist',
         'modules/dc/views/samplechanger',
-        'modules/dc/views/dclog',
         'views/status',
         
         'views/search',
         'views/filter',
-    
-        'modules/stats/views/stack',
-    
         'views/dialog',
         'modules/dc/views/queuebuilder',
         'modules/proposal/views/users', 
@@ -21,7 +17,7 @@ define(['marionette',
         'templates/dc/dclist.html',
         ],
 function(Marionette, Pages, DCListView,
-         SampleChanger, DCLogView, StatusView, Search, Filter, StackView, DialogView, QueueBuilderView, UserView, DewarsView, 
+         SampleChanger, StatusView, Search, Filter, DialogView, QueueBuilderView, UserView, DewarsView,
          ReprocessOverview,
          template) {
 
@@ -40,7 +36,6 @@ function(Marionette, Pages, DCListView,
         search: '.srch',
         type: '.type',
         sc: '.sc',
-        log: '.lg',
         status: '.st',
         use: '.usage',
     },
@@ -146,20 +141,10 @@ function(Marionette, Pages, DCListView,
             this.type.show(this.ty)
         }
         
-        if (this.options.params.visit) {
-            this.use.show(new StackView({ visit: this.options.params.visit }))
-        }
-        
         if (this.model && this.model.get('ACTIVE') == 1) {
             // Sample changer
             console.log('get sc', this.getOption('sampleChanger'))
             if (this.getOption('sampleChanger') && this.options.params.visit && !app.mobile()) this.sc.show(new SampleChanger({ visit: this.options.params.visit, dcs: this.collection, bl: this.model.get('BL') }))
-          
-            // Log View
-            this.log.show(new DCLogView({ collection: this.collection }))
-          
-            // Status Display
-                
         }
         
         if (this.model && this.model.get('CAMS') == 1) {

@@ -158,9 +158,9 @@ define(['jquery', 'marionette',
                     opts.push('<option value='+i+'>Image '+i+'</option>')
                     if (i === 1) {
                         // show button to view image full size
-                        this.ui.sns.append('<a class="button" href="'+app.apiurl+'/image/id/'+this.getOption('ID')+'/f/1/n/'+i+'"><i class="fa fa-arrows"></a>')
+                        this.ui.sns.append('<a class="button" href="'+app.apiurl+'/image/id/'+this.getOption('ID')+'/n/'+i+'"><i class="fa fa-arrows"></a>')
                     } else {
-                        this.ui.sns.append('<a class="hidden" href="'+app.apiurl+'/image/id/'+this.getOption('ID')+'/f/1/n/'+i+'"></a>')
+                        this.ui.sns.append('<a class="hidden" href="'+app.apiurl+'/image/id/'+this.getOption('ID')+'/n/'+i+'"></a>')
                     }
                 }
             }
@@ -171,7 +171,7 @@ define(['jquery', 'marionette',
 
         loadImage: function() {
             var n = this.ui.ty3.val()
-            this.snapshot.load(app.apiurl+'/image/id/'+this.getOption('ID')+'/f/1/n/'+n)
+            this.snapshot.load(app.apiurl+'/image/id/'+this.getOption('ID')+'/n/'+n)
         },
 
         toggleFluo: function() {
@@ -270,7 +270,7 @@ define(['jquery', 'marionette',
                 if (m.get('SNS')[this.getOption('snapshotId')] && !this.hasSnapshot) {
                     this.snapshotLoading = true
                     this.$el.addClass('loading')
-                    this.snapshot.load(app.apiurl+'/image/id/'+this.getOption('ID')+'/f/1')
+                    this.snapshot.load(app.apiurl+'/image/id/'+this.getOption('ID'))
                 }
             }
         },
@@ -327,6 +327,10 @@ define(['jquery', 'marionette',
             if (this.hasSnapshot && utils.inView(this.$el)) this.draw()
         },
 
+        displayResolution: function(val) {
+            if (val < 0) { return 0 }
+            return 100 / val
+        },
 
         draw: function() {
             if (!this.ctx || !this.gridFetched) return
@@ -414,15 +418,17 @@ define(['jquery', 'marionette',
 
             if (d.length > 0) {
                 let max = 0
-                let power = this.invertHeatMap ? -1 : 1
                 let val = 0
+
                 _.each(d, function(v) {
-                    val = Math.pow(v[1], power)
-                    if (val > max) max = val
+                    if (v[1] > max) max = v[1]
                 })
 
                 max = max === 0 ? 1 : max
-                if (this.getOption('padMax') && max < 10 && !this.invertHeatMap) max = max * 50
+                if (this.getOption('padMax') && max < 10) max = max * 50
+
+                // 1.4Å
+                if (this.invertHeatMap) max = 100 / 1.4
 
                 var sw = (this.perceivedw-(this.offset_w*this.scale))/this.grid.get('STEPS_X')
                 var sh = (this.perceivedh-(this.offset_h*this.scale))/this.grid.get('STEPS_Y')
@@ -433,7 +439,7 @@ define(['jquery', 'marionette',
                 var data = []
                 _.each(d, function(v) {
                     var k = v[0] - 1
-                    val = Math.pow(v[1], power)
+                    val = this.invertHeatMap ? this.displayResolution(v[1]) : v[1]
 
                     // Account for vertical grid scans
                     let xstep, ystep, x, y

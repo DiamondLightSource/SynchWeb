@@ -161,10 +161,10 @@ class Page
     }
 
     /**
-     * Return a list of beamlines based on the type/group (mx, em, gen)
+     * Return a list of beamlines based on the type/group (mx, gen)
      * The return value can be checked with empty() if required
      *
-     * @param String $ty Beamline type/group 'mx', 'em', etc. or 'all' to get all beamlines
+     * @param String $ty Beamline type/group 'mx', etc. or 'all' to get all beamlines
      * @param bool $archived Default: false. Flag that allows archived beamlines to be included in result
      * @return Array Returns list of beamlines that are part of the beamline type
      */
@@ -365,6 +365,9 @@ class Page
                     else
                     {
                         if (sizeof(array_intersect($vis, $this->visits)))
+                            $auth = True;
+                        if ($this->user->hasPermission('all_dewars'))
+                            // allow to see anything without an id or a visit
                             $auth = True;
                     }
 

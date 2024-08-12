@@ -30,6 +30,9 @@
             <% } %>
         <% } else if (COUNTRY && COUNTRY !="United Kingdom" ) { %>
             <a class="button" href="#"><i class="fa fa-credit-card"></i> Create Air Waybill - Disabled</a>
+        <% } else if (EXTERNALSHIPPINGIDTOSYNCHROTRON && app.options.get("shipping_service_app_url_incoming")) { %>
+            <% const link = `${app.options.get('shipping_service_app_url_incoming')}/shipment-requests/${EXTERNALSHIPPINGIDTOSYNCHROTRON}/incoming` %>
+            <a class="button shipping-service" href="<%-link%>"><i class="fa fa-print"></i> Manage shipment booking</a>
         <% } else { %>
             <a class="button awb" href="/shipments/awb/sid/<%-SHIPPINGID%>"><i class="fa fa-credit-card"></i> Create DHL Air Waybill</a>
         <% } %>
