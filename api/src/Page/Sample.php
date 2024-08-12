@@ -80,6 +80,7 @@ class Sample extends Page
         'COMPONENTIDS' => '\d+',
         'COMPONENTAMOUNTS' => '\d+(.\d+)?',
         'ABUNDANCE' => '\d+(.\d+)?',
+        'SMILES' => '[A-Za-z0-9.:%=#$@+\-\[\]\(\)\/\\\\]+',
         'PACKINGFRACTION' => '\d+(.\d+)?',
         'DIMENSION1' => '\d+(.\d+)?',
         'DIMENSION2' => '\d+(.\d+)?',
@@ -784,9 +785,6 @@ class Sample extends Page
                 count(distinct IF(dc.overlap = 0 AND dc.axisrange > 0,dc.datacollectionid,NULL)) as dc,
                 count(distinct so.screeningid) as ai,
                 count(distinct app.autoprocprogramid) as ap,
-                count(distinct IF(dcg.experimenttype LIKE 'XRF map', dc.datacollectionid, NULL)) as xm,
-                count(distinct IF(dcg.experimenttype LIKE 'XRF spectrum', dc.datacollectionid, NULL)) as xs,
-                count(distinct IF(dcg.experimenttype LIKE 'Energy scan', dc.datacollectionid, NULL)) as es,
                 round(min(st.rankingresolution),2) as scresolution,
                 max(ssw.completeness) as sccompleteness,
                 round(min(apss.resolutionlimithigh),2) as dcresolution,
@@ -819,7 +817,7 @@ class Sample extends Page
                 LEFT OUTER JOIN screening sc ON dc.datacollectionid = sc.datacollectionid
                 LEFT OUTER JOIN screeningoutput so ON sc.screeningid = so.screeningid
                 
-                LEFT OUTER JOIN screeningstrategy st ON st.screeningoutputid = so.screeningoutputid AND sc.shortcomments LIKE '%EDNA%'
+                LEFT OUTER JOIN screeningstrategy st ON st.screeningoutputid = so.screeningoutputid AND sc.programversion = 'EDNA MXv1'
                 LEFT OUTER JOIN screeningstrategywedge ssw ON ssw.screeningstrategyid = st.screeningstrategyid
                 
                 LEFT OUTER JOIN autoprocintegration ap ON ap.datacollectionid = dc.datacollectionid
@@ -1181,10 +1179,13 @@ class Sample extends Page
                 $order = $cols[$this->arg('sort_by')] . ' ' . $dir;
         }
 
-        $rows = $this->db->paginate("SELECT distinct b.blsampleid, b.crystalid, b.screencomponentgroupid, ssp.blsampleid as parentsampleid, ssp.name as parentsample, b.blsubsampleid, count(distinct si.blsampleimageid) as inspections, CONCAT(p.proposalcode,p.proposalnumber) as prop, b.code, b.location, pr.acronym, pr.proteinid, cr.spacegroup,b.comments,b.name,s.shippingname as shipment,s.shippingid,d.dewarid,d.code as dewar, c.code as container, c.containerid, c.samplechangerlocation as sclocation, count(distinct IF(dc.overlap != 0,dc.datacollectionid,NULL)) as sc, count(distinct IF(dc.overlap = 0 AND dc.axisrange = 0,dc.datacollectionid,NULL)) as gr, count(distinct IF(dc.overlap = 0 AND dc.axisrange > 0,dc.datacollectionid,NULL)) as dc, count(distinct IF(dcg.experimenttype LIKE 'XRF map', dc.datacollectionid, NULL)) as xm, count(distinct IF(dcg.experimenttype LIKE 'XRF spectrum', dc.datacollectionid, NULL)) as xs, count(distinct IF(dcg.experimenttype LIKE 'Energy scan', dc.datacollectionid, NULL)) as es, count(distinct so.screeningid) as ai, count(distinct app.autoprocprogramid) as ap, count(distinct r.robotactionid) as r, round(min(st.rankingresolution),2) as scresolution, max(ssw.completeness) as sccompleteness, round(min(apss.resolutionlimithigh),2) as dcresolution, round(max(apss.completeness),1) as dccompleteness, dp.anomalousscatterer, dp.requiredresolution, cr.cell_a, cr.cell_b, cr.cell_c, cr.cell_alpha, cr.cell_beta, cr.cell_gamma, b.packingfraction, b.dimension1, b.dimension2, b.dimension3, b.shape, cr.color, cr.theoreticaldensity, cr.name as crystal, pr.name as protein, b.looptype, dp.centringmethod, dp.experimentkind, cq.containerqueueid, TO_CHAR(cq.createdtimestamp, 'DD-MM-YYYY HH24:MI') as queuedtimestamp
+        $rows = $this->db->paginate("SELECT distinct b.blsampleid, b.crystalid, b.screencomponentgroupid, ssp.blsampleid as parentsampleid, ssp.name as parentsample, b.blsubsampleid, count(distinct si.blsampleimageid) as inspections, CONCAT(p.proposalcode,p.proposalnumber) as prop, b.code, b.location, pr.acronym, pr.proteinid, cr.spacegroup,b.comments,b.name,s.shippingname as shipment,s.shippingid,d.dewarid,d.code as dewar, c.code as container, c.containerid, c.samplechangerlocation as sclocation
+                                  , count(distinct IF(dc.overlap != 0,dc.datacollectionid,NULL)) as sc, count(distinct IF(dc.overlap = 0 AND dc.axisrange = 0,dc.datacollectionid,NULL)) as gr, count(distinct IF(dc.overlap = 0 AND dc.axisrange > 0,dc.datacollectionid,NULL)) as dc, count(distinct so.screeningid) as ai, count(distinct app.autoprocprogramid) as ap, count(distinct r.robotactionid) as r, round(min(st.rankingresolution),2) as scresolution, max(ssw.completeness) as sccompleteness
+                                  , round(min(apss.resolutionlimithigh),2) as dcresolution, round(max(apss.completeness),1) as dccompleteness, dp.anomalousscatterer, dp.requiredresolution, cr.cell_a, cr.cell_b, cr.cell_c, cr.cell_alpha, cr.cell_beta, cr.cell_gamma, b.packingfraction, b.dimension1, b.dimension2, b.dimension3, b.shape, cr.color, cr.theoreticaldensity, cr.name as crystal, pr.name as protein, b.looptype, dp.centringmethod, dp.experimentkind, cq.containerqueueid
+                                  , TO_CHAR(cq.createdtimestamp, 'DD-MM-YYYY HH24:MI') as queuedtimestamp, b.smiles
                                   , $cseq $sseq string_agg(cpr.name) as componentnames, string_agg(cpr.density) as componentdensities
-                                  ,string_agg(cpr.proteinid) as componentids, string_agg(cpr.acronym) as componentacronyms, string_agg(cpr.global) as componentglobals, string_agg(chc.abundance) as componentamounts, string_agg(ct.symbol) as componenttypesymbols, b.volume, pct.symbol,ROUND(cr.abundance,3) as abundance, TO_CHAR(b.recordtimestamp, 'DD-MM-YYYY') as recordtimestamp, dp.radiationsensitivity, dp.energy, dp.userpath, dp.strategyoption, dp.minimalresolution as minimumresolution
-                                    ,count(distinct dc.dataCollectionId) as dcc            
+                                  , string_agg(cpr.proteinid) as componentids, string_agg(cpr.acronym) as componentacronyms, string_agg(cpr.global) as componentglobals, string_agg(chc.abundance) as componentamounts, string_agg(ct.symbol) as componenttypesymbols, b.volume, pct.symbol,ROUND(cr.abundance,3) as abundance, TO_CHAR(b.recordtimestamp, 'DD-MM-YYYY') as recordtimestamp, dp.radiationsensitivity, dp.energy, dp.userpath, dp.strategyoption, dp.minimalresolution as minimumresolution
+                                  , count(distinct dc.dataCollectionId) as dcc            
                                   
                                   FROM blsample b
 
@@ -1209,7 +1210,7 @@ class Sample extends Page
                                   LEFT OUTER JOIN screening sc ON dc.datacollectionid = sc.datacollectionid
                                   LEFT OUTER JOIN screeningoutput so ON sc.screeningid = so.screeningid
                                   
-                                  LEFT OUTER JOIN screeningstrategy st ON st.screeningoutputid = so.screeningoutputid AND sc.shortcomments LIKE '%EDNA%'
+                                  LEFT OUTER JOIN screeningstrategy st ON st.screeningoutputid = so.screeningoutputid AND sc.programVersion = 'EDNA MXv1'
                                   LEFT OUTER JOIN screeningstrategywedge ssw ON ssw.screeningstrategyid = st.screeningstrategyid
                                   
                                   LEFT OUTER JOIN autoprocintegration ap ON ap.datacollectionid = dc.datacollectionid
@@ -1892,7 +1893,7 @@ class Sample extends Page
             $this->args['LOCATION'] = $defaultContainerLocation['LOCATION'];
         }
 
-        $sfields = array('CODE', 'NAME', 'COMMENTS', 'VOLUME', 'PACKINGFRACTION', 'DIMENSION1', 'DIMENSION2', 'DIMENSION3', 'SHAPE', 'POSITION', 'CONTAINERID', 'LOOPTYPE', 'LOCATION');
+        $sfields = array('CODE', 'NAME', 'COMMENTS', 'VOLUME', 'PACKINGFRACTION', 'DIMENSION1', 'DIMENSION2', 'DIMENSION3', 'SHAPE', 'POSITION', 'CONTAINERID', 'LOOPTYPE', 'LOCATION', 'SMILES');
         foreach ($sfields as $f) {
             if ($this->has_arg($f)) {
                 $this->db->pq("UPDATE blsample SET $f=:1 WHERE blsampleid=:2", array($this->arg($f), $samp['BLSAMPLEID']));

@@ -595,20 +595,22 @@ class Vstat extends Page
     {
         $info = $this->_check_visit();
 
-        $dc_tot = $this->db->pq("SELECT dcg.experimenttype, count(dc.datacollectionid) as total
+        $dc_tot = $this->db->pq("SELECT ifnull(et.name, dcg.experimenttype) as experimenttype, count(dc.datacollectionid) as total
                 FROM datacollection dc
                 INNER JOIN datacollectiongroup dcg ON dc.datacollectiongroupid = dcg.datacollectiongroupid
+                LEFT OUTER JOIN experimenttype et on dcg.experimenttypeid = et.experimenttypeid
                 WHERE dcg.sessionid=:1
-                GROUP BY dcg.experimenttype", array($info['SID']));
+                GROUP BY ifnull(et.name, dcg.experimenttype)", array($info['SID']));
 
         $totals = array();
         foreach ($dc_tot as $tot) {
             $totals[$tot['EXPERIMENTTYPE']] = intval($tot["TOTAL"]);
         }
 
-        $dcs = $this->db->pq("SELECT dc.datacollectionid, dcg.experimenttype, dc.starttime, dc.endtime, dc.filetemplate, dc.imagedirectory, dc.runstatus, dca.filefullpath as logfile
+        $dcs = $this->db->pq("SELECT dc.datacollectionid, ifnull(et.name, dcg.experimenttype) as experimenttype, dc.starttime, dc.endtime, dc.filetemplate, dc.imagedirectory, dc.runstatus, dca.filefullpath as logfile
                 FROM datacollection dc
                 INNER JOIN datacollectiongroup dcg ON dc.datacollectiongroupid = dcg.datacollectiongroupid
+                LEFT OUTER JOIN experimenttype et on dcg.experimenttypeid = et.experimenttypeid
                 LEFT OUTER JOIN blsample sam ON dc.blsampleid = sam.blsampleid
                 LEFT OUTER JOIN datacollectionfileattachment dca ON dca.datacollectionid = dc.datacollectionid AND dca.filetype = 'log'
                 WHERE dcg.sessionid=:1 AND dc.runstatus NOT LIKE '%success%'", array($info['SID']));

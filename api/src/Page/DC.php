@@ -121,11 +121,11 @@ class DC extends Page
 
                 $where = '';
                 if ($this->arg('t') == 'sc')
-                    $where = ' AND (dc.overlap != 0 OR dcg.experimentType = "Screening")';
+                    $where = ' AND (dc.overlap != 0 OR ifnull(et.name, dcg.experimenttype) = "Screening")';
                 else if ($this->arg('t') == 'gr')
                     $where = ' AND dc.axisrange = 0';
                 else if ($this->arg('t') == 'fc')
-                    $where = ' AND dc.overlap = 0 AND dc.axisrange > 0 AND dc.numberOfImages > 1 AND dcg.experimentType != "Screening"';
+                    $where = ' AND dc.overlap = 0 AND dc.axisrange > 0 AND dc.numberOfImages > 1 AND ifnull(et.name, dcg.experimenttype) != "Screening"';
             } else if ($this->arg('t') == 'edge') {
                 $where2 = '';
             } else if ($this->arg('t') == 'mca') {
@@ -156,7 +156,7 @@ class DC extends Page
                 // Single crystal or explicitly non-single-crystal fields
                 $where = ($this->arg('t') == "nscrystal") ? ' AND NOT ' : ' AND ';
                 // This IS NOT NULL is not redundant; this condition always evalutes to TRUE with AND NOT without it
-                $where .= '(dcg.experimentType IS NOT NULL AND dcg.experimentType in ("OSC", "Diamond Anvil High Pressure"))';
+                $where .= '(ifnull(et.name, dcg.experimenttype) IS NOT NULL AND ifnull(et.name, dcg.experimenttype) in ("OSC", "Diamond Anvil High Pressure"))';
             }
         }
 
@@ -396,7 +396,7 @@ class DC extends Page
                     dc.kappastart as kappa,
                     dc.phistart as phi,
                     dc.startimagenumber as si,
-                    dcg.experimenttype as dct,
+                    ifnull(et.name, dcg.experimenttype) as dct,
                     dc.datacollectiongroupid as dcg,
                     dc.runstatus,
                     dc.beamsizeatsamplex as bsx,
@@ -476,7 +476,7 @@ class DC extends Page
                     dc.kappastart,
                     dc.phistart,
                     dc.startimagenumber,
-                    dc.experimenttype,
+                    ifnull(et.name, dcg.experimenttype),
                     dc.datacollectiongroupid,
                     dc.runstatus,
                     dc.beamsizeatsamplex,
@@ -530,7 +530,7 @@ class DC extends Page
                     min(dc.kappastart) as kappa,
                     min(dc.phistart) as phi,
                     min(dc.startimagenumber) as si,
-                    min(dcg.experimenttype) as dct,
+                    min(ifnull(et.name, dcg.experimenttype)) as dct,
                     dc.datacollectiongroupid as dcg,
                     min(dc.runstatus) as runstatus,
                     min(dc.beamsizeatsamplex) as bsx,
@@ -614,6 +614,7 @@ class DC extends Page
                     FROM datacollection dc
                     INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
                     INNER JOIN blsession ses ON ses.sessionid = dcg.sessionid
+                    LEFT OUTER JOIN experimenttype et on dcg.experimenttypeid = et.experimenttypeid
                     $sample_joins[0]
                     $extj[0]
                     WHERE $sess[0] $where
@@ -660,6 +661,7 @@ class DC extends Page
                 FROM datacollection dc
                 INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
                 INNER JOIN blsession ses ON ses.sessionid = dcg.sessionid
+                LEFT OUTER JOIN experimenttype et on dcg.experimenttypeid = et.experimenttypeid
                 $sample_joins[0]
                 LEFT OUTER JOIN datacollectioncomment dcc ON dc.datacollectionid = dcc.datacollectionid
                 LEFT OUTER JOIN datacollectionfileattachment dca ON dc.datacollectionid = dca.datacollectionid
@@ -963,7 +965,7 @@ class DC extends Page
                 $dc['VIS'] = $this->arg('prop') . '-' . $dc['VN'];
 
             foreach (array('X1', 'X2', 'X3', 'X4') as $x) {
-                $dc[$x] = file_exists($dc[$x]) ? 1 : 0;
+                $dc[$x] = file_exists($dc[$x]) || file_exists($dc[$x].'.gz') ? 1 : 0;
             }
 
             // Data collections
@@ -1081,8 +1083,9 @@ class DC extends Page
             $sn = 0;
             $images = array();
             foreach (array('X1', 'X2', 'X3', 'X4') as $j => $im) {
-                array_push($images, file_exists($dc[$im]) ? 1 : 0);
-                if ($im == 'X1' && file_exists($dc[$im]))
+                $exists = file_exists($dc[$im]) || file_exists($dc[$im].'.gz');
+                array_push($images, $exists ? 1 : 0);
+                if ($im == 'X1' && $exists)
                     $sn = 1;
                 unset($dc[$im]);
             }

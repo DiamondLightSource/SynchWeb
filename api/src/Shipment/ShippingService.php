@@ -56,7 +56,7 @@ class ShippingService
             array(
                 CURLOPT_RETURNTRANSFER => TRUE,
                 CURLOPT_HTTPHEADER => $base_headers,
-                CURLOPT_TIMEOUT => 5
+                CURLOPT_TIMEOUT => 10
             )
         );
         switch ($type) {
