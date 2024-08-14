@@ -1322,6 +1322,8 @@ class Shipment extends Page
                 array($dew['DEWARID'], $dewar_location)
             );
 
+            $this->db->pq("UPDATE shipping set shippingstatus='dispatch-requested' WHERE shippingid=:1", array($dew['SHIPPINGID']));
+
             // Update dewar transport history with provided location.
             $this->db->pq(
                 "INSERT INTO dewartransporthistory (dewartransporthistoryid,dewarid,dewarstatus,storagelocation,arrivaldate)
