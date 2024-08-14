@@ -143,6 +143,9 @@ class Shipment extends Page
         'CLOSETIME' => '\d\d:\d\d',
         'PRODUCTCODE' => '\w',
         'BEAMLINENAME' => '[\w\-]+',
+        'TOKEN' => '\w+',
+        'tracking_number' => '\w+',
+        'AWBURL' => '[\w\:\/\.\-]+',
 
         'manifest' => '\d',
         'currentuser' => '\d',
@@ -196,6 +199,7 @@ class Shipment extends Page
 
         array('/dewars/transfer', 'post', '_transfer_dewar'),
         array('/dewars/dispatch', 'post', '_dispatch_dewar'),
+        array('/dewars/confirmdispatch/did/:did/token/:TOKEN', 'post', '_dispatch_dewar_confirmation'),
 
         array('/dewars/tracking(/:DEWARID)', 'get', '_get_dewar_tracking'),
 
@@ -986,7 +990,8 @@ class Shipment extends Page
         array $dewars,
         string $proposal,
         int $external_id,
-        int $shipping_id
+        int $shipping_id,
+        string $callback_url=""
     ): int {
         $packages = [];
 
@@ -1035,6 +1040,9 @@ class Shipment extends Page
             "origin_url" => "{$protocol}://{$_SERVER['SERVER_NAME']}{$server_port}/shipments/sid/{$shipping_id}",
             "packages" => $packages
         );
+        if ($callback_url) {
+            $shipment_request_info["dispatch_callback_url"] = "{$protocol}://{$_SERVER['SERVER_NAME']}{$server_port}{$callback_url}";
+        }
         $response = $this->shipping_service->create_shipment_request($shipment_request_info);
         $external_shipping_id = $response['shipmentRequestId'];
         return $external_shipping_id;
@@ -1050,7 +1058,14 @@ class Shipment extends Page
         $proposal = $dewar['PROPOSAL'];
         $external_id = (int) $dewar['DEWARID'];
         $shipping_id = (int) $dewar['SHIPPINGID'];
-        $external_shipping_id = $this->_create_dewars_shipment_request($dewars, $proposal, $external_id, $shipping_id);
+        $token = md5(uniqid());
+        $this->db->pq(
+            "UPDATE dewar SET extra = JSON_SET(IFNULL(extra, '{}'), '$.token', :1 ) WHERE dewarid=:2",
+            array($token, $external_id)
+        );
+
+        $callback_url = "/api/shipment/dewars/confirmdispatch/did/{$external_id}/token/{$token}";
+        $external_shipping_id = $this->_create_dewars_shipment_request($dewars, $proposal, $external_id, $shipping_id, $callback_url);
 
         $this->db->pq(
             "UPDATE dewar SET externalShippingIdFromSynchrotron=:1 WHERE dewarid=:2",
@@ -1200,14 +1215,6 @@ class Shipment extends Page
             $dispatch_from_location = 'eBIC';
         }
 
-        // Update dewar transport history with provided location.
-        $this->db->pq(
-            "INSERT INTO dewartransporthistory (dewartransporthistoryid,dewarid,dewarstatus,storagelocation,arrivaldate) 
-            VALUES (s_dewartransporthistory.nextval,:1,'dispatch-requested',:2,CURRENT_TIMESTAMP)
-            RETURNING dewartransporthistoryid INTO :id",
-            array($dew['DEWARID'], $dewar_location)
-        );
-
         $terms = $this->db->pq(
             "SELECT cta.couriertermsacceptedid FROM couriertermsaccepted cta WHERE cta.shippingid=:1",
             array($dew['SHIPPINGID'])
@@ -1252,10 +1259,131 @@ class Shipment extends Page
             && $terms_accepted
             && Utils::getValueOrDefault($use_shipping_service_redirect)
         );
-        $subject_pickup_date = $use_dispatch_lite_template ? '' : ' - Pickup Date: ' . $this->args['DELIVERYAGENT_SHIPPINGDATE'];
-        $subject_line = '*** Dispatch requested for Dewar ' . $dew['BARCODE'] . ' from ' . $dispatch_from_location . $subject_pickup_date . ' ***';
-        $email_template = $use_dispatch_lite_template ? 'dewar-dispatch-lite' : 'dewar-dispatch';
+
+        if ($use_dispatch_lite_template) {
+            $this->_output(1);
+        } else {
+            $subject_pickup_date = $use_dispatch_lite_template ? '' : ' - Pickup Date: ' . $this->args['DELIVERYAGENT_SHIPPINGDATE'];
+            $subject_line = '*** Dispatch requested for Dewar ' . $dew['BARCODE'] . ' from ' . $dispatch_from_location . $subject_pickup_date . ' ***';
+            $email_template = $use_dispatch_lite_template ? 'dewar-dispatch-lite' : 'dewar-dispatch';
+            $email = new Email($email_template, $subject_line);
+
+            // If a local contact is given, try to find their email address
+            // First try LDAP, if unsuccessful look at the ISPyB person record for a matching staff user
+            $local_contact = $this->has_arg('LOCALCONTACT') ? $this->args['LOCALCONTACT'] : '';
+            if ($local_contact) {
+                $this->args['LCEMAIL'] = $this->_get_email_fn($local_contact);
+                if (!$this->args['LCEMAIL']) {
+                    $this->args['LCEMAIL'] = $this->_get_ispyb_email_fn($local_contact);
+                }
+            }
+
+            if (!array_key_exists('FACILITYCODE', $data))
+                $data['FACILITYCODE'] = '';
+            if (!array_key_exists('AWBNUMBER', $data))
+                $data['AWBNUMBER'] = '';
+            if (!array_key_exists('DELIVERYAGENT_AGENTNAME', $data))
+                $data['DELIVERYAGENT_AGENTNAME'] = '';
+            if (!array_key_exists('DELIVERYAGENT_AGENTCODE', $data))
+                $data['DELIVERYAGENT_AGENTCODE'] = '';
+            if (!array_key_exists('LOCATION', $data))
+                $data['LOCATION'] = $dewar_location;
+            if (!array_key_exists('LOCALCONTACT', $data))
+                $data['LOCALCONTACT'] = $local_contact;
+            if (!array_key_exists('LCEMAIL', $data))
+                $data['LCEMAIL'] = '';
+            $data['BARCODE'] = $dew['BARCODE'];
+            $email->data = $data;
+
+            if (
+                $country != $facility_country &&
+                array_key_exists('DELIVERYAGENT_AGENTNAME', $data) &&
+                $data['DELIVERYAGENT_AGENTNAME'] === 'DHL' &&
+                array_key_exists('PROPOSALCODE', $dew) &&
+                in_array($dew['PROPOSALCODE'], array('bi','cm','mx')) &&
+                !is_null($dispatch_email_intl)
+            ) {
+                $recpts = $dispatch_email_intl;
+            } else {
+                $recpts = $dispatch_email;
+            }
+
+            $recpts .= ', ' . $this->arg('EMAILADDRESS');
+            $local_contact_email = $this->has_arg('LCEMAIL') ? $this->args['LCEMAIL'] : '';
+            if ($local_contact_email) $recpts .= ', ' . $local_contact_email;
+
+            $email->send($recpts);
+
+            // Update the dewar status and storage location
+            $this->db->pq(
+                "UPDATE dewar
+                set dewarstatus='dispatch-requested', storagelocation=lower(:2)
+                WHERE dewarid=:1",
+                array($dew['DEWARID'], $dewar_location)
+            );
+
+            // Update dewar transport history with provided location.
+            $this->db->pq(
+                "INSERT INTO dewartransporthistory (dewartransporthistoryid,dewarid,dewarstatus,storagelocation,arrivaldate)
+                VALUES (s_dewartransporthistory.nextval,:1,'dispatch-requested',:2,CURRENT_TIMESTAMP)
+                RETURNING dewartransporthistoryid INTO :id",
+                array($dew['DEWARID'], $dewar_location)
+            );
+
+            $this->_output(1);
+        }
+    }
+
+
+    function _dispatch_dewar_confirmation()
+    {
+        global $dispatch_email;
+        global $shipping_service_app_url;
+
+        if (!$this->has_arg('did'))
+            $this->_error('No dewar specified');
+
+        # Check token against dewar given
+        $dew = $this->db->pq(
+            "SELECT d.dewarid, d.barcode, d.storagelocation, d.dewarstatus, d.externalShippingIdFromSynchrotron, d.facilitycode, d.trackingNumberFromSynchrotron,
+                s.shippingid,
+                CONCAT(p.proposalcode, p.proposalnumber) as proposal,
+                json_unquote(json_extract(d.extra, '$.token')) as token,
+                pe2.emailaddress
+                FROM dewar d
+                INNER JOIN shipping s ON s.shippingid = d.shippingid
+                INNER JOIN proposal p ON p.proposalid = s.proposalid
+                LEFT OUTER JOIN labcontact c2 ON s.returnlabcontactid = c2.labcontactid
+                LEFT OUTER JOIN person pe2 ON pe2.personid = c2.personid
+                WHERE d.dewarid=:1",
+            array($this->arg('did'))
+        );
+        $dew = $dew[0];
+
+        if (!$this->has_arg('TOKEN') || $this->arg('TOKEN') !== $dew['TOKEN']) {
+            $this->_error('Incorrect token');
+        }
+
+        # Prepare e-mail to stores
+        $data = $this->args;
+        if (!array_key_exists('prop', $data))
+            $data['prop'] = $dew['PROPOSAL'];
+        if (!array_key_exists('FACILITYCODE', $data))
+            $data['FACILITYCODE'] = $dew['FACILITYCODE'];
+        if (!array_key_exists('BARCODE', $data))
+            $data['BARCODE'] = $dew['BARCODE'];
+        if (!array_key_exists('AWBURL', $data))
+            $data['AWBURL'] = "{$shipping_service_app_url}/shipment-requests/{$dew['EXTERNALSHIPPINGIDFROMSYNCHROTRON']}/outgoing";
+        if (!array_key_exists('LOCATION', $data))
+            $data['LOCATION'] = $dew['STORAGELOCATION'];
+        if (!array_key_exists('EMAILADDRESS', $data))
+            $data['EMAILADDRESS'] = $dew['EMAILADDRESS'];;
+        if (!array_key_exists('tracking_number', $data))
+            $data['tracking_number'] = $dew['TRACKINGNUMBERFROMSYNCHROTRON'];
+        $subject_line = '*** Dispatch requested for Dewar ' . $dew['BARCODE'] . ' from ' . $data['LOCATION'] . ' ***';
+        $email_template = 'dewar-dispatch-lite';
         $email = new Email($email_template, $subject_line);
+        $email->data = $data;
 
         // If a local contact is given, try to find their email address
         // First try LDAP, if unsuccessful look at the ISPyB person record for a matching staff user
@@ -1267,37 +1395,8 @@ class Shipment extends Page
             }
         }
 
-        if (!array_key_exists('FACILITYCODE', $data))
-            $data['FACILITYCODE'] = '';
-        if (!array_key_exists('AWBNUMBER', $data))
-            $data['AWBNUMBER'] = '';
-        if (!array_key_exists('DELIVERYAGENT_AGENTNAME', $data))
-            $data['DELIVERYAGENT_AGENTNAME'] = '';
-        if (!array_key_exists('DELIVERYAGENT_AGENTCODE', $data))
-            $data['DELIVERYAGENT_AGENTCODE'] = '';
-        if (!array_key_exists('LOCATION', $data))
-            $data['LOCATION'] = $dewar_location;
-        if (!array_key_exists('LOCALCONTACT', $data))
-            $data['LOCALCONTACT'] = $local_contact;
-        if (!array_key_exists('LCEMAIL', $data))
-            $data['LCEMAIL'] = '';
-        $data['BARCODE'] = $dew['BARCODE'];
-        $email->data = $data;
-
-        if (
-            $country != $facility_country &&
-            array_key_exists('DELIVERYAGENT_AGENTNAME', $data) &&
-            $data['DELIVERYAGENT_AGENTNAME'] === 'DHL' &&
-            array_key_exists('PROPOSALCODE', $dew) &&
-            in_array($dew['PROPOSALCODE'], array('bi','cm','mx')) &&
-            !is_null($dispatch_email_intl)
-        ) {
-            $recpts = $dispatch_email_intl;
-        } else {
-            $recpts = $dispatch_email;
-        }
-
-        $recpts .= ', ' . $this->arg('EMAILADDRESS');
+        $recpts = $dispatch_email;
+        if ($data['EMAILADDRESS']) $recpts .= ', ' . $data['EMAILADDRESS'];
         $local_contact_email = $this->has_arg('LCEMAIL') ? $this->args['LCEMAIL'] : '';
         if ($local_contact_email) $recpts .= ', ' . $local_contact_email;
 
@@ -1306,9 +1405,19 @@ class Shipment extends Page
         // Also update the dewar status and storage location to keep it in sync with history...
         $this->db->pq(
             "UPDATE dewar
-            set dewarstatus='dispatch-requested', storagelocation=lower(:2)
+            set dewarstatus='dispatch-requested', storagelocation=lower(:2), trackingnumberfromsynchrotron=:3
             WHERE dewarid=:1",
-            array($dew['DEWARID'], $dewar_location)
+            array($dew['DEWARID'], $data['LOCATION'], $data['tracking_number'])
+        );
+
+        $this->db->pq("UPDATE shipping set shippingstatus='dispatch-requested' WHERE shippingid=:1", array($dew['SHIPPINGID']));
+
+        // Update dewar transport history with provided location.
+        $this->db->pq(
+            "INSERT INTO dewartransporthistory (dewartransporthistoryid,dewarid,dewarstatus,storagelocation,arrivaldate)
+            VALUES (s_dewartransporthistory.nextval,:1,'dispatch-requested',:2,CURRENT_TIMESTAMP)
+            RETURNING dewartransporthistoryid INTO :id",
+            array($dew['DEWARID'], $data['LOCATION'])
         );
 
         $this->_output(1);
