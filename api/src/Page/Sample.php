@@ -630,13 +630,15 @@ class Sample extends Page
         $where = '';
         $first_inner_select_where = '';
         $second_inner_select_where = '';
+        $third_inner_select_where = '';
         $args = array($this->proposalid);
 
         if ($this->has_arg('sid')) {
             $where .= ' AND s.blsampleid=:' . (sizeof($args) + 1);
             $first_inner_select_where .= ' AND s.blsampleid=:' . (sizeof($args) + 2);
             $second_inner_select_where .= ' AND s.blsampleid=:' . (sizeof($args) + 3);
-            array_push($args, $this->arg('sid'), $this->arg('sid'), $this->arg('sid'));
+            $third_inner_select_where .= ' AND s.blsampleid=:' . (sizeof($args) + 4);
+            array_push($args, $this->arg('sid'), $this->arg('sid'), $this->arg('sid'), $this->arg('sid'));
         }
 
         if ($this->has_arg('cid')) {
@@ -647,7 +649,7 @@ class Sample extends Page
         }
 
         $this->db->wait_rep_sync(true);
-        $ss_query_string = $this->get_sub_samples_query($where, $first_inner_select_where, $second_inner_select_where);
+        $ss_query_string = $this->get_sub_samples_query($where, $first_inner_select_where, $second_inner_select_where, $third_inner_select_where);
         $subs = $this->db->pq($ss_query_string, $args);
 
         $this->db->wait_rep_sync(false);
@@ -682,7 +684,7 @@ class Sample extends Page
         }
     }
 
-    private function get_sub_samples_query($where, $first_inner_select_where = '', $second_inner_select_where = '')
+    private function get_sub_samples_query($where, $first_inner_select_where = '', $second_inner_select_where = '', $third_inner_select_where = '')
     {
         $group_by = "";
         $order_by = "";
@@ -704,9 +706,9 @@ class Sample extends Page
             $from_query = "FROM blsubsample ss";
         } else {
             $from_query = "FROM (
-                    SELECT ss.blsubsampleid
+                    SELECT ss.blsubsampleid, 0 as old
                     FROM (
-                        SELECT s.blsampleid, max(si.blsampleimageid) AS blsampleimageid
+                      SELECT s.blsampleid, max(si.blsampleimageid) AS blsampleimageid
                       FROM blsample s
                           INNER JOIN blsampleimage si ON si.blsampleid = s.blsampleid
                       WHERE 1=1 $first_inner_select_where
@@ -714,14 +716,26 @@ class Sample extends Page
                     ) qq
                     JOIN blsubsample ss ON ss.blsampleimageid = qq.blsampleimageid
                     WHERE ss.source = 'auto'
-            
+
                     UNION ALL
             
-                    SELECT ss.blsubsampleid
+                    SELECT ss.blsubsampleid, 0 as old
                     FROM blsubsample ss
                         LEFT JOIN blsample s on ss.blsampleid = s.blsampleid
-                    WHERE ss.source = 'manual' $second_inner_select_where
-                ) q JOIN blsubsample ss ON ss.blsubsampleid = q.blsubsampleid";
+                    WHERE ss.source = 'manual' $second_inner_select_where";
+
+            // show auto generated subsamples with data collections
+            if ($third_inner_select_where != '') {
+                $from_query .= "
+                    UNION ALL
+                    SELECT ss.blsubsampleid, 1 as old
+                    FROM blsubsample ss
+                        LEFT JOIN blsample s on ss.blsampleid = s.blsampleid
+                        INNER JOIN datacollection dc ON ss.blsubsampleid = dc.blsubsampleid
+                    WHERE ss.source = 'auto' $third_inner_select_where";
+            }
+
+            $from_query .= ") q JOIN blsubsample ss ON ss.blsubsampleid = q.blsubsampleid";
 
             $group_by = "GROUP BY pr.acronym,
                     s.name,
@@ -747,6 +761,7 @@ class Sample extends Page
 
         return "SELECT
                 pr.acronym as protein,
+                min(q.old) as old,
                 s.name as sample,
                 dp.experimentkind,
                 dp.preferredbeamsizex,
