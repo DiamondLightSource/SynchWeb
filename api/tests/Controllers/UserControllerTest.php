@@ -374,7 +374,7 @@ final class UserControllerTest extends TestCase
         $this->dataLayerStub->expects($this->exactly(2))->method('getUser')->with(231312, null, 88)->willReturn($results);
         $this->dataLayerStub->expects($this->exactly(1))->method('updateUser');
         $this->dataLayerStub->expects($this->exactly(1))->method('getLaboratory')->with(666)->willReturn($labResults);
-        $this->dataLayerStub->expects($this->exactly(1))->method('updateLaboratory');
+        $this->dataLayerStub->expects($this->exactly(1))->method('updateLaboratory')->willReturn(666);
 
         $this->userController->_update_user();
     }
