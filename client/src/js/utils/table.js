@@ -160,22 +160,6 @@ define(['marionette', 'backgrid',
             }
         }),
 
-        IconCell: Backgrid.Cell.extend({
-            render: function() {
-              var t =  _.template(this.column.get('template'))
-              var data = _.extend({}, this.model.toJSON(), { APIURL: app.apiurl })
-              var trueicon = this.column.get('trueicon')
-              var falseicon = this.column.get('falseicon')
-              if (trueicon && t(data) == 1) {
-                this.$el.append('<i class="fa '+trueicon+'"></i>')
-              }
-              if (falseicon && t(data) == 0) {
-                this.$el.append('<i class="fa '+falseicon+'"></i>')
-              }
-              return this
-            }
-        }),
-        
         ProjectCell: Backgrid.Cell.extend({
             events: {
               'click a.atp': 'addToProject',
