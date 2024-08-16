@@ -3,20 +3,20 @@
 	</p>
 
     <div class="ra">
-        <a href="/mc/visit/<%-VISIT%>" class="button" title="Multicrystal Integrator"><i class="fa fa-diamond"></i> <span>Multi Crystal</span></a>
+        <a href="/mc/visit/<%-VISIT%>" class="button multicrystal" title="Multicrystal Integrator"><i class="fa fa-diamond"></i> <span>Multi Crystal</span></a>
     </div>
 	<div class="data_collection">
         <label><input type="checkbox" name="individual" /> Process Individually</label>
 
         <span class="multi form">
             | 
-            Pipeline :<select name="method"></select>
+            Pipeline :<select name="pipeline"></select>
             High Res :<input type="text" name="res" /> &#197; |
             <a href="#" class="button sgm">Space Group / Cell</a> 
-            <a href="#" class="button opt">Options</a>
-            <br />
             <!-- Comments: <input type="text" name="comments" class="full" /> -->
         </span>
+        <a href="#" class="button opt">Xia2 Options</a>
+        <br />
     </div>
 
     <div class="cell data_collection">
@@ -31,7 +31,12 @@
 
 
     <div class="options data_collection">
-        <label><input type="checkbox" name="sm" value="1" /> Small Molecule</label>
+        <label>Small Molecule<input type="checkbox" name="sm" value="1" /></label>
+        <label>CC Half :<input type="text" name="cc_half" /></label>
+        <label>Unmerged &lt;I/sigI&gt; :<input type="text" name="isigma" /></label>
+        <label>Merged &lt;I/sigI&gt; :<input type="text" name="misigma" /></label>
+        <label>Spot Finding Threshold :<input type="text" name="sigma_strong" /></label>
+        <label>Indexing Method: <select name="method"></select></label>
     </div>
 
 
