@@ -7,7 +7,6 @@ define([
         className: 'clearfix',
     
         ui: {
-            //plot: '.plot_dimple',
             solutions: '.solutions',
             blob: '.blobs img',
             blobs: '.blobs',
@@ -37,21 +36,9 @@ define([
                 this.blob.load(app.apiurl+'/processing/downstream/images/'+this.model.get('AID'))
             }
 
-            if (app.mobile()) {
-                //this.ui.plot.width(0.93*(this.options.holderWidth-14))
-            } else {
-              //this.ui.rstats.width(0.20*(this.options.holderWidth-14))
+            if (!app.mobile()) {
                 this.ui.solutions.width(0.47*(this.options.holderWidth-14))
-                //this.ui.solutions.height(this.ui.solutions.width()*0.41-80)
              }
-
-            //this.ui.blobs.css('min-height', this.ui.plot.width()*0.41-80)
-            
-            //var data = [{ data: this.model.get('PLOTS').FVC, label: 'Rfree vs. Cycle' },
-            //            { data: this.model.get('PLOTS').RVC, label: 'R vs. Cycle' }]
-            //var pl = $.extend({}, utils.default_plot, { series: { lines: { show: true }}})
-            //$.plot(this.ui.plot, data, pl)
-            
         },
     
     })
