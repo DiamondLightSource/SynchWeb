@@ -1,9 +1,9 @@
 <div>
     <div class="blobs">
         <% _.each(_.range(BLOBS), function(i) { %>
-        <a href="<%-APIURL%>/processing/downstream/images/<%-AID%>?n=<% print(i) %>" title="Dimple Blob <% print(i+1) %>">
+        <a href="<%-APIURL%>/processing/downstream/images/<%-AID%>?n=<% print(i) %>" title="Solution <% print(i+1) %>">
             <% if (i == 0) { %>
-                <img alt="Dimple Blob 1" />
+                <img alt="Solution 1" />
             <% } %>
         </a>
         <% }) %>
