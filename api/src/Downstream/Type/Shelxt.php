@@ -53,9 +53,13 @@ class Shelxt extends DownstreamPlugin {
 
     function images($n = 0) {
         $png = $this->_get_shelxt_results_png();
-        $the_actual_path = $png[0]["FILEPATH"] . "/" . $png[0]["FILENAME"];
-        // TODO handle that being null
-        return $the_actual_path;
+        if (sizeof($png)) {
+            $the_actual_path = $png[0]["FILEPATH"] . "/" . $png[0]["FILENAME"];
+            return $the_actual_path;
+        } else {
+            return;
+        }
+
     }
 
     function mapmodel($n = 0, $map = false) {
