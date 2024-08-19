@@ -34,7 +34,7 @@ class Shelxt extends DownstreamPlugin {
         if (sizeof($json_filepath)) {
             $json_data = file_get_contents($json_path);
         } else {
-            $json_data = file_get_contents("/dls/i19-1/data/2024/cm37266-1/processed/laserShaping/data/cryst7_after/EuSample_1/985d2624-9254-4d00-b122-5849f3af4462/shelxt/" . "shelxt_results2.json");
+            $json_data = "[]";
         }
         $dat = array();
         $dat['BLOBS'] = 1;
