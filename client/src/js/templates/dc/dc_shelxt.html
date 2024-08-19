@@ -1,0 +1,32 @@
+<div>
+    <div class="blobs">
+        <% _.each(_.range(BLOBS), function(i) { %>
+        <a href="<%-APIURL%>/processing/downstream/images/<%-AID%>?n=<% print(i) %>" title="Dimple Blob <% print(i+1) %>">
+            <% if (i == 0) { %>
+                <img alt="Dimple Blob 1" />
+            <% } %>
+        </a>
+        <% }) %>
+        
+    </div>
+
+    <table class="rstats">
+        <% if (SOLUTIONS.length) { %>
+            <% _.each(SOLUTIONS, function(r, i) { %>
+            <tr>
+                <% _.each(r, function(j) { %>
+                <td><%-j%></td>
+                <% }) %>
+            </tr>
+            <% }) %>
+        <% } else { %>
+            <tr>
+                <td>Solutions</td>
+            </tr>
+            <tr>
+                <td>No Solutions Found</td>
+            </tr>
+        <% } %>
+    </table>
+    
+</div>
