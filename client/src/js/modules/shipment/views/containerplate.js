@@ -786,7 +786,6 @@ define(['marionette',
             if (this.model.get('INSPECTIONS') > 0) {
                 const subSamplesTableColumns = [
                     { label: '#', cell: table.TemplateCell, editable: false, template: '<%-(RID+1)%>' },
-                    { label: 'Old?', cell: table.TemplateCell, editable: false, template: '<%if (OLD=="1") {%><i class="fa fa-times"></i><%}%>' },
                     { label: 'Type', cell: table.TemplateCell, editable: false, template: '<%-(X2 ? "Region" : "Point")%>' },
                     { label: 'Source', cell: table.TemplateCell, editable: false, template: '<%- SOURCE %>' },
                     { name: 'X', label: 'X', cell: 'string', editable: false },

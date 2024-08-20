@@ -706,7 +706,7 @@ class Sample extends Page
             $from_query = "FROM blsubsample ss";
         } else {
             $from_query = "FROM (
-                    SELECT ss.blsubsampleid, 0 as old
+                    SELECT ss.blsubsampleid
                     FROM (
                       SELECT s.blsampleid, max(si.blsampleimageid) AS blsampleimageid
                       FROM blsample s
@@ -719,7 +719,7 @@ class Sample extends Page
 
                     UNION ALL
             
-                    SELECT ss.blsubsampleid, 0 as old
+                    SELECT ss.blsubsampleid
                     FROM blsubsample ss
                         LEFT JOIN blsample s on ss.blsampleid = s.blsampleid
                     WHERE ss.source = 'manual' $second_inner_select_where";
@@ -728,7 +728,7 @@ class Sample extends Page
             if ($third_inner_select_where != '') {
                 $from_query .= "
                     UNION ALL
-                    SELECT ss.blsubsampleid, 1 as old
+                    SELECT ss.blsubsampleid
                     FROM blsubsample ss
                         LEFT JOIN blsample s on ss.blsampleid = s.blsampleid
                         INNER JOIN datacollection dc ON ss.blsubsampleid = dc.blsubsampleid
@@ -761,7 +761,6 @@ class Sample extends Page
 
         return "SELECT
                 pr.acronym as protein,
-                min(q.old) as old,
                 s.name as sample,
                 dp.experimentkind,
                 dp.preferredbeamsizex,
