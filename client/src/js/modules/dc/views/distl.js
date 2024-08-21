@@ -27,7 +27,7 @@ define(['marionette', 'modules/dc/models/distl', 'utils',
       },
 
       plotSelected: function(e, ranges) {
-          this.trigger('plot:select', Math.floor(ranges.xaxis.from), Math.ceil(ranges.xaxis.to))
+          this.trigger('plot:select', Math.round(ranges.xaxis.from), Math.round(ranges.xaxis.to))
       },
 
       plotUnselected: function(e) {
