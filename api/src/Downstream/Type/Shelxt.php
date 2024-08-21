@@ -8,7 +8,7 @@ use SynchWeb\Downstream\DownstreamResult;
 class Shelxt extends DownstreamPlugin {
     var $has_images = true;
     var $friendlyname = 'Shelxt';
-    var $has_mapmodel = array(1, 2);
+    var $has_mapmodel = array(1, 0);
 
     function _get_shelxt_results_json() {
         $appid = array($this->autoprocprogramid);
@@ -28,6 +28,19 @@ class Shelxt extends DownstreamPlugin {
         return $filepath;
     }
 
+    function _get_pdb() {
+        $appid = array($this->autoprocprogramid);
+        $filepath = $this->db->pq(
+            "SELECT app.filepath, app.filename from autoprocprogramattachment app where autoprocprogramid = :1 and filename like \"%.pdb%\" ", 
+            $appid
+        );
+        if (sizeof($filepath)) {
+            return $filepath[0]["FILEPATH"] . "/" . $filepath[0]["FILENAME"];
+        } else {
+            return;
+        }
+    }
+
     function results() {
         $json_filepath = $this->_get_shelxt_results_json();
         $json_path = $json_filepath[0]["FILEPATH"] . "/shelxt_results.json" ;
@@ -38,11 +51,6 @@ class Shelxt extends DownstreamPlugin {
         }
         $dat = array();
         $dat['BLOBS'] = 1;
-        $dat['STATS'] = array();
-        $dat['PLOTS'] = array();
-        $dat['PKLIST'] = array();
-        $dat['PARENTAUTOPROCPROGRAM'] = "Shelxt";
-        $dat['PARENTAUTOPROCPROGRAMID'] = "";
         $dat['SOLUTIONS'] = json_decode($json_data);
 
         $results = new DownstreamResult($this);
@@ -63,26 +71,11 @@ class Shelxt extends DownstreamPlugin {
     }
 
     function mapmodel($n = 0, $map = false) {
-        $pdb = $this->_get_attachments('final.pdb');
+        $pdb = $this->_get_pdb();
         if (!$pdb) {
             return;
-        }
-
-        if ($map) {
-            $mtz = $this->_get_attachments('final.mtz');
-            if (!$mtz) {
-                return;
-            }
-
-            return $this->convert_mtz(
-                $mtz['FILE'],
-                $this->autoprocprogramid,
-                $this->type,
-                $pdb['FILE'],
-                $map
-            );
         } else {
-            return $pdb['FILE'];
+            return $pdb;
         }
     }
 }
