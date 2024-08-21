@@ -27,8 +27,6 @@ define([
             })
 
             this.ui.blob.hide()
-            console.log("is this thing on?");
-            console.log(this.model);
             if (this.model.get('BLOBS') > 0) {
                 this.blob = new XHRImage()
                 this.blob.onload = this.showBlob.bind(this)
