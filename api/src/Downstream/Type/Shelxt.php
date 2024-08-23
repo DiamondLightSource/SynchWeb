@@ -53,6 +53,17 @@ class Shelxt extends DownstreamPlugin {
         $dat['BLOBS'] = 1;
         $dat['SOLUTIONS'] = json_decode($json_data);
 
+        // scaling_id should always be present, but just in case...
+        if ($this->process['PARAMETERS']['scaling_id']) {
+            $integrator = $this->_lookup_autoproc(
+                null,
+                $this->process['PARAMETERS']['scaling_id']
+            );
+            if ($integrator) {
+                $dat['PARENTAUTOPROCPROGRAM'] = $integrator['PROCESSINGPROGRAMS'];
+                $dat['PARENTAUTOPROCPROGRAMID'] = $integrator['AUTOPROCPROGRAMID'];
+            }
+        }
         $results = new DownstreamResult($this);
         $results->data = $dat;
 
