@@ -43,6 +43,7 @@ class Sample extends Page
         'capillaryPhase' => '',
         'json' => '',
         'dcp' => '\d',
+        'pipeline' => '\w+',
 
         'collected_during' => '\w+\d+-\d+',
 
@@ -1152,7 +1153,19 @@ class Sample extends Page
               $join WHERE $where", $args);
         $tot = intval($tot[0]['TOT']);
 
-
+        # Get stats only for a specific processing pipeline
+        $pipelineids = array(
+            3 => 'fast_dp',
+            4 => 'xia2 (3dii|xds)',
+            5 => 'xia2.multiplex',
+            6 => 'xia2 dials',
+            7 => 'xia2 3d',
+            8 => 'autoPROC',
+        );
+        if ($this->has_arg('pipeline')) {
+            $where .= ' AND (app.processingprograms is null or app.processingprograms REGEXP :' . (sizeof($args) + 1) . ')';
+            array_push($args, $pipelineids[$this->arg('pipeline')]);
+        }
 
         $start = 0;
         $pp = $this->has_arg('per_page') ? $this->arg('per_page') : 15;

@@ -37,6 +37,7 @@ define(['marionette',
     'modules/imaging/collections/autoscoreschemas',
     'modules/imaging/collections/autoscores',
     'collections/users',
+    'collections/processingpipelines',
 
     'utils/editable',
     'views/table',
@@ -75,7 +76,7 @@ define(['marionette',
     AutoScoreSchemas, AutoScores,
 
     Users,
-
+    ProcessingPipelines,
     Editable, TableView, table, XHRImage, utils,
     template, templateimage){
 
@@ -260,6 +261,7 @@ define(['marionette',
 
             sampleStatusCurrent: 'input[id=sample_status_current]',
             param: 'select[name=param]',
+            pipeline: 'select[name=pipeline]',
             rank: 'input[name=rank]',
 
             sampleStatusAuto: 'input[id=sample_status_auto]',
@@ -288,6 +290,7 @@ define(['marionette',
 
             'click @ui.rank': 'setRankStatus',
             'change @ui.param': 'setParamValue',
+            'change @ui.pipeline': 'setPipeline',
 
             'click @ui.sampleStatusAuto': 'setSampleStatusShown',
             'change @ui.class': 'setAutoStatus',
@@ -326,6 +329,11 @@ define(['marionette',
         setParamValue: function() {
             this.ui.rank.prop('checked', true)
             this.setRankStatus()
+        },
+
+        setPipeline: function() {
+            this.samples.queryParams.pipeline = this.ui.pipeline.val()
+            this.samples.fetch({ data: {'sort_by': 'POSITION' } })
         },
 
         setRankStatus: function() {
@@ -652,7 +660,15 @@ define(['marionette',
             // Assumption all plates are for vmxi, so login => users only
             this.users.queryParams.login = 1
 
+            this.processing_pipelines = new ProcessingPipelines()
+            this.processing_pipelines.queryParams.category = 'processing'
+            this.processing_pipelines.fetch().done(this.updatePipelines.bind(this))
+
             Backbone.Validation.bind(this)
+        },
+
+        updatePipelines: function() {
+            this.ui.pipeline.html(this.processing_pipelines.opts({ empty: true }))
         },
 
         updateSchemas: function() {
