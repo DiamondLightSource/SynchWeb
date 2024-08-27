@@ -73,8 +73,7 @@ class Shelxt extends DownstreamPlugin {
     function images($n = 0) {
         $png = $this->_get_shelxt_results_png();
         if (sizeof($png)) {
-            $the_actual_path = $png[0]["FILEPATH"] . "/" . $png[0]["FILENAME"];
-            return $the_actual_path;
+            return $png[0]["FILEPATH"] . "/" . $png[0]["FILENAME"];
         } else {
             return;
         }
