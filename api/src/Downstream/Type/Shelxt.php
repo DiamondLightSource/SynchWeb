@@ -43,8 +43,8 @@ class Shelxt extends DownstreamPlugin {
 
     function results() {
         $json_filepath = $this->_get_shelxt_results_json();
-        $json_path = $json_filepath[0]["FILEPATH"] . "/shelxt_results.json" ;
         if (sizeof($json_filepath)) {
+            $json_path = $json_filepath[0]["FILEPATH"] . "/shelxt_results.json" ;
             $json_data = file_get_contents($json_path);
         } else {
             $json_data = "[]";
