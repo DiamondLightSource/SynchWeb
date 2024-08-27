@@ -13,7 +13,7 @@ class Shelxt extends DownstreamPlugin {
     function _get_shelxt_results_json() {
         $appid = array($this->autoprocprogramid);
         $filepath = $this->db->pq(
-            "SELECT app.filePath from autoprocprogramattachment app where autoprocprogramid = :1 and filename = \"shelxt_results.json\" ", 
+            "SELECT app.filePath from autoprocprogramattachment app where autoprocprogramid = :1 and filename = 'shelxt_results.json' ", 
             $appid
         );
         return $filepath;
@@ -22,7 +22,7 @@ class Shelxt extends DownstreamPlugin {
     function _get_shelxt_results_png() {
         $appid = array($this->autoprocprogramid);
         $filepath = $this->db->pq(
-            "SELECT app.filepath, app.filename from autoprocprogramattachment app where autoprocprogramid = :1 and filename like \"%.png%\" ", 
+            "SELECT app.filepath, app.filename from autoprocprogramattachment app where autoprocprogramid = :1 and filename like '%.png%' ", 
             $appid
         );
         return $filepath;
@@ -31,7 +31,7 @@ class Shelxt extends DownstreamPlugin {
     function _get_pdb() {
         $appid = array($this->autoprocprogramid);
         $filepath = $this->db->pq(
-            "SELECT app.filepath, app.filename from autoprocprogramattachment app where autoprocprogramid = :1 and filename like \"%.pdb%\" ", 
+            "SELECT app.filepath, app.filename from autoprocprogramattachment app where autoprocprogramid = :1 and filename like '%.pdb%' ", 
             $appid
         );
         if (sizeof($filepath)) {
