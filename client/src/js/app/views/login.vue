@@ -127,7 +127,7 @@ export default {
       return this.$store.getters.apiUrl;
     },
     logoutUrl: function () {
-      return `https://${this.$store.getters.sso_url}/logout`;
+      return `${this.$store.getters.apiUrl}/authenticate/logout`;
     },
   },
 

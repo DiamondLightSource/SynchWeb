@@ -16,4 +16,6 @@ interface AuthenticationInterface
     public function authorise();
 
     public function authenticateByCode($code);
+
+    public function logout();
 }

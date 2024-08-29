@@ -22,6 +22,11 @@ class Simple extends AuthenticationParent implements AuthenticationInterface
         return false;
     }
 
+    function logout()
+    {
+        return false;
+    }
+
     function authenticate($login, $password)
     {
         $person = $this->db->pq("SELECT password FROM person WHERE login=:1", array($login));
