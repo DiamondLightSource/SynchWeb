@@ -54,7 +54,7 @@
     "url-loader": "^4.1.1",
     "vue-loader": "^15.10.0",
     "vue-template-compiler": "^2.6.10",
-    "webpack": "^5.74.0",
+    "webpack": "^5.94.0",
     "webpack-bundle-analyzer": "^4.6.1",
     "webpack-cli": "^4.10.0",
     "webpack-dev-server": "^4.11.1"
