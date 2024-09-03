@@ -155,6 +155,9 @@
     # Server log location
     $server_log = '/dls_sw/<%=BEAMLINENAME%>/logs/gda-server.log';
 
+    # Path to ccp4 location
+    $ccp4_location = '/dls_sw/apps/ccp4/latest/ccp4-9';
+
     # Email addresses, comma separate for multiple recepients
     # - Email templates in assets/emails in plain and html/ format
 

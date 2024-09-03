@@ -217,15 +217,14 @@ abstract class DownstreamPlugin implements DownstreamPluginInterface {
      * @param string $pdb The input pdb file to generate the map around
      */
     function convert_mtz($mtz, $aid, $program, $pdb, $map = 0) {
+        global $ccp4_location;
         exec(
             '/bin/bash ./scripts/mtz2map.sh ' .
-                $mtz .
-                ' ' .
-                $aid .
-                ' ' .
-                $program .
-                ' ' .
-                $pdb,
+                $mtz . ' ' .
+                $aid . ' ' .
+                $program . ' ' .
+                $pdb . ' ' .
+                $ccp4_location,
             $output,
             $res
         );
