@@ -1,7 +1,7 @@
 <h1>Data Collections for <%-VISIT%></h1>
 
-    <p class="help">Use this page to reintegrate multiple data collections together</p>
-    <p class="help">Select data sets to integrate by dragging accross the per-image analysis plot below. This selects which images of the data set to integrate</p>
+    <p class="help">Use this page to reintegrate multiple data collections together.</p>
+    <p class="help">Select data sets to integrate by dragging across the per-image analysis plot below. This selects which images of the data set to integrate.</p>
 
     <div class="filter filter-nohide">
     	<div class="srch"></div>
@@ -18,8 +18,8 @@
             <label>Auto Processed <select name="cells"></select></label>
         </div>
 
-        <lable>Pipeline <select name="method"></select></lable>
-        <label>Spacegroup: <input type="text" name="sg" /></label>
+        <label>Pipeline <select name="pipeline"></select></label>
+        <label>Spacegroup: <select name="sg"></select></label>
 
         <label>a <input type="text" name="a" /></label>
         <label>b <input type="text" name="b" /></label>
@@ -31,10 +31,16 @@
         <label>High Resolution <input type="text" name="res" /></label>
 
         <a href="#" class="button integrate" title="Integrate the selected data collections"><i class="fa fa-cog"></i> Integrate</a>
+        <a href="#" class="button opt">Xia2 Options</a>
     </div>
 
     <div class="options data_collection">
-        <label><input type="checkbox" name="sm" value="1" /> Small Molecule</label>
+        <label>Small Molecule<input type="checkbox" name="sm" value="1" /></label>
+        <label>CC Half :<input type="text" name="cc_half" /></label>
+        <label>Unmerged &lt;I/sigI&gt; :<input type="text" name="isigma" /></label>
+        <label>Merged &lt;I/sigI&gt; :<input type="text" name="misigma" /></label>
+        <label>Spot Finding Threshold :<input type="text" name="sigma_strong" /></label>
+        <label>Indexing Method: <select name="method"></select></label>
     </div>
 
     <div class="dcs"></div>

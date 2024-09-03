@@ -116,7 +116,10 @@ class AuthenticationController
             ($parts[0] == 'shipment' && $parts[1] == 'containers' && $parts[2] == 'notify' && in_array($_SERVER["REMOTE_ADDR"], $auto)) ||
 
                 # Allow barcode reader ips unauthorised access to add container history
-            ($parts[0] == 'shipment' && $parts[1] == 'containers' && $parts[2] == 'history' && in_array($_SERVER["REMOTE_ADDR"], $bcr))
+            ($parts[0] == 'shipment' && $parts[1] == 'containers' && $parts[2] == 'history' && in_array($_SERVER["REMOTE_ADDR"], $bcr)) ||
+
+                # Allow shipping service to update dewar status
+            ($parts[0] == 'shipment' && $parts[1] == 'dewars' && $parts[2] == 'confirmdispatch')
             )
             {
                 $need_auth = false;
@@ -391,17 +394,24 @@ class AuthenticationController
     // Logout
     function logout()
     {
-        global $cookie_key;
-        if (isset($_COOKIE[$cookie_key])) {
-            $cookieOpts = array (
-                'expires' => time() - 3600,
-                'path' => '/',
-                'secure' => true,
-                'httponly' => true,
-                'samesite' => 'Strict'
-            );
+        global $cookie_key, $cas_sso;
+        if($cas_sso) {
+            if (isset($_COOKIE[$cookie_key])) {
+                $cookieOpts = array (
+                    'expires' => time() - 3600,
+                    'path' => '/',
+                    'secure' => true,
+                    'httponly' => true,
+                    'samesite' => 'Strict'
+                );
 
-            setcookie($cookie_key, null, $cookieOpts);
+                setcookie($cookie_key, null, $cookieOpts);
+            }
+
+            header('Location: ' . $this->authenticateByType()->logout());
+            $this->returnResponse(302, array('status' => "Redirecting to SSO provider"));
+        } else {
+            $this->returnError(501, "SSO not configured");
         }
     }
 

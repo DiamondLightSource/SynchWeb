@@ -2,19 +2,6 @@
 
 cd /tmp
 
-# If you are running with the module system, load ccp4
-#. /etc/profile.d/modules.sh
-#module load ccp4
-
-# If not, define the environment variables required below
-#export CCP4_MASTER=/dls_sw/apps/ccp4/<ccp4 version>
-export CCP4_MASTER=/dls_sw/apps/ccp4/latest/ccp4-8.0
-export CINCL=$CCP4_MASTER/include
-export CLIBD=$CCP4_MASTER/lib/data
-
-export CCP4_SCR=/tmp
-export root=$CCP4_MASTER/bin
-
 if [ -f $1 ]; then
 	mtz=$1
 else
@@ -40,6 +27,14 @@ else
 		exit
 	fi
 fi
+
+#export CCP4_MASTER=/dls_sw/apps/ccp4/<ccp4 version>
+export CCP4_MASTER=$5
+export CINCL=$CCP4_MASTER/include
+export CLIBD=$CCP4_MASTER/lib/data
+
+export CCP4_SCR=/tmp
+export root=$CCP4_MASTER/bin
 
 if [ $3 == 'dimple' ]; then
 

@@ -32,7 +32,9 @@
 
     # Follow CAS SSO
     $cas_sso = true;
-    $sso_url = "sso.server.ac.uk";
+    $sso_url = "https://sso.server.ac.uk";
+    # Profile field to use to identify user
+    $sso_user_key = "fedid";
 
     # OIDC (or OAuth2) client ID and secret. Only useful if authentication_type is set to OIDC
     $oidc_client_id = "oidcClientId";
@@ -153,6 +155,9 @@
     # Server log location
     $server_log = '/dls_sw/<%=BEAMLINENAME%>/logs/gda-server.log';
 
+    # Path to ccp4 location
+    $ccp4_location = '/dls_sw/apps/ccp4/latest/ccp4-9';
+
     # Email addresses, comma separate for multiple recepients
     # - Email templates in assets/emails in plain and html/ format
 
@@ -237,6 +242,8 @@
     $facility_courier_countries = array('United Kingdom');
     // List of non dom eu free countries
     $facility_courier_countries_nde = array('France', 'Italy', 'Spain');
+    // Link to help with international shipments
+    $facility_courier_countries_link = '';
     $package_description = 'Dry shipper containing frozen crystals';
     $dewar_weight = 18;
 

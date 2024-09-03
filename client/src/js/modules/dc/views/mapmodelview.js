@@ -33,7 +33,9 @@ define(['marionette',
         loadMaps: function() {
             this.mapsToLoad = this.downstream.get('FEATURES').MAPMODEL[1];
             this.mapsLoaded = 0
-            this.doLoadMaps(1, this.onMapsLoaded.bind(this))
+            if (this.mapsToLoad > 0) {
+                this.doLoadMaps(1, this.onMapsLoaded.bind(this))
+            }
         },
         
 
