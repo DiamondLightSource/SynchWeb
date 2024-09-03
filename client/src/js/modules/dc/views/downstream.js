@@ -7,11 +7,12 @@ define(['backbone', 'marionette',
     'modules/dc/views/dimple',
     'modules/dc/views/mrbump',
     'modules/dc/views/bigep',
+    'modules/dc/views/shelxt',
     'templates/dc/downstreamerror.html'
 
     ], function(Backbone, Marionette, TabView, DownStreams, DownstreamWrapper, 
         TableView, 
-        FastEP, DIMPLE, MrBUMP, BigEP, downstreamerror) {
+        FastEP, DIMPLE, MrBUMP, BigEP, Shelxt, downstreamerror) {
 
     var DownstreamsCollection = Backbone.Collection.extend()
 
@@ -61,6 +62,7 @@ define(['backbone', 'marionette',
                 'Autobuild': BigEP,
                 'Crank2': BigEP,
                 'AutoSHARP': BigEP,
+                'Shelxt': Shelxt,
             }
             
             if (model.get('PROCESS').PROCESSINGSTATUS != 1) {
