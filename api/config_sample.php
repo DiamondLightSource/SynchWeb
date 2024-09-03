@@ -239,6 +239,8 @@
     $facility_courier_countries = array('United Kingdom');
     // List of non dom eu free countries
     $facility_courier_countries_nde = array('France', 'Italy', 'Spain');
+    // Link to help with international shipments
+    $facility_courier_countries_link = '';
     $package_description = 'Dry shipper containing frozen crystals';
     $dewar_weight = 18;
 
