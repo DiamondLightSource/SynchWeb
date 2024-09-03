@@ -391,17 +391,24 @@ class AuthenticationController
     // Logout
     function logout()
     {
-        global $cookie_key;
-        if (isset($_COOKIE[$cookie_key])) {
-            $cookieOpts = array (
-                'expires' => time() - 3600,
-                'path' => '/',
-                'secure' => true,
-                'httponly' => true,
-                'samesite' => 'Strict'
-            );
+        global $cookie_key, $cas_sso;
+        if($cas_sso) {
+            if (isset($_COOKIE[$cookie_key])) {
+                $cookieOpts = array (
+                    'expires' => time() - 3600,
+                    'path' => '/',
+                    'secure' => true,
+                    'httponly' => true,
+                    'samesite' => 'Strict'
+                );
 
-            setcookie($cookie_key, null, $cookieOpts);
+                setcookie($cookie_key, null, $cookieOpts);
+            }
+
+            header('Location: ' . $this->authenticateByType()->logout());
+            $this->returnResponse(302, array('status' => "Redirecting to SSO provider"));
+        } else {
+            $this->returnError(501, "SSO not configured");
         }
     }
 

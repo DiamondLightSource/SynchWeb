@@ -26,4 +26,9 @@ class Dummy extends AuthenticationParent implements AuthenticationInterface
     {
         return true;
     }
+
+    function logout()
+    {
+        return false;
+    }
 }

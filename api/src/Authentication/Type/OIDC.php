@@ -135,4 +135,9 @@ class OIDC extends AuthenticationParent implements AuthenticationInterface
         setcookie($cookie_key, $token, $cookieOpts);
         return $this->getUser($token);
     }
+
+    function logout()
+    {
+        return $this->getProviderConfig()->end_session_endpoint;
+    }
 }
