@@ -172,6 +172,7 @@
           :container-id="containerId"
           :invalid="invalid"
           :currentlyEditingRow="editingSampleLocation"
+          :disableUpdateSamples="disableUpdateSamples"
           @update-editing-row="updateEditingSampleLocation"
           @save-sample="onSaveSample"
           @clone-sample="onCloneSample"
@@ -181,6 +182,7 @@
           @clone-container-column="onCloneColumn"
           @clone-container-row="onCloneRow"
           @bulk-update-samples="onUpdateSamples"
+          @disable-update-samples="disableUpdateSamples"
           @update-samples-with-sample-group="handleSampleFieldChangeWithSampleGroups"
           @save-sample-move="saveSampleMove"
         />
@@ -546,6 +548,7 @@ export default {
       }
     },
     async onUpdateSamples() {
+      this.disableUpdateSamples = true
       const containerId = this.containerId
       this.containerId = null
       await this.$nextTick()
@@ -558,11 +561,18 @@ export default {
         await this.loadSampleGroupInformation()
         await this.$store.commit('notifications/addNotification', {
           title: 'Samples Updated',
-          message: 'Sample has been successfully updated',
+          message: 'Sample(s) have been successfully updated',
           level: 'success'
         })
         this.$refs.containerForm.reset()
+      } else {
+        await this.$store.commit('notifications/addNotification', {
+          title: 'Error:',
+          message: 'Sample(s) have not been updated, please see the errors at the bottom of the page.',
+          level: 'error'
+        })
       }
+      this.disableUpdateSamples = false
     },
     updateEditingSampleLocation(value) {
       this.editingSampleLocation = value

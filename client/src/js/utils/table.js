@@ -166,12 +166,12 @@ define(['marionette', 'backgrid',
             },
               
             addToProject: function(e) {
-              e.preventDefault()
+              e.stopPropagation()
               app.dialog.show(new AddToProjectView({ name: this.model.get(this.column.get('itemname')), type: this.column.get('itemtype'), iid: this.model.get(this.column.get('itemid')) }))
             },
               
             render: function() {
-              this.$el.append('<a class="button button-notext atp"><i class="fa fa-book"></i> <span>Add to Project</span></a>')
+              this.$el.append('<a class="button atp"><i class="fa fa-book"></i> <span class="tw-hidden lg:tw-inline">Add to Project</span></a>')
               return this
             }
         }),
@@ -232,4 +232,4 @@ define(['marionette', 'backgrid',
     }
     
 })
-    
+

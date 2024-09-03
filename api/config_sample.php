@@ -32,7 +32,9 @@
 
     # Follow CAS SSO
     $cas_sso = true;
-    $sso_url = "sso.server.ac.uk";
+    $sso_url = "https://sso.server.ac.uk";
+    # Profile field to use to identify user
+    $sso_user_key = "fedid";
 
     # OIDC (or OAuth2) client ID and secret. Only useful if authentication_type is set to OIDC
     $oidc_client_id = "oidcClientId";

@@ -153,7 +153,7 @@ define(['marionette',
             opts: 'div.options',
             ind: 'input[name=individual]',
             mul: 'span.multi',
-            met: 'select[name=method]',
+            pipeline: 'select[name=pipeline]',
         },
 
         buttons: {
@@ -207,7 +207,7 @@ define(['marionette',
             })
 
             data.int = integrate
-            data.recipes = this.ui.met.val()
+            data.recipes = this.ui.pipeline.val()
 
             _.each(['a', 'b', 'c', 'alpha', 'beta', 'gamma', 'res', 'sg'], function(f, i) {
                 data[f] = this.$el.find('input[name='+f+']').val().replace(/\s/g, '')
@@ -243,7 +243,7 @@ define(['marionette',
             this.ui.cell.hide()
 
             _.each(['xia2 3dii', 'xia2 dials'], function(t,i) {
-                this.ui.met.append('<option value="'+(i+1)+'">'+t+'</option>')
+                this.ui.pipeline.append('<option value="'+(i+1)+'">'+t+'</option>')
             }, this)
 
             this.distlview = new DCDistlsView({ collection: this.collection })
