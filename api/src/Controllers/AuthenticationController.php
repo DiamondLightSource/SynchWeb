@@ -116,7 +116,10 @@ class AuthenticationController
             ($parts[0] == 'shipment' && $parts[1] == 'containers' && $parts[2] == 'notify' && in_array($_SERVER["REMOTE_ADDR"], $auto)) ||
 
                 # Allow barcode reader ips unauthorised access to add container history
-            ($parts[0] == 'shipment' && $parts[1] == 'containers' && $parts[2] == 'history' && in_array($_SERVER["REMOTE_ADDR"], $bcr))
+            ($parts[0] == 'shipment' && $parts[1] == 'containers' && $parts[2] == 'history' && in_array($_SERVER["REMOTE_ADDR"], $bcr)) ||
+
+                # Allow shipping service to update dewar status
+            ($parts[0] == 'shipment' && $parts[1] == 'dewars' && $parts[2] == 'confirmdispatch')
             )
             {
                 $need_auth = false;
