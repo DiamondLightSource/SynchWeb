@@ -2,39 +2,36 @@
 
 namespace SynchWeb;
 
-use Stomp\Exception\StompException;
-use Stomp\Stomp;
+use PhpAmqpLib\Connection\AMQPStreamConnection;
+use PhpAmqpLib\Message\AMQPMessage;
 
 class Queue
 {
-    private $server, $username, $password;
+    private $host, $port, $username, $password;
 
-    function __construct($server, $username, $password)
+    function __construct($host, $port, $username, $password)
     {
-        $this->server = $server;
+        $this->host = $host;
+        $this->port = $port;
         $this->username = $username;
         $this->password = $password;
     }
 
-    function send($queue, array $message, $persistent = false, $login = null)
+    function send($vhost, array $message)
     {
         try {
-            $connection = new Stomp($this->server);
+            $connection = new AMQPStreamConnection($this->host, $this->port, $this->username, $this->password);
+            $channel = $connection->channel();
 
-            $connection->connect($this->username, $this->password);
-
-            $connection->send(
-                $queue,
-                json_encode($message, JSON_UNESCAPED_SLASHES),
-                array(
-                    'persistent' => ($persistent === true),
-                    'synchweb.host' => gethostname(),
-                    'synchweb.user' => $login,
-                )
+            $msg = new AMQPMessage(
+                json_encode($message, JSON_UNESCAPED_SLASHES)
             );
 
-            $connection->disconnect();
-        } catch (StompException $e) {
+            $channel->basic_publish($msg, '', $vhost);
+
+            $channel->close();
+            $connection->close();
+        } catch (AMQPException $e) {
             /** @noinspection PhpUnhandledExceptionInspection */
 
             throw $e;

@@ -1109,14 +1109,15 @@ class Page
     }
 
 
-    function _send_zocalo_message($zocalo_queue, $zocalo_message, $error_code = 500)
+    function _send_zocalo_message($rabbitmq_zocalo_vhost, $zocalo_message, $error_code = 500)
     {
         global
-        $zocalo_server,
-        $zocalo_username,
-        $zocalo_password;
+        $rabbitmq_zocalo_host,
+        $rabbitmq_zocalo_port,
+        $rabbitmq_zocalo_username,
+        $rabbitmq_zocalo_password;
 
-        if (empty($zocalo_server) || empty($zocalo_queue))
+        if (empty($rabbitmq_zocalo_host) || empty($rabbitmq_zocalo_vhost))
         {
             $message = 'Zocalo server or queue not specified.';
             error_log($message);
@@ -1129,8 +1130,8 @@ class Page
         try
         {
             error_log("Sending message" . var_export($zocalo_message, true));
-            $queue = new Queue($zocalo_server, $zocalo_username, $zocalo_password);
-            $queue->send($zocalo_queue, $zocalo_message, true, $this->user->loginId);
+            $queue = new Queue($rabbitmq_zocalo_host, $rabbitmq_zocalo_port, $rabbitmq_zocalo_username, $rabbitmq_zocalo_password);
+            $queue->send($rabbitmq_zocalo_vhost, $zocalo_message);
         }
         catch (Exception $e)
         {

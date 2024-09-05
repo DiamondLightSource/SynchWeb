@@ -355,7 +355,7 @@ class Process extends Page
 
     function _enqueue()
     {
-        global $zocalo_mx_reprocess_queue;
+        global $rabbitmq_zocalo_vhost;
 
         if (!$this->has_arg('PROCESSINGJOBID')) $this->_error('No processing job specified');
 
@@ -379,7 +379,7 @@ class Process extends Page
                 'ispyb_process' => intval($this->arg('PROCESSINGJOBID')),
             )
         );
-        $this->_send_zocalo_message($zocalo_mx_reprocess_queue, $message);
+        $this->_send_zocalo_message($rabbitmq_zocalo_vhost, $message);
 
         $this->_output(new \stdClass);
     }

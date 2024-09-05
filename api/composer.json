@@ -21,7 +21,7 @@
     "mpdf/mpdf": "8.1.2",
     "ralouphie/getallheaders": "2.0.5",
     "slim/slim": "2.6.2",
-    "stomp-php/stomp-php": "3.0.6",
+    "php-amqplib/php-amqplib": "^2.0",
     "symfony/http-foundation": "^5.4",
     "symfony/filesystem": "^5.4",
     "mpdf/qrcode": "^1.2",
