@@ -54,7 +54,7 @@ class Shelxt extends DownstreamPlugin {
         $dat['SOLUTIONS'] = json_decode($json_data);
 
         // scaling_id should always be present, but just in case...
-        if (in_array('scaling_id', $this->process['PARAMETERS'])) {
+        if (array_key_exists('scaling_id', $this->process['PARAMETERS'])) {
             $integrator = $this->_lookup_autoproc(
                 null,
                 $this->process['PARAMETERS']['scaling_id']
