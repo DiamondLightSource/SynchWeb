@@ -106,24 +106,25 @@
                   @click="onUnQueueContainer"
                 ><i class="fa fa-times" /> Unqueue</a>
               </span>
+              <span v-else-if="shippingSafetyLevel != 'Green'">
+                Cannot queue containers in {{ shippingSafetyLevel }} shipments
+              </span>
+              <span v-else-if="containerQueueError">
+                There was an error submitting the container to the queue. Please fix any errors in the samples table.
+                <a
+                  class="tw-cursor-pointer button tryagainqueue"
+                  @click="onTryAgainQueueContainer"
+                ><i class="fa fa-check" /> Try again</a>
+                <a
+                  class="tw-cursor-pointer button cancelqueue"
+                  @click="onCancelQueueContainer"
+                ><i class="fa fa-times" /> Cancel</a>
+              </span>
               <span v-else>
-                <span v-if="containerQueueError">
-                  There was an error submitting the container to the queue. Please fix any errors in the samples table.
-                  <a 
-                    class="tw-cursor-pointer button tryagainqueue" 
-                    @click="onTryAgainQueueContainer" 
-                  ><i class="fa fa-check" /> Try again</a>
-                  <a 
-                    class="tw-cursor-pointer button cancelqueue"
-                    @click="onCancelQueueContainer" 
-                  ><i class="fa fa-times" /> Cancel</a>
-                </span>
-                <span v-else>
-                  <a 
-                    class="tw-cursor-pointer button queue"
-                    @click="onQueueContainer" 
-                  ><i class="fa fa-plus" /> Queue</a> this container for Auto Collect
-                </span>
+                <a
+                  class="tw-cursor-pointer button queue"
+                  @click="onQueueContainer"
+                ><i class="fa fa-plus" /> Queue</a> this container for Auto Collect
               </span>
             </li>
 
@@ -324,6 +325,7 @@ export default {
       dewarsCollection: null,
       selectedDewarId: null,
       selectedShipmentId: null,
+      shippingSafetyLevel: null,
       editingSampleLocation: null
     }
   },
@@ -354,6 +356,7 @@ export default {
     loadContainerData() {
       this.container = Object.assign({}, this.containerModel.toJSON())
       this.containerId = this.containerModel.get('CONTAINERID')
+      this.shippingSafetyLevel = this.containerModel.get('SHIPPINGSAFETYLEVEL')
       this.containerQueueId = this.containerModel.get('CONTAINERQUEUEID')
       if (this.containerQueueId) this.QUEUEFORUDC = true
     },
@@ -477,6 +480,7 @@ export default {
         })
         this.$nextTick(() => {
           this.loadContainerData()
+          this.getProteins()
           // TODO: Toggle Auto in the samples table
         })
       } catch (error) {
@@ -497,6 +501,7 @@ export default {
         this.$emit('update-container-state', { CONTAINERQUEUEID: null })
         this.$nextTick(() => {
           this.loadContainerData()
+          this.getProteins()
           // TODO: Toggle Auto in the samples table
         })
       } catch (error) {

@@ -1515,7 +1515,7 @@ class Shipment extends Page
                 $order = $cols[$this->arg('sort_by')] . ' ' . $dir;
         }
 
-        $dewars = $this->db->paginate("SELECT CONCAT(p.proposalcode, p.proposalnumber) as prop, CONCAT(p.proposalcode, p.proposalnumber, '-', se.visit_number) as firstexperiment, r.labcontactid, se.beamlineoperator as localcontact, se.beamlinename, TO_CHAR(se.startdate, 'HH24:MI DD-MM-YYYY') as firstexperimentst, d.firstexperimentid, s.shippingid, s.shippingname, d.facilitycode, count(c.containerid) as ccount, (case when se.visit_number > 0 then (CONCAT(p.proposalcode, p.proposalnumber, '-', se.visit_number)) else '' end) as exp, d.code, d.barcode, d.storagelocation, d.dewarstatus, d.dewarid,  d.trackingnumbertosynchrotron, d.trackingnumberfromsynchrotron, d.externalShippingIdFromSynchrotron, s.deliveryagent_agentname, d.weight, d.deliveryagent_barcode, GROUP_CONCAT(c.code SEPARATOR ', ') as containers, s.sendinglabcontactid, s.returnlabcontactid, pe.givenname, pe.familyname
+        $dewars = $this->db->paginate("SELECT CONCAT(p.proposalcode, p.proposalnumber) as prop, CONCAT(p.proposalcode, p.proposalnumber, '-', se.visit_number) as firstexperiment, r.labcontactid, se.beamlineoperator as localcontact, se.beamlinename, TO_CHAR(se.startdate, 'HH24:MI DD-MM-YYYY') as firstexperimentst, d.firstexperimentid, s.shippingid, s.shippingname, d.facilitycode, count(c.containerid) as ccount, (case when se.visit_number > 0 then (CONCAT(p.proposalcode, p.proposalnumber, '-', se.visit_number)) else '' end) as exp, d.code, d.barcode, d.storagelocation, d.dewarstatus, d.dewarid,  d.trackingnumbertosynchrotron, d.trackingnumberfromsynchrotron, d.externalShippingIdFromSynchrotron, s.deliveryagent_agentname, d.weight, d.deliveryagent_barcode, GROUP_CONCAT(c.code SEPARATOR ', ') as containers, s.sendinglabcontactid, s.returnlabcontactid, pe.givenname, pe.familyname, s.safetylevel as shippingsafetylevel
               FROM dewar d 
               LEFT OUTER JOIN container c ON c.dewarid = d.dewarid 
               INNER JOIN shipping s ON d.shippingid = s.shippingid 
@@ -1589,6 +1589,39 @@ class Shipment extends Page
         $this->_output(array('DEWARID' => $id));
     }
 
+    # Check new safety level is ok
+    function _check_safety_level()
+    {
+        $ship = $this->db->pq("SELECT cq.containerqueueid, p.safetylevel FROM dewar d
+            LEFT OUTER JOIN container c on c.dewarid = d.dewarid
+            LEFT OUTER JOIN containerqueue cq on cq.containerid = c.containerid
+            LEFT OUTER JOIN blsample b ON b.containerid = c.containerid
+            LEFT OUTER JOIN crystal cr ON cr.crystalid = b.crystalid
+            LEFT OUTER JOIN protein p ON p.proteinid = cr.proteinid
+            WHERE d.shippingid = :1", array($this->arg('sid')));
+        if (strtolower($this->arg('SAFETYLEVEL')) == 'green') {
+            foreach ($ship as $s) {
+                if (strtolower($s['SAFETYLEVEL']) == 'yellow')
+                    $this->_error('Cannot set safety level to green as one or more samples are yellow.');
+                if (strtolower($s['SAFETYLEVEL']) == 'red')
+                    $this->_error('Cannot set safety level to green as one or more samples are red.');
+            }
+        } else if (strtolower($this->arg('SAFETYLEVEL')) == 'yellow') {
+            foreach ($ship as $s) {
+                if ($s['CONTAINERQUEUEID'] != null)
+                    $this->_error('Cannot set safety level to yellow as one or more containers are queued.');
+                if (strtolower($s['SAFETYLEVEL']) == 'red')
+                    $this->_error('Cannot set safety level to yellow as one or more samples are red.');
+            }
+        } else {
+            foreach ($ship as $s) {
+                if ($s['CONTAINERQUEUEID'] != null)
+                    $this->_error('Cannot set safety level to red as one or more containers are queued.');
+            }
+        }
+    }
+
+
     # Update shipment
     function _update_shipment()
     {
@@ -1609,6 +1642,9 @@ class Shipment extends Page
                 $fl = ':1';
                 if (in_array($f, array('DELIVERYAGENT_DELIVERYDATE', 'DELIVERYAGENT_SHIPPINGDATE'))) {
                     $fl = "TO_DATE(:1, 'DD-MM-YYYY')";
+                }
+                if ($f == 'SAFETYLEVEL') {
+                    $this->_check_safety_level();
                 }
 
                 $this->db->pq("UPDATE shipping SET $f=$fl WHERE shippingid=:2", array($this->arg($f), $this->arg('sid')));
@@ -2009,6 +2045,7 @@ class Shipment extends Page
         }
         // $this->db->set_debug(True);
         $rows = $this->db->paginate("SELECT round(TIMESTAMPDIFF('HOUR', min(ci.bltimestamp), CURRENT_TIMESTAMP)/24,1) as age, case when count(ci2.containerinspectionid) > 1 then 0 else 1 end as allow_adhoc, c.scheduleid, c.screenid, sc.name as screen, c.imagerid, i.temperature as temperature, i.name as imager, TO_CHAR(max(ci.bltimestamp), 'HH24:MI DD-MM-YYYY') as lastinspection, round(TIMESTAMPDIFF('HOUR', max(ci.bltimestamp), CURRENT_TIMESTAMP)/24,1) as lastinspectiondays, count(distinct ci.containerinspectionid) as inspections, CONCAT(p.proposalcode, p.proposalnumber) as prop, c.bltimestamp, c.samplechangerlocation, c.beamlinelocation, d.dewarstatus, c.containertype, c.capacity, c.containerstatus, c.containerid, c.code as name, d.code as dewar, sh.shippingname as shipment, d.dewarid, sh.shippingid, count(distinct s.blsampleid) as samples, cq.containerqueueid, TO_CHAR(cq.createdtimestamp, 'DD-MM-YYYY HH24:MI') as queuedtimestamp, CONCAT(p.proposalcode, p.proposalnumber, '-', ses.visit_number) as visit, ses.beamlinename, c.requestedreturn, c.requestedimagerid, c.comments, c.experimenttype, c.storagetemperature, c.barcode, reg.barcode as registry, reg.containerregistryid,
+                sh.safetylevel as shippingsafetylevel,
                 (SELECT sch.name FROM schedule sch WHERE sch.scheduleid = c.scheduleid) as schedule,
                 (SELECT i2.name FROM imager i2 WHERE i2.imagerid = c.requestedimagerid) as requestedimager,
                 (SELECT count(distinct ss.blsubsampleid) FROM blsubsample ss RIGHT OUTER JOIN blsample s2 ON s2.blsampleid = ss.blsampleid WHERE s2.containerid = c.containerid AND ss.source='manual') as subsamples,

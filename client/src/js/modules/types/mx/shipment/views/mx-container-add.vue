@@ -90,9 +90,13 @@
               <div class="tw-mb-2 tw-py-2">
                 <label>Queue For UDC</label>
                 <base-input-checkbox
+                  v-if="shippingSafetyLevel === 'Green'"
                   v-model="QUEUEFORUDC"
                   name="Queue For UDC"
                 />
+                <span v-else>
+                  Cannot queue containers in {{ shippingSafetyLevel }} shipments
+                </span>
               </div>
             </div>
 
@@ -461,6 +465,7 @@ export default {
 
       // The dewar that this container will belong to
       dewar: null,
+      shippingSafetyLevel: null,
 
       processingPipeline: '',
       processingPipelines: [],
@@ -542,23 +547,6 @@ export default {
         }
       }
     },
-    AUTOMATED: {
-      immediate: true,
-      handler: function(newVal) {
-        const proteinsCollection = new DistinctProteins()
-        // If now on, add safety level to query
-        // Automated collections limited to GREEN Low risk samples
-        if (newVal) {
-          proteinsCollection.queryParams.SAFETYLEVEL = 'GREEN';
-        } else {
-          proteinsCollection.queryParams.SAFETYLEVEL = 'ALL';
-        }
-        this.$store.dispatch('getCollection', proteinsCollection).then( (result) => {
-          this.proteins = result.toJSON()
-        })
-        app.trigger('samples:automated', newVal)
-      }
-    },
     CONTAINERREGISTRYID: {
       immediate: true,
       handler: function(newVal) {
@@ -593,6 +581,7 @@ export default {
   created: function() {
     this.containerType = INITIAL_CONTAINER_TYPE
     this.dewar = this.options.dewar.toJSON()
+    this.shippingSafetyLevel = this.dewar.SHIPPINGSAFETYLEVEL
     this.DEWARID = this.dewar.DEWARID
 
     this.resetSamples(this.containerType.CAPACITY)
