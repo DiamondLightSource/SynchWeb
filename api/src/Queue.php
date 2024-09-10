@@ -19,22 +19,16 @@ class Queue
 
     function send($vhost, array $message)
     {
-        try {
-            $connection = new AMQPStreamConnection($this->host, $this->port, $this->username, $this->password);
-            $channel = $connection->channel();
+        $connection = new AMQPStreamConnection($this->host, $this->port, $this->username, $this->password);
+        $channel = $connection->channel();
 
-            $msg = new AMQPMessage(
-                json_encode($message, JSON_UNESCAPED_SLASHES)
-            );
+        $msg = new AMQPMessage(
+            json_encode($message, JSON_UNESCAPED_SLASHES)
+        );
 
-            $channel->basic_publish($msg, '', $vhost);
+        $channel->basic_publish($msg, '', $vhost);
 
-            $channel->close();
-            $connection->close();
-        } catch (AMQPException $e) {
-            /** @noinspection PhpUnhandledExceptionInspection */
-
-            throw $e;
-        }
+        $channel->close();
+        $connection->close();
     }
 }
