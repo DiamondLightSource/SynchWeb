@@ -197,7 +197,7 @@ define(['marionette',
             
             var edit = new Editable({ model: this.model, el: this.$el })
             edit.create('SHIPPINGNAME', 'textlong')
-            edit.create('SAFETYLEVEL', 'select', { data: {'Green': 'Green', 'Yellow':'Yellow', 'Red': 'Red'}, alert: true })
+            edit.create('SAFETYLEVEL', 'select', { data: {'Green': 'Green', 'Yellow':'Yellow', 'Red': 'Red'}, alert: true, revert: true })
             edit.create('COMMENTS', 'textarea')
             edit.create('DELIVERYAGENT_AGENTNAME', 'text')
             edit.create('DELIVERYAGENT_AGENTCODE', 'text')
