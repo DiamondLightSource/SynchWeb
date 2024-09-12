@@ -99,7 +99,7 @@ define(['marionette',
             var self = this
             p.save({}, {
                 success: function() {
-                    app.alert({ message: 'Preset successfully saved' })
+                    app.message({ message: 'Preset successfully saved' })
                     self.column.get('plans').add(p)
                 },
                 error: function() {
@@ -539,6 +539,8 @@ define(['marionette',
             xtal: '.xtalpreview',
             nodata: 'input[name=nodata]',
             notcompleted: 'input[name=notcompleted]',
+            queuebutton: '.queuebutton',
+            unqueuebutton: '.unqueuebutton',
         },
 
 
@@ -650,12 +652,13 @@ define(['marionette',
             e.preventDefault()
             utils.confirm({
                 title: 'Unqueue Container?',
-                content: 'Are you sure you want to remove this container from the queue? You will loose your current place',
+                content: 'Are you sure you want to remove this container from the queue? You will lose your current place',
                 callback: this.doUnqueueContainer.bind(this)
             })
         },
 
         doUnqueueContainer: function() {
+            var self = this
             Backbone.ajax({
                 url: app.apiurl+'/shipment/containers/queue',
                 data: {
@@ -663,7 +666,9 @@ define(['marionette',
                     UNQUEUE: 1,
                 },
                 success: function() {
-                    app.alert({ message: 'Container Successfully Unqueued' })
+                    app.message({ message: 'Container Successfully Unqueued' })
+                    self.ui.unqueuebutton.hide()
+                    self.ui.queuebutton.show()
                 },
                 error: function() {
                     app.alert({ message: 'Something went wrong unqueuing this container' })
@@ -710,7 +715,7 @@ define(['marionette',
         queueContainer: function(e) {
             e.preventDefault()
 
-            if (!this.qsubsamples.fullCollection.length) {
+            if (!this.typeselector.shadowCollection.length) {
                 app.alert({ message: 'Please add some samples before queuing this container' })
                 return
             }
@@ -732,13 +737,16 @@ define(['marionette',
                 if (inv) inv.set({ isSelected: true })
 
             } else {
+                var self = this
                 Backbone.ajax({
                     url: app.apiurl+'/shipment/containers/queue',
                     data: {
                         CONTAINERID: this.model.get('CONTAINERID')
                     },
                     success: function() {
-                        app.alert({ message: 'Container Successfully Queued' })
+                        app.message({ message: 'Container Successfully Queued' })
+                        self.ui.unqueuebutton.show()
+                        self.ui.queuebutton.hide()
                     },
                     error: function() {
                         app.alert({ message: 'Something went wrong queuing this container' })
@@ -768,21 +776,25 @@ define(['marionette',
         
         initialize: function() {
             this._lastSample = null
+            this._subsamples_ready = []
 
             this.platetypes = new PlateTypes()
             this.type = this.platetypes.findWhere({ name: this.model.get('CONTAINERTYPE') })
 
+            this.unfilteredSubsamples = null
             this.subsamples = new SubSamples()
             this.subsamples.queryParams.cid = this.model.get('CONTAINERID')
             this.subsamples.state.pageSize = 10
-            this.listenTo(this.subsamples, 'change:isSelected', this.selectSubSample, this)
-            this.listenTo(this.subsamples, 'sync add remove change:READYFORQUEUE', this.refreshQSubSamples, this)
-            this.subsamples.fetch()
+
+            this._subsamples_ready.push(this.subsamples.fetch())
 
             this.inspections = new ContainerInspections()
             this.inspections.queryParams.cid = this.model.get('CONTAINERID')
             this.inspections.setSorting('BLTIMESTAMP', 1)
-            this.inspections.fetch().done(this.getInspectionImages.bind(this))
+
+            this._subsamples_ready.push(this.inspections.fetch())
+
+            $.when.apply($, this._subsamples_ready).done(this.onSubsamplesReady.bind(this))
 
             this.inspectionimages = new InspectionImages()
 
@@ -832,6 +844,14 @@ define(['marionette',
             this.ui.preset.html(this.plans.opts())
         },
 
+        onSubsamplesReady: function() {
+            this.unfilteredSubsamples = this.subsamples.fullCollection.clone()
+            this.getInspectionImages()
+            this.refreshQSubSamples()
+            this.listenTo(this.subsamples, 'change:isSelected', this.selectSubSample, this)
+            this.listenTo(this.subsamples, 'sync add remove change:READYFORQUEUE', this.refreshQSubSamples, this)
+        },
+
         getInspectionImages: function() {
             this.inspectionimages.queryParams.iid = this.inspections.at(0).get('CONTAINERINSPECTIONID')
             this.inspectionimages.fetch().done(this.selectSample.bind(this))
@@ -843,8 +863,8 @@ define(['marionette',
 
         refreshQSubSamples: function() {
             if (this.model.get('CONTAINERQUEUEID')) {
-                this.qsubsamples.fullCollection.reset(this.subsamples.fullCollection.where({ CONTAINERQUEUEID: this.model.get('CONTAINERQUEUEID') }))
-            } else this.qsubsamples.fullCollection.reset(this.subsamples.fullCollection.where({ READYFORQUEUE: '1' }))
+                this.qsubsamples.fullCollection.reset(this.unfilteredSubsamples.where({ CONTAINERQUEUEID: this.model.get('CONTAINERQUEUEID') }))
+            } else this.qsubsamples.fullCollection.reset(this.unfilteredSubsamples.where({ READYFORQUEUE: '1' }))
         },
 
         selectSubSample: function() {
@@ -859,6 +879,9 @@ define(['marionette',
         
         
         onRender: function() {
+            if (!this.model.get('CONTAINERQUEUEID')) {
+                this.ui.unqueuebutton.hide()
+            }
             this.subsamples.queryParams.nodata = this.getNoData.bind(this)
             this.subsamples.queryParams.notcompleted = this.getNotCompleted.bind(this)
             this._ready.done(this.doOnRender.bind(this))
@@ -928,6 +951,7 @@ define(['marionette',
 
             if (this.model.get('CONTAINERQUEUEID')) {
                 this.ui.rpreset.hide()
+                this.ui.queuebutton.hide()
                 queuedSubSamples.push({ label: '', cell: table.StatusCell, editable: false })
                 queuedSubSamples.push({ label: '', cell: table.TemplateCell, editable: false, template: '<a href="/samples/sid/<%-BLSAMPLEID%>" class="button"><i class="fa fa-search"></i></a>' })
             }
@@ -954,3 +978,9 @@ define(['marionette',
     })
         
 })
+
+// TODO
+//
+// * Hide add to queue buttons after container queued
+// * Hide show buttons in queue area (remove from queue etc)
+// * Display number of subsamples in queue

@@ -2,8 +2,7 @@
 
 <p class="help">This pages allows you to queue samples in a container for data collection</p>
 
-<% if (CONTAINERQUEUEID) { %>
-<p class="message alert">
+<p class="message alert unqueuebutton">
     <% if (['disposed', 'in_storage', null].indexOf(CONTAINERSTATUS) > -1) { %>
         This container is queued for data collection, you can not modify it without unqueuing it
         <a href="#" class="button unqueue"><i class="fa fa-times"></i> Unqueue</a>
@@ -11,7 +10,6 @@
         This container is en route for data collection, it cannot be unqueued.
     <% } %>
 </p>
-<% } %>
 
 <div class="clearfix xtalpreview">
     <div class="image right"></div>
@@ -65,10 +63,11 @@ Presets: <select name="preset"></select>
 </div>
 <div class="qsamples"></div>
 
-<% if (!CONTAINERQUEUEID) { %>
+<span class="queuebutton">
 <h2>Queue Plate</h2>
 <p>Queuing the container will make the queued items immutable, please make sure you have added all sub samples, and that they have valid experimental plans</p>
 <div class="form">
     <button name="submit" value="1" type="submit" class="button submit">Queue Container</button>
 </div>
-<% } %>
+</span>
+
