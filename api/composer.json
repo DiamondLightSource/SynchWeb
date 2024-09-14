@@ -26,7 +26,8 @@
     "symfony/filesystem": "^5.4",
     "mpdf/qrcode": "^1.2",
     "mtcmedia/dhl-api": "dev-master#9b4b6315",
-    "maennchen/zipstream-php": "2.1.0"
+    "maennchen/zipstream-php": "2.1.0",
+    "phpseclib/bcmath_compat": "^2.0"
   },
   "autoload": {
     "psr-4": {
