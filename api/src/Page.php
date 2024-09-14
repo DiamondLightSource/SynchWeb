@@ -1115,7 +1115,8 @@ class Page
         $rabbitmq_zocalo_host,
         $rabbitmq_zocalo_port,
         $rabbitmq_zocalo_username,
-        $rabbitmq_zocalo_password;
+        $rabbitmq_zocalo_password,
+        $rabbitmq_zocalo_routing_key;
 
         if (empty($rabbitmq_zocalo_host) || empty($rabbitmq_zocalo_vhost))
         {
@@ -1130,8 +1131,8 @@ class Page
         try
         {
             error_log("Sending message" . var_export($zocalo_message, true));
-            $queue = new Queue($rabbitmq_zocalo_host, $rabbitmq_zocalo_port, $rabbitmq_zocalo_username, $rabbitmq_zocalo_password);
-            $queue->send($rabbitmq_zocalo_vhost, $zocalo_message);
+            $queue = new Queue($rabbitmq_zocalo_host, $rabbitmq_zocalo_port, $rabbitmq_zocalo_username, $rabbitmq_zocalo_password, $rabbitmq_zocalo_vhost);
+            $queue->send($zocalo_message, $rabbitmq_zocalo_routing_key);
         }
         catch (Exception $e)
         {
