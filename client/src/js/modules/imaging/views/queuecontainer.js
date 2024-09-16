@@ -128,8 +128,7 @@ define(['marionette',
         render: function() {
             this.$el.empty()
 
-            if (!this.model.get('CONTAINERQUEUEID'))
-                this.$el.html('<a href="#" class="button clone" title="Clone these parameters to the selected samples"><i class="fa fa-files-o"></i></a>\
+            this.$el.html('<a href="#" class="button clone" title="Clone these parameters to the selected samples"><i class="fa fa-files-o"></i></a>\
                 <a href="#" class="button save" title="Save these parameters as a preset"><i class="fa fa-save"></i></a>\
                 <a href="#" class="button rem" title="Remove from Queue"><i class="fa fa-minus"></i></a>')
 
@@ -541,6 +540,7 @@ define(['marionette',
             notcompleted: 'input[name=notcompleted]',
             queuebutton: '.queuebutton',
             unqueuebutton: '.unqueuebutton',
+            queuelength: '.queuelength',
         },
 
 
@@ -669,6 +669,7 @@ define(['marionette',
                     app.message({ message: 'Container Successfully Unqueued' })
                     self.ui.unqueuebutton.hide()
                     self.ui.queuebutton.show()
+                    self.model.set('CONTAINERQUEUEID', null)
                 },
                 error: function() {
                     app.alert({ message: 'Something went wrong unqueuing this container' })
@@ -743,10 +744,11 @@ define(['marionette',
                     data: {
                         CONTAINERID: this.model.get('CONTAINERID')
                     },
-                    success: function() {
+                    success: function(json) {
                         app.message({ message: 'Container Successfully Queued' })
                         self.ui.unqueuebutton.show()
                         self.ui.queuebutton.hide()
+                        self.model.set('CONTAINERQUEUEID', json.CONTAINERQUEUEID)
                     },
                     error: function() {
                         app.alert({ message: 'Something went wrong queuing this container' })
@@ -850,6 +852,23 @@ define(['marionette',
             this.refreshQSubSamples()
             this.listenTo(this.subsamples, 'change:isSelected', this.selectSubSample, this)
             this.listenTo(this.subsamples, 'sync add remove change:READYFORQUEUE', this.refreshQSubSamples, this)
+            this.listenTo(this.subsamples, 'change', this.updateQueueLength)
+            this.listenTo(this.model, 'change:CONTAINERQUEUEID', this.onContainerQueueIdChange)
+        },
+
+        updateQueueLength: function() {
+            var n = this.typeselector.shadowCollection.length
+            this.ui.queuelength.html('('+n+' sample'+(n==1 ? '' : 's')+')')
+        },
+
+        onContainerQueueIdChange: function() {
+            if (!this.model.get('CONTAINERQUEUEID')) {
+                var models = this.unfilteredSubsamples.filter(function(m) { return m.get('CONTAINERQUEUEID') })
+                _.each(models, function(model) {
+                    model.set('READYFORQUEUE', '1')
+                }, this)
+            }
+            this.doOnRender()
         },
 
         getInspectionImages: function() {
@@ -879,9 +898,7 @@ define(['marionette',
         
         
         onRender: function() {
-            if (!this.model.get('CONTAINERQUEUEID')) {
-                this.ui.unqueuebutton.hide()
-            }
+            this.ui.unqueuebutton.hide()
             this.subsamples.queryParams.nodata = this.getNoData.bind(this)
             this.subsamples.queryParams.notcompleted = this.getNotCompleted.bind(this)
             this._ready.done(this.doOnRender.bind(this))
@@ -927,7 +944,7 @@ define(['marionette',
                 { name: '_valid', label: 'Valid', cell: table.TemplateCell, editable: false, test: '_valid', template: '<i class="button fa fa-check active"></i>' },
                 { name: '', cell: table.StatusCell, editable: false },
                 { label: '', cell: SnapshotCell, editable: false, inspectionimages: this.inspectionimages },
-                { label: '', cell: ActionsCell, editable: false, plans: this.plans },
+
             ]
 
             if (app.mobile()) {
@@ -952,8 +969,14 @@ define(['marionette',
             if (this.model.get('CONTAINERQUEUEID')) {
                 this.ui.rpreset.hide()
                 this.ui.queuebutton.hide()
+                this.ui.unqueuebutton.show()
                 queuedSubSamples.push({ label: '', cell: table.StatusCell, editable: false })
                 queuedSubSamples.push({ label: '', cell: table.TemplateCell, editable: false, template: '<a href="/samples/sid/<%-BLSAMPLEID%>" class="button"><i class="fa fa-search"></i></a>' })
+            } else {
+                this.ui.rpreset.show()
+                this.ui.queuebutton.show()
+                this.ui.unqueuebutton.hide()
+                queuedSubSamples.push({ label: '', cell: ActionsCell, editable: false, plans: this.plans })
             }
 
             this.table2 = new TableView({ 
@@ -981,6 +1004,4 @@ define(['marionette',
 
 // TODO
 //
-// * Hide add to queue buttons after container queued
-// * Hide show buttons in queue area (remove from queue etc)
-// * Display number of subsamples in queue
+// * Add auto sample, filter to manual, add manual, remove auto doesnt work
