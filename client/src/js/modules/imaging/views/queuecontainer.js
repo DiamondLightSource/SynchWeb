@@ -851,8 +851,8 @@ define(['marionette',
             this.getInspectionImages()
             this.refreshQSubSamples()
             this.listenTo(this.subsamples, 'change:isSelected', this.selectSubSample, this)
-            this.listenTo(this.subsamples, 'sync add remove change:READYFORQUEUE', this.refreshQSubSamples, this)
-            this.listenTo(this.subsamples, 'change', this.updateQueueLength)
+            this.listenTo(this.unfilteredSubsamples, 'sync add remove change:READYFORQUEUE', this.refreshQSubSamples, this)
+            this.listenTo(this.unfilteredSubsamples, 'change', this.updateQueueLength)
             this.listenTo(this.model, 'change:CONTAINERQUEUEID', this.onContainerQueueIdChange)
         },
 
