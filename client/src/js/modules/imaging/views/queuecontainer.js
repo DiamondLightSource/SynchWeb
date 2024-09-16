@@ -944,7 +944,6 @@ define(['marionette',
                 { name: '_valid', label: 'Valid', cell: table.TemplateCell, editable: false, test: '_valid', template: '<i class="button fa fa-check active"></i>' },
                 { name: '', cell: table.StatusCell, editable: false },
                 { label: '', cell: SnapshotCell, editable: false, inspectionimages: this.inspectionimages },
-
             ]
 
             if (app.mobile()) {
@@ -1001,7 +1000,3 @@ define(['marionette',
     })
         
 })
-
-// TODO
-//
-// * Add auto sample, filter to manual, add manual, remove auto doesnt work
