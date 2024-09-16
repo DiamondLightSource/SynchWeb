@@ -636,7 +636,7 @@ define(['marionette',
                 },
                 success: function(resp) {
                     _.each(resp, function (r) {
-                        let ss = self.qsubsamples.fullCollection.findWhere({ BLSUBSAMPLEID: r.BLSUBSAMPLEID })
+                        let ss = self.typeselector.shadowCollection.findWhere({ BLSUBSAMPLEID: r.BLSUBSAMPLEID })
                         ss.set({ READYFORQUEUE: '0' })
                     })
                 },
@@ -721,7 +721,7 @@ define(['marionette',
                 return
             }
 
-            // need to validate all models here again incase they havnt been rendered
+            // need to validate all models here again in case they haven't been rendered
             this.qsubsamples.fullCollection.each(function(qs) {
                 if (qs.get('_valid') !== undefined) return
 
@@ -730,7 +730,7 @@ define(['marionette',
                 console.log({ experimentCell: val })
             }, this)
 
-            var invalid = this.qsubsamples.fullCollection.where({ '_valid': false })
+            var invalid = this.typeselector.shadowCollection.where({ '_valid': false })
             console.log('queue', invalid, invalid.length > 0)
             if (invalid.length > 0) {
                 app.alert({ message: 'There are '+invalid.length+' sub samples with invalid experimental plans, please either correct or remove these from the queue' })
