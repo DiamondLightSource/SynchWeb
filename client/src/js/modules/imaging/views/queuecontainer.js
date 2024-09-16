@@ -858,7 +858,7 @@ define(['marionette',
 
         updateQueueLength: function() {
             var n = this.typeselector.shadowCollection.length
-            this.ui.queuelength.html('('+n+' sample'+(n==1 ? '' : 's')+')')
+            this.ui.queuelength.html('('+n+' data collection'+(n==1 ? '' : 's')+')')
         },
 
         onContainerQueueIdChange: function() {
