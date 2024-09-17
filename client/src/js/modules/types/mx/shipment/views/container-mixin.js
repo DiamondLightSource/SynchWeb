@@ -128,7 +128,7 @@ export default {
         proteinsCollection.queryParams.external = 1
       }
 
-      proteinsCollection.queryParams.SAFETYLEVEL = 'ALL'
+      proteinsCollection.queryParams.SAFETYLEVEL = this.shippingSafetyLevel
 
       const result = await this.$store.dispatch('getCollection', proteinsCollection)
       this.proteins = result.toJSON()

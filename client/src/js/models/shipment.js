@@ -18,6 +18,11 @@ define(['backbone'], function (Backbone) {
         pattern: 'fcode',
       },
 
+      FIRSTEXPERIMENTID: {
+        required: false,
+        pattern: 'number',
+      },
+
       REMOTEORMAILIN: {
         required: false,
       },
