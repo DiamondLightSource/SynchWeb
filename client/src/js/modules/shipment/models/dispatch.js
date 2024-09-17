@@ -37,7 +37,7 @@ define(['backbone'], function(Backbone) {
         },
 
         EMAILADDRESS: {
-            required: true,
+            required: function () {return this.dispatchDetailsRequired},
             pattern: 'email',
         },
 

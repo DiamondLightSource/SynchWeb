@@ -116,7 +116,7 @@ export default {
         this.$store.dispatch('auth/logout')
         .then(() => {
           if (this.sso) {
-            this.$router.push('/logout');
+            window.location.assign(`${this.$store.getters.apiUrl}/authenticate/logout`);
           } else {
             this.$router.push('/');
           }

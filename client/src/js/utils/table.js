@@ -159,7 +159,7 @@ define(['marionette', 'backgrid',
                 return this;
             }
         }),
-        
+
         ProjectCell: Backgrid.Cell.extend({
             events: {
               'click a.atp': 'addToProject',
@@ -232,4 +232,3 @@ define(['marionette', 'backgrid',
     }
     
 })
-

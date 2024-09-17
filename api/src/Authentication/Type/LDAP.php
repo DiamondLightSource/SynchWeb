@@ -66,4 +66,9 @@ class LDAP extends AuthenticationParent implements AuthenticationInterface
             }
         }
     }
+
+    function logout()
+    {
+        return false;
+    }
 }
