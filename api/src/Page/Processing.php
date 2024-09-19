@@ -141,7 +141,7 @@ class Processing extends Page {
                 INNER JOIN processingjob pj ON pj.datacollectionid = dc.datacollectionid
                 INNER JOIN autoprocprogram app ON pj.processingjobid = app.processingjobid
                 LEFT OUTER JOIN autoprocintegration api ON api.autoprocprogramid = app.autoprocprogramid
-                WHERE $where AND api.autoprocintegrationid IS NULL AND pj.automatic = 1
+                WHERE $where AND api.autoprocintegrationid IS NULL
                     AND app.processingprograms NOT IN ('$filter')",
             ),
             $ids
