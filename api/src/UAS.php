@@ -7,10 +7,10 @@ use SynchWeb\Authentication\Type\CAS;
 class UAS
 {
 
-	function __construct($user=null, $pass=null) {
-		global $uas_url, $vmxi_user, $vmxi_pass;
+    function __construct($user=null, $pass=null) {
+        global $uas_url, $vmxi_user, $vmxi_pass;
 
-		$this->url = $uas_url;
+        $this->url = $uas_url;
 
         $cas = new CAS();
 
@@ -33,12 +33,12 @@ class UAS
         }
 
         // print_r(array('sess', $this->session));
-	}
+    }
 
 
 
-	function create_session($data=array()) {
-		$resp = $this->_curl(array(
+    function create_session($data=array()) {
+        $resp = $this->_curl(array(
             'URL' => $this->url.'/uas/rest/v1/session',
             'FIELDS' => $data,
             'HEADERS' => array(
@@ -48,21 +48,21 @@ class UAS
             ),
         ));
 
-		// print_r(array($resp));
+        // print_r(array($resp));
 
         if ($this->code == 200) {
-			$resp = json_decode($resp);
-		} else {
+            $resp = json_decode($resp);
+        } else {
             error_log("UAS::create_session error from UAS, code: " . $this->code);
             error_log(print_r($resp), true);
         }
 
-		return array('code' => $this->code, 'resp' => $resp);
-	}
+        return array('code' => $this->code, 'resp' => $resp);
+    }
 
 
-	function update_session($sessionid, $data=array()) {
-		$resp = $this->_curl(array(
+    function update_session($sessionid, $data=array()) {
+        $resp = $this->_curl(array(
             'URL' => $this->url.'/uas/rest/v1/session/'.$sessionid,
             'FIELDS' => $data,
             'PATCH' => 1,
@@ -73,19 +73,19 @@ class UAS
             ),
         ));
 
-        if ($this->code == 200) {
+        if ($this->code != 200) {
             error_log("UAS::update_session error from UAS, code: " . $this->code);
             error_log(print_r($resp), true);
         }
 
-		// print_r(array($resp));
+        // print_r(array($resp));
 
-		return $this->code;
-	}
+        return $this->code;
+    }
 
-	function close_session($sessionid, $data = array()) {
+    function close_session($sessionid, $data = array()) {
         $data['endAt'] = date('Y-m-d\TH:i:s.000\Z');
-		$resp = $this->_curl(array(
+        $resp = $this->_curl(array(
             'URL' => $this->url.'/uas/rest/v1/session/'.$sessionid,
             'FIELDS' => $data,
             'PATCH' => 1,
@@ -96,11 +96,11 @@ class UAS
             ),
         ));
 
-		return $this->code;
-	}
+        return $this->code;
+    }
 
-	function get_sessions() {
-		 $resp = $this->_curl(array(
+    function get_sessions() {
+         $resp = $this->_curl(array(
             'URL' => $this->url.'/uas/rest/v1/proposal?state=OPEN&fetch=samples&fetch=investigators',
             'GET' => 1,
             'HEADERS' => array(
@@ -110,12 +110,12 @@ class UAS
             ),
         ));
 
-		if ($this->code == 200) {
-			$resp = json_decode($resp);
-		}
+        if ($this->code == 200) {
+            $resp = json_decode($resp);
+        }
 
-		return array('code' => $this->code, 'resp' => $resp);
-	}
+        return array('code' => $this->code, 'resp' => $resp);
+    }
 
 
 
