@@ -8,14 +8,6 @@ define(['marionette', 'views/dialog', 'utils'], function(Marionette, DialogView,
             this.url = options.url
             this.load()
             this.iframe = $(`<iframe style="position: absolute;"></iframe>`)
-            $(window).on("resize", this, this.onResize);
-        },
-
-        onResize: function(event) {
-            parent_el = document.getElementById('dialog')
-            iframe_el = event.data.iframe[0]
-            iframe_el.style.height = parseInt(parent_el.style.height)-10+'px'
-            iframe_el.style.width = parseInt(parent_el.style.width)-10+'px'
         },
 
         // Override existing dialogOptions of Dialog View
@@ -124,9 +116,8 @@ define(['marionette', 'views/dialog', 'utils'], function(Marionette, DialogView,
         onRender: function() {
             this.$el.append(this.iframe)
             
-            this.$el.find('iframe').css('width', $(window).width()*(app.mobile() ? 0.8 : 0.5))
-            this.$el.find('iframe').css('height', $(window).height()*(app.mobile() ? 0.8 : 0.5))
-
+            this.$el.find('iframe').css('width', "99%")
+            this.$el.find('iframe').css('height', "98%")
         }
         
     })
