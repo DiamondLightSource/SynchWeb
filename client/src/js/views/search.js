@@ -3,7 +3,7 @@ define(['backbone'], function(Backbone) {
   var Search = Backbone.View.extend({
     /** @property */
     events: {
-        "keyup input[type=search]": "search",
+        "input input[type=search]": "search",
         "click a[data-backgrid-action=clear]": "clear",
         "submit": "search"
     },
@@ -131,12 +131,17 @@ define(['backbone'], function(Backbone) {
         collection.getFirstPage({data: data, reset: true, fetch: true});
       }
       else collection.fetch({data: data, reset: true});
-        if (this.url) {
-            var url = this.urlFragment ?
-                window.location.pathname.replace(new RegExp('\\/'+this.urlFragment+'\\/(\\w|-)+'), '')+(this.value ? '/'+this.urlFragment+'/'+this.value : '') :
-                window.location.pathname.replace(/\/\w+$/, '')+(this.value ? '/'+this.value : '')
-            window.history.pushState({}, '', url)
-        }
+      this._updateUrl()
+    },
+
+    _updateUrl: function() {
+      this.value = this.query()
+      if (this.url) {
+          var url = this.urlFragment ?
+              window.location.pathname.replace(new RegExp('\\/'+this.urlFragment+'\\/(\\w|-)+'), '')+(this.value ? '/'+this.urlFragment+'/'+this.value : '') :
+              window.location.pathname.replace(/\/\w+$/, '')+(this.value ? '/'+this.value : '')
+          window.history.pushState({}, '', url)
+      }
     },
 
     /**
