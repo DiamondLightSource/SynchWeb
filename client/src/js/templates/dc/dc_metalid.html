@@ -1,0 +1,32 @@
+<div>
+    <div class="blobs">
+        <% _.each(_.range(BLOBS), function(i) { %>
+        <a href="<%-APIURL%>/processing/downstream/images/<%-AID%>?n=<%-i%>" title="Peak <%-i+1%>">
+            <% if (i == 0) { %>
+                <img alt="Peak 1" />
+            <% } %>
+        </a>
+        <% }) %>
+        
+    </div>
+
+    <table class="rstats">
+        <% if (PEAKS.length) { %>
+            <% _.each(PEAKS, function(r) { %>
+            <tr>
+                <% _.each(r, function(j) { %>
+                <td><%-j%></td>
+                <% }) %>
+            </tr>
+            <% }) %>
+        <% } else { %>
+            <tr>
+                <td>Peak</td>
+            </tr>
+            <tr>
+                <td>No Peaks Found</td>
+            </tr>
+        <% } %>
+    </table>
+    
+</div>
