@@ -9,6 +9,11 @@ define(['marionette', 'utils',
         template: false,
         modelEvents: { 'change': 'render' },
 
+        ascsort: function(a,b) {
+            if (a[0] == b[0]) return 0
+            else return (a[0] < b[0]) ? -1 : 1
+        },
+
         onRender: function() {
               if (this.model.get('data')) {
                   var did = this.getOption('second') ? 1 : 0
@@ -35,23 +40,18 @@ define(['marionette', 'utils',
                     ticks.push([bl.length-1, b])
                 })
 
-                  _.each(this.model.get('data')[did], function(v, i) {
-                      var y = yrs.indexOf(v.YEAR)
-                      var b = bl.indexOf(v.BL)
-                      //console.log('d', y, b)
-                      d[y].data.push([b, v.COUNT])
-                  })
+                _.each(this.model.get('data')[did], function(v, i) {
+                    var y = yrs.indexOf(v.YEAR)
+                    var b = bl.indexOf(v.BL)
+                    //console.log('d', y, b)
+                    d[y].data.push([b, v.COUNT])
+                })
 
-                  function ascsort(a,b) {
-                      if (a[0] == b[0]) return 0
-                      else return (a[0] < b[0]) ? -1 : 1
-                  }
+                _.each(d, function(d,i) {
+                    d.data.sort(this.ascsort)
+                })
 
-                  _.each(d, function(d,i) {
-                      d.data.sort(ascsort)
-                  })
-
-                  console.log(d)
+                console.log(d)
 
                 var options = {
                     series: {
