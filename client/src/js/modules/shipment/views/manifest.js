@@ -63,8 +63,8 @@ define(['marionette',
             }, this)
 
 
-            var m = d.getMonth() +1
-            var cur = (m < 10 ? ('0'+m) : m)+'-'+d.getFullYear()
+            var mon = d.getMonth() +1
+            var cur = (mon < 10 ? ('0'+mon) : mon)+'-'+d.getFullYear()
             this.ui.month.val(cur)
 
             var columns = [
