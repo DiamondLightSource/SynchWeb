@@ -456,6 +456,7 @@ class Proposal extends Page
                     s.beamlineoperator                                            AS lc,
                     s.comments,
                     s.scheduled,
+                    s.riskrating,
                     st.typename                                                   AS sessiontype,
                     DATE_FORMAT(s.startdate, '%d-%m-%Y %H:%i')                    AS startdate,
                     DATE_FORMAT(s.enddate, '%d-%m-%Y %H:%i')                      AS enddate,

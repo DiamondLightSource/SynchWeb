@@ -57,7 +57,10 @@
                                 <a v-if="value.key == 'LINKS' && visit.DCCOUNT>0" class="button button-notext" title="View Statistics" id="STATS"><i class="fa fa-pie-chart"></i></a>
                                 <a v-if="value.key == 'LINKS' && visit.DCCOUNT>0" class="button button-notext" title="Download PDF Report" id="PDF"><i class="fa fa-list"></i></a>
                                 <a v-if="value.key == 'LINKS' && visit.DCCOUNT>0" class="button button-notext" title="Export Data Collections to CSV" id="CSV"><i class="fa fa-file-o"></i></a>
-                                
+                                <span v-if="value.key == 'ERA' && visit.RISKRATING == 'Low'" title="Risk Rating: Low">&#128994;</span>
+                                <span v-else-if="value.key == 'ERA' && visit.RISKRATING == 'Medium'" title="Risk Rating: Medium">&#128993;</span>
+                                <span v-else-if="value.key == 'ERA' && visit.RISKRATING == 'High'" title="Risk Rating: High">&#128308;</span>
+                                <span v-else-if="value.key == 'ERA'" title="No approved ERA">&#9899;</span>
                                 <div data-testid="visit-table-archived" v-if="value.key == 'ARCHIVED' && visit.ARCHIVED == 1">
                                     <i class="fa fa-archive r" :title="'The raw data from this visit have been '+ isArchived + '. You can no longer reprocess data or view full sized diffraction images.'"></i>
                                 </div>
@@ -133,6 +136,10 @@ export default {
                 {
                     key: "BEAMLINENAME",
                     title: 'Beamline'
+                },
+                {
+                    key: "ERA",
+                    title: 'ERA'
                 },
                 {
                     key: "DEWARS",
