@@ -1819,12 +1819,17 @@ class Sample extends Page
             $where .= ' AND pr.externalid IS NOT NULL';
         }
 
-        $has_safety_level = $this->has_arg('SAFETYLEVEL');
-        if ($has_safety_level && $this->arg('SAFETYLEVEL') === 'ALL') {
-            $where .= ' AND pr.safetyLevel IS NOT NULL';
-        } else if ($has_safety_level && $this->arg('SAFETYLEVEL') !== 'ALL') {
-            $where .= ' AND pr.safetyLevel=:' . (sizeof($args) + 1);
-            array_push($args, $this->arg('SAFETYLEVEL'));
+        if ($this->has_arg('SAFETYLEVEL')) {
+            if ($this->arg('SAFETYLEVEL') === 'ALL') {
+                $where .= ' AND pr.safetyLevel IS NOT NULL';
+            } else if (strtolower($this->arg('SAFETYLEVEL')) === 'yellow') {
+                $where .= " AND pr.safetyLevel in ('green','yellow')";
+            } else if (strtolower($this->arg('SAFETYLEVEL')) === 'red') {
+                $where .= " AND pr.safetyLevel in ('green','yellow','red')";
+            } else {
+                $where .= ' AND pr.safetyLevel=:' . (sizeof($args) + 1);
+                array_push($args, $this->arg('SAFETYLEVEL'));
+            }
         }
 
         if ($this->has_arg('term')) {

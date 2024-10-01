@@ -63,6 +63,7 @@ define(['marionette', 'views/form',
             'click a.add_lc': 'addLC',
             'click @ui.noexp': 'updateFirstExp',
             'click @ui.dynamic': 'updateDynamicSchedule',
+            'change select[name^=SAFETYLEVEL]': 'changeSafetyLevel',
         },
         
         ui: {
@@ -73,6 +74,8 @@ define(['marionette', 'views/form',
             noexp: 'input[name=noexp]',
             dynamic: 'input[name=DYNAMIC]', // A checkbox to indicate dynamic/remote mail-in scheduling
             comments: 'textarea[name=COMMENTS]', // We need this so we can prefill comments to aid users
+            safetylevel: 'select[name^=SAFETYLEVEL]',
+            udcresponsive: '.udcresponsive',
         },
         
         addLC: function(e) {
@@ -97,12 +100,24 @@ define(['marionette', 'views/form',
             app.alert({ message: 'Something went wrong registering this shipment, please try again'})
         },
         
+        changeSafetyLevel: function() {
+            if (this.ui.safetylevel.val() === 'Green') {
+                this.ui.udcresponsive.show()
+            } else {
+                this.ui.noexp.prop('checked', false)
+                this.updateFirstExp()
+                this.ui.dynamic.prop('checked', false)
+                this.updateDynamicSchedule()
+                this.ui.udcresponsive.hide()
+            }
+        },
+
         updateFirstExp: function() {
             if (this.ui.noexp.is(':checked')) {
                 this.ui.first.html('<option value=""> - </option>')
                 this.ui.dynamic.prop('checked', false)
             } else {
-                this.ui.first.html(this.visits.opts())
+                this.ui.first.html('<option value="!">Please select one</option>'+this.visits.opts())
             }
         },
 
@@ -121,7 +136,7 @@ define(['marionette', 'views/form',
                 }
             } else {
                 this.model.validation.REMOTEORMAILIN.required = false
-                this.ui.first.html(this.visits.opts())
+                this.ui.first.html('<option value="!">Please select one</option>'+this.visits.opts())
                 this.$el.find(".remoteform").hide()
                 if (industrial_visit) {
                     this.$el.find(".remoteormailin").hide()
