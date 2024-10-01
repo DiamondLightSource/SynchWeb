@@ -125,7 +125,7 @@ define(['marionette',
                 { label: 'Resolution', cell: APCell, template: '<%-SHELLS.overall.RLOW%> - <%-SHELLS.overall.RHIGH%><br /><%-SHELLS.innerShell.RLOW%> - <%-SHELLS.innerShell.RHIGH%><br /><%-SHELLS.outerShell.RLOW%> - <%-SHELLS.outerShell.RHIGH%>', editable: false },
                 { label: 'Rmeas', cell: APCell, template: '<span class="<%-CLASS.RMEAS.overall%>"><%-SHELLS.overall.RMEAS%></span><br /><span class="<%-CLASS.RMEAS.innerShell%>"><%-SHELLS.innerShell.RMEAS%></span><br /><span class="<%-CLASS.RMEAS.outerShell%>"><%-SHELLS.outerShell.RMEAS%></span>', editable: false },
                 { label: 'Completeness', cell: APCell, template: '<span class="<%-CLASS.COMPLETENESS.overall%>"><%-SHELLS.overall.COMPLETENESS%></span><br /><span class="<%-CLASS.COMPLETENESS.innerShell%>"><%-SHELLS.innerShell.COMPLETENESS%></span><br /><span class="<%-CLASS.COMPLETENESS.outerShell%>"><%-SHELLS.outerShell.COMPLETENESS%></span>', editable: false },
-                { label: '', cell: APCell, template: '<a href="'+app.apiurl+'/download/id/<%-DCID%>/aid/<%-AID%>" class="button button-notext dll" title="Download MTZ file"><i class="fa fa-download"></i> <span>Download MTZ file</span></a>', editable: false },
+                { label: '', cell: APCell, template: '<a href="'+app.apiurl+'/download/ap/archive/<%-AID%>" class="button button-notext dll" title="Download autoprocessing archive"><i class="fa fa-download"></i> <span>Download autoprocessing archive</span></a>', editable: false },
                 
             ]
             
