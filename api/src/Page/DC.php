@@ -368,13 +368,14 @@ class DC extends Page
             $s = str_replace('_', '$_', $this->arg('s'));
 
             $st = sizeof($args) + 1;
-            $where .= " AND (lower(dc.filetemplate) LIKE lower(CONCAT(CONCAT('%',:$st),'%')) ESCAPE '$' OR lower(dc.imagedirectory) LIKE lower(CONCAT(CONCAT('%',:" . ($st + 1) . "), '%')) ESCAPE '$' OR lower(smp.name) LIKE lower(CONCAT(CONCAT('%', :" . ($st + 2) . "), '%')) ESCAPE '$')";
-            $where2 .= " AND (lower(es.comments) LIKE lower(CONCAT(CONCAT('%',:" . ($st + 3) . "), '%')) ESCAPE '$' OR lower(es.element) LIKE lower(CONCAT(CONCAT('%',:" . ($st + 4) . "), '%')) ESCAPE '$' OR lower(smp.name) LIKE lower(CONCAT(CONCAT('%',:" . ($st + 5) . "), '%')) ESCAPE '$')";
+            $where .= " AND (dc.filetemplate LIKE CONCAT('%',:$st,'%') ESCAPE '$' OR dc.imagedirectory LIKE CONCAT('%',:" . ($st + 1) . ",'%') ESCAPE '$' OR smp.name LIKE CONCAT('%', :" . ($st + 2) . ",'%') ESCAPE '$')";
+            $where2 .= " AND (es.comments LIKE CONCAT('%',:" . ($st + 3) . ",'%') ESCAPE '$' OR es.element LIKE CONCAT('%',:" . ($st + 4) . ",'%') ESCAPE '$' OR smp.name LIKE CONCAT('%',:" . ($st + 5) . ",'%') ESCAPE '$')";
             $where3 .= ' AND r.robotactionid < 0';
-            $where4 .= " AND (lower(xrf.filename) LIKE lower(CONCAT(CONCAT('%',:" . ($st + 6) . "), '%')) ESCAPE '$' OR lower(smp.name) LIKE lower(CONCAT(CONCAT('%',:" . ($st + 7) . "), '%')) ESCAPE '$')";
+            $where4 .= " AND (xrf.filename LIKE CONCAT('%',:" . ($st + 6) . ",'%') ESCAPE '$' OR smp.name LIKE CONCAT('%',:" . ($st + 7) . ",'%') ESCAPE '$')";
 
             for ($i = 0; $i < 8; $i++)
                 array_push($args, $s);
+
         }
 
         # Set Count field
@@ -511,9 +512,9 @@ class DC extends Page
             // $this->db->set_debug(True);
 
             // will want to support these too at some point
-            $where2 = ' AND es.energyscanid < 0';
-            $where3 = ' AND r.robotactionid < 0';
-            $where4 = ' AND xrf.xfefluorescencespectrumid < 0';
+            $where2 .= ' AND es.energyscanid < 0';
+            $where3 .= ' AND r.robotactionid < 0';
+            $where4 .= ' AND xrf.xfefluorescencespectrumid < 0';
 
             if ($this->has_arg('dcg')) {
                 $where .= ' AND dc.datacollectiongroupid=:' . (sizeof($args) + 1);
