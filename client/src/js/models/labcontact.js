@@ -14,11 +14,11 @@ define(['backbone'], function(Backbone) {
             },
             FAMILYNAME: {
                 required: true,
-                pattern: 'wwdash',
+                pattern: 'wwsdash',
             },
             GIVENNAME: {
                 required: true,
-                pattern: 'wwdash',
+                pattern: 'wwsdash',
             },
             PHONENUMBER: {
                 required: true,

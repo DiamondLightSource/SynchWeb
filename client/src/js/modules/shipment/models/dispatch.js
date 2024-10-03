@@ -24,12 +24,12 @@ define(['backbone'], function(Backbone) {
 
         GIVENNAME: {
             required: function () {return this.dispatchDetailsRequired},
-            pattern: 'wwdash',
+            pattern: 'wwsdash',
         },
 
         FAMILYNAME: {
             required: function () {return this.dispatchDetailsRequired},
-            pattern: 'wwdash',
+            pattern: 'wwsdash',
         },
 
         PHONENUMBER: {
