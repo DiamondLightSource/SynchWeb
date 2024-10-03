@@ -353,11 +353,12 @@ const routes = [
     }
   },
   {
-    path: '/containers/queue/:cid([0-9]+)',
+    path: '/containers/queue/:cid([0-9]+)(/s/)?:s([a-zA-Z0-9_-]+)?',
     name: 'container-queue',
     component: ContainerQueueWrapper,
     props: route => ({
       cid: +route.params.cid,
+      search: route.params.s || '',
     }),
   },
   {
