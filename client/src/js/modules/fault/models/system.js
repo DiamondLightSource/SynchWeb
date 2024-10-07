@@ -13,7 +13,7 @@ define(['backbone'], function(Backbone) {
         urlRoot: '/fault/sys',
         idAttribute: 'SYSTEMID',
         _add_id: function() {
-            this.attributes.ID = this.get('SYSTEMID')
+            this.set('ID', this.get('SYSTEMID'))
         },
     })
     

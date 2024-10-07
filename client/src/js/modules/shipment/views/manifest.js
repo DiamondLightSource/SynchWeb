@@ -57,14 +57,14 @@ define(['marionette',
             var d = new Date()
             _.each([d.getFullYear(), d.getFullYear()-1], function(y) {
                 _.each(_.range(1,13), function(m) {
-                    var m = (m < 10 ? ('0'+m) : m)+'-'+y
+                    m = (m < 10 ? ('0'+m) : m)+'-'+y
                     this.ui.month.append('<option value="'+m+'">'+m+'</option>')
                 }, this)
             }, this)
 
 
-            var m = d.getMonth() +1
-            var cur = (m < 10 ? ('0'+m) : m)+'-'+d.getFullYear()
+            var mon = d.getMonth() +1
+            var cur = (mon < 10 ? ('0'+mon) : mon)+'-'+d.getFullYear()
             this.ui.month.val(cur)
 
             var columns = [

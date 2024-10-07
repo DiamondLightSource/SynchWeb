@@ -175,7 +175,7 @@ define(['marionette',
             this.containers.queryParams.all = 1
             this.containers.fetch().done(this.getHistory.bind(this))
 
-            var columns = [
+            var columns2 = [
                 // { label: 'Name', cell: table.TemplateCell, editable: false, template: '<a href="/containers/cid/<%-CONTAINERID%>"><%-NAME%></a>' },
                 { name: 'NAME', label: 'Name', cell: 'string', editable: false },
                 { name: 'BLTIMESTAMP', label: 'Created', cell: 'string', editable: false },
@@ -189,12 +189,12 @@ define(['marionette',
         
             if (app.mobile()) {
                 _.each([4,6], function(v) {
-                    columns[v].renderable = false
+                    columns2[v].renderable = false
                 })
             }
         
             this.conttable = new TableView({ collection: this.containers, 
-                columns: columns, tableClass: 'containers', loading: true, 
+                columns: columns2, tableClass: 'containers', loading: true,
                 backgrid: { row: ClickableRow, emptyText: 'No containers found' }
             })
 
@@ -202,7 +202,7 @@ define(['marionette',
             this.listenTo(this.reports, 'sync', this.setupPopups, this)
             this.reports.fetch()
 
-            var columns = [
+            var columns3 = [
                 { name: 'RECORDTIMESTAMP', label: 'Time / Date', cell: 'string', editable: false },
                 { name: 'REPORTER', label: 'Reporter', cell: 'string', editable: false },
                 { name: 'REPORT', label: 'Report', cell: 'string', editable: false },
@@ -210,7 +210,7 @@ define(['marionette',
             ]
 
             this.reptable = new TableView({ collection: this.reports, 
-                columns: columns, tableClass: 'reports', loading: true, 
+                columns: columns3, tableClass: 'reports', loading: true,
                 backgrid: { emptyText: 'No reports found' }
             })
 

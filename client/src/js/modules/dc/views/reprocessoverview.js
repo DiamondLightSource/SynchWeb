@@ -53,14 +53,14 @@ define(['marionette',
             },
 
             render: function() {
-                var columns = [
+                var pcolumns = [
                    { name: 'PARAMETERKEY', label: 'Key', cell: 'string', editable: false },
                    { name: 'PARAMETERVALUE', label: 'Value', cell: 'string', editable: false },
                 ]
 
                 var ptable = new TableView({ 
                     collection: this.params, 
-                    columns: columns, 
+                    columns: pcolumns,
                     loading: false,
                     pages: false,
                     backgrid: { emptyText: 'No parameters found' },
@@ -68,14 +68,14 @@ define(['marionette',
 
                 this.$el.html(ptable.render().$el)
 
-                var columns = [
+                var scolumns = [
                    { label: 'Files', cell: table.TemplateCell, editable: false, template: '<a href="/dc/visit/<%-VISIT%>/id/<%-DATACOLLECTIONID%>"><%-IMAGEDIRECTORY%><%-IMAGEPREFIX%>_<%-DATACOLLECTIONNUMBER%></a>' },
                    { label: 'Image #', cell: table.TemplateCell, editable: false, template: '<%-STARTIMAGE%> - <%-ENDIMAGE%>' },
                 ]
 
                 var stable = new TableView({ 
                     collection: this.sweeps, 
-                    columns: columns, 
+                    columns: scolumns,
                     loading: false,
                     pages: false,
                     backgrid: { emptyText: 'No image sweeps found' },

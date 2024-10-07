@@ -30,28 +30,27 @@ define(['marionette', 'utils',
                 })
 
                 var bl = []
+                var data = {}
                 _.each(bls, function(i, b) {
+                    data[b] = {}
                     bl.push(b)
                     ticks.push([bl.length-1, b])
+                    _.each(years, function(x, y) {
+                        data[b][y] = 0
+                    })
                 })
 
-                  _.each(this.model.get('data')[did], function(v, i) {
-                      var y = yrs.indexOf(v.YEAR)
-                      var b = bl.indexOf(v.BL)
-                      //console.log('d', y, b)
-                      d[y].data.push([b, v.COUNT])
-                  })
+                _.each(this.model.get('data')[did], function(v, i) {
+                    data[v.BL][v.YEAR] = v.COUNT
+                })
 
-                  function ascsort(a,b) {
-                      if (a[0] == b[0]) return 0
-                      else return (a[0] < b[0]) ? -1 : 1
-                  }
-
-                  _.each(d, function(d,i) {
-                      d.data.sort(ascsort)
-                  })
-
-                  console.log(d)
+                _.each(data, function(el, beamline) {
+                    _.each(el, function(count, year) {
+                        var y = yrs.indexOf(year)
+                        var b = bl.indexOf(beamline)
+                        d[y].data.push([b, count])
+                    })
+                })
 
                 var options = {
                     series: {

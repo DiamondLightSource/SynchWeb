@@ -8,13 +8,13 @@ define(['backbone'], function(Backbone) {
         },
         initialize: function(options) {
             this.on('change', this._add_id, this)
-              this._add_id()
+            this._add_id()
         },
         urlRoot: '/fault/com',
         idAttribute: 'COMPONENTID',
 
         _add_id: function() {
-            this.attributes.ID = this.get('COMPONENTID')
+            this.set('ID', this.get('COMPONENTID'))
         },
 
     })

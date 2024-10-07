@@ -16,7 +16,7 @@ define(['backbone', 'markdown'], function(Backbone, markdown) {
         },
         
         refreshOptions: function() {
-            if (this.get('SEQUENCE')) this.attributes.SEQUENCEMD = markdown.toHTML(this.get('SEQUENCE'))
+            if (this.get('SEQUENCE')) this.set('SEQUENCEMD', markdown.toHTML(this.get('SEQUENCE')))
         },
 
         validation: {
