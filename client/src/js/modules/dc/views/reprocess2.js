@@ -156,8 +156,8 @@ define(['backbone', 'marionette', 'views/dialog',
             if (e) e.preventDefault()
 
             if (this.aps.length) {
-                var a = this.aps.at(0)
-                var c = a.get('CELL')
+                const a = this.aps.at(0)
+                const c = a.get('CELL')
 
                 this.ui.a.val(c['CELL_A']).trigger('change')
                 this.ui.b.val(c['CELL_B']).trigger('change')
