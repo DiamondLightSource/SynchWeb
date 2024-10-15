@@ -1147,6 +1147,7 @@ class Shipment extends Page
         global $facility_country;
         global $facility_courier_countries;
         global $dispatch_email;
+        global $dispatch_email_regex;
         global $dispatch_email_intl;
         global $use_shipping_service;
         global $shipping_service_links_in_emails;
@@ -1315,6 +1316,14 @@ class Shipment extends Page
             $local_contact_email = $this->has_arg('LCEMAIL') ? $this->args['LCEMAIL'] : '';
             if ($local_contact_email) $recpts .= ', ' . $local_contact_email;
 
+            if (!is_null($dispatch_email_regex)) {
+                foreach ($dispatch_email_regex as $address => $pattern) {
+                    if (preg_match($pattern, $data['BARCODE'])) {
+                        $recpts .= ', ' . $address;
+                    }
+                }
+            }
+
             $email->send($recpts);
 
             // Update the dewar status and storage location
@@ -1343,6 +1352,7 @@ class Shipment extends Page
     function _dispatch_dewar_confirmation()
     {
         global $dispatch_email;
+        global $dispatch_email_regex;
         global $shipping_service_app_url;
 
         if (!$this->has_arg('did'))
@@ -1404,6 +1414,14 @@ class Shipment extends Page
         if ($data['EMAILADDRESS']) $recpts .= ', ' . $data['EMAILADDRESS'];
         $local_contact_email = $this->has_arg('LCEMAIL') ? $this->args['LCEMAIL'] : '';
         if ($local_contact_email) $recpts .= ', ' . $local_contact_email;
+
+        if (!is_null($dispatch_email_regex)) {
+            foreach ($dispatch_email_regex as $address => $pattern) {
+                if (preg_match($pattern, $data['BARCODE'])) {
+                    $recpts .= ', ' . $address;
+                }
+            }
+        }
 
         $email->send($recpts);
 
