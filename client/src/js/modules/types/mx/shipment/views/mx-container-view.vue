@@ -106,6 +106,9 @@
                   @click="onUnQueueContainer"
                 ><i class="fa fa-times" /> Unqueue</a>
               </span>
+              <span v-else-if="shippingSafetyLevel === null">
+                Cannot queue container as shipment safety level not set
+              </span>
               <span v-else-if="shippingSafetyLevel != 'Green'">
                 Cannot queue containers in {{ shippingSafetyLevel }} shipments
               </span>
