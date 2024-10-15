@@ -95,7 +95,7 @@
                   name="Queue For UDC"
                 />
                 <span v-else-if="shippingSafetyLevel === null">
-                  Cannot queue container as shipment safety level not set
+                  Cannot queue container until shipment safety level is set
                 </span>
                 <span v-else>
                   Cannot queue containers in {{ shippingSafetyLevel }} shipments
