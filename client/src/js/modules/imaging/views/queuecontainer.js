@@ -692,10 +692,11 @@ define(['marionette',
         },
 
         applyModel: function(modelParameter, isLimitedToSelected) {
+            var models = null
             if (isLimitedToSelected) {
-                var models = this.qsubsamples.where({ isGridSelected: true })
+                models = this.qsubsamples.where({ isGridSelected: true })
             } else {
-                var models = this.qsubsamples.fullCollection.toArray()
+                models = this.qsubsamples.fullCollection.toArray()
             }
             _.each(models, function(model) {
                 if (modelParameter.get('EXPERIMENTKIND') !== model.get('EXPERIMENTKIND')) return

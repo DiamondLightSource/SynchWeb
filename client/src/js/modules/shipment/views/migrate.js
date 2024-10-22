@@ -232,20 +232,20 @@ define(['marionette',
 
         var validOnly = app.options.get('valid_components')
         
-            if (!validOnly) {
-        this.rprots.show(new TableView({ 
+        if (!validOnly) {
+            this.rprots.show(new TableView({
                     collection: this.proteins, 
-                       columns: columns, 
+                    columns: columns,
                     tableClass: 'proteins', 
                     filter: 's', 
                     loading: true, 
                     noSearchUrl: false,
                     backgrid: { emptyText: 'No proteins found' } 
-                }))
+            }))
         }
 
 
-            var columns = [
+            var columns2 = [
                 { label: '', cell: 'select-row', headerCell: 'select-all', editable: false },
                 { name: 'CARDNAME', label: 'Card Name', cell: 'string', editable: false },
                 { name: 'GIVENNAME', label: 'First Name', cell: 'string', editable: false },
@@ -260,7 +260,7 @@ define(['marionette',
 
             this.rconts.show(new TableView({ 
                 collection: this.contacts, 
-                columns: columns, 
+                columns: columns2,
                 tableClass: 'labcontacts', 
                 filter: 's', 
                 loading: true, 

@@ -99,7 +99,7 @@ define(['marionette',
             this.dewars.queryParams.all = 1
             this.dewars.fetch().done(this.getHistory.bind(this))
 
-            var columns = [
+            var columns2 = [
                 { name: 'CODE', label: 'Name', cell: 'string', editable: false },
                 { label: 'Shipment', cell: table.TemplateCell, editable: false, template: '<a href="/shipments/sid/<%-SHIPPINGID%>"><%-SHIPPINGNAME%></a>' },
                 { name: 'EXP', label: 'First Exp', cell: 'string', editable: false },
@@ -113,12 +113,12 @@ define(['marionette',
         
             if (app.mobile()) {
                 _.each([0,1,3,6,7], function(v) {
-                    columns[v].renderable = false
+                    columns2[v].renderable = false
                 })
             }
         
             this.dewtable = new TableView({ collection: this.dewars, 
-                columns: columns, tableClass: 'dewars', loading: true, 
+                columns: columns2, tableClass: 'dewars', loading: true,
                 backgrid: { emptyText: 'No dewars found' }
             })
 
@@ -126,14 +126,14 @@ define(['marionette',
             this.listenTo(this.reports, 'sync', this.setupPopups, this)
             this.reports.fetch()
 
-            var columns = [
+            var columns3 = [
                 { name: 'BLTIMESTAMP', label: 'Time / Date', cell: 'string', editable: false },
                 { name: 'REPORT', label: 'Report', cell: 'string', editable: false },
                 { label: 'Image', cell: ImageCell, editable: false },
             ]
 
             this.reptable = new TableView({ collection: this.reports, 
-                columns: columns, tableClass: 'samples', loading: true, 
+                columns: columns3, tableClass: 'samples', loading: true,
                 backgrid: { emptyText: 'No reports found' }
             })
 
@@ -141,7 +141,7 @@ define(['marionette',
             this.proposals.queryParams.DEWARREGISTRYID = this.model.get('DEWARREGISTRYID')
             this.proposals.fetch()
 
-            var columns = [
+            var columns4 = [
                 { name: 'PROPOSAL', label: 'Proposal', cell: 'string', editable: false },
                 { name: 'GIVENNAME', label: 'Given Name', cell: 'string', editable: false },
                 { name: 'FAMILYNAME', label: 'Family Name', cell: 'string', editable: false },
@@ -150,12 +150,12 @@ define(['marionette',
             ]
 
             if (app.staff) {
-                columns.push({ name: '', label: '', cell: DeleteCell, editable: false })
+                columns4.push({ name: '', label: '', cell: DeleteCell, editable: false })
             }
 
             this.proptable = new TableView({
                 collection: this.proposals,
-                columns: columns,
+                columns: columns4,
             })
 
         },

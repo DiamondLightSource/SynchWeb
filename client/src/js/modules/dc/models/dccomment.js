@@ -27,9 +27,9 @@ define(['backbone', 'markdown'], function(Backbone, markdown) {
     },
       
     addDate: function() {
-        this.attributes.CREATETIMEISO = new Date(this.get('CREATETIME'))
-        this.attributes.MODTIMEISO = new Date(this.get('MODTIME'))
-        if (this.get('COMMENTS')) this.attributes.COMMENTSMD = markdown.toHTML(this.get('COMMENTS'))
+        this.set('CREATETIMEISO', new Date(this.get('CREATETIME')))
+        this.set('MODTIMEISO', new Date(this.get('MODTIME')))
+        if (this.get('COMMENTS')) this.set('COMMENTSMD', markdown.toHTML(this.get('COMMENTS')))
     }
       
   })

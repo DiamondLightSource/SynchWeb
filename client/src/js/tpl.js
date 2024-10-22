@@ -92,7 +92,7 @@
       source + '}';
 
     return template;
-  };
+  }
 
 
   define(function () {

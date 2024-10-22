@@ -47,7 +47,7 @@ define(['marionette', 'views/dialog', 'utils'], function(Marionette, DialogView,
                 }
 
                 var h = xhr.getAllResponseHeaders()
-                var m = h.match(/^Content-Type\:\s*(.*?)$/mi)
+                var m = h.match(/^Content-Type:\s*(.*?)$/mi)
                 var mimeType = m[1] || 'image/png'
 
                 var blob = new Blob([this.response], { type: mimeType })
@@ -82,7 +82,7 @@ define(['marionette', 'views/dialog', 'utils'], function(Marionette, DialogView,
                             if (!is_routable(href)) return true\n\
                             e.preventDefault()\n\
                             var url = root+\'/\'+href\n\
-                            \sign({\n\
+                            sign({\n\
                                 url: url,\n\
                                 callback: function(resp) {\n\
                                     window.location = url+\'?token=\'+resp.token\n\
