@@ -99,7 +99,7 @@ define(['marionette',
             var self = this
             p.save({}, {
                 success: function() {
-                    app.alert({ message: 'Preset successfully saved' })
+                    app.message({ message: 'Preset successfully saved' })
                     self.column.get('plans').add(p)
                 },
                 error: function() {
@@ -128,8 +128,7 @@ define(['marionette',
         render: function() {
             this.$el.empty()
 
-            if (!this.model.get('CONTAINERQUEUEID'))
-                this.$el.html('<a href="#" class="button clone" title="Clone these parameters to the selected samples"><i class="fa fa-files-o"></i></a>\
+            this.$el.html('<a href="#" class="button clone" title="Clone these parameters to the selected samples"><i class="fa fa-files-o"></i></a>\
                 <a href="#" class="button save" title="Save these parameters as a preset"><i class="fa fa-save"></i></a>\
                 <a href="#" class="button rem" title="Remove from Queue"><i class="fa fa-minus"></i></a>')
 
@@ -539,6 +538,9 @@ define(['marionette',
             xtal: '.xtalpreview',
             nodata: 'input[name=nodata]',
             notcompleted: 'input[name=notcompleted]',
+            queuebutton: '.queuebutton',
+            unqueuebutton: '.unqueuebutton',
+            queuelength: '.queuelength',
         },
 
 
@@ -634,7 +636,7 @@ define(['marionette',
                 },
                 success: function(resp) {
                     _.each(resp, function (r) {
-                        let ss = self.qsubsamples.fullCollection.findWhere({ BLSUBSAMPLEID: r.BLSUBSAMPLEID })
+                        let ss = self.typeselector.shadowCollection.findWhere({ BLSUBSAMPLEID: r.BLSUBSAMPLEID })
                         ss.set({ READYFORQUEUE: '0' })
                     })
                 },
@@ -650,12 +652,13 @@ define(['marionette',
             e.preventDefault()
             utils.confirm({
                 title: 'Unqueue Container?',
-                content: 'Are you sure you want to remove this container from the queue? You will loose your current place',
+                content: 'Are you sure you want to remove this container from the queue? You will lose your current place',
                 callback: this.doUnqueueContainer.bind(this)
             })
         },
 
         doUnqueueContainer: function() {
+            var self = this
             Backbone.ajax({
                 url: app.apiurl+'/shipment/containers/queue',
                 data: {
@@ -663,7 +666,10 @@ define(['marionette',
                     UNQUEUE: 1,
                 },
                 success: function() {
-                    app.alert({ message: 'Container Successfully Unqueued' })
+                    app.message({ message: 'Container Successfully Unqueued' })
+                    self.ui.unqueuebutton.hide()
+                    self.ui.queuebutton.show()
+                    self.model.set('CONTAINERQUEUEID', null)
                 },
                 error: function() {
                     app.alert({ message: 'Something went wrong unqueuing this container' })
@@ -710,12 +716,12 @@ define(['marionette',
         queueContainer: function(e) {
             e.preventDefault()
 
-            if (!this.qsubsamples.fullCollection.length) {
+            if (!this.typeselector.shadowCollection.length) {
                 app.alert({ message: 'Please add some samples before queuing this container' })
                 return
             }
 
-            // need to validate all models here again incase they havnt been rendered
+            // need to validate all models here again in case they haven't been rendered
             this.qsubsamples.fullCollection.each(function(qs) {
                 if (qs.get('_valid') !== undefined) return
 
@@ -724,7 +730,7 @@ define(['marionette',
                 console.log({ experimentCell: val })
             }, this)
 
-            var invalid = this.qsubsamples.fullCollection.where({ '_valid': false })
+            var invalid = this.typeselector.shadowCollection.where({ '_valid': false })
             console.log('queue', invalid, invalid.length > 0)
             if (invalid.length > 0) {
                 app.alert({ message: 'There are '+invalid.length+' sub samples with invalid experimental plans, please either correct or remove these from the queue' })
@@ -732,13 +738,17 @@ define(['marionette',
                 if (inv) inv.set({ isSelected: true })
 
             } else {
+                var self = this
                 Backbone.ajax({
                     url: app.apiurl+'/shipment/containers/queue',
                     data: {
                         CONTAINERID: this.model.get('CONTAINERID')
                     },
-                    success: function() {
-                        app.alert({ message: 'Container Successfully Queued' })
+                    success: function(json) {
+                        app.message({ message: 'Container Successfully Queued' })
+                        self.ui.unqueuebutton.show()
+                        self.ui.queuebutton.hide()
+                        self.model.set('CONTAINERQUEUEID', json.CONTAINERQUEUEID)
                     },
                     error: function() {
                         app.alert({ message: 'Something went wrong queuing this container' })
@@ -768,21 +778,25 @@ define(['marionette',
         
         initialize: function() {
             this._lastSample = null
+            this._subsamples_ready = []
 
             this.platetypes = new PlateTypes()
             this.type = this.platetypes.findWhere({ name: this.model.get('CONTAINERTYPE') })
 
+            this.unfilteredSubsamples = null
             this.subsamples = new SubSamples()
             this.subsamples.queryParams.cid = this.model.get('CONTAINERID')
             this.subsamples.state.pageSize = 10
-            this.listenTo(this.subsamples, 'change:isSelected', this.selectSubSample, this)
-            this.listenTo(this.subsamples, 'sync add remove change:READYFORQUEUE', this.refreshQSubSamples, this)
-            this.subsamples.fetch()
+
+            this._subsamples_ready.push(this.subsamples.fetch())
 
             this.inspections = new ContainerInspections()
             this.inspections.queryParams.cid = this.model.get('CONTAINERID')
             this.inspections.setSorting('BLTIMESTAMP', 1)
-            this.inspections.fetch().done(this.getInspectionImages.bind(this))
+
+            this._subsamples_ready.push(this.inspections.fetch())
+
+            $.when.apply($, this._subsamples_ready).done(this.onSubsamplesReady.bind(this))
 
             this.inspectionimages = new InspectionImages()
 
@@ -832,6 +846,31 @@ define(['marionette',
             this.ui.preset.html(this.plans.opts())
         },
 
+        onSubsamplesReady: function() {
+            this.unfilteredSubsamples = this.subsamples.fullCollection.clone()
+            this.getInspectionImages()
+            this.refreshQSubSamples()
+            this.listenTo(this.subsamples, 'change:isSelected', this.selectSubSample, this)
+            this.listenTo(this.unfilteredSubsamples, 'sync add remove change:READYFORQUEUE', this.refreshQSubSamples, this)
+            this.listenTo(this.unfilteredSubsamples, 'change', this.updateQueueLength)
+            this.listenTo(this.model, 'change:CONTAINERQUEUEID', this.onContainerQueueIdChange)
+        },
+
+        updateQueueLength: function() {
+            var n = this.typeselector.shadowCollection.length
+            this.ui.queuelength.html(`(${n} data collection${n===1 ? '' : 's'})`)
+        },
+
+        onContainerQueueIdChange: function() {
+            if (!this.model.get('CONTAINERQUEUEID')) {
+                var models = this.unfilteredSubsamples.filter(function(m) { return m.get('CONTAINERQUEUEID') })
+                _.each(models, function(model) {
+                    model.set('READYFORQUEUE', '1')
+                }, this)
+            }
+            this.doOnRender()
+        },
+
         getInspectionImages: function() {
             this.inspectionimages.queryParams.iid = this.inspections.at(0).get('CONTAINERINSPECTIONID')
             this.inspectionimages.fetch().done(this.selectSample.bind(this))
@@ -843,8 +882,8 @@ define(['marionette',
 
         refreshQSubSamples: function() {
             if (this.model.get('CONTAINERQUEUEID')) {
-                this.qsubsamples.fullCollection.reset(this.subsamples.fullCollection.where({ CONTAINERQUEUEID: this.model.get('CONTAINERQUEUEID') }))
-            } else this.qsubsamples.fullCollection.reset(this.subsamples.fullCollection.where({ READYFORQUEUE: '1' }))
+                this.qsubsamples.fullCollection.reset(this.unfilteredSubsamples.where({ CONTAINERQUEUEID: this.model.get('CONTAINERQUEUEID') }))
+            } else this.qsubsamples.fullCollection.reset(this.unfilteredSubsamples.where({ READYFORQUEUE: '1' }))
         },
 
         selectSubSample: function() {
@@ -859,6 +898,7 @@ define(['marionette',
         
         
         onRender: function() {
+            this.ui.unqueuebutton.hide()
             this.subsamples.queryParams.nodata = this.getNoData.bind(this)
             this.subsamples.queryParams.notcompleted = this.getNotCompleted.bind(this)
             this._ready.done(this.doOnRender.bind(this))
@@ -904,7 +944,6 @@ define(['marionette',
                 { name: '_valid', label: 'Valid', cell: table.TemplateCell, editable: false, test: '_valid', template: '<i class="button fa fa-check active"></i>' },
                 { name: '', cell: table.StatusCell, editable: false },
                 { label: '', cell: SnapshotCell, editable: false, inspectionimages: this.inspectionimages },
-                { label: '', cell: ActionsCell, editable: false, plans: this.plans },
             ]
 
             if (app.mobile()) {
@@ -928,8 +967,15 @@ define(['marionette',
 
             if (this.model.get('CONTAINERQUEUEID')) {
                 this.ui.rpreset.hide()
+                this.ui.queuebutton.hide()
+                this.ui.unqueuebutton.show()
                 queuedSubSamples.push({ label: '', cell: table.StatusCell, editable: false })
                 queuedSubSamples.push({ label: '', cell: table.TemplateCell, editable: false, template: '<a href="/samples/sid/<%-BLSAMPLEID%>" class="button"><i class="fa fa-search"></i></a>' })
+            } else {
+                this.ui.rpreset.show()
+                this.ui.queuebutton.show()
+                this.ui.unqueuebutton.hide()
+                queuedSubSamples.push({ label: '', cell: ActionsCell, editable: false, plans: this.plans })
             }
 
             this.table2 = new TableView({ 

@@ -7,8 +7,7 @@ define(['marionette', 'views/dialog', 'utils'], function(Marionette, DialogView,
         initialize: function(options) {
             this.url = options.url
             this.load()
-            this.iframe = $(
-                `<iframe style="position: absolute;" onload="this.style.height=(this.contentWindow.document.body.scrollHeight)+'px';this.style.width=(this.contentWindow.document.body.scrollWidth)+'px';"></iframe>`)
+            this.iframe = $(`<iframe style="position: absolute;"></iframe>`)
         },
 
         // Override existing dialogOptions of Dialog View
@@ -117,9 +116,8 @@ define(['marionette', 'views/dialog', 'utils'], function(Marionette, DialogView,
         onRender: function() {
             this.$el.append(this.iframe)
             
-            this.$el.find('iframe').css('width', $(window).width()*(app.mobile() ? 0.8 : 0.5))
-            this.$el.find('iframe').css('height', $(window).height()*(app.mobile() ? 0.8 : 0.5))
-
+            this.$el.find('iframe').css('width', "99%")
+            this.$el.find('iframe').css('height', "98%")
         }
         
     })
