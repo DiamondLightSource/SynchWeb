@@ -376,6 +376,11 @@ class Imaging extends Page
                 $where .= " AND i.state='Completed'";
         }
 
+        if ($this->has_arg('s')) {
+            $where .= " AND (CONCAT(p.proposalcode, p.proposalnumber) LIKE CONCAT('%', :" . (sizeof($args) + 1) . ", '%') OR c.code LIKE CONCAT('%', :" . (sizeof($args) + 2) . ", '%'))";
+            array_push($args, $this->arg('s'), $this->arg('s'));
+        }
+
         $tot = $this->db->pq("SELECT count(i.containerinspectionid) as tot FROM containerinspection i
               INNER JOIN container c ON c.containerid = i.containerid
               INNER JOIN dewar d ON d.dewarid = c.dewarid
@@ -420,12 +425,6 @@ class Imaging extends Page
             $dir = $this->has_arg('order') ? ($this->arg('order') == 'asc' ? 'ASC' : 'DESC') : 'ASC';
             if (array_key_exists($this->arg('sort_by'), $cols))
                 $order = $cols[$this->arg('sort_by')] . ' ' . $dir;
-        }
-
-        if ($this->has_arg('s')) {
-            $where .= " AND (LOWER(CONCAT(p.proposalcode, p.proposalnumber)) LIKE LOWER(CONCAT(CONCAT('%', :" . (sizeof($args) + 1) . "), '%')) OR LOWER(c.code) LIKE LOWER(CONCAT(CONCAT('%', :" . (sizeof($args) + 2) . "), '%')))";
-            array_push($args, $this->arg('s'));
-            array_push($args, $this->arg('s'));
         }
 
         if ($this->has_arg('ty')) {

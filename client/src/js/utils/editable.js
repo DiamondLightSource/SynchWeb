@@ -158,10 +158,13 @@ define(['marionette',
          */
         create: function(attr, type, options, refetch) {
             var submit = function(value, settings) {
+                prevValue = this.model.get(attr)
                 this.model.set(attr, value)
                 console.log('valid', this.model.isValid(true), attr, 'changed', this.model.changedAttributes())
                 var self = this
+                toReturn = refetch ? '' : _.escape(value)
                 this.model.save(this.model.changedAttributes(), { patch: true, validate: false,
+                    async: !(options && options.revert),
                     success: function() {
                         if (refetch) self.model.fetch()
                     },
@@ -177,10 +180,14 @@ define(['marionette',
                             if (json.message) app.alert({ message: json.message })
                             else app.alert({ message: 'Something went wrong' })
                         }
+                        if(options && options.revert) {
+                            self.model.set(attr, prevValue)
+                            toReturn = prevValue
+                        }
                     }
                 })
                     
-                return refetch ? '' : _.escape(value)
+                return toReturn
             }
                 
             var onsubmit = function(settings, td) {
