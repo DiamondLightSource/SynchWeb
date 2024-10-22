@@ -29,9 +29,11 @@ define(['marionette', 'backbone', 'utils', 'backbone-validation'], function(Mari
             e.preventDefault()
             var pos = this._xy_to_drop(utils.get_xy(e,this.$el))
             if (pos) {
+                this.lastClickedDrop = pos
                 var drop = this.collection.findWhere({ LOCATION: pos.toString() })
                 
                 this.trigger('plate:select')
+                this.trigger('dropClicked', pos)
                 if (drop) drop.set('isSelected', true)
                 this.drawPlate()
             }
@@ -39,13 +41,14 @@ define(['marionette', 'backbone', 'utils', 'backbone-validation'], function(Mari
         
         initialize: function(options) {
             this.pt = this.getOption('type')
+            this.lastClickedDrop = null
             this.inspectionimages = options && options.inspectionimages
             if (this.inspectionimages) this.listenTo(this.inspectionimages, 'sync', this.render, this)
             
             this.hover = {}
             this.showImageStatus = this.getOption('showImageStatus')
             this.showSampleStatus = this.getOption('showSampleStatus')
-            this.showMaxScore = false
+            this.showMaxScore = this.getOption('showMaxScore')
             
             Backbone.Validation.bind(this, {
                 collection: this.collection
@@ -187,7 +190,7 @@ define(['marionette', 'backbone', 'utils', 'backbone-validation'], function(Mari
                         var did = (k*this.pt.get('drop_per_well_x'))+j
                         if (this.pt.get('well_drop') > -1) {
                             if (did == this.pt.get('well_drop')) continue
-                                if (did > this.pt.get('well_drop')) did--;
+                            if (did > this.pt.get('well_drop')) did--;
                         }
         
                         var sampleid = i*this.pt.dropTotal()+did+1
@@ -198,6 +201,7 @@ define(['marionette', 'backbone', 'utils', 'backbone-validation'], function(Mari
                         
                         this.ctx.beginPath()
                         this.ctx.lineWidth = 1;
+
                         if (sample && sample.get('isSelected')) {
                             this.ctx.strokeStyle = 'cyan'
                             
@@ -213,7 +217,12 @@ define(['marionette', 'backbone', 'utils', 'backbone-validation'], function(Mari
                         } else this.ctx.strokeStyle = '#ddd'
           
                         this.ctx.rect(this.pt.get('drop_offset_x')+this.pt.get('offset_x')+row*(this.pt.get('well_width')+this.pt.get('well_pad'))+(j*this.pt.get('drop_widthpx')+this.pt.get('drop_pad')), this.pt.get('drop_offset_y')+this.pt.get('offset_y')+col*(this.pt.get('well_height')+this.pt.get('well_pad'))+(k*this.pt.get('drop_heightpx')+this.pt.get('drop_pad')), this.pt.get('drop_widthpx'), this.pt.get('drop_heightpx'))
-                            
+
+                        // Highlight last clicked drop
+                        if (sampleid == this.lastClickedDrop) {
+                            this.ctx.fillStyle = '#dddddd'
+                            this.ctx.fill()
+                        }
 
                         // Highlight Hovered Sample
                         if (this.hover == sampleid) {
@@ -234,7 +243,7 @@ define(['marionette', 'backbone', 'utils', 'backbone-validation'], function(Mari
                                 this.ctx.fill()
                             }
                         }
-                        
+
                         // Show status
                         if (sample && this.showSampleStatus) {
                             if (this.rankOption) {
