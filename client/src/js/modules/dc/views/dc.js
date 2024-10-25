@@ -149,7 +149,7 @@ define(['marionette',
                             
     loadAP: function(e) {
       if (!this.ap) {
-        this.ap = new DCAutoIntegrationView({ id: this.model.get('ID'), el: this.$el.find('div.autoproc') })
+        this.ap = new DCAutoIntegrationView({ id: this.model.get('ID'), el: this.$el.find('div.autoproc'), parent: this.model })
       } else this.ap.$el.slideToggle()
     },
       

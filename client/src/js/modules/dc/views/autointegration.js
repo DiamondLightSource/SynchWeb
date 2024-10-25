@@ -8,6 +8,7 @@ define(['marionette',
     'modules/dc/views/aiplots',
     'modules/dc/views/autoprocattachments',
     'modules/dc/views/apmessages',
+    'modules/dc/views/downstream2',
 
     'views/log',
     'views/table',
@@ -16,6 +17,7 @@ define(['marionette',
     'templates/dc/dc_autoproc.html'], function(Marionette, Backbone, Backgrid, TabView,
         AutoProcAttachments, AutoIntegrations, 
         RDPlotView, AIPlotsView, AutoProcAttachmentsView, APMessagesView, 
+        DownstreamView,
         LogView, TableView, table,
         utils, template) {
        
@@ -29,6 +31,7 @@ define(['marionette',
             'click .rd': 'showRD',
             'click .plot': 'showPlots',
             'click a.apattach': 'showAttachments',
+            'click a.downstream': 'downstream',
             'click .dll': utils.signHandler,
         },
 
@@ -52,6 +55,11 @@ define(['marionette',
                 view: new AutoProcAttachmentsView({ collection: this.attachments }), 
                 autosize: true 
             }))
+        },
+
+        downstream: function(e) {
+            e.preventDefault()
+            app.dialog.show(new DownstreamView({ model: this.getOption('templateHelpers').PARENT, scalingid: this.model.get('SCALINGID'), autoprocprogramid: this.model.get('AID')}))
         },
 
         showLog: function(e) {
@@ -95,6 +103,7 @@ define(['marionette',
                     DCID: dcId,
                     APIURL: app.apiurl,
                     PROPOSAL_TYPE: app.type,
+                    PARENT: this.options.parent,
                 }
             }
         },
@@ -166,6 +175,7 @@ define(['marionette',
                     collection: this.collection,
                     id: this.getOption('id'),
                     el: this.$el.find('.res'),
+                    parent: this.options.parent,
                 }))
             }
 

@@ -1716,6 +1716,12 @@ class Sample extends Page
                 array_push($args, $this->arg('s'));
         }
 
+        if ($this->has_arg('sid')) {
+            $where .= ' AND b.blsampleid=:' . (sizeof($args) + 1);
+            array_push($args, $this->arg('sid'));
+            $join .= ' LEFT JOIN diffractionplan dp ON dp.diffractionplanid = b.diffractionplanid';
+            $extc = 'dp.anomalousscatterer, ';
+        }
 
         $start = 0;
         $pp = $this->has_arg('per_page') ? $this->arg('per_page') : 15;
