@@ -314,6 +314,7 @@ class Proposal extends Page
         }
     }
 
+
     # ------------------------------------------------------------------------
     # Get visits for a proposal
     function _get_visits($visit = null, $output = true)

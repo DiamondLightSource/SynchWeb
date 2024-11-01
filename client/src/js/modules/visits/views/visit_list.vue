@@ -157,7 +157,7 @@ export default {
                 },
                 {
                     key: "COMMENTS",
-                    title: 'Comments',
+                    title: 'Comments'
                 },
                 {
                     key: "DCCOUNT",
