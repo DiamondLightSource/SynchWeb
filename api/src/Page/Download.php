@@ -468,14 +468,14 @@ class Download extends Page
 
         $aps = $this->db->union(
             array(
-                "SELECT app.autoprocprogramid, app.processingprograms, app.processingstatus
+                "SELECT app.autoprocprogramid, app.processingprograms, app.processingstatus, dc.imageprefix, dc.datacollectionnumber
                     FROM autoprocintegration api 
                     INNER JOIN autoprocprogram app ON api.autoprocprogramid = app.autoprocprogramid 
                     INNER JOIN datacollection dc ON dc.datacollectionid = api.datacollectionid
                     INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
                     INNER JOIN blsession s ON s.sessionid = dcg.sessionid
                     WHERE s.proposalid=:1 AND app.autoprocprogramid=:2",
-                "SELECT app.autoprocprogramid, app.processingprograms, app.processingstatus
+                "SELECT app.autoprocprogramid, app.processingprograms, app.processingstatus, dc.imageprefix, dc.datacollectionnumber
                     FROM autoprocprogram app
                     INNER JOIN processingjob pj on pj.processingjobid = app.processingjobid
                     INNER JOIN datacollection dc ON dc.datacollectionid = pj.datacollectionid
@@ -497,7 +497,7 @@ class Download extends Page
         }
 
         $clean_program = preg_replace('/[^A-Za-z0-9\-]/', '', $ap['PROCESSINGPROGRAMS']);
-        $zipName = $this->arg('AUTOPROCPROGRAMID')  . '_' . $clean_program;
+        $zipName = $this->arg('AUTOPROCPROGRAMID') . '_' . $ap['IMAGEPREFIX'] . '_' . $ap['DATACOLLECTIONNUMBER'] . '_' . $clean_program;
         $this->_streamZipFile($files, $zipName);
     }
 
