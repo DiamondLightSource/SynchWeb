@@ -393,7 +393,8 @@ class Proposal extends Page
         }
 
         if ($this->has_arg('s')) {
-            $where .= " AND s.visit_number LIKE :" . (sizeof($args) + 1);
+            $where .= " AND (s.visit_number LIKE :" . (sizeof($args) + 1) . " OR s.beamlinename LIKE :" . (sizeof($args) + 2) . ")";
+            array_push($args, $this->arg('s'));
             array_push($args, $this->arg('s'));
         }
 
