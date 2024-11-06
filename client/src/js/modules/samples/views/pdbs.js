@@ -12,7 +12,7 @@ define(['marionette', 'utils'], function(Marionette, utils) {
         
         render: function() {
             UserItem.__super__.render.call(this)
-            const linkButton = '<a class="button button-notext" href="https://www.rcsb.org/structure/'+this.model.get('CODE')+'"><i class="fa fa-link"></i> <span>RCSB</span></a>'
+            const linkButton = '<a class="button button-notext" href="https://www.ebi.ac.uk/pdbe/entry/pdb/'+this.model.get('CODE')+'"><i class="fa fa-link"></i> <span>EBI</span></a>'
             const deleteButton = '<a class="button button-notext delete" href="#"><i class="fa fa-times"></i> <span>Delete</span></a>'
             const downloadButton = '<a class="button button-notext download" href="'+app.apiurl+'/sample/pdbs/download/'+this.model.get('PDBID')+'"><i class="fa fa-download"></i> <span>Download</span></a>'
             if (this.model.get('CODE')) {
