@@ -62,7 +62,7 @@ class DC extends Page
         array('/dat/:id', 'get', '_plot'),
     );
 
-    public $eVToA = 12398.4198;
+    const EVTOA = 12398.4198;
 
     # ------------------------------------------------------------------------
     # Data Collection AJAX Requests
@@ -424,7 +424,7 @@ class DC extends Page
                     dc.transmission,
                     dc.axisrange,
                     dc.wavelength,
-                    ".$this->eVToA."/dc.wavelength as energy,
+                    ".self::EVTOA."/dc.wavelength as energy,
                     dc.comments,
                     1 as epk,
                     1 as ein,
@@ -561,7 +561,7 @@ class DC extends Page
                     min(dc.transmission) as transmission,
                     min(dc.axisrange) as axisrange,
                     min(dc.wavelength) as wavelength,
-                    ".$this->eVToA."/min(dc.wavelength) as energy,
+                    ".self::EVTOA."/min(dc.wavelength) as energy,
                     min(dc.comments) as comments,
                     1 as epk,
                     1 as ein,
@@ -725,8 +725,8 @@ class DC extends Page
                     es.comments,
                     es.peakenergy,
                     es.inflectionenergy,
-                    ".$this->eVToA."/es.peakenergy as wpk,
-                    ".$this->eVToA."/es.inflectionenergy as win,
+                    ".self::EVTOA."/es.peakenergy as wpk,
+                    ".self::EVTOA."/es.inflectionenergy as win,
                     'A',
                     'A',
                     'A',
@@ -816,7 +816,7 @@ class DC extends Page
                 TO_CHAR(xrf.starttime, 'DD-MM-YYYY HH24:MI:SS') as st,
                 xrf.beamtransmission,
                 1,
-                ".$this->eVToA."/xrf.energy as wavelength,
+                ".self::EVTOA."/xrf.energy as wavelength,
                 xrf.energy as energy,
                 xrf.comments,
                 1,
