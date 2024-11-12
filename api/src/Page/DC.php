@@ -993,9 +993,10 @@ class DC extends Page
                         $dc['DCT'] = 'Data Collection';
                 }
 
-                if ($dc['DCT'] == 'Mesh')
+                if ($dc['DCT'] == 'Mesh' || $dc['DCT'] == 'Mesh3D' ||
+                    ($dc['DCT'] != 'Serial Fixed' && $dc['DCT'] != 'Serial Jet' && $dc['AXISRANGE'] == 0 && $dc['NI'] > 1)
+                ) {
                     $dc['DCT'] = 'Grid Scan';
-                if ($dc['DCT'] != 'Serial Fixed' && $dc['DCT'] != 'Serial Jet' && $dc['AXISRANGE'] == 0 && $dc['NI'] > 1) {
                     $dc['TYPE'] = 'grid';
                 }
                 //$this->profile('dc');
