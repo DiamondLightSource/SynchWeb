@@ -92,9 +92,7 @@ class Download extends Page
             $this->_error('There doesnt seem to be a data archive available for this visit');
     }
 
-    # ------------------------------------------------------------------------
-    # Download mtz/log file for Fast DP / XIA2
-    #   TODO: Delete me
+
     # This method either returns a list of plots from MX auto processing tools (n_obs, n_uniq, completeness etc.)
     # Or returns a specific plot based on auto processing attachment id (aid).
     # Individual plotly format Graphs can be returned via an aid, but will not be included in the list of plots (as their format is different)

@@ -397,8 +397,8 @@
                                 <i class="fa fa-search"></i></a>
                             </p>
                             <p class="tw-ra tw-ml-1">
-                                <a href="'+app.apiurl+'/download/id/<%-DCID%>/aid/<%-AID%>" class="tw-button tw-button-notext tw-dll" 
-                                    title="Download MTZ file"><i class="fa fa-download"></i></a>
+                                <a href="'+app.apiurl+'/download/ap/archive/<%-AID%>" class="tw-button tw-button-notext tw-dll"
+                                    title="Download autoprocessing archive"><i class="fa fa-download"></i></a>
                             </p> -->
 
                         
