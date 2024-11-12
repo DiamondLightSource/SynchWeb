@@ -195,6 +195,7 @@ class Sample extends Page
         array('/pdbs(/pid/:pid)', 'get', '_get_pdbs'),
         array('/pdbs', 'post', '_add_pdb'),
         array('/pdbs(/:pdbid)', 'delete', '_remove_pdb'),
+        array('/pdbs/download/:pdbid', 'get', '_download_pdb'),
 
         array('/concentrationtypes', 'get', '_concentration_types'),
         array('/componenttypes', 'get', '_component_types'),
@@ -2060,6 +2061,21 @@ class Sample extends Page
         $rows = $this->db->pq("SELECT distinct hp.proteinhaspdbid, p.pdbid,pr.proteinid, p.name,p.code FROM pdb p INNER JOIN protein_has_pdb hp ON p.pdbid = hp.pdbid INNER JOIN protein pr ON pr.proteinid = hp.proteinid WHERE $where ORDER BY p.pdbid DESC", $args);
 
         $this->_output($rows);
+    }
+
+    # ------------------------------------------------------------------------
+    # Download a pdb file
+    function _download_pdb()
+    {
+        if (!$this->has_arg('pdbid'))
+            $this->_error('No PDB id specified');
+
+        $pdb = $this->db->pq("SELECT name, contents FROM pdb WHERE pdbid = :1", array($this->arg('pdbid')));
+        $pdb = $pdb[0];
+
+        header('Content-Type:text/plain');
+        header('Content-Disposition:attachment;filename='.$pdb['NAME']);
+        print $pdb['CONTENTS'];
     }
 
     # ------------------------------------------------------------------------
