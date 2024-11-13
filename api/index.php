@@ -70,7 +70,7 @@ function setupApplication($mode): Slim
         global $motd, $authentication_type, $cas_url, $cas_sso, $sso_url, $package_description,
             $facility_courier_countries, $facility_courier_countries_nde, $facility_courier_countries_link,
             $dhl_enable, $scale_grid, $scale_grid_end_date, $preset_proposal, $timezone,
-            $valid_components, $enabled_container_types, $ifsummary, $synchweb_version, $redirects,
+            $valid_components, $enabled_container_types, $synchweb_version, $redirects,
             $shipping_service_app_url, $use_shipping_service_redirect, $use_shipping_service_redirect_incoming_shipments;
         $app->contentType('application/json');
         $options = $app->container['options'];
@@ -91,7 +91,6 @@ function setupApplication($mode): Slim
             'timezone' => $timezone,
             'valid_components' => $valid_components,
             'enabled_container_types' => $enabled_container_types,
-            'ifsummary' => $ifsummary,
             'synchweb_version' => $synchweb_version,
             'shipping_service_app_url' => $use_shipping_service_redirect || $use_shipping_service_redirect_incoming_shipments ? $shipping_service_app_url : null,
             'shipping_service_app_url_incoming' => $use_shipping_service_redirect_incoming_shipments ? $shipping_service_app_url : null,
@@ -106,13 +105,6 @@ function setupDependencyInjectionContainer($app)
     $app->container->singleton('db', function () use ($app): DatabaseParent {
         $dbFactory = new DatabaseFactory(new DatabaseConnectionFactory());
         $db = $dbFactory->get();
-        $db->set_app($app);
-        return $db;
-    });
-
-    $app->container->singleton('dbsummary', function () use ($app): DatabaseParent {
-        $dbFactory = new DatabaseFactory(new DatabaseConnectionFactory());
-        $db = $dbFactory->get("summary");
         $db->set_app($app);
         return $db;
     });
