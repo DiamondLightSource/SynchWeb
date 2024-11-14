@@ -8,6 +8,7 @@ use SynchWeb\Downstream\DownstreamProcessing;
 class Processing extends Page {
     public static $dispatch = array(
         array('/:id', 'get', '_results'),
+        array('/visit/:visit', 'get', '_results_for_visit'),
         array('/status', 'post', '_statuses'),
 
         array('/messages/status', 'post', '_ap_message_status'),
@@ -34,7 +35,15 @@ class Processing extends Page {
         'map' => '\d+',
         'n' => '\d+',
         'sampleGroupId' => '\d+',
-        'resultCount' => '\d+'
+        'resultCount' => '\d+',
+        'pipeline' => '[\w\s\+]+',
+        'spacegroup' => '(\w|\s|\-|\/)+',
+        'resolution' => '[\d\.]+',
+        'completeness' => '[\d\.]+',
+        'anomcompleteness' => '[\d\.]+',
+        'rmeas' => '[\d\.]+',
+        'cchalf' => '[\d\.]+',
+        'ccanom' => '[\d\.]+',
     );
 
     /**
@@ -46,6 +55,8 @@ class Processing extends Page {
         1 => 2,
         0 => 3,
     );
+
+    const EVTOA = 12398.4198;
 
     function _map_status($status) {
         foreach ($this->status_mapping as $state => $value) {
@@ -236,6 +247,198 @@ class Processing extends Page {
         }
 
         $this->_output($out);
+    }
+
+    function _results_for_visit() {
+        if (!($this->has_arg('visit'))) {
+            $this->_error('No visit specified');
+        }
+        $pattern = '/([A-z]+)(\d+)-(\d+)/';
+        preg_match($pattern, $this->arg('visit'), $matches);
+        if (!sizeof($matches))
+            $this->_error('No such visit');
+
+        $info = $this->db->pq("SELECT s.sessionid FROM blsession s INNER JOIN proposal p ON (p.proposalid = s.proposalid) WHERE p.proposalcode=:1 AND p.proposalnumber=:2 AND s.visit_number=:3", array($matches[1], $matches[2], $matches[3]));
+
+        if (!sizeof($info)) {
+            $this->_error('No such visit');
+        }
+
+        $args = array($info[0]['SESSIONID']);
+
+        $where = 'dc.sessionid=:1 AND dc.overlap = 0 AND dc.axisrange > 0 AND dc.numberOfImages > 150 AND app.processingstatus = 1';
+
+        if ($this->has_arg('pipeline')) {
+            $st = sizeof($args);
+            $where .= " AND app.processingprograms = :" . ($st + 1);
+            array_push($args, $this->arg('pipeline'));
+        }
+
+        if ($this->has_arg('spacegroup')) {
+            $st = sizeof($args);
+            $where .= " AND REPLACE(ap.spacegroup,' ','') = :" . ($st + 1);
+            array_push($args, $this->arg('spacegroup'));
+        }
+
+        if ($this->has_arg('resolution')) {
+            $st = sizeof($args);
+            $where .= " AND apssover.resolutionlimithigh <= :" . ($st + 1);
+            array_push($args, $this->arg('resolution'));
+        }
+
+        if ($this->has_arg('completeness')) {
+            $st = sizeof($args);
+            $where .= " AND apssover.completeness >= :" . ($st + 1);
+            array_push($args, $this->arg('completeness'));
+        }
+
+        if ($this->has_arg('anomcompleteness')) {
+            $st = sizeof($args);
+            $where .= " AND apssover.anomalousCompleteness >= :" . ($st + 1);
+            array_push($args, $this->arg('anomcompleteness'));
+        }
+
+        if ($this->has_arg('rmeas')) {
+            $st = sizeof($args);
+            $where .= " AND apssinner.rmeasalliplusiminus <= :" . ($st + 1);
+            array_push($args, $this->arg('rmeas'));
+        }
+
+        if ($this->has_arg('cchalf')) {
+            $st = sizeof($args);
+            $where .= " AND apssouter.cchalf >= :" . ($st + 1);
+            array_push($args, $this->arg('cchalf'));
+        }
+
+        if ($this->has_arg('ccanom')) {
+            $st = sizeof($args);
+            $where .= " AND apssinner.ccanomalous >= :" . ($st + 1);
+            array_push($args, $this->arg('ccanom'));
+        }
+
+        if ($this->has_arg('s')) {
+            $st = sizeof($args);
+            $where .= " AND (CONCAT(dc.imageprefix,'_',dc.datacollectionnumber) LIKE CONCAT('%',:" . ($st + 1) . ",'%') OR smp.name LIKE CONCAT('%',:" . ($st + 2) . ",'%'))";
+            array_push($args, $this->arg('s'));
+            array_push($args, $this->arg('s'));
+        }
+
+        $start = 0;
+        $pp = $this->has_arg('per_page') ? $this->arg('per_page') : 15;
+
+        if ($this->has_arg('page')) {
+            $pg = $this->arg('page') - 1;
+            $start = $pg * $pp;
+        }
+
+        $order = 'id DESC';
+
+        if ($this->has_arg('sort_by')) {
+            $cols = array(
+                'PREFIX' => 'prefix', 'SAMPLE' => 'sample',
+                'ENERGY' => 'energy', 'RESOLUTION' => 'resolution', 'CELL' => 'cell_a',
+                'RES' => 'overallrhigh', 'INNERRMEAS' => 'innerrmeas',
+                'COMPLETENESS' => 'overallcompleteness', 'ANOMCOMPLETENESS' => 'anomoverallcompleteness',
+                'INNERCCANOM' => 'innerccanom', 'OUTERCCHALF' => 'outercchalf',
+                'SG' => 'sg', 'PIPELINE' => 'pipeline'
+            );
+            $dir = $this->has_arg('order') ? ($this->arg('order') == 'asc' ? 'ASC' : 'DESC') : 'ASC';
+            if (array_key_exists($this->arg('sort_by'), $cols))
+                $order = $cols[$this->arg('sort_by')] . ' ' . $dir;
+        }
+
+        $jobs = $this->db->pq(
+            "SELECT dc.datacollectionid as id,
+                CONCAT(dc.imageprefix, '_', dc.datacollectionnumber) as prefix,
+                ".self::EVTOA."/dc.wavelength as energy,
+                dc.resolution,
+                smp.name as sample,
+                smp.blsampleid,
+                app.processingprograms as pipeline,
+                app.autoprocprogramid as aid,
+                REPLACE(ap.spacegroup,' ','') as sg,
+                ap.refinedcell_a as cell_a,
+                ap.refinedcell_b as cell_b,
+                ap.refinedcell_c as cell_c,
+                ap.refinedcell_alpha as cell_al,
+                ap.refinedcell_beta as cell_be,
+                ap.refinedcell_gamma as cell_ga,
+                apssover.resolutionlimithigh as overallrhigh,
+                apssover.resolutionlimitlow as overallrlow,
+                apssinner.resolutionlimithigh as innerrhigh,
+                apssinner.resolutionlimitlow as innerrlow,
+                apssouter.resolutionlimithigh as outerrhigh,
+                apssouter.resolutionlimitlow as outerrlow,
+                apssover.completeness as overallcompleteness,
+                apssinner.completeness as innercompleteness,
+                apssouter.completeness as outercompleteness,
+                apssover.anomalouscompleteness as anomoverallcompleteness,
+                apssinner.anomalouscompleteness as anominnercompleteness,
+                apssouter.anomalouscompleteness as anomoutercompleteness,
+                apssinner.rmeasalliplusiminus as innerrmeas,
+                apssouter.cchalf as outercchalf,
+                apssinner.ccanomalous as innerccanom
+                FROM datacollection dc
+                LEFT OUTER JOIN blsample smp ON dc.blsampleid = smp.blsampleid
+                INNER JOIN processingjob pj ON dc.datacollectionid = pj.datacollectionid
+                INNER JOIN autoprocprogram app ON pj.processingjobid = app.processingjobid
+                INNER JOIN autoproc ap ON app.autoprocprogramid=ap.autoprocprogramid
+                INNER JOIN autoprocscaling aps ON ap.autoprocid = aps.autoprocid
+                INNER JOIN autoprocscalingstatistics apssover ON aps.autoprocscalingid = apssover.autoprocscalingid AND apssover.scalingStatisticsType='overall'
+                INNER JOIN autoprocscalingstatistics apssinner ON aps.autoprocscalingid = apssinner.autoprocscalingid AND apssinner.scalingStatisticsType='innerShell'
+                INNER JOIN autoprocscalingstatistics apssouter ON aps.autoprocscalingid = apssouter.autoprocscalingid AND apssouter.scalingStatisticsType='outerShell'
+                WHERE $where
+                ORDER BY $order",
+            $args
+        );
+
+        // Only take one processing job per data collection id
+        $data = array();
+        $dcids = array();
+        foreach ($jobs as $job) {
+            $dcid = $job['ID'];
+            if (!(in_array($dcid, $dcids))) {
+                array_push($data, $job);
+                array_push($dcids, $dcid);
+            }
+        }
+
+        // Strip down data to only the page needed
+        $tot = sizeof($data);
+        $data = array_slice($data, $start, $pp);
+
+        // Add classes to highlight fields in red/yellow/green
+        foreach ($data as &$d) {
+            foreach (array('OVERALL', 'INNER', 'OUTER') as $s) {
+                $c = $d[$s.'COMPLETENESS'];
+                $d[$s.'COMPLETENESSCLASS'] = $c > 95 ? 'active' : ($c > 80 ? 'minor' : 'inactive');
+                $c = $d['ANOM'.$s.'COMPLETENESS'];
+                $d['ANOM'.$s.'COMPLETENESSCLASS'] = $c > 95 ? 'active' : ($c > 80 ? 'minor' : 'inactive');
+            }
+        }
+
+        // Set number of decimal places
+        $nf = array(
+            0 => array('ENERGY'),
+            2 => array(
+                'RESOLUTION', 'INNERRMEAS', 'OUTERCCHALF', 'INNERCCANOM',
+                'CELL_A', 'CELL_B', 'CELL_C', 'CELL_AL', 'CELL_BE', 'CELL_GA',
+                'OVERALLRHIGH', 'OVERALLRLOW', 'INNERRHIGH', 'INNERRLOW', 'OUTERRHIGH', 'OUTERRLOW',
+                'OVERALLCOMPLETENESS', 'INNERCOMPLETENESS', 'OUTERCOMPLETENESS',
+                'ANOMOVERALLCOMPLETENESS', 'ANOMINNERCOMPLETENESS', 'ANOMOUTERCOMPLETENESS'
+            )
+        );
+
+        foreach ($nf as $nff => $cols) {
+            foreach ($cols as $c) {
+                foreach ($data as &$d) {
+                    $d[$c] = number_format($d[$c], $nff);
+                }
+            }
+        }
+
+        $this->_output(array('total' => $tot, 'data' => $data));
+
     }
 
     /**
