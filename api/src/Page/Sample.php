@@ -634,6 +634,22 @@ class Sample extends Page
         $third_inner_select_where = '';
         $args = array($this->proposalid);
 
+        if ($this->has_arg('s')) {
+            $st = sizeof($args) + 1;
+            $where .= " AND s.name LIKE CONCAT('%',:" . $st . ",'%')";
+            array_push($args, $this->arg('s'));
+        }
+
+        if ($this->has_arg('filter')) {
+            $filters = array(
+                'manual' => " AND ss.source='manual'",
+                'auto' => " AND ss.source='auto'",
+                'point' => " AND dp.experimentkind='SAD'",
+                'region' => " AND dp.experimentkind='MESH'",
+            );
+            $where .= $filters[$this->arg('filter')];
+        }
+
         if ($this->has_arg('sid')) {
             $where .= ' AND s.blsampleid=:' . (sizeof($args) + 1);
             $first_inner_select_where .= ' AND s.blsampleid=:' . (sizeof($args) + 2);
