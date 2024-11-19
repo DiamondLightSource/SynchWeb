@@ -773,7 +773,7 @@ define(['marionette',
         },
 
         refreshSubSamples: function() {
-            this.subsamples.fetch()
+            this.subsamples.fetch().done(this.onSubsamplesReady.bind(this))
         },
         
         initialize: function() {
