@@ -8,14 +8,14 @@ define(['marionette', 'backbone', 'backgrid', 'views/table', 'views/filter',
         'modules/imaging/collections/screencomponents',
         'modules/imaging/views/screencomponentgroup',
 
-        'modules/shipment/collections/platetypes',
+        'collections/containertypes',
         'modules/shipment/views/plate',
 
         'templates/imaging/screencomps.html',
     
         'backbone-validation',
     ], function(Marionette, Backbone, Backgrid, TableView, FilterView, Editable,
-        ComponentGroup, ComponentGroups, Component, Components, GroupView, PlateType, PlateView,
+        ComponentGroup, ComponentGroups, Component, Components, GroupView, PlateTypes, PlateView,
         template) {
       
 
@@ -29,6 +29,10 @@ define(['marionette', 'backbone', 'backgrid', 'views/table', 'views/filter',
         className: 'content',
         template: template,
 
+        ui: {
+            containertype: '.containertype',
+        },
+
         regions: {
             group: '.group',
             plate: '.plate',
@@ -40,6 +44,7 @@ define(['marionette', 'backbone', 'backgrid', 'views/table', 'views/filter',
 
         modelEvents: {
             'change:CAPACITY': 'updatePositions',
+            'change:CONTAINERTYPEID': 'updateCapacity',
         },
 
         initialize: function(options) {
@@ -58,6 +63,14 @@ define(['marionette', 'backbone', 'backgrid', 'views/table', 'views/filter',
             this.updatePositions()
         },
 
+        updateCapacity: function() {
+            var newct = this.ctypes.findWhere({ CONTAINERTYPEID: this.model.get('CONTAINERTYPEID') })
+            var newcapacity = newct ? newct.get('CAPACITY') : 96
+            this.model.set('CAPACITY', newcapacity)
+            this.$el.find('.CAPACITY').html(newcapacity)
+            this.onRender()
+        },
+
         updatePositions: function(e) {
             var pos = []
             _.each(_.range(this.model.get('CAPACITY')), function(i) {
@@ -69,6 +82,7 @@ define(['marionette', 'backbone', 'backgrid', 'views/table', 'views/filter',
         },
         
         setGroup: function(pos) {
+            if (!pos) return
             var s = this.collection.findWhere({ POSITION: pos.toString() })
             if (s) this.groupview.setModel(s)
             else {
@@ -87,16 +101,24 @@ define(['marionette', 'backbone', 'backgrid', 'views/table', 'views/filter',
             edit.create('NAME', 'text')
             if (app.prop == this.model.get('PROP')) {
                 edit.create('GLOBAL', 'select', { data: { 1: 'Yes', 0: 'No' } })
+                var self = this
+                this.ctypes = new PlateTypes()
+                this.ctypes.queryParams = { 'PROPOSALTYPE': 'mx', 'ty': 'plate' }
+                this.ctypes.fetch().done(function() {
+                    edit.create('CONTAINERTYPEID', 'select', { data: self.ctypes.kv({ empty: true }) })
+                })
+            } else {
+                this.ui.containertype.hide()
             }
 
             this.groupview = new GroupView({ components: this.components, editable: app.prop == this.model.get('PROP') })
             this.group.show(this.groupview)
 
-            this.filterview = new FilterView({ filters: this.positions, url: false, className: 'plate-12-wide' })
+            this.filterview = new FilterView({ filters: this.positions, url: false, className: 'plate-12-wide', value: 1 })
             this.listenTo(this.filterview, 'selected:change', this.setGroup, this)
             this.plate.show(this.filterview)
+            this.setGroup(1)
         },
-
 
         saveGroups: function(e) {
             e.preventDefault()

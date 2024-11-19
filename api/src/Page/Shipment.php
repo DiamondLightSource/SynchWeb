@@ -146,6 +146,7 @@ class Shipment extends Page
         'TOKEN' => '\w+',
         'tracking_number' => '\w+',
         'AWBURL' => '[\w\:\/\.\-]+',
+        'PROPOSALTYPE' => '\w+',
 
         'manifest' => '\d',
         'currentuser' => '\d',
@@ -2499,6 +2500,7 @@ class Shipment extends Page
     function _get_container_types()
     {
         $where = '';
+        $args = array();
         // By default only return active container types.
         // If all param set return everything
         if ($this->has_arg('all')) {
@@ -2506,7 +2508,16 @@ class Shipment extends Page
         } else {
             $where .= 'ct.active = 1';
         }
-        $rows = $this->db->pq("SELECT ct.containerTypeId, name, ct.proposalType, ct.capacity, ct.wellPerRow, ct.dropPerWellX, ct.dropPerWellY, ct.dropHeight, ct.dropWidth, ct.wellDrop FROM ContainerType ct WHERE $where");
+        if ($this->has_arg('ty')) {
+            if ($this->arg('ty') == 'plate') {
+                $where .= " AND ct.wellperrow is not null";
+            }
+        }
+        if ($this->has_arg('PROPOSALTYPE')) {
+            $where .= ' AND ct.proposaltype = :1';
+            array_push($args, $this->arg('PROPOSALTYPE'));
+        }
+        $rows = $this->db->pq("SELECT ct.containerTypeId, name, ct.proposalType, ct.capacity, ct.wellPerRow, ct.dropPerWellX, ct.dropPerWellY, ct.dropHeight, ct.dropWidth, ct.wellDrop FROM ContainerType ct WHERE $where", $args);
         $this->_output(array('total' => count($rows), 'data' => $rows));
     }
 
