@@ -50,6 +50,10 @@ define(['backbone',
             minccanom: 'input[name=minccanom]',
         },
         
+        initialize: function(options) {
+            this.visit = options.model.get('VISIT')
+        },
+
         changePipeline: function() {
             if (this.ui.pipeline.val()) {
                 this.collection.queryParams.pipeline = this.ui.pipeline.val()
@@ -143,7 +147,7 @@ define(['backbone',
             this.ui.pipeline.html(this.pipelines.opts())
 
             var columns = [
-                { label: '', cell: table.TemplateCell, editable: false, template: '<a href="/dc/id/<%-ID%>" class="button button-notext"><i class="fa fa-search"></i> <span>View Data Collection</span></a>' },
+                { label: '', cell: table.TemplateCell, editable: false, template: '<a href="/dc/visit/'+this.visit+'/id/<%-ID%>" class="button button-notext"><i class="fa fa-search"></i> <span>View Data Collection</span></a>' },
                 { name: 'PREFIX', label: 'Prefix', cell: 'string', editable: false },
                 { name: 'SAMPLE', label: 'Sample', cell: table.TemplateCell, template: '<a href="/samples/sid/<%-BLSAMPLEID%>"><%-SAMPLE%></a>',editable: false },
                 { name: 'ENERGY', label: 'Energy', cell: table.TemplateCell, template: '<%-ENERGY%>eV', editable: false },
