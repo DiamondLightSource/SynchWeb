@@ -62,6 +62,7 @@
                 class="tw-block tw-text-gray-900 tw-py-4 tw-px-2"
               >
                 <p>This proposal is closed. You cannot create shipments, proteins or contacts.</p>
+                <span v-if="getClosedProposalLink"><a @click="onWrapperClick" :href="getClosedProposalLink">Click here for more info.</a></span>
               </router-link>
             </li>
             <li
@@ -184,6 +185,9 @@ export default {
         },
         helpStatus: function() {
             return this.showHelp ? "On" : "Off"
+        },
+        getClosedProposalLink: function() {
+            return app.options.get('closed_proposal_link')
         }
     },
     methods: {
@@ -202,6 +206,11 @@ export default {
             } else {
                 // $('#sidebar ul li.help').removeClass('active')
                 $('p.help').fadeOut()
+            }
+        },
+        onWrapperClick(e) {
+            if (e.target.tagName === 'A') {
+                e.stopPropagation()
             }
         },
     }
