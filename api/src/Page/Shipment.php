@@ -2508,10 +2508,8 @@ class Shipment extends Page
         } else {
             $where .= 'ct.active = 1';
         }
-        if ($this->has_arg('ty')) {
-            if ($this->arg('ty') == 'plate') {
-                $where .= " AND ct.wellperrow is not null";
-            }
+        if ($this->has_arg('ty') && $this->arg('ty') == 'plate') {
+            $where .= " AND ct.wellperrow is not null";
         }
         if ($this->has_arg('PROPOSALTYPE')) {
             $where .= ' AND ct.proposaltype = :1';
