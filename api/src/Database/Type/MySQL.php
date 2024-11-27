@@ -130,6 +130,7 @@ class MySQL extends DatabaseParent {
 
         // VMXi
         'ContainerInspection',
+        'ContainerType',
         'Imager',
         'Screen',
         'ScreenComponentGroup',

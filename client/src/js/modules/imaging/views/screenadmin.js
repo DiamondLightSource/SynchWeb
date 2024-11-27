@@ -81,7 +81,7 @@ define(['marionette', 'backbone',
         addScreen: function(e) {
             e.preventDefault()
             if (this.$el.find('.new').length) return
-            this.collection.add(new Screen({ new: true }))
+            this.collection.unshift(new Screen({ new: true }))
         },
 
 

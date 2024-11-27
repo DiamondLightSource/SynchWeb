@@ -45,6 +45,7 @@ class Imaging extends Page
         'PROPOSALID' => '\d+',
         'COMPONENTID' => '\d+',
         'GLOBAL' => '\d',
+        'CONTAINERTYPEID' => '\d*',
         'SCREENCOMPONENTGROUPID' => '\d+',
         'SCREENCOMPONENTID' => '\d+',
         'CONCENTRATION' => '\d+(.\d+)?',
@@ -865,10 +866,11 @@ class Imaging extends Page
             array_push($args, $this->arg('scid'));
         }
 
-        $screens = $this->db->pq("SELECT 96 as capacity, CONCAT(p.proposalcode, p.proposalnumber) as prop, s.global, s.name, s.screenid, s.proposalid, count(distinct sg.screencomponentgroupid) as groups, count(distinct sc.screencomponentid) as components
+        $screens = $this->db->pq("SELECT ct.name as containertypeid, IFNULL(ct.capacity, 96) as capacity, CONCAT(p.proposalcode, p.proposalnumber) as prop, s.global, s.name, s.screenid, s.proposalid, count(distinct sg.screencomponentgroupid) as groups, count(distinct sc.screencomponentid) as components
               FROM screen s
               LEFT OUTER JOIN screencomponentgroup sg ON sg.screenid = s.screenid
               LEFT OUTER JOIN screencomponent sc ON sc.screencomponentgroupid = sg.screencomponentgroupid
+              LEFT OUTER JOIN containertype ct ON ct.containertypeid = s.containertypeid
               INNER JOIN proposal p ON p.proposalid = s.proposalid
               WHERE $where
               GROUP BY CONCAT(p.proposalcode, p.proposalnumber), s.global, s.name, s.screenid, s.proposalid", $args);
@@ -888,8 +890,8 @@ class Imaging extends Page
         if (!$this->has_arg('NAME'))
             $this->_error('No screen name provided');
 
-        $this->db->pq("INSERT INTO screen (screenid, name, proposalid) 
-              VALUES (s_screen.nextval, :1, :2) RETURNING screenid INTO :id", array($this->arg('NAME'), $this->proposalid));
+        $this->db->pq("INSERT INTO screen (screenid, name, global, proposalid)
+              VALUES (s_screen.nextval, :1, :2, :3) RETURNING screenid INTO :id", array($this->arg('NAME'), $this->arg('GLOBAL'), $this->proposalid));
 
         $this->_output(array('SCREENID' => $this->db->id()));
     }
@@ -907,9 +909,10 @@ class Imaging extends Page
         if (!sizeof($sc))
             $this->_error('No such screen');
 
-        foreach (array('NAME', 'GLOBAL') as $f) {
+        foreach (array('NAME', 'GLOBAL', 'CONTAINERTYPEID') as $f) {
             if ($this->has_arg($f)) {
-                $this->db->pq('UPDATE screen SET ' . $f . '=:1 WHERE screenid=:2', array($this->arg($f), $this->arg('scid')));
+                $argf = $this->arg($f) == '' ? null : $this->arg($f);
+                $this->db->pq('UPDATE screen SET ' . $f . '=:1 WHERE screenid=:2', array($argf, $this->arg('scid')));
                 $this->_output(array($f => $this->arg($f)));
             }
         }
