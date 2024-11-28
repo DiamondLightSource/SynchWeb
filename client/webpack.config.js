@@ -88,10 +88,6 @@ module.exports = (env, argv) => ({
       'jquery.editable': 'vendor/jquery/jquery.jeditable.min',
       'jquery.editable.datepicker': 'vendor/jquery/jquery.jeditable.datepicker',
 
-      // Jquery.color plugin also NPM package
-      // Only used from within utils.js
-      'jquery.color': 'jquery-color',
-
       // Caman npm depends on fibers, canvas, fs which we don't want...
       // So use direct downloaded dependency
       caman: 'vendor/caman.min',
