@@ -66,7 +66,6 @@ module.exports = (env, argv) => ({
       // Jquery.flot provided by NPM package (exact name match)
       // Jquery.flot.resize also from NPM but slightly older version 1.0.0 2012 instead of 2013 (vendor lib)
       'jquery.flot.resize': 'jquery-flot-resize',
-      'jquery.flot.pie': 'flot-pie',
       'jquery.flot.time': 'vendor/flot/jquery.flot.time.min',
       'jquery.flot.selection': 'vendor/flot/jquery.flot.selection',
       'jquery.flot.stack': 'vendor/flot/jquery.flot.stack',
