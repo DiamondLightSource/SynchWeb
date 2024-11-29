@@ -2,6 +2,7 @@ define(['marionette',
     'backbone',
     'modules/imaging/collections/inspectionimagescores',
     
+    'models/sample',
     'models/subsample',
     'collections/subsamples',
     
@@ -18,7 +19,7 @@ define(['marionette',
     'backbone-validation',
     ], function(Marionette,
         Backbone,
-        ImageScores, Subsample, Subsamples, ImageHistory, InspectionImage, Attachments,
+        ImageScores, Sample, Subsample, Subsamples, ImageHistory, InspectionImage, Attachments,
         Editable, utils, XHRImage, HeatMap,
         template) {
 
@@ -175,6 +176,10 @@ define(['marionette',
                     },
                 })
             }
+
+            if (this.add_dispensing) {
+                this.editDispensing(x, y)
+            }
         },
 
         setAddSubsample: function(state) {
@@ -184,7 +189,21 @@ define(['marionette',
         setAddSubsampleRegion: function(state) {
             this.add_region = state
         },
-        
+
+        setAddDispensing: function(state) {
+            this.add_dispensing = state
+        },
+
+        deleteDispensing: function() {
+            this.editDispensing('', '')
+        },
+
+        editDispensing: function(x, y) {
+            var s = new Sample({ BLSAMPLEID: this.model.get('BLSAMPLEID') })
+            s.set({ X: x, Y: y })
+            this.trigger('finishdispensing')
+            this.subsamples.fetch()
+        },
         
         remSubsample: function() {
             this.draw()
@@ -204,6 +223,7 @@ define(['marionette',
         initialize: function(options) {
             this.add_object = false
             this.add_region = false
+            this.add_dispensing = false
 
             this.plotObjects = _.debounce(this.plotObjects, 200)
             this.drawDebounce = _.debounce(this.draw, 10)
@@ -1004,6 +1024,18 @@ define(['marionette',
             this.ctx.fillStyle = options.o.get('isSelected') ? 'turquoise' : options.o.get('SOURCE') === 'auto' ? 'darkblue' : 'red'
             this.ctx.font = parseInt(14*m)+'px Arial'
             this.ctx.fillText(parseInt(options.o.get('RID'))+1,x-(m*15), y-(m*6))
+
+            if (options.o.get('DISPENSEX') && options.o.get('DISPENSEY')) {
+                var disx = parseInt(options.o.get('DISPENSEX'))
+                var disy = parseInt(options.o.get('DISPENSEY'))
+                this.ctx.strokeStyle = 'white'
+                this.ctx.beginPath()
+                this.ctx.arc(disx, disy, 50, 0, 2*Math.PI)
+                this.ctx.stroke()
+                this.ctx.fillStyle = 'white'
+                this.ctx.fillText('D',disx-5*m, disy+5*m)
+                this.ctx.closePath()
+            }
         },
 
         drawBeam: function(o) {

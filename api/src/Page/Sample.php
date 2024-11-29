@@ -93,8 +93,8 @@ class Sample extends Page
         'scid' => '\d+-\d+',
 
         'BLSAMPLEID' => '\d+',
-        'X' => '\d+(.\d+)?',
-        'Y' => '\d+(.\d+)?',
+        'X' => '\d*(.\d+)?',
+        'Y' => '\d*(.\d+)?',
         'Z' => '\d+(.\d+)?',
         'X2' => '\d+(.\d+)?',
         'Y2' => '\d+(.\d+)?',
@@ -792,6 +792,9 @@ class Sample extends Page
                 po2.posx as x2,
                 po2.posy as y2,
                 po2.posz as z2,
+                po3.posx as dispensex,
+                po3.posy as dispensey,
+                po3.posz as dispensez,
                 IF(cqs.containerqueuesampleid IS NOT NULL AND cqs.containerqueueid IS NULL, 1, 0) as readyforqueue,
                 cq.containerqueueid,
                 count(distinct IF(dc.overlap != 0,
@@ -817,7 +820,7 @@ class Sample extends Page
                 INNER JOIN shipping sh ON sh.shippingid = d.shippingid
                 INNER JOIN proposal p ON p.proposalid = sh.proposalid
 
-
+                LEFT OUTER JOIN position po3 ON po3.positionid = s.positionid
                 LEFT OUTER JOIN containerqueuesample cqs ON cqs.blsubsampleid = ss.blsubsampleid
                 LEFT OUTER JOIN containerqueue cq ON cqs.containerqueueid = cq.containerqueueid AND cq.completedtimestamp IS NULL
                 
@@ -1895,7 +1898,7 @@ class Sample extends Page
         if (!$this->has_arg('sid'))
             $this->_error('No sampleid specified');
 
-        $samp = $this->db->pq("SELECT b.blsampleid, pr.proteinid,cr.crystalid,dp.diffractionplanid 
+        $samp = $this->db->pq("SELECT b.blsampleid, pr.proteinid,cr.crystalid,dp.diffractionplanid,b.positionid
               FROM blsample b 
               INNER JOIN crystal cr ON cr.crystalid = b.crystalid 
               INNER JOIN protein pr ON pr.proteinid = cr.proteinid 
@@ -1971,6 +1974,35 @@ class Sample extends Page
                     $nextDCPIndex++;
                 }
             }
+        }
+
+        if ($this->has_arg('X') && $this->has_arg('Y')) {
+            $z = $this->has_arg('Z') ? $this->arg('Z') : null;
+            $pid = $samp['POSITIONID'];
+            if ($this->arg('X') == '' && $this->arg('Y') == '') {
+                if (!empty($pid)) {
+                    $this->db->pq(
+                        "UPDATE position SET posx=null, posy=null, posz=null, recordtimestamp=CURRENT_TIMESTAMP WHERE positionid=:1",
+                        array($pid)
+                    );
+                }
+            } else {
+                if (empty($pid)) {
+                    $this->db->pq(
+                        "INSERT INTO position (positionid, posx, posy, posz, recordtimestamp)
+                        VALUES (s_position.nextval, :1, :2, :3, CURRENT_TIMESTAMP) RETURNING positionid INTO :id",
+                        array($this->arg('X'), $this->arg('Y'), $z)
+                    );
+                    $pid = $this->db->id();
+                    $this->db->pq("UPDATE blsample SET positionid=:1 WHERE blsampleid=:2", array($pid, $samp['BLSAMPLEID']));
+                } else {
+                    $this->db->pq(
+                        "UPDATE position SET posx=:1, posy=:2, posz=:3, recordtimestamp=CURRENT_TIMESTAMP WHERE positionid=:4",
+                        array($this->arg('X'), $this->arg('Y'), $z, $pid)
+                    );
+                }
+            }
+            $this->_output(array('POSITIONID' => $pid));
         }
     }
 
