@@ -1,7 +1,7 @@
 define(['marionette', 'modules/stats/models/pie', 'utils',
         'jquery',
         'jquery.flot',
-        'jquery.flot.resize',
+        'jquery-flot-resize',
         'flot-pie',
 ], function(Marionette, Pie, utils, $) {
     
