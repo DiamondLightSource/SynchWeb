@@ -537,7 +537,7 @@ define(['marionette',
                 this.ui.addis.addClass('button-highlight')
                 this.image.setAddDispensing(true)
                 this.ui.addis.find('span').text('Cancel')
-                if (this.subsamples.findWhere({ BLSAMPLEID: this.getSample() }).get('DISPENSEX')) {
+                if (this.subsamples.length && this.subsamples.findWhere({ BLSAMPLEID: this.getSample() }).get('DISPENSEX')) {
                     this.ui.deldis.show()
                 }
             }
