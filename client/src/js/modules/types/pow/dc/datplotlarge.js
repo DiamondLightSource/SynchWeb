@@ -5,8 +5,8 @@ define(['backbone',
         'utils',
         'jquery',
         'jquery.flot',
-        'jquery.flot.resize',
-        'jquery.flot.axislabels'
+        'jquery-flot-resize',
+        'flot-axislabels'
 ], function(Backbone, Marionette, Dat, DataCollections, utils, $) {
        
     var DatCollection = Backbone.Collection.extend({
