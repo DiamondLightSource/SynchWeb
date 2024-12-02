@@ -222,7 +222,6 @@ class Page
         {
             $auth = $this->staff;
 
-            // Beamline Sample Registration
         }
         // Barcode Scanners
         else if ($this->bcr() && !$this->user->loginId)
