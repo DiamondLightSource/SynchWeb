@@ -264,6 +264,7 @@ define(['marionette',
 
             sampleStatusAuto: 'input[id=sample_status_auto]',
             schema: 'select[name=schema]',
+            schemaspan: '.schemaspan',
             class: 'select[name=class]',
         },
 
@@ -656,6 +657,14 @@ define(['marionette',
         },
 
         updateSchemas: function() {
+            if (this.autoscoreschemas.length === 1) {
+                this.ui.schemaspan.html(this.autoscoreschemas.at(0).get('SCHEMANAME'))
+                this.ui.schemaspan.show()
+                this.ui.schema.hide()
+            } else {
+                this.ui.schemaspan.hide()
+                this.ui.schema.show()
+            }
             this.ui.schema.html(this.autoscoreschemas.opts())
             this.selectSchema()
         },
