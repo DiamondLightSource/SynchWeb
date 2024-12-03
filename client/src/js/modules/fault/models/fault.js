@@ -22,11 +22,11 @@ define(['backbone', 'markdown', 'models/wfile'], function(Backbone, markdown, Fi
         },
         
         refreshOptions: function() {
-            this.attributes.RESOLVEDTEXT = this.resolvedOptions[this.get('RESOLVED')]
-            this.attributes.BEAMTIMELOSTTEXT = this.btlOptions[this.get('BEAMTIMELOST')]
+            this.set('RESOLVEDTEXT', this.resolvedOptions[this.get('RESOLVED')])
+            this.set('BEAMTIMELOSTTEXT', this.btlOptions[this.get('BEAMTIMELOST')])
             
-            if (this.get('DESCRIPTION')) this.attributes.DESCRIPTIONMD = markdown.toHTML(this.get('DESCRIPTION'))
-            if (this.get('RESOLUTION')) this.attributes.RESOLUTIONMD = markdown.toHTML(this.get('RESOLUTION'))
+            if (this.get('DESCRIPTION')) this.set('DESCRIPTIONMD', markdown.toHTML(this.get('DESCRIPTION')))
+            if (this.get('RESOLUTION')) this.set('RESOLUTIONMD', markdown.toHTML(this.get('RESOLUTION')))
         },
         
         validation: {
