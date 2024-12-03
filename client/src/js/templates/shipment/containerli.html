@@ -1,10 +1,13 @@
 
         <%- NAME %> (<%-SAMPLES%> samples)
         <% if (REQUESTEDIMAGERID) { %>
-        	[Req: <%-REQUESTEDIMAGER%>]
+            [Req: <%-REQUESTEDIMAGER%>]
         <% } %>
         <% if (IMAGERID) { %>
-        	[Img: <%-IMAGER%>]
+            [Img: <%-IMAGER%>]
+        <% } %>
+        <% if (VISIT) { %>
+            (<%-VISIT%>)
         <% } %>
         <span class="r">
             <a class="button button-notext print" title="Click to print container contents" href="<%-APIURL%>/pdf/container/cid/<%-CONTAINERID%>/prop/<%-PROP%>"><i class="fa fa-print"></i> <span>Print Container Report</span></a>

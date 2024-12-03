@@ -141,7 +141,7 @@ class Processing extends Page {
                 INNER JOIN processingjob pj ON pj.datacollectionid = dc.datacollectionid
                 INNER JOIN autoprocprogram app ON pj.processingjobid = app.processingjobid
                 LEFT OUTER JOIN autoprocintegration api ON api.autoprocprogramid = app.autoprocprogramid
-                WHERE $where AND api.autoprocintegrationid IS NULL AND pj.automatic = 1
+                WHERE $where AND api.autoprocintegrationid IS NULL
                     AND app.processingprograms NOT IN ('$filter')",
             ),
             $ids
@@ -697,11 +697,17 @@ class Processing extends Page {
             ap.refinedcell_alpha as cell_al,
             ap.refinedcell_beta as cell_be,
             ap.refinedcell_gamma as cell_ga, 
-            (SELECT COUNT(api1.autoprocintegrationid) FROM autoprocintegration api1 WHERE api1.autoprocprogramid =  app.autoprocprogramid) as imagesweepcount,
+            (SELECT COUNT(api1.autoprocintegrationid) FROM autoprocintegration api1 WHERE api1.autoprocprogramid = app.autoprocprogramid) as imagesweepcount,
             app.processingstatus,
             app.processingmessage,
             count(distinct pjis.datacollectionid) as dccount,
             max(pjis.processingjobid) as processingjobid,
+            (SELECT IFNULL(blsg.name, bls.name) FROM processingjobparameter pjp
+              LEFT OUTER JOIN blsample bls ON pjp.parametervalue = bls.blsampleid
+              LEFT OUTER JOIN blsamplegroup blsg ON pjp.parametervalue = blsg.blsamplegroupid
+              WHERE pjp.processingjobid = pj.processingjobid
+              AND pjp.parameterkey in ('sample_id', 'sample_group_id')
+            ) as groupname,
             pj.automatic";
 
         $from = "FROM autoprocintegration api";
@@ -751,7 +757,7 @@ class Processing extends Page {
             'cell_ga',
         );
         $resolution_data = array('rlow', 'rhigh');
-        $returned_keys = array('PROCESSINGJOBID', 'IMAGESWEEPCOUNT', 'DCCOUNT', 'TYPE', 'PROCESSINGSTATUS', 'PROCESSINGMESSAGE');
+        $returned_keys = array('PROCESSINGJOBID', 'IMAGESWEEPCOUNT', 'DCCOUNT', 'TYPE', 'PROCESSINGSTATUS', 'PROCESSINGMESSAGE', 'GROUPNAME');
 
         foreach($table_rows as &$row) {
             if (!array_key_exists($row['AUTOPROCPROGRAMID'], $formatted_result)) {
@@ -771,6 +777,9 @@ class Processing extends Page {
                         if ($row['DCCOUNT'] > 1) {
                             $prefix = preg_match('/multi/', $value) ? '' : 'multi-';
                             $value = $row['DCCOUNT'] . 'x ' . $prefix . $value;
+                        }
+                        if ($row['GROUPNAME']) {
+                            $value .= ' ('.$row['GROUPNAME'].')';
                         }
                     }
 

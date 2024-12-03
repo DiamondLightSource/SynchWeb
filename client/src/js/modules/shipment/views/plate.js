@@ -250,7 +250,7 @@ define(['marionette', 'backbone', 'utils', 'backbone-validation'], function(Mari
                             
                                 this.ctx.fillStyle = sample.get(this.rankOption.value)
                                     ? utils.rainbow(val/4) 
-                                    : (sample.get(this.rankOption.check) > 0 ? 'yellow' : '#dfdfdf')
+                                    : '#dfdfdf'
                                 this.ctx.fill()
 
                             } else {

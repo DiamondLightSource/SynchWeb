@@ -9,8 +9,8 @@ class Contact extends Page
 {
 
         public static $arg_list = array('CARDNAME' => '([\w\s\-])+',
-                              'FAMILYNAME' => '([\w\-])+',
-                              'GIVENNAME' => '([\w\-])+',
+                              'FAMILYNAME' => '([\w\s\-])+',
+                              'GIVENNAME' => '([\w\s\-])+',
                               'PHONENUMBER' => '.*',
                               'EMAILADDRESS' => '.*',
                               'LABNAME' => '([\w\s\-])+',

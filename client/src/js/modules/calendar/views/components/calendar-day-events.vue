@@ -21,7 +21,12 @@
             class="tw-no-underline tw-text-content-page-color"
           >
             {{ session['VISIT'] }}
-          </router-link> <span> ({{ session['LEN'] }})</span>
+          </router-link>
+          <span v-if="session['RISKRATING'] == 'Low'" title="Risk Rating: Low">&#128994;</span>
+          <span v-else-if="session['RISKRATING'] == 'Medium'" title="Risk Rating: Medium">&#128993;</span>
+          <span v-else-if="session['RISKRATING'] == 'High'" title="Risk Rating: High">&#128308;</span>
+          <span v-else title="No approved ERA">&#9899;</span>
+          <span> ({{ session['LEN'] }})</span>
         </p>
         <p class="tw-ml-2">
           - {{ session['BEAMLINEOPERATOR'] }}

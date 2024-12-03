@@ -110,13 +110,19 @@ define(['backbone', 'marionette', 'views/dialog',
             var si = parseInt(this.model.get('SI'))
             var ni = parseInt(this.model.get('NUMIMG'))
 
-            if (this.ui.st.val() > (si+ni-1)) this.ui.st.val(si+ni-1)
-            if (this.ui.st.val() < si) this.ui.st.val(si)
+            if (this.ui.st.val()) {
+                if (this.ui.st.val() > (si+ni-1)) this.ui.st.val(si+ni-1)
+                if (this.ui.st.val() < si) this.ui.st.val(si)
+            }
 
-            if (this.ui.en.val() > (si+ni-1)) this.ui.en.val(si+ni-1)
-            if (this.ui.en.val() < si) this.ui.en.val(si)
+            if (this.ui.en.val()) {
+                if (this.ui.en.val() > (si+ni-1)) this.ui.en.val(si+ni-1)
+                if (this.ui.en.val() < si) this.ui.en.val(si)
+            }
 
-            this.plotview.setSelection(parseInt(this.ui.st.val()), parseInt(this.ui.en.val()))
+            if (this.ui.st.val() && this.ui.en.val()) {
+                this.plotview.setSelection(parseInt(this.ui.st.val()), parseInt(this.ui.en.val()))
+            }
         },
 
         initialize: function(options) {
@@ -377,7 +383,7 @@ define(['backbone', 'marionette', 'views/dialog',
                 }, this)
 
                 $.when.apply($, reqs).done(function() {
-                    app.alert({ message: jobs+' reprocessing job(s) successfully submitted'})
+                    app.message({ message: jobs+' reprocessing job(s) successfully submitted'})
                     _.each(rps, function(rp) {
                         self._enqueue({ PROCESSINGJOBID: rp.get('PROCESSINGJOBID') })
                     })
@@ -462,7 +468,7 @@ define(['backbone', 'marionette', 'views/dialog',
                         reqs.push(reprocessingsweeps.save())
 
                         $.when.apply($, reqs).done(function() {
-                            app.alert({ message: '1 reprocessing job successfully submitted'})
+                            app.message({ message: '1 reprocessing job successfully submitted'})
                             self._enqueue({ PROCESSINGJOBID: reprocessing.get('PROCESSINGJOBID') })
                         })
                     },

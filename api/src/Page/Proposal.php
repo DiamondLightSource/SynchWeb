@@ -393,7 +393,8 @@ class Proposal extends Page
         }
 
         if ($this->has_arg('s')) {
-            $where .= " AND s.visit_number LIKE :" . (sizeof($args) + 1);
+            $where .= " AND (s.visit_number LIKE :" . (sizeof($args) + 1) . " OR s.beamlinename LIKE :" . (sizeof($args) + 2) . ")";
+            array_push($args, $this->arg('s'));
             array_push($args, $this->arg('s'));
         }
 
@@ -435,7 +436,9 @@ class Proposal extends Page
         $order = 's.startdate DESC';
 
         if ($this->has_arg('sort_by')) {
-            $cols = array('ST' => 's.startdate', 'EN' => 's.enddate', 'VIS' => 's.visit_number', 'BL' => 's.beamlinename', 'LC' => 's.beamlineoperator', 'COMMENT' => 's.comments');
+            $cols = array('ST' => 's.startdate', 'EN' => 's.enddate', 'VIS' => 's.visit_number', 'BL' => 's.beamlinename',
+                          'LC' => 's.beamlineoperator', 'COMMENT' => 's.comments', 'ERA' => 's.riskrating',
+                          'SESSIONTYPE' => 'sessiontype', 'DCCOUNT' => 'dccount');
             $dir = $this->has_arg('order') ? ($this->arg('order') == 'asc' ? 'ASC' : 'DESC') : 'ASC';
             if (array_key_exists($this->arg('sort_by'), $cols))
                 $order = $cols[$this->arg('sort_by')] . ' ' . $dir;
@@ -456,6 +459,7 @@ class Proposal extends Page
                     s.beamlineoperator                                            AS lc,
                     s.comments,
                     s.scheduled,
+                    s.riskrating,
                     st.typename                                                   AS sessiontype,
                     DATE_FORMAT(s.startdate, '%d-%m-%Y %H:%i')                    AS startdate,
                     DATE_FORMAT(s.enddate, '%d-%m-%Y %H:%i')                      AS enddate,
@@ -468,6 +472,7 @@ class Proposal extends Page
                     s.beamcalendarid,
                     CONCAT(p.proposalcode, p.proposalnumber)                      AS proposal,
                     COUNT(shp.personid)                                           AS persons,
+                    COUNT(distinct dc.datacollectionid)                           AS dccount,
                     s.proposalid
                 FROM BLSession s
                     INNER JOIN proposal p ON p.proposalid = s.proposalid
@@ -475,35 +480,14 @@ class Proposal extends Page
                     LEFT OUTER JOIN session_has_person shp ON shp.sessionid = s.sessionid
                     LEFT OUTER JOIN beamlinesetup bls on bls.beamlinesetupid = s.beamlinesetupid
                     LEFT OUTER JOIN beamcalendar bc ON bc.beamcalendarid = s.beamcalendarid
+                    LEFT OUTER JOIN datacollectiongroup dcg ON dcg.sessionid = s.sessionid
+                    LEFT OUTER JOIN datacollection dc ON dcg.datacollectiongroupid = dc.datacollectiongroupid
                 $where
                 GROUP BY s.sessionid
                 ORDER BY $order", $args);
 
-        $ids = array();
-        $wcs = array();
-        foreach ($rows as $r) {
-            array_push($ids, $r['SESSIONID']);
-            array_push($wcs, 'dcg.sessionid=:' . sizeof($ids));
-        }
-
-        $dcs = array();
-        if (sizeof($ids)) {
-            $where = implode(' OR ', $wcs);
-            $tdcs = $this->db->pq("SELECT count(dc.datacollectionid) as c, dcg.sessionid 
-                    FROM datacollection dc
-                    INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
-                    WHERE $where GROUP BY dcg.sessionid", $ids);
-            foreach ($tdcs as $t)
-                $dcs[$t['SESSIONID']] = $t['C'];
-        }
-
         foreach ($rows as &$r) {
-            $dc = array_key_exists($r['SESSIONID'], $dcs) ? $dcs[$r['SESSIONID']] : 0;
-            $r['COMMENT'] = $r['COMMENTS'];
-            $r['DCCOUNT'] = $dc;
-
             $bl_type = $this->_get_type_from_beamline($r['BL']);
-
             $r['TYPE'] = $bl_type ? $bl_type : 'gen';
         }
 

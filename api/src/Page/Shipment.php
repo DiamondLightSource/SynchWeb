@@ -484,10 +484,10 @@ class Shipment extends Page
 
         if (!$this->has_arg('BARCODE'))
             $this->_error('No barcode specified');
-        if (!$this->has_arg('LOCATION'))
-            $this->_error('No location specified');
+        if (!$this->has_arg('LOCATION') && !$this->has_arg('STATUS'))
+            $this->_error('No location or status specified');
 
-        $dew = $this->db->pq("SELECT CONCAT(pe.givenname, ' ', pe.familyname) as lcout, pe.emailaddress as lcoutemail, CONCAT(CONCAT(pe2.givenname, ' '), pe2.familyname) as lcret, pe2.emailaddress as lcretemail, CONCAT(p.proposalcode, p.proposalnumber, '-', e.visit_number) as firstexp, TO_CHAR(e.startdate, 'DD-MM-YYYY HH24:MI') as firstexpst, e.beamlinename, e.beamlineoperator, d.dewarid, d.trackingnumberfromsynchrotron, s.shippingid, s.shippingname, p.proposalcode, CONCAT(p.proposalcode, p.proposalnumber) as prop, d.barcode, d.facilitycode, d.firstexperimentid, d.dewarstatus
+        $dew = $this->db->pq("SELECT CONCAT(pe.givenname, ' ', pe.familyname) as lcout, pe.emailaddress as lcoutemail, CONCAT(CONCAT(pe2.givenname, ' '), pe2.familyname) as lcret, pe2.emailaddress as lcretemail, CONCAT(p.proposalcode, p.proposalnumber, '-', e.visit_number) as firstexp, TO_CHAR(e.startdate, 'DD-MM-YYYY HH24:MI') as firstexpst, e.beamlinename, e.beamlineoperator, d.dewarid, d.trackingnumberfromsynchrotron, s.shippingid, s.shippingname, p.proposalcode, CONCAT(p.proposalcode, p.proposalnumber) as prop, d.barcode, d.facilitycode, d.firstexperimentid, d.dewarstatus, d.storagelocation
               FROM dewar d 
               INNER JOIN shipping s ON s.shippingid = d.shippingid
               LEFT OUTER JOIN labcontact c ON s.sendinglabcontactid = c.labcontactid 
@@ -505,15 +505,9 @@ class Shipment extends Page
 
         $track = $this->has_arg('TRACKINGNUMBERFROMSYNCHROTRON') ? $this->arg('TRACKINGNUMBERFROMSYNCHROTRON') : $dew['TRACKINGNUMBERFROMSYNCHROTRON'];
 
-        // What was the last history entry for this dewar?
-        // If it's come from a beamline, register flag so we can e-mail further down...
-        $last_history_results = $this->db->pq("SELECT storageLocation FROM dewartransporthistory WHERE dewarId = :1 ORDER BY DewarTransportHistoryId DESC LIMIT 1", array($dew['DEWARID']));
-
-        if (sizeof($last_history_results)) {
-            $last_history = $last_history_results[0];
-            // We only add data to dewar history in lower case from this method.
-            // If that ever changes, update this to become case insensitive search
-            $last_location = $last_history['STORAGELOCATION'];
+        if ($this->has_arg('LOCATION')) {
+            // If it's come from a beamline, register flag so we can e-mail further down...
+            $last_location = $dew['STORAGELOCATION'];
             if (!isset($dewar_complete_email_locations) || !is_array($dewar_complete_email_locations)) {
                 $bls = $this->_get_beamlines_from_type('all');
                 $send_return_email = in_array($last_location, $bls);
@@ -521,99 +515,103 @@ class Shipment extends Page
                 $email_location = $dewar_complete_email_locations[$last_location];
                 $send_return_email = preg_match($email_location, strtolower($this->arg('LOCATION')));
             }
-        } else {
-            // No history - could be a new dewar, so not necessarily an error...
-            if ($this->debug)
-                error_log("No previous dewar transport history for DewarId " . $dew['DEWARID']);
-        }
-        // If dewar status is dispatch-requested - don't change it.
-        // This way the dewar can be moved between storage locations and keep the record that a user requested the dispatch
-        // Default status is 'at-facility'
-        $dewarstatus = strtolower($dew['DEWARSTATUS']) == 'dispatch-requested' ? 'dispatch-requested' : 'at facility';
+            // If dewar status is dispatch-requested - don't change it.
+            // This way the dewar can be moved between storage locations and keep the record that a user requested the dispatch
+            // Default status is 'at-facility'
+            $dewarstatus = strtolower($dew['DEWARSTATUS']) == 'dispatch-requested' ? 'dispatch-requested' : 'at facility';
+            $dewarlocation = $this->arg('LOCATION');
 
-        $this->db->pq("INSERT INTO dewartransporthistory (dewartransporthistoryid,dewarid,dewarstatus,storagelocation,arrivaldate) VALUES (s_dewartransporthistory.nextval,:1,lower(:2),lower(:3),CURRENT_TIMESTAMP) RETURNING dewartransporthistoryid INTO :id", array($dew['DEWARID'], $dewarstatus, $this->arg('LOCATION')));
+        } else {
+            // just a status given
+            $dewarstatus = $this->arg('STATUS');
+            $dewarlocation = $dew['STORAGELOCATION'];
+        }
+
+        $this->db->pq("INSERT INTO dewartransporthistory (dewartransporthistoryid,dewarid,dewarstatus,storagelocation,arrivaldate) VALUES (s_dewartransporthistory.nextval,:1,lower(:2),lower(:3),CURRENT_TIMESTAMP) RETURNING dewartransporthistoryid INTO :id", array($dew['DEWARID'], $dewarstatus, $dewarlocation));
         $dhid = $this->db->id();
 
-        $this->db->pq("UPDATE dewar set dewarstatus=lower(:4), storagelocation=lower(:2), trackingnumberfromsynchrotron=:3 WHERE dewarid=:1", array($dew['DEWARID'], $this->arg('LOCATION'), $track, $dewarstatus));
-        $this->db->pq("UPDATE shipping set shippingstatus=lower(:2) WHERE shippingid=:1", array($dew['SHIPPINGID'], $dewarstatus));
+        if ($this->has_arg('LOCATION')) {
+            $this->db->pq("UPDATE dewar set dewarstatus=lower(:4), storagelocation=lower(:2), trackingnumberfromsynchrotron=:3 WHERE dewarid=:1", array($dew['DEWARID'], $this->arg('LOCATION'), $track, $dewarstatus));
+            $this->db->pq("UPDATE shipping set shippingstatus=lower(:2) WHERE shippingid=:1", array($dew['SHIPPINGID'], $dewarstatus));
 
-        $containers = $this->db->pq("SELECT containerid 
-                FROM container 
-                WHERE dewarid=:1", array($dew['DEWARID']));
-        foreach ($containers as $c) {
-            $this->db->pq("INSERT INTO containerhistory (containerid,status) VALUES (:1,:2)", array($c['CONTAINERID'], 'at facility'));
-        }
-
-        // Email
-        // EHCs, local contact(s), labcontact, dh, pa
-        $dew['NOW'] = strftime('%d-%m-%Y %H:%M');
-        $dew['INCONTACTS'] = $in_contacts;
-        $dew['TRACKINGNUMBERFROMSYNCHROTRON'] = $track;
-
-        if (strtolower($this->arg('LOCATION')) == 'stores-in' && $dew['LCOUTEMAIL']) {
-            $lcs = $this->db->pq("SELECT p.login
-                  FROM person p 
-                  INNER JOIN session_has_person shp ON shp.personid = p.personid
-                  WHERE shp.sessionid=:1 AND (shp.role = 'Local Contact' OR shp.role = 'Local Contact 2')", array($dew['FIRSTEXPERIMENTID']));
-            $emails = array($dew['LCOUTEMAIL'], $arrival_email);
-            foreach ($lcs as $lc) {
-                array_push($emails, $this->_get_email($lc['LOGIN']));
+            $containers = $this->db->pq("SELECT containerid
+                    FROM container
+                    WHERE dewarid=:1", array($dew['DEWARID']));
+            foreach ($containers as $c) {
+                $this->db->pq("INSERT INTO containerhistory (containerid,status) VALUES (:1,:2)", array($c['CONTAINERID'], 'at facility'));
             }
 
-            $email = new Email($dew['PROPOSALCODE'] == 'in' ? 'dewar-stores-in-in' : 'dewar-stores-in', '*** Dewar Received for ' . $dew['PROP'] . ' at ' . $dew['NOW'] . ' ***');
-            $email->data = $dew;
-            $email->send(implode(', ', $emails));
-        }
+            // Email
+            // EHCs, local contact(s), labcontact, dh, pa
+            $dew['NOW'] = strftime('%d-%m-%Y %H:%M');
+            $dew['INCONTACTS'] = $in_contacts;
+            $dew['TRACKINGNUMBERFROMSYNCHROTRON'] = $track;
 
-        if (strtolower($this->arg('LOCATION')) == 'stores-out' && $dew['LCRETEMAIL']) {
-            $email = new Email('dewar-stores-out', '*** Dewar ready to leave Synchrotron ***');
-            $email->data = $dew;
-            $email->send($dew['LCRETEMAIL']);
-        }
+            if (strtolower($this->arg('LOCATION')) == 'stores-in' && $dew['LCOUTEMAIL']) {
+                $lcs = $this->db->pq("SELECT p.login
+                      FROM person p
+                      INNER JOIN session_has_person shp ON shp.personid = p.personid
+                      WHERE shp.sessionid=:1 AND (shp.role = 'Local Contact' OR shp.role = 'Local Contact 2')", array($dew['FIRSTEXPERIMENTID']));
+                $emails = array($dew['LCOUTEMAIL'], $arrival_email);
+                foreach ($lcs as $lc) {
+                    array_push($emails, $this->_get_email($lc['LOGIN']));
+                }
 
-        if (strpos(strtolower($this->arg('LOCATION')), '-rack') !== false && $dew['LCRETEMAIL']) {
-            $dew['LOCATION'] = $this->arg('LOCATION');
-
-            $email = new Email('dewar-rack', '*** Dewar now outside Beamline ***');
-            $email->data = $dew;
-            $email->send($dew['LCRETEMAIL']);
-        }
-
-        if ($dew['LCRETEMAIL'] && $send_return_email) {
-            // Any data collections for this dewar's containers?
-            // Note this counts data collection ids for containers and uses the DataCollection.SESSIONID to determine the session/visit
-            // Should work for UDC (where container.sessionid is set) as well as any normal scheduled session (where container.sessionid is not set)
-            $rows = $this->db->pq("SELECT CONCAT(p.proposalcode, p.proposalnumber, '-', ses.visit_number) as visit, dc.sessionid, count(dc.datacollectionid) as dccount
-                    FROM Dewar d
-                    INNER JOIN Container c on c.dewarid = d.dewarid
-                    INNER JOIN BLSample bls ON bls.containerid = c.containerid
-                    INNER JOIN DataCollection dc ON dc.blsampleid = bls.blsampleid
-                    INNER JOIN BLSession ses ON dc.sessionid = ses.sessionid
-                    INNER JOIN Proposal p ON p.proposalid = ses.proposalid
-                    WHERE d.dewarid = :1
-                    GROUP BY dc.sessionid", array($dew['DEWARID']));
-
-            if (sizeof($rows))
-                $dew['DC'] = $rows;
-
-            $cc = array($dewar_complete_email ? $dewar_complete_email : null);
-
-            $owners = $this->db->pq("SELECT p.emailaddress
-                FROM Container c
-                INNER JOIN Person p ON c.ownerId = p.personId
-                WHERE c.dewarId = :1
-                GROUP BY p.emailaddress", array($dew['DEWARID']));
-
-            foreach ($owners as $owner) {
-                if ($owner['EMAILADDRESS'] != '') array_push($cc, $owner['EMAILADDRESS']);
+                $email = new Email($dew['PROPOSALCODE'] == 'in' ? 'dewar-stores-in-in' : 'dewar-stores-in', '*** Dewar Received for ' . $dew['PROP'] . ' at ' . $dew['NOW'] . ' ***');
+                $email->data = $dew;
+                $email->send(implode(', ', $emails));
             }
 
-            // Log the event if debugging
-            if ($this->debug) error_log("Dewar " . $dew['DEWARID'] . " back from beamline...");
+            if (strtolower($this->arg('LOCATION')) == 'stores-out' && $dew['LCRETEMAIL']) {
+                $email = new Email('dewar-stores-out', '*** Dewar ready to leave Synchrotron ***');
+                $email->data = $dew;
+                $email->send($dew['LCRETEMAIL']);
+            }
 
-            $email = new Email('storage-rack', '*** Visit finished, dewar awaiting instructions ***');
-            $email->data = $dew;
-            $email->send($dew['LCRETEMAIL'], implode(', ', $cc));
+            if (strpos(strtolower($this->arg('LOCATION')), '-rack') !== false && $dew['LCRETEMAIL']) {
+                $dew['LOCATION'] = $this->arg('LOCATION');
+
+                $email = new Email('dewar-rack', '*** Dewar now outside Beamline ***');
+                $email->data = $dew;
+                $email->send($dew['LCRETEMAIL']);
+            }
+
+            if ($dew['LCRETEMAIL'] && $send_return_email) {
+                // Any data collections for this dewar's containers?
+                // Note this counts data collection ids for containers and uses the DataCollection.SESSIONID to determine the session/visit
+                // Should work for UDC (where container.sessionid is set) as well as any normal scheduled session (where container.sessionid is not set)
+                $rows = $this->db->pq("SELECT CONCAT(p.proposalcode, p.proposalnumber, '-', ses.visit_number) as visit, dc.sessionid, count(dc.datacollectionid) as dccount
+                        FROM Dewar d
+                        INNER JOIN Container c on c.dewarid = d.dewarid
+                        INNER JOIN BLSample bls ON bls.containerid = c.containerid
+                        INNER JOIN DataCollection dc ON dc.blsampleid = bls.blsampleid
+                        INNER JOIN BLSession ses ON dc.sessionid = ses.sessionid
+                        INNER JOIN Proposal p ON p.proposalid = ses.proposalid
+                        WHERE d.dewarid = :1
+                        GROUP BY dc.sessionid", array($dew['DEWARID']));
+
+                if (sizeof($rows))
+                    $dew['DC'] = $rows;
+
+                $cc = array($dewar_complete_email ? $dewar_complete_email : null);
+
+                $owners = $this->db->pq("SELECT p.emailaddress
+                    FROM Container c
+                    INNER JOIN Person p ON c.ownerId = p.personId
+                    WHERE c.dewarId = :1
+                    GROUP BY p.emailaddress", array($dew['DEWARID']));
+
+                foreach ($owners as $owner) {
+                    if ($owner['EMAILADDRESS'] != '') array_push($cc, $owner['EMAILADDRESS']);
+                }
+
+                // Log the event if debugging
+                if ($this->debug) error_log("Dewar " . $dew['DEWARID'] . " back from beamline...");
+
+                $email = new Email('storage-rack', '*** Visit finished, dewar awaiting instructions ***');
+                $email->data = $dew;
+                $email->send($dew['LCRETEMAIL'], implode(', ', $cc));
+            }
         }
 
         $this->_output(array('DEWARHISTORYID' => $dhid));
@@ -1147,6 +1145,7 @@ class Shipment extends Page
         global $facility_country;
         global $facility_courier_countries;
         global $dispatch_email;
+        global $dispatch_email_regex;
         global $dispatch_email_intl;
         global $use_shipping_service;
         global $shipping_service_links_in_emails;
@@ -1315,6 +1314,14 @@ class Shipment extends Page
             $local_contact_email = $this->has_arg('LCEMAIL') ? $this->args['LCEMAIL'] : '';
             if ($local_contact_email) $recpts .= ', ' . $local_contact_email;
 
+            if (!is_null($dispatch_email_regex)) {
+                foreach ($dispatch_email_regex as $address => $pattern) {
+                    if (preg_match($pattern, $data['BARCODE'])) {
+                        $recpts .= ', ' . $address;
+                    }
+                }
+            }
+
             $email->send($recpts);
 
             // Update the dewar status and storage location
@@ -1343,6 +1350,7 @@ class Shipment extends Page
     function _dispatch_dewar_confirmation()
     {
         global $dispatch_email;
+        global $dispatch_email_regex;
         global $shipping_service_app_url;
 
         if (!$this->has_arg('did'))
@@ -1404,6 +1412,14 @@ class Shipment extends Page
         if ($data['EMAILADDRESS']) $recpts .= ', ' . $data['EMAILADDRESS'];
         $local_contact_email = $this->has_arg('LCEMAIL') ? $this->args['LCEMAIL'] : '';
         if ($local_contact_email) $recpts .= ', ' . $local_contact_email;
+
+        if (!is_null($dispatch_email_regex)) {
+            foreach ($dispatch_email_regex as $address => $pattern) {
+                if (preg_match($pattern, $data['BARCODE'])) {
+                    $recpts .= ', ' . $address;
+                }
+            }
+        }
 
         $email->send($recpts);
 
@@ -1626,7 +1642,7 @@ class Shipment extends Page
                 $order = $cols[$this->arg('sort_by')] . ' ' . $dir;
         }
 
-        $dewars = $this->db->paginate("SELECT CONCAT(p.proposalcode, p.proposalnumber) as prop, CONCAT(p.proposalcode, p.proposalnumber, '-', se.visit_number) as firstexperiment, r.labcontactid, se.beamlineoperator as localcontact, se.beamlinename, TO_CHAR(se.startdate, 'HH24:MI DD-MM-YYYY') as firstexperimentst, d.firstexperimentid, s.shippingid, s.shippingname, d.facilitycode, count(c.containerid) as ccount, (case when se.visit_number > 0 then (CONCAT(p.proposalcode, p.proposalnumber, '-', se.visit_number)) else '' end) as exp, d.code, d.barcode, d.storagelocation, d.dewarstatus, d.dewarid,  d.trackingnumbertosynchrotron, d.trackingnumberfromsynchrotron, d.externalShippingIdFromSynchrotron, s.deliveryagent_agentname, d.weight, d.deliveryagent_barcode, GROUP_CONCAT(c.code SEPARATOR ', ') as containers, s.sendinglabcontactid, s.returnlabcontactid, pe.givenname, pe.familyname
+        $dewars = $this->db->paginate("SELECT CONCAT(p.proposalcode, p.proposalnumber) as prop, CONCAT(p.proposalcode, p.proposalnumber, '-', se.visit_number) as firstexperiment, r.labcontactid, se.beamlineoperator as localcontact, se.beamlinename, TO_CHAR(se.startdate, 'HH24:MI DD-MM-YYYY') as firstexperimentst, d.firstexperimentid, s.shippingid, s.shippingname, d.facilitycode, count(c.containerid) as ccount, (case when se.visit_number > 0 then (CONCAT(p.proposalcode, p.proposalnumber, '-', se.visit_number)) else '' end) as exp, d.code, d.barcode, d.storagelocation, d.dewarstatus, d.dewarid,  d.trackingnumbertosynchrotron, d.trackingnumberfromsynchrotron, d.externalShippingIdFromSynchrotron, s.deliveryagent_agentname, d.weight, d.deliveryagent_barcode, GROUP_CONCAT(c.code SEPARATOR ', ') as containers, s.sendinglabcontactid, s.returnlabcontactid, pe.givenname, pe.familyname, s.safetylevel as shippingsafetylevel
               FROM dewar d 
               LEFT OUTER JOIN container c ON c.dewarid = d.dewarid 
               INNER JOIN shipping s ON d.shippingid = s.shippingid 
@@ -1700,6 +1716,39 @@ class Shipment extends Page
         $this->_output(array('DEWARID' => $id));
     }
 
+    # Check new safety level is ok
+    function _check_safety_level()
+    {
+        $ship = $this->db->pq("SELECT cq.containerqueueid, p.safetylevel FROM dewar d
+            LEFT OUTER JOIN container c on c.dewarid = d.dewarid
+            LEFT OUTER JOIN containerqueue cq on cq.containerid = c.containerid
+            LEFT OUTER JOIN blsample b ON b.containerid = c.containerid
+            LEFT OUTER JOIN crystal cr ON cr.crystalid = b.crystalid
+            LEFT OUTER JOIN protein p ON p.proteinid = cr.proteinid
+            WHERE d.shippingid = :1", array($this->arg('sid')));
+        if (strtolower($this->arg('SAFETYLEVEL')) == 'green') {
+            foreach ($ship as $s) {
+                if (strtolower($s['SAFETYLEVEL']) == 'yellow')
+                    $this->_error('Cannot set safety level to green as one or more samples are yellow.');
+                if (strtolower($s['SAFETYLEVEL']) == 'red')
+                    $this->_error('Cannot set safety level to green as one or more samples are red.');
+            }
+        } else if (strtolower($this->arg('SAFETYLEVEL')) == 'yellow') {
+            foreach ($ship as $s) {
+                if ($s['CONTAINERQUEUEID'] != null)
+                    $this->_error('Cannot set safety level to yellow as one or more containers are queued.');
+                if (strtolower($s['SAFETYLEVEL']) == 'red')
+                    $this->_error('Cannot set safety level to yellow as one or more samples are red.');
+            }
+        } else {
+            foreach ($ship as $s) {
+                if ($s['CONTAINERQUEUEID'] != null)
+                    $this->_error('Cannot set safety level to red as one or more containers are queued.');
+            }
+        }
+    }
+
+
     # Update shipment
     function _update_shipment()
     {
@@ -1720,6 +1769,9 @@ class Shipment extends Page
                 $fl = ':1';
                 if (in_array($f, array('DELIVERYAGENT_DELIVERYDATE', 'DELIVERYAGENT_SHIPPINGDATE'))) {
                     $fl = "TO_DATE(:1, 'DD-MM-YYYY')";
+                }
+                if ($f == 'SAFETYLEVEL') {
+                    $this->_check_safety_level();
                 }
 
                 $this->db->pq("UPDATE shipping SET $f=$fl WHERE shippingid=:2", array($this->arg($f), $this->arg('sid')));
@@ -2120,6 +2172,7 @@ class Shipment extends Page
         }
         // $this->db->set_debug(True);
         $rows = $this->db->paginate("SELECT round(TIMESTAMPDIFF('HOUR', min(ci.bltimestamp), CURRENT_TIMESTAMP)/24,1) as age, case when count(ci2.containerinspectionid) > 1 then 0 else 1 end as allow_adhoc, c.scheduleid, c.screenid, sc.name as screen, c.imagerid, i.temperature as temperature, i.name as imager, TO_CHAR(max(ci.bltimestamp), 'HH24:MI DD-MM-YYYY') as lastinspection, round(TIMESTAMPDIFF('HOUR', max(ci.bltimestamp), CURRENT_TIMESTAMP)/24,1) as lastinspectiondays, count(distinct ci.containerinspectionid) as inspections, CONCAT(p.proposalcode, p.proposalnumber) as prop, c.bltimestamp, c.samplechangerlocation, c.beamlinelocation, d.dewarstatus, c.containertype, c.capacity, c.containerstatus, c.containerid, c.code as name, d.code as dewar, sh.shippingname as shipment, d.dewarid, sh.shippingid, count(distinct s.blsampleid) as samples, cq.containerqueueid, TO_CHAR(cq.createdtimestamp, 'DD-MM-YYYY HH24:MI') as queuedtimestamp, CONCAT(p.proposalcode, p.proposalnumber, '-', ses.visit_number) as visit, ses.beamlinename, c.requestedreturn, c.requestedimagerid, c.comments, c.experimenttype, c.storagetemperature, c.barcode, reg.barcode as registry, reg.containerregistryid,
+                sh.safetylevel as shippingsafetylevel,
                 (SELECT sch.name FROM schedule sch WHERE sch.scheduleid = c.scheduleid) as schedule,
                 (SELECT i2.name FROM imager i2 WHERE i2.imagerid = c.requestedimagerid) as requestedimager,
                 (SELECT count(distinct ss.blsubsampleid) FROM blsubsample ss RIGHT OUTER JOIN blsample s2 ON s2.blsampleid = ss.blsampleid WHERE s2.containerid = c.containerid AND ss.source='manual') as subsamples,
