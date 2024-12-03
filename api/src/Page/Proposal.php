@@ -328,10 +328,11 @@ class Proposal extends Page
 
         if ($this->has_arg('all')) {
             $args = array();
-            $where = 'WHERE 1=1';
             // 'All' is used for the main summary view (Next, Last, Commissioning)
             // Ignore session zero for this summary view - they should be included if a proposal is selected
-            $where .= " AND s.visit_number > 0";
+            $where = "WHERE s.visit_number > 0";
+            $select = '';
+            $join = '';
         } else {
             if (!$this->has_arg('prop'))
                 $this->_error('No proposal specified');
@@ -343,6 +344,9 @@ class Proposal extends Page
 
             $args = array($p);
             $where = 'WHERE s.proposalid = :1';
+            $select = 'COUNT(distinct dc.datacollectionid) AS dccount,';
+            $join = 'LEFT OUTER JOIN datacollectiongroup dcg ON dcg.sessionid = s.sessionid
+                     LEFT OUTER JOIN datacollection dc ON dcg.datacollectiongroupid = dc.datacollectiongroupid';
         }
 
         if ($this->has_arg('notnull')) {
@@ -472,7 +476,7 @@ class Proposal extends Page
                     s.beamcalendarid,
                     CONCAT(p.proposalcode, p.proposalnumber)                      AS proposal,
                     COUNT(shp.personid)                                           AS persons,
-                    COUNT(distinct dc.datacollectionid)                           AS dccount,
+                    $select
                     s.proposalid
                 FROM BLSession s
                     INNER JOIN proposal p ON p.proposalid = s.proposalid
@@ -480,8 +484,7 @@ class Proposal extends Page
                     LEFT OUTER JOIN session_has_person shp ON shp.sessionid = s.sessionid
                     LEFT OUTER JOIN beamlinesetup bls on bls.beamlinesetupid = s.beamlinesetupid
                     LEFT OUTER JOIN beamcalendar bc ON bc.beamcalendarid = s.beamcalendarid
-                    LEFT OUTER JOIN datacollectiongroup dcg ON dcg.sessionid = s.sessionid
-                    LEFT OUTER JOIN datacollection dc ON dcg.datacollectiongroupid = dc.datacollectiongroupid
+                    $join
                 $where
                 GROUP BY s.sessionid
                 ORDER BY $order", $args);
