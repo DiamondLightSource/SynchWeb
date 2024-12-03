@@ -16,16 +16,15 @@
             <div class="tw-pb-2">
                 <input data-testid="visit-table-search"
                        placeholder='Search'                         
-                       v-on:keyup="fetchData"
+                       v-on:keyup.enter="fetchData" 
                        v-model = "searchVisit"/>
             </div>
 
             <table data-testid="visit-table" class="tw-w-full tw-mb-2">
                 <thead>
                     <td v-for="(value) in headers" :key="value.id" data-testid="visit-table-headers"
-                    class="tw-w-1/8 tw-bg-table-header-background tw-text-table-header-color tw-py-2 tw-text-center">
-                        <button v-if="value.key != 'DEWARS'" class="tw-font-bold" :id="value.order || value.key" @click="headerClick($event)">{{value.title}}</button>
-                        <span v-else class="tw-font-bold">{{value.title}}</span>
+                    class="tw-w-1/8 tw-bg-table-header-background tw-text-table-header-color tw-font-bold tw-py-2 tw-text-center">
+                    {{value.title}}
                     </td>
                 </thead>
 
@@ -121,25 +120,21 @@ export default {
             visits: [],
             dewars: [],
             searchVisit : '',
-            orderBy: '',
-            order: 1,
             headers: [
                 {
                     key: "STARTDATE",
-                    title: 'Start',
-                    order: 'ST'
+                    title: 'Start'
                 },
                 {
                     key: "ENDDATE",
-                    title: 'End',
-                    order: 'EN'
+                    title: 'End'
                 },
                 {
                     key: "VIS",
                     title: 'Number'
                 },
                 {
-                    key: "BL",
+                    key: "BEAMLINENAME",
                     title: 'Beamline'
                 },
                 {
@@ -152,8 +147,7 @@ export default {
                 },
                 {
                     key: "UNIQUELCS",
-                    title: 'Local Contact',
-                    order: 'LC'
+                    title: 'Local Contact'
                 },
                 {
                     key: "COMMENTS",
@@ -184,7 +178,6 @@ export default {
             window.location.href = '/proposals/';
         }
         this.fetchData()
-        this.fetchData = _.debounce(this.fetchData, 500)
     },
     methods: {
         async fetchData() {
@@ -195,18 +188,8 @@ export default {
                 page: this.currentPage,
                 per_page: this.pageSize,
                 prop: this.proposal,
-                order: 'order',
-                directions: {
-                    '-1': 'asc',
-                    '1': 'desc',
-                },
+                s: this.searchVisit,
             };
-            this.visitCollection.state = {
-                sortKey: 'sort_by',
-                order: this.order,
-            };
-            if (this.searchVisit) this.visitCollection.queryParams.s = this.searchVisit;
-            if (this.orderBy) this.visitCollection.queryParams.sort_by = this.orderBy;
 
             const results = await this.$store.dispatch('getCollection', this.visitCollection);
             this.visits = results.toJSON().map((e) => {
@@ -275,15 +258,6 @@ export default {
             else {
                 window.location.href = 'dc/visit/' + this.proposal + '-' + visit.VIS;
             }
-        },
-        headerClick(event) {
-            if (this.orderBy === event.target.id) {
-                this.order = -this.order;
-            } else {
-                this.order = 1;
-            }
-            this.orderBy = event.target.id;
-            this.fetchData();
         },
         handleFocusOut(visit) {
             // if click outside of active input box then input returns to text
