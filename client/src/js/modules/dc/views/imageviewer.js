@@ -79,8 +79,8 @@ define(['jquery', 'marionette',
             'slidechange @ui.zoom': 'slideChangeZoom',
             'keypress @ui.num': 'keyPressNum',
         
-            'click @ui.res': '_dra',
-            'click @ui.ice': '_dra',
+            'click @ui.res': 'doThreshold',
+            'click @ui.ice': 'doThreshold',
             'click @ui.invert': 'doInvert',
             'click @ui.threshold': 'doThreshold',
         
@@ -285,7 +285,7 @@ define(['jquery', 'marionette',
             this.n = n
             this.showProgressBar()
             this.img.onerror = this._onerror.bind(this,n)
-            this.img.load(app.apiurl+'/image/'+(this.low ? 'diff' : 'di')+'/id/'+this.model.get('ID')+(this.low ? '/f/1' : '')+(this.ui.threshold.is(':checked') ? '/thresh/1' : '')+('/n/'+n))
+            this.img.load(app.apiurl+'/image/'+(this.low ? 'diff' : 'di')+'/id/'+this.model.get('ID')+(this.low ? '/f/1' : '')+(this.ui.threshold.is(':checked') ? '/thresh/1' : '')+(this.ui.res.is(':checked') ? '/res/1' : '')+(this.ui.ice.is(':checked') ? '/ice/1' : '')+('/n/'+n))
         },
 
         onImageProgress: function(pc) {
@@ -407,9 +407,6 @@ define(['jquery', 'marionette',
             this.ctx.setTransform(this.scalef,0,0,this.scalef,this.offsetx,this.offsety)
             var r = this.detectVerticalSquash(this.img)
             this.ctx.drawImage(this.img, 0, 0, this.width, this.height/r)
-          
-            if (this.ui.res.is(':checked')) this._draw_res_rings()
-            if (this.ui.ice.is(':checked')) this._draw_ice_rings()
         },
                
                 
@@ -473,36 +470,7 @@ define(['jquery', 'marionette',
             this.c.resetOriginalPixelData()
         },
     
-                
-                
-        // Draw ice rings
-        _draw_ice_rings: function() {
-            var rings = [3.897, 3.669,3.441,2.671,2.249,2.07,1.95,1.92,1.88,1.72]
-          
-            this.ctx.strokeStyle='blue';
-            for (var i = 0; i < rings.length; i++) {
-              this.ctx.beginPath();
-              var rad = this._res_to_dist(rings[i])/this.ps*this.imscale
-              this.ctx.arc(this.model.get('XBEAM')/this.ps*this.imscale,this.model.get('YBEAM')/this.ps*this.imscale,rad,0,2*Math.PI);
-              this.ctx.stroke();
-            }
-        },
-          
-        // Draw resolution rings
-        _draw_res_rings: function() {
-            this.ctx.strokeStyle = 'black';
-            this.ctx.font = this.imscale < 1 ? '10px Arial' : '30px Arial';
-          
-            for (var i = 0; i < 5; i++) {
-              var rad = (((this.height-10)/2)/5)*(i+1)
-              this.ctx.beginPath();
-              this.ctx.arc(this.model.get('XBEAM')/this.ps*this.imscale,this.model.get('YBEAM')/this.ps*this.imscale,rad,0,2*Math.PI);
-              this.ctx.stroke();
-              this.ctx.fillText(this._dist_to_res(rad*this.ps/this.imscale).toFixed(2) + 'A',this.model.get('XBEAM')/this.ps*this.imscale-(this.low ? 10 : 40 ),this.model.get('YBEAM')/this.ps*this.imscale-rad+(this.low ? 10 : 40));
-            }
-        },
-        
-                
+
         // Plot spot profile
         _plot_profiles: function(xp, yp) {
             if (xp < 20) xp = 20
@@ -791,7 +759,6 @@ define(['jquery', 'marionette',
             this.invert_change = true
             this._dra()
         },
-
 
         doThreshold: function() {
             this.load(this.n)
