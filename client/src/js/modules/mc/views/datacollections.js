@@ -42,6 +42,12 @@ define(['backbone', 'marionette',
     }, KVCollection))
 
 
+    var AbsorptionLevels = Backbone.Collection.extend(_.extend({
+        keyAttribute: 'NAME',
+        valueAttribute: 'VALUE',
+    }, KVCollection))
+
+
     return Marionette.LayoutView.extend({
         className: 'content',
         template: template,
@@ -63,6 +69,7 @@ define(['backbone', 'marionette',
             wait: '.wait',
             pipeline: 'select[name=pipeline]',
             indexingMethod: 'select[name=method]',
+            absorptionLevel: 'select[name=absorption_level]',
             opts: 'div.options',
             sm: 'input[name=sm]',
             sg: 'select[name=sg]',
@@ -94,7 +101,7 @@ define(['backbone', 'marionette',
         },
 
         xia2params: function() {
-            return ['cc_half', 'isigma', 'misigma', 'sigma_strong', 'method']
+            return ['cc_half', 'isigma', 'misigma', 'sigma_strong', 'method', 'absorption_level']
         },
 
         integrate: function(e) {
@@ -125,6 +132,13 @@ define(['backbone', 'marionette',
                         PROCESSINGJOBID: reprocessing.get('PROCESSINGJOBID'),
                         PARAMETERKEY: 'd_min', 
                         PARAMETERVALUE: res
+                    }))
+
+                    var lowres = self.$el.find('input[name=lowres]').val()
+                    if (lowres) reprocessingparams.add(new ReprocessingParameter({
+                        PROCESSINGJOBID: reprocessing.get('PROCESSINGJOBID'),
+                        PARAMETERKEY: 'd_max',
+                        PARAMETERVALUE: lowres
                     }))
 
                     var hascell = true
@@ -252,6 +266,15 @@ define(['backbone', 'marionette',
             ])
 
             this.ui.indexingMethod.html(this.indexingMethods.opts())
+
+            this.absorptionLevels = new AbsorptionLevels([
+                { NAME: '-', VALUE: '' },
+                { NAME: 'Low', VALUE: 'low' },
+                { NAME: 'Medium', VALUE: 'medium' },
+                { NAME: 'High', VALUE: 'high' },
+            ])
+
+            this.ui.absorptionLevel.html(this.absorptionLevels.opts())
         },
           
         setCell: function(view, ap) {
