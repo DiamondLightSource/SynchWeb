@@ -408,7 +408,7 @@ define(['jquery', 'marionette',
             var r = this.detectVerticalSquash(this.img)
             this.ctx.drawImage(this.img, 0, 0, this.width, this.height/r)
 
-            if (!app.options.get("dials_rest_url")) {
+            if (!app.options.get("dials_rest_url_rings")) {
                 if (this.ui.res.is(':checked')) this._draw_res_rings()
                 if (this.ui.ice.is(':checked')) this._draw_ice_rings()
             }
@@ -795,7 +795,7 @@ define(['jquery', 'marionette',
         },
 
         doIceOrRes: function() {
-            if (app.options.get("dials_rest_url")) {
+            if (app.options.get("dials_rest_url_rings")) {
                 this.reloadImage()
             } else {
                 this._dra()

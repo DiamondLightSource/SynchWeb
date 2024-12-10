@@ -72,7 +72,7 @@ function setupApplication($mode): Slim
             $dhl_enable, $scale_grid, $scale_grid_end_date, $preset_proposal, $timezone,
             $valid_components, $enabled_container_types, $ifsummary, $synchweb_version, $redirects,
             $shipping_service_app_url, $use_shipping_service_redirect, $use_shipping_service_redirect_incoming_shipments,
-            $dials_rest_url;
+            $dials_rest_url_rings;
         $app->contentType('application/json');
         $options = $app->container['options'];
         $app->response()->body(json_encode(array(
@@ -96,7 +96,7 @@ function setupApplication($mode): Slim
             'synchweb_version' => $synchweb_version,
             'shipping_service_app_url' => $use_shipping_service_redirect || $use_shipping_service_redirect_incoming_shipments ? $shipping_service_app_url : null,
             'shipping_service_app_url_incoming' => $use_shipping_service_redirect_incoming_shipments ? $shipping_service_app_url : null,
-            'dials_rest_url' => $dials_rest_url,
+            'dials_rest_url_rings' => $dials_rest_url_rings,
             'redirects' => $redirects
         )));
     });
