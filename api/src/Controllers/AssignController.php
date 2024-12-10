@@ -13,7 +13,7 @@ class AssignController extends Page
 
     public static $arg_list = array('visit' => '\w+\d+-\d+', 'cid' => '\d+', 'did' => '\d+', 'pos' => '\d+', 'bl' => '[\w\-]+');
 
-    public static $dispatch = array(array('/visits(/:visit)', 'get', 'getBeamlineVisits'),
+    public static $dispatch = array(
             array('/assign', 'get', 'assignContainer'),
             array('/unassign', 'get', 'unassignContainer'),
             array('/deact', 'get', 'deactivateDewar'),
@@ -73,30 +73,6 @@ class AssignController extends Page
             $this->_output(0);
         }
     }
-
-
-    # ------------------------------------------------------------------------
-    # Return visits for beamline
-    function getBeamlineVisits($visit = null)
-    {
-        $visits = $this->blsr_visits();
-
-        if ($visit)
-        {
-            foreach ($visits as $i => $v)
-            {
-                if ($v['VISIT'] == $visit)
-                {
-                    $this->_output($v);
-                    return;
-                }
-            }
-            $this->_error('No such visit');
-        }
-        else
-            $this->_output($visits);
-    }
-
 
     # ------------------------------------------------------------------------
     # Puck names from puck scanner
