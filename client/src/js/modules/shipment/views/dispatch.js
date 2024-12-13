@@ -112,6 +112,7 @@ define(['marionette', 'views/form',
                 DEWARID: this.getOption('dewar').get('DEWARID'), 
                 LABCONTACTID: this.getOption('dewar').get('LABCONTACTID'),
                 VISIT: this.getOption('dewar').get('FIRSTEXPERIMENT'),
+                UDCVISIT: this.getOption('dewar').get('UDCFIRSTEXPERIMENT'),
                 // If no agent specified on inbound, default to diamond dhl
                 DELIVERYAGENT_AGENTNAME: this.getOption('shipping').get('DELIVERYAGENT_AGENTNAME') || 'DHL'
             })
@@ -174,7 +175,8 @@ define(['marionette', 'views/form',
         },
 
         doOnRender: function() {
-            this.ui.exp.html(this.visits.opts()).val(this.model.get('VISIT'))
+            let visit = this.model.get('VISIT') || this.model.get('UDCVISIT')
+            this.ui.exp.html(this.visits.opts()).val(visit)
             this.updateLC()
             this.populateCountries()
             this.stripPostCode()
