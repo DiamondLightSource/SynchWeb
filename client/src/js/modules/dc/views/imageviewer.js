@@ -124,7 +124,6 @@ define(['jquery', 'marionette',
             
             this.moved = false
             this.blocks = 0
-            this.invert_change = false
 
             this.ps = parseFloat(this.model.get('DETECTORPIXELSIZEHORIZONTAL'))/1000 || 0.172
             this.diwidth = parseInt(this.model.get('DETECTORNUMBEROFPIXELSX')) || 2527
@@ -445,14 +444,13 @@ define(['jquery', 'marionette',
         
         // Apply image adjustments
         adjust: function() {
-            if (this.brightness == 0 && this.contrast == 0 && !(this.invert_change || this.ui.invert.is(':checked'))) return
+            if (this.brightness == 0 && this.contrast == 0 && !(this.ui.invert.is(':checked'))) return
 
             this.c.revert()
-            if (this.invert_change) {
+            if (this.ui.invert.is(':checked')) {
               this.c.invert()
               //_plot_profiles(lastx, lasty)
             }
-            this.invert_change = false
 
             var self = this
             this.c.brightness(this.brightness).contrast(this.contrast).render(function() {
@@ -678,9 +676,6 @@ define(['jquery', 'marionette',
             //return false
         },
             
-                
-          
-          
         // Clamp zoom box
         _clamp_z_box: function(c) {
             if (c[0]+20 > this.ui.canvas.width()) c[0] = this.ui.canvas.width()-20
@@ -697,13 +692,6 @@ define(['jquery', 'marionette',
             if (this.offsetx > 0) this.offsetx = 0
             if (this.offsetx < this.ui.canvas.width() - this.scalef*this.width) this.offsetx = this.ui.canvas.width() - this.scalef*this.width
         },
-                
-                
-                
-                
-                
-                
-                
                 
         // Convert distance from centre to resolution and back
         _dist_to_res: function(dist) {
@@ -742,11 +730,8 @@ define(['jquery', 'marionette',
     
             this.ui.resc.text(res.toFixed(2))
         },
-                
-                
-                
-        
-                
+
+
         // Bind load image on return
         keyPressNum: function(e) {
             var n = parseInt(this.ui.num.val())
@@ -790,12 +775,12 @@ define(['jquery', 'marionette',
         },
             
         doInvert: function() {
-            this.invert_change = true
             this._dra()
         },
 
         doIceOrRes: function() {
             if (app.options.get("dials_rest_url_rings")) {
+                this.ui.invert.prop('checked', false)
                 this.reloadImage()
             } else {
                 this._dra()
