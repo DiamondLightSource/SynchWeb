@@ -365,6 +365,7 @@ define(['jquery', 'marionette',
               val--
               this.change(val)
               this.ui.num.val(val)
+              this.ui.invert.prop('checked', false)
             }
         },
           
@@ -374,6 +375,7 @@ define(['jquery', 'marionette',
               val++
               this.change(val)
               this.ui.num.val(val)
+              this.ui.invert.prop('checked', false)
             }
         },
         
@@ -780,7 +782,6 @@ define(['jquery', 'marionette',
 
         doIceOrRes: function() {
             if (app.options.get("dials_rest_url_rings")) {
-                this.ui.invert.prop('checked', false)
                 this.reloadImage()
             } else {
                 this._dra()
@@ -788,6 +789,7 @@ define(['jquery', 'marionette',
         },
 
         reloadImage: function() {
+            this.ui.invert.prop('checked', false)
             this.load(this.n)
         }
 
