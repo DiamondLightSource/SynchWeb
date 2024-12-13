@@ -353,6 +353,7 @@ define(['jquery', 'marionette',
             var self = this
             this.ui.canvas.fadeOut(100,function() {
               self.load(n)
+              self.ui.invert.prop('checked', false)
             })
         },
         
