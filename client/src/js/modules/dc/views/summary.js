@@ -162,7 +162,6 @@ define(['backbone',
                 { name: 'OUTERCCHALF', label: 'CC½ Outer', cell: 'string', editable: false },
                 { name: 'INNERCCANOM', label: 'CCanom Inner', cell: 'string', editable: false },
                 { label: '', cell: table.TemplateCell, template: '<a href="'+app.apiurl+'/download/ap/archive/<%-AID%>" class="button button-notext dll" title="Download autoprocessing archive"><i class="fa fa-download"></i> <span>Download autoprocessing archive</span></a>', editable: false },
-                
             ]
             
             this.wrap.show(new TableView({

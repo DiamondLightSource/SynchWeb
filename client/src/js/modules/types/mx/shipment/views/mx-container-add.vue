@@ -94,6 +94,9 @@
                   v-model="QUEUEFORUDC"
                   name="Queue For UDC"
                 />
+                <span v-else-if="shippingSafetyLevel === null">
+                  Cannot queue container until shipment safety level is set
+                </span>
                 <span v-else>
                   Cannot queue containers in {{ shippingSafetyLevel }} shipments
                 </span>
@@ -663,7 +666,7 @@ export default {
 
         await this.$store.dispatch('samples/save', containerId)
         this.$store.commit('notifications/addNotification', {
-          message: `New Container created, click <a href=/containers/cid/${containerId}>here</a> to view it`,
+          message: `New Container created, click <a href=/containers/cid/${containerId}>here</a> to view it. Remember to add sequences and PDBs if needed.`,
           level: 'info',
           persist: true
         })

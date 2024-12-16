@@ -162,8 +162,8 @@ define(['backbone', 'marionette', 'views/dialog',
             if (e) e.preventDefault()
 
             if (this.aps.length) {
-                var e = this.aps.at(0)
-                var c = e.get('CELL')
+                const a = this.aps.at(0)
+                const c = a.get('CELL')
 
                 this.ui.a.val(c['CELL_A']).trigger('change')
                 this.ui.b.val(c['CELL_B']).trigger('change')
@@ -172,7 +172,7 @@ define(['backbone', 'marionette', 'views/dialog',
                 this.ui.be.val(c['CELL_BE']).trigger('change')
                 this.ui.ga.val(c['CELL_GA']).trigger('change')
 
-                this.ui.sg.val(e['SG']).trigger('change')
+                this.ui.sg.val(a['SG']).trigger('change')
             }
         },
 
@@ -300,11 +300,11 @@ define(['backbone', 'marionette', 'views/dialog',
             }
 
             var self = this
+            var reqs = []
             // Integrate individually
             if (this.ui.ind.is(':checked')) {
                 var jobs = 0
 
-                var reqs = []
                 var rps = []
                 _.each(s, function(sw) {
                     var p = this.pipelines.findWhere({ VALUE: sw.get('PIPELINE') })
@@ -405,7 +405,6 @@ define(['backbone', 'marionette', 'views/dialog',
                     return
                 }
 
-                var reqs = []
                 reqs.push(reprocessing.save({}, {
                     success: function() {
                         var reprocessingparams = new ReprocessingParameters()

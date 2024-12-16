@@ -116,7 +116,7 @@ define(['marionette',
                 this.listenTo(this.proposals, 'backgrid:selected', this.selectModel, this)
                 this.proposals.fetch()
 
-                var columns = [
+                var columns2 = [
                     { label: '', cell: 'select-row', headerCell: 'select-all', editable: false },
                     { name: 'PROPOSALCODE', label: 'Code', cell: 'string', editable: false },
                     { name: 'PROPOSALNUMBER', label: 'Number', cell: 'string', editable: false },
@@ -126,7 +126,7 @@ define(['marionette',
 
                 this.table2 = new TableView({
                     collection: this.proposals,
-                    columns: columns, tableClass: 'proposals', filter: 's', search: options.params.s, loading: true, noPageUrl: true, noSearchUrl: true,
+                    columns: columns2, tableClass: 'proposals', filter: 's', search: options.params.s, loading: true, noPageUrl: true, noSearchUrl: true,
                     backgrid: { emptyText: 'No proposals found' } 
                 })
 
