@@ -193,18 +193,6 @@
     $in_contacts = array('Ind Contact' => 'in@server.ac.uk'
                         );
 
-
-    # Beamline Sample Registration Machines
-    # - Used for touchscreen application (unauthenticated)
-    $blsr = array('1.2.3.4', # my touchscreen computer
-                  );
-
-    # Beamline Sample Registration IP -> Beamline mapping
-    # - Third part of ip is used to identify beamline
-    #   x.x.103.x => i03
-    $ip2bl = array(103 => 'i03',
-                   );
-
     # Barcode readers
     # - These clients use the android app (unauthenticated)
     $bcr = array('1.2.3.4', # my android device
