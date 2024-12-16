@@ -1,8 +1,8 @@
 define(['marionette', 'modules/stats/models/pie', 'utils',
         'jquery',
         'jquery.flot',
-        'jquery.flot.resize',
-        'jquery.flot.pie',
+        'jquery-flot-resize',
+        'flot-pie',
 ], function(Marionette, Pie, utils, $) {
     
     return Marionette.ItemView.extend({

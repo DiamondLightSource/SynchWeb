@@ -64,9 +64,6 @@ module.exports = (env, argv) => ({
       // 'jquery-ui.combobox': 'vendor/jquery/jquery-ui.combobox',
 
       // Jquery.flot provided by NPM package (exact name match)
-      // Jquery.flot.resize also from NPM but slightly older version 1.0.0 2012 instead of 2013 (vendor lib)
-      'jquery.flot.resize': 'jquery-flot-resize',
-      'jquery.flot.pie': 'flot-pie',
       'jquery.flot.time': 'vendor/flot/jquery.flot.time.min',
       'jquery.flot.selection': 'vendor/flot/jquery.flot.selection',
       'jquery.flot.stack': 'vendor/flot/jquery.flot.stack',
@@ -74,7 +71,6 @@ module.exports = (env, argv) => ({
       // Jquery flot tooltip is provided ny NPM with exact name match,
       // so not aliased here, was: 'vendor/flot/jquery.flot.tooltip',
       'jquery.flot.tickrotor': 'vendor/flot/jquery.flot.tickrotor',
-      'jquery.flot.axislabels': 'flot-axislabels',
 
       // We can't currently use the magnific-popup from npm e.g.:
       // 'jquery.mp': 'magnific-popup',
@@ -88,10 +84,6 @@ module.exports = (env, argv) => ({
       'jquery.editable': 'vendor/jquery/jquery.jeditable.min',
       'jquery.editable.datepicker': 'vendor/jquery/jquery.jeditable.datepicker',
 
-      // Jquery.color plugin also NPM package
-      // Only used from within utils.js
-      'jquery.color': 'jquery-color',
-
       // Caman npm depends on fibers, canvas, fs which we don't want...
       // So use direct downloaded dependency
       caman: 'vendor/caman.min',
@@ -104,9 +96,6 @@ module.exports = (env, argv) => ({
       gzip: 'zlibjs/bin/gunzip.min',
 
       markdown: 'markdown/lib/markdown',
-
-      highmaps: 'highcharts/highmaps',
-      'highmaps-world': '@highcharts/map-collection/custom/world',
 
       // Vue packages from npm (vee-validate requires promise polyfill - also npm)
       vue: 'vue/dist/vue.min',

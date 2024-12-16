@@ -4,8 +4,6 @@ define(['marionette',
     'views/table',
     'utils/table',
     'utils',
-    'highmaps',
-    'highmaps-world',
     'templates/shipment/dewarstats.html', 'jquery.flot', 'jquery.flot.tooltip'], 
     function(Marionette,
         DewarOverview,
@@ -13,8 +11,6 @@ define(['marionette',
         TableView,
         table,
         utils,
-        Highcharts,
-        HighchartsWorldMap, // Needs to be loaded to provide custom/world map
         template) {
     
 
@@ -80,7 +76,6 @@ define(['marionette',
 
 
         initialize: function() {
-            console.log(Highcharts)
             this.run = new DewarOverview(null, { queryParams: { group_by: 'year' } })
             this.countries = new SortedDewars(null, { queryParams: { group_by: 'country' } })
             this.countries.state.pageSize = 25
@@ -141,16 +136,7 @@ define(['marionette',
                 backgrid: { emptyText: 'No dewar stats found' } 
             }))
 
-            this.listenTo(this.countries, 'sync', this.plotMap)
-            this.plotMap()
         },
-
-
-        onShow: function() {
-            this.listenTo(this.run, 'sync', this.plotYears)
-            this.plotMap()
-        },
-
 
         plotYears: function() {
             var ticks = []
@@ -182,60 +168,6 @@ define(['marionette',
             }
 
             $.plot(this.ui.years, data, options)  
-        },
-
-
-        plotMap: function() {
-            var data = []
-            this.countries.fullCollection.each(function(c) {
-                if (c.get('CODE')) data.push({ code: c.get('CODE'), value: parseInt(c.get('DEWARS')) })
-            })
-
-            var num = 5
-            var cols = utils.getColors(num)
-            var stops = []
-            _.each(_.range(num), function(n) {
-                stops.push([(1/num)*n, cols[n]])
-            })
-
-            Highcharts.mapChart({
-                chart: {
-                    renderTo: this.ui.map[0],
-                    backgroundColor:'rgba(255, 255, 255, 0.0)',
-                    map: 'custom/world'
-                },
-
-                title: {
-                    text: 'Dewar breakdown by Country'
-                },
-
-                mapNavigation: {
-                    enabled: true,
-                    buttonOptions: {
-                        verticalAlign: 'bottom'
-                    }
-                },
-
-                colorAxis: {
-                    min: 1,
-                    type: 'logarithmic',
-                    stops: stops,
-                },
-
-                series: [{
-                    data: data,
-                    joinBy: ['iso-a2', 'code'],
-                    states: {
-                        hover: {
-                            color: '#a4edba'
-                        }
-                    },
-                    dataLabels: {
-                        enabled: true,
-                        format: '{point.properties.postal}'
-                    }
-                }]
-            });
         },
         
     })
