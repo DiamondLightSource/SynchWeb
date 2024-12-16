@@ -1,7 +1,7 @@
 define(['marionette', 'modules/types/gen/dc/models/dat', 'utils',
         'jquery',
         'jquery.flot',
-        'jquery.flot.resize',
+        'jquery-flot-resize',
 ], function(Marionette, Dat, utils, $) {
        
     // DAT Plot
