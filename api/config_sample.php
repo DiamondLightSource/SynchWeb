@@ -393,4 +393,5 @@
     # Dials server values
     $dials_rest_url = "";
     $dials_rest_jwt = "";
+    $dials_rest_url_rings = false;
 ?>
