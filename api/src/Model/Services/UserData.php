@@ -103,7 +103,7 @@ class UserData
             || $pid) // if you are looking for user based on a proposal, but this 
         {
             $where .= ' AND (prhp.proposalid=:' . (sizeof($args) + 1) . ' OR lc.proposalid=:' . (sizeof($args) + 2) . ' OR p.personid=:' . (sizeof($args) + 3) . ')';
-            array_push($args, $proposalid, $proposalid, $personId);
+            array_push($args, $proposalid, $proposalid, $currentUserId);
             $join .= 'LEFT OUTER JOIN proposalhasperson prhp ON prhp.personid = p.personid
                       LEFT OUTER JOIN labcontact lc ON lc.personid = p.personid ';
         }
