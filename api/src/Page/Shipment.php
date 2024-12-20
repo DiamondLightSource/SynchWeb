@@ -1993,6 +1993,7 @@ class Shipment extends Page
         if (!$this->has_arg('prop') && !$this->has_arg('visit') && !$this->staff)
             $this->_error('No proposal specified');
 
+        $select = '';
         $having = '';
         $subsamplesInTotal = "";
         $totalQuery = new DatabaseQueryBuilder($this->db);
@@ -2065,6 +2066,8 @@ class Shipment extends Page
             array_push($args, $this->arg('sid'));
         }
         if ($this->has_arg('cid')) {
+            $select .= 'case when count(ci2.containerinspectionid) > 1 then 0 else 1 end as allow_adhoc, ';
+            $join .= ' LEFT OUTER JOIN containerinspection ci2 ON ci2.containerid = c.containerid AND ci2.state != "Completed" AND ci2.manual != 1 AND ci2.schedulecomponentid IS NULL';
             $where .= ' AND c.containerid=:' . (sizeof($args) + 1);
             array_push($args, $this->arg('cid'));
         }
@@ -2162,25 +2165,40 @@ class Shipment extends Page
 
         if ($this->has_arg('sort_by')) {
             $cols = array(
-                'NAME' => 'c.code', 'DEWAR' => 'd.code', 'SHIPMENT' => 'sh.shippingname', 'SAMPLES' => 'count(s.blsampleid)', 'SHIPPINGID' => 'sh.shippingid', 'LASTINSPECTION' => 'max(ci.bltimestamp)', 'INSPECTIONS' => 'count(ci.containerinspectionid)',
+                'NAME' => 'c.code', 'DEWAR' => 'd.code', 'SHIPMENT' => 'sh.shippingname', 'SAMPLES' => 'count(s.blsampleid)',
+                'LASTINSPECTIONDAYS' => 'lastinspectiondays', 'INSPECTIONS' => 'count(ci.containerinspectionid)',
+                'CONTAINERTYPE' => 'c.containertype', 'CONTAINERSTATUS' => 'c.containerstatus',
                 'DCCOUNT' => 'COUNT(distinct dc.datacollectionid)', 'SUBSAMPLES' => 'subsamples',
-                'LASTQUEUECOMPLETED' => 'max(cq2.completedtimestamp)', 'QUEUEDTIMESTAMP' => 'max(cq.createdtimestamp)'
+                'LASTQUEUECOMPLETED' => 'max(cq2.completedtimestamp)', 'AGE' => 'age'
             );
             $dir = $this->has_arg('order') ? ($this->arg('order') == 'asc' ? 'ASC' : 'DESC') : 'ASC';
             if (array_key_exists($this->arg('sort_by'), $cols))
                 $order = $cols[$this->arg('sort_by')] . ' ' . $dir;
         }
         // $this->db->set_debug(True);
-        $rows = $this->db->paginate("SELECT round(TIMESTAMPDIFF('HOUR', min(ci.bltimestamp), CURRENT_TIMESTAMP)/24,1) as age, case when count(ci2.containerinspectionid) > 1 then 0 else 1 end as allow_adhoc, c.scheduleid, c.screenid, sc.name as screen, c.imagerid, i.temperature as temperature, i.name as imager, TO_CHAR(max(ci.bltimestamp), 'HH24:MI DD-MM-YYYY') as lastinspection, round(TIMESTAMPDIFF('HOUR', max(ci.bltimestamp), CURRENT_TIMESTAMP)/24,1) as lastinspectiondays, count(distinct ci.containerinspectionid) as inspections, CONCAT(p.proposalcode, p.proposalnumber) as prop, c.bltimestamp, c.samplechangerlocation, c.beamlinelocation, d.dewarstatus, c.containertype, c.capacity, c.containerstatus, c.containerid, c.code as name, d.code as dewar, sh.shippingname as shipment, d.dewarid, sh.shippingid, count(distinct s.blsampleid) as samples, cq.containerqueueid, TO_CHAR(cq.createdtimestamp, 'DD-MM-YYYY HH24:MI') as queuedtimestamp, CONCAT(p.proposalcode, p.proposalnumber, '-', ses.visit_number) as visit, ses.beamlinename, c.requestedreturn, c.requestedimagerid, c.comments, c.experimenttype, c.storagetemperature, c.barcode, reg.barcode as registry, reg.containerregistryid,
-                sh.safetylevel as shippingsafetylevel,
+        $rows = $this->db->paginate("SELECT $select
+                round(TIMESTAMPDIFF('HOUR', min(ci.bltimestamp), CURRENT_TIMESTAMP)/24,1) as age,
+                TO_CHAR(max(ci.bltimestamp), 'HH24:MI DD-MM-YYYY') as lastinspection,
+                round(TIMESTAMPDIFF('HOUR', max(ci.bltimestamp), CURRENT_TIMESTAMP)/24,1) as lastinspectiondays,
+                count(distinct ci.containerinspectionid) as inspections,
+                c.scheduleid, c.screenid, c.ownerid, c.imagerid, c.bltimestamp, c.samplechangerlocation, c.beamlinelocation, c.containertype, c.capacity, c.barcode,
+                c.containerstatus, c.containerid, c.code as name, c.requestedreturn, c.requestedimagerid, c.comments, c.experimenttype, c.storagetemperature,
+                sc.name as screen,
+                i.temperature, i.name as imager,
+                CONCAT(p.proposalcode, p.proposalnumber) as prop, CONCAT(p.proposalcode, p.proposalnumber, '-', ses.visit_number) as visit, ses.beamlinename,
+                d.dewarstatus, d.code as dewar, d.dewarid,
+                sh.shippingname as shipment, sh.shippingid, sh.safetylevel as shippingsafetylevel,
+                count(distinct s.blsampleid) as samples,
+                cq.containerqueueid, TO_CHAR(cq.createdtimestamp, 'DD-MM-YYYY HH24:MI') as queuedtimestamp,
+                reg.barcode as registry, reg.containerregistryid,
                 (SELECT sch.name FROM schedule sch WHERE sch.scheduleid = c.scheduleid) as schedule,
                 (SELECT i2.name FROM imager i2 WHERE i2.imagerid = c.requestedimagerid) as requestedimager,
                 (SELECT count(distinct ss.blsubsampleid) FROM blsubsample ss RIGHT OUTER JOIN blsample s2 ON s2.blsampleid = ss.blsampleid WHERE s2.containerid = c.containerid AND ss.source='manual') as subsamples,
                 (SELECT ses3.beamlinename FROM blsession ses3 WHERE d.firstexperimentid = ses3.sessionid) as firstexperimentbeamline,
                 (SELECT pp.name FROM processingpipeline pp WHERE c.prioritypipelineid = pp.processingpipelineid) as pipeline,
-                TO_CHAR(max(cq2.completedtimestamp), 'HH24:MI DD-MM-YYYY') as lastqueuecompleted, TIMESTAMPDIFF('MINUTE', max(cq2.completedtimestamp), max(cq2.createdtimestamp)) as lastqueuedwell,
-                c.ownerid,
+                TO_CHAR(max(cq2.completedtimestamp), 'HH24:MI DD-MM-YYYY') as lastqueuecompleted,
                 (SELECT CONCAT(pe.givenname, ' ', pe.familyname) FROM person pe WHERE c.ownerid = pe.personid) as owner
+
                                   FROM container c 
                                   INNER JOIN dewar d ON d.dewarid = c.dewarid 
                                   INNER JOIN shipping sh ON sh.shippingid = d.shippingid 
@@ -2189,7 +2207,6 @@ class Shipment extends Page
                                   LEFT OUTER JOIN containerinspection ci ON ci.containerid = c.containerid AND ci.state = 'Completed'
                                   LEFT OUTER JOIN imager i ON i.imagerid = c.imagerid
                                   LEFT OUTER JOIN screen sc ON sc.screenid = c.screenid
-                                  LEFT OUTER JOIN containerinspection ci2 ON ci2.containerid = c.containerid AND ci2.state != 'Completed' AND ci2.manual!=1 AND ci2.schedulecomponentid IS NULL
                                   LEFT OUTER JOIN containerqueue cq ON cq.containerid = c.containerid AND cq.completedtimestamp IS NULL
                                   LEFT OUTER JOIN containerqueue cq2 ON cq2.containerid = c.containerid AND cq2.completedtimestamp IS NOT NULL
                                   LEFT OUTER JOIN containerregistry reg ON reg.containerregistryid = c.containerregistryid
