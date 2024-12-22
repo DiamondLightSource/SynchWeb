@@ -132,19 +132,19 @@ class UserData
         }
         else if ($visitName)
         {
-            $ses = $this->db->pq("SELECT sessionid FROM blsession s INNER JOIN proposal pr ON pr.proposalid = s.proposalid
-                                  WHERE CONCAT(pr.proposalcode, pr.proposalnumber, '-', s.visit_number) LIKE :1",
-                                  array($visitName)
-                                );
-            $sessionid = sizeof($ses) ? $ses[0]['SESSIONID'] : 0;
+            $pattern = '/([A-z]+)(\d+)-(\d+)/';
+            preg_match($pattern, $visitName, $matches);
+            if (!sizeof($matches))
+                $this->_error('No such visit');
             $extc = "count(ses.sessionid) as visits, TO_CHAR(max(ses.startdate), 'DD-MM-YYYY') as last, shp.remote, shp.role,";
             $join .= 'INNER JOIN session_has_person shp ON shp.personid = p.personid
                      INNER JOIN blsession s ON shp.sessionid = s.sessionid
+                     INNER JOIN proposal pr ON pr.proposalid = s.proposalid
                      LEFT OUTER JOIN session_has_person shp2 ON p.personid = shp2.personid
                      LEFT OUTER JOIN blsession ses ON ses.sessionid = shp2.sessionid AND ses.startdate < s.startdate';
-            $where .= " AND shp.remote IS NOT NULL AND s.sessionid = :" . (sizeof($args) + 1);
+            $where .= " AND shp.remote IS NOT NULL AND pr.proposalcode = :" . (sizeof($args) + 1) . " AND pr.proposalnumber = :" . (sizeof($args) + 2) . " AND s.visit_number = :" . (sizeof($args) + 3);
             $group = 'GROUP BY p.personid, p.givenname, p.familyname, p.login';
-            array_push($args, $sessionid);
+            array_push($args, $matches[1], $matches[2], $matches[3]);
         }
         else if ($pjid)
         {
