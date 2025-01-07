@@ -110,6 +110,7 @@ define(['marionette', 'views/form',
                 this.ui.udc.prop('disabled', false)
                 this.ui.responsive.prop('disabled', false)
                 this.ui.imaging.prop('disabled', false)
+                this.ui.other.prop('disabled', false)
             } else {
                 this.ui.udc.prop('disabled', true)
                 this.ui.udc.prop('checked', false)
@@ -117,6 +118,8 @@ define(['marionette', 'views/form',
                 this.ui.responsive.prop('checked', false)
                 this.ui.imaging.prop('disabled', true)
                 this.ui.imaging.prop('checked', false)
+                this.ui.other.prop('disabled', true)
+                this.ui.other.prop('checked', false)
                 this.updateDynamicSchedule()
             }
         },
