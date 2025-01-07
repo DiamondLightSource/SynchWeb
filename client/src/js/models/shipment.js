@@ -18,12 +18,20 @@ define(['backbone'], function (Backbone) {
         pattern: 'fcode',
       },
 
+      DYNAMIC: {
+        required: true,
+      },
+
       FIRSTEXPERIMENTID: {
         required: false,
         pattern: 'number',
       },
 
       REMOTEORMAILIN: {
+        required: false,
+      },
+
+      COMMENTS: {
         required: false,
       },
 
