@@ -12,24 +12,18 @@ define(['backbone'], function(Backbone) {
 
         LOCATION: {
             required: false,
-            pattern: 'wwsdash'
         },
 
         VISIT: {
-            required: function() {
-                return this.visitRequired
-            },
-            pattern: 'visit',
+            required: function() {return this.visitRequired},
         },
 
         GIVENNAME: {
             required: function () {return this.dispatchDetailsRequired},
-            pattern: 'wwsdash',
         },
 
         FAMILYNAME: {
             required: function () {return this.dispatchDetailsRequired},
-            pattern: 'wwsdash',
         },
 
         PHONENUMBER: {
@@ -38,12 +32,10 @@ define(['backbone'], function(Backbone) {
 
         EMAILADDRESS: {
             required: function () {return this.dispatchDetailsRequired},
-            pattern: 'email',
         },
 
         LABNAME: {
             required: function () {return this.dispatchDetailsRequired},
-            pattern: 'wwsdash',
         },
 
         ADDRESS: {
@@ -70,32 +62,23 @@ define(['backbone'], function(Backbone) {
             }
         },
 
-
         DESCRIPTION: {
             required: function () {return this.dispatchDetailsRequired},
         },
 
         DELIVERYAGENT_SHIPPINGDATE: {
-            pattern: 'edate',
             required: function () {return this.dispatchDetailsRequired},
         },
 
-        
         DELIVERYAGENT_AGENTNAME: {
-            required: function() {
-                return this.courierDetailsRequired
-            },
-            pattern: 'wwsdash'
+            required: function() {return this.courierDetailsRequired},
         },
 
         DELIVERYAGENT_AGENTCODE: {
-            required: function() {
-                return this.courierDetailsRequired
-            }   
+            required: function() {return this.courierDetailsRequired},
         },
 
         AWBNUMBER: {
-            pattern: 'word',
             required: false,
         }
 
