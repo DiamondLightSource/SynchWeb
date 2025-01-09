@@ -175,7 +175,9 @@ define(['marionette',
                             if (xhr.responseText) {
                                 try {
                                     json = $.parseJSON(xhr.responseText)
-                                } catch(err) {}
+                                } catch(err) {
+                                    console.log('Error parsing JSON')
+                                }
                             }
                             if (json.message) app.alert({ message: json.message })
                             else app.alert({ message: 'Something went wrong' })

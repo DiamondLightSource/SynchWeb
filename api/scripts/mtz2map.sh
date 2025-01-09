@@ -14,6 +14,14 @@ else
 	fi
 fi
 
+#export CCP4_MASTER=/dls_sw/apps/ccp4/<ccp4 version>
+export CCP4_MASTER=$5
+export CINCL=$CCP4_MASTER/include
+export CLIBD=$CCP4_MASTER/lib/data
+
+export CCP4_SCR=/tmp
+export root=$CCP4_MASTER/bin
+
 if [ $3 == 'dimple' -o $3 == 'mrbump' ]; then
 
 if [ -f $4 ]; then
@@ -27,14 +35,6 @@ else
 		exit
 	fi
 fi
-
-#export CCP4_MASTER=/dls_sw/apps/ccp4/<ccp4 version>
-export CCP4_MASTER=$5
-export CINCL=$CCP4_MASTER/include
-export CLIBD=$CCP4_MASTER/lib/data
-
-export CCP4_SCR=/tmp
-export root=$CCP4_MASTER/bin
 
 if [ $3 == 'dimple' ]; then
 
