@@ -89,7 +89,7 @@ class Shipment extends Page
         //'FIRSTEXPERIMENTID' => '\w+\d+-\d+',
 
         // Fields for responsive remote questions:
-        'DYNAMIC' => '1?|Yes|No',
+        'DYNAMIC' => '\w+',
         'REMOTEORMAILIN' => '.*',
         'SESSIONLENGTH' => '\w+',
         'ENERGY' => '.*',
@@ -101,6 +101,7 @@ class Shipment extends Page
         'MULTIAXISGONIOMETRY' => '1?|Yes|No',
         'ENCLOSEDHARDDRIVE' => '1?|Yes|No',
         'ENCLOSEDTOOLS' => '1?|Yes|No',
+        'LONGWAVELENGTH' => '1?|Yes|No',
 
         'COMMENTS' => '.*',
 
@@ -164,7 +165,8 @@ class Shipment extends Page
         'EXTRASUPPORTREQUIREMENT',
         'MULTIAXISGONIOMETRY',
         'ENCLOSEDHARDDRIVE',
-        'ENCLOSEDTOOLS'
+        'ENCLOSEDTOOLS',
+        'LONGWAVELENGTH',
     );
 
     public static $dispatch = array(
@@ -2856,7 +2858,7 @@ class Shipment extends Page
 
         $dynamic = null;
         if ($this->has_arg('DYNAMIC')) {
-            $dynamic = $this->arg("DYNAMIC") ? "Yes" : "No";
+            $dynamic = $this->arg("DYNAMIC");
         }
 
         $extra_array = array(
@@ -2866,6 +2868,7 @@ class Shipment extends Page
         );
 
         if ($dynamic) {
+            $long_wavelength = $this->has_arg('LONGWAVELENGTH') ? $this->arg('LONGWAVELENGTH') : '';
             $remote_or_mailin = $this->has_arg('REMOTEORMAILIN') ? $this->arg('REMOTEORMAILIN') : '';
             $session_length = $this->has_arg('SESSIONLENGTH') ? $this->arg('SESSIONLENGTH') : '';
             $energy_requirements = $this->has_arg('ENERGY') ? $this->arg('ENERGY') : '';
@@ -2888,6 +2891,7 @@ class Shipment extends Page
                 $multi_axis_goniometry = $this->arg('MULTIAXISGONIOMETRY') ? "Yes" : "No";
             }
             $dynamic_options = array(
+                "LONGWAVELENGTH" => $long_wavelength,
                 "REMOTEORMAILIN" => $remote_or_mailin,
                 "SESSIONLENGTH" => $session_length,
                 "ENERGY" => $energy_requirements,
