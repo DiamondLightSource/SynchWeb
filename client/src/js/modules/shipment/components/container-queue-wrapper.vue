@@ -43,6 +43,7 @@ export default {
     },
     props: {
         'cid': Number,
+        'search': String,
     },
     data: function() {
         return {
@@ -59,6 +60,7 @@ export default {
         options: function() {
             return {
                 model: this.model,
+                params: { s: this.search }
             }
         },
         proposalType : function() {
