@@ -1642,12 +1642,24 @@ class Shipment extends Page
                 $order = $cols[$this->arg('sort_by')] . ' ' . $dir;
         }
 
-        $dewars = $this->db->paginate("SELECT CONCAT(p.proposalcode, p.proposalnumber) as prop, CONCAT(p.proposalcode, p.proposalnumber, '-', se.visit_number) as firstexperiment, r.labcontactid, se.beamlineoperator as localcontact, se.beamlinename, TO_CHAR(se.startdate, 'HH24:MI DD-MM-YYYY') as firstexperimentst, d.firstexperimentid, s.shippingid, s.shippingname, d.facilitycode, count(c.containerid) as ccount, (case when se.visit_number > 0 then (CONCAT(p.proposalcode, p.proposalnumber, '-', se.visit_number)) else '' end) as exp, d.code, d.barcode, d.storagelocation, d.dewarstatus, d.dewarid,  d.trackingnumbertosynchrotron, d.trackingnumberfromsynchrotron, d.externalShippingIdFromSynchrotron, s.deliveryagent_agentname, d.weight, d.deliveryagent_barcode, GROUP_CONCAT(c.code SEPARATOR ', ') as containers, s.sendinglabcontactid, s.returnlabcontactid, pe.givenname, pe.familyname, s.safetylevel as shippingsafetylevel
-              FROM dewar d 
-              LEFT OUTER JOIN container c ON c.dewarid = d.dewarid 
-              INNER JOIN shipping s ON d.shippingid = s.shippingid 
-              INNER JOIN proposal p ON p.proposalid = s.proposalid 
-              LEFT OUTER JOIN blsession se ON d.firstexperimentid = se.sessionid 
+        $dewars = $this->db->paginate("SELECT
+            CONCAT(p.proposalcode, p.proposalnumber) as prop,
+            CONCAT(p.proposalcode, p.proposalnumber, '-', se.visit_number) as firstexperiment,
+            CONCAT(p.proposalcode, p.proposalnumber, '-', se2.visit_number) as udcfirstexperiment,
+            r.labcontactid, se.beamlineoperator as localcontact, se.beamlinename,
+            TO_CHAR(se.startdate, 'HH24:MI DD-MM-YYYY') as firstexperimentst, d.firstexperimentid,
+            s.shippingid, s.shippingname, d.facilitycode, count(c.containerid) as ccount,
+            (case when se.visit_number > 0 then (CONCAT(p.proposalcode, p.proposalnumber, '-', se.visit_number)) else '' end) as exp,
+            d.code, d.barcode, d.storagelocation, d.dewarstatus, d.dewarid,
+            d.trackingnumbertosynchrotron, d.trackingnumberfromsynchrotron, d.externalShippingIdFromSynchrotron,
+            s.deliveryagent_agentname, d.weight, d.deliveryagent_barcode, GROUP_CONCAT(c.code SEPARATOR ', ') as containers,
+            s.sendinglabcontactid, s.returnlabcontactid, pe.givenname, pe.familyname, s.safetylevel as shippingsafetylevel
+              FROM dewar d
+              LEFT OUTER JOIN container c ON c.dewarid = d.dewarid
+              INNER JOIN shipping s ON d.shippingid = s.shippingid
+              INNER JOIN proposal p ON p.proposalid = s.proposalid
+              LEFT OUTER JOIN blsession se ON d.firstexperimentid = se.sessionid
+              LEFT OUTER JOIN blsession se2 ON c.sessionid = se2.sessionid
               LEFT OUTER JOIN dewarregistry r ON r.facilitycode = d.facilitycode
               LEFT OUTER JOIN labcontact lc ON s.sendinglabcontactid = lc.labcontactid
               LEFT OUTER JOIN person pe ON lc.personid = pe.personid
