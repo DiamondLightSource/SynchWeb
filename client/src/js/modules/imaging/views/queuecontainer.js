@@ -732,12 +732,8 @@ define(['marionette',
             return this.table.filter.query() || null
         },
 
-        getFilter: function() {
-            return this.afilt.$el.find('.current').attr('id') || null
-        },
-
         refreshSubSamples: function() {
-            this.subsamples.fetch()
+            this.subsamples.fetch().done(this.onSubsamplesReady.bind(this))
         },
         
         initialize: function(options) {
@@ -779,6 +775,7 @@ define(['marionette',
             this.listenTo(this.plans, 'add remove sync', this.populatePresets, this)
 
             // this.listenTo(app, 'window:scroll', this.onScroll, this)
+            this.listenTo(this.subsamples, 'change', this.onSubsamplesReady, this)
 
             this.beamlinesetups = new BeamlineSetups()
             this.beamlinesetups.queryParams.ACTIVE = 1
@@ -805,13 +802,6 @@ define(['marionette',
                     this.fixedPreview = true
                 }
             }
-        },
-
-        onSubsamplesReady: function() {
-            this.getInspectionImages()
-            this.refreshQSubSamples()
-            this.listenTo(this.subsamples, 'change:isSelected', this.selectSubSample, this)
-            this.listenTo(this.subsamples, 'sync add remove change:READYFORQUEUE', this.refreshQSubSamples, this)
         },
 
         populatePresets: function() {
@@ -874,7 +864,6 @@ define(['marionette',
             this.subsamples.queryParams.nodata = this.getNoData.bind(this)
             this.subsamples.queryParams.notcompleted = this.getNotCompleted.bind(this)
             this.subsamples.queryParams.s = this.getSearch.bind(this)
-            this.subsamples.queryParams.filter = this.getFilter.bind(this)
             this._ready.done(this.doOnRender.bind(this))
         },
 

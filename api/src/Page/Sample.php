@@ -640,14 +640,14 @@ class Sample extends Page
             array_push($args, $this->arg('s'));
         }
 
-        if ($this->has_arg('filter')) {
+        if ($this->has_arg('t')) {
             $filters = array(
                 'manual' => " AND ss.source='manual'",
                 'auto' => " AND ss.source='auto'",
                 'point' => " AND dp.experimentkind='SAD'",
                 'region' => " AND dp.experimentkind='MESH'",
             );
-            $where .= $filters[$this->arg('filter')];
+            $where .= $filters[$this->arg('t')];
         }
 
         if ($this->has_arg('sid')) {
