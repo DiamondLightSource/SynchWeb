@@ -18,7 +18,7 @@
             <ul>
                 <li>
                     <span class="label">Container</span>
-                    <span class="NAME"><a href="/containers/cid/<%-CONTAINERID%>"><%-NAME%></a></span>
+                    <span class="NAME"><%-NAME%></span>
                 </li>
 
                 <li>
@@ -27,8 +27,6 @@
                 </li>
             </ul>
         </div>
-
-        <div class="plate plate-max-width"></div>
 
         <h2>Available Samples</h2>
         <div class="filter">
@@ -40,7 +38,9 @@
                 <li><label><input type="checkbox" name="nodata" /> Without Data</label></li>
                 <li><label><input type="checkbox" name="notcompleted" /> Not Completed</label></li>
             </ul>
-            <span class="filter filter-nohide afilt"></span>
+        </div>
+        <div class="filter">
+            <div class="filter filter-nohide afilt"></div>
         </div>
         <div class="asamples"></div>
     </div>
