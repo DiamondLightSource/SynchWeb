@@ -276,6 +276,7 @@ define(['marionette', 'views/form',
             this.dispatchCountry = this.ui.country.val()
             this.ui.courierSection.show();
             this.ui.dispatchDetails.show();
+            this.model.visitRequired = true
             this.model.dispatchDetailsRequired = true
             this.ui.submit.show();
             if (
@@ -334,6 +335,7 @@ define(['marionette', 'views/form',
             ){
                 this.model.visitRequired = false
                 this.ui.dispatchDetails.hide()
+                this.model.dispatchDetailsRequired = false
                 this.ui.submit.text("Proceed")
                 this.ui.shippingadvice.html("<mark>On clicking 'Proceed' you will be redirected to the new Diamond shipping service to book the shipment. Please ensure all stages of the form are completed.</mark><br /><br />")
             }
