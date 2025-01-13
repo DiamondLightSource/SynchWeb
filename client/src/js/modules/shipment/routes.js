@@ -22,8 +22,6 @@ import Dewar from 'models/dewar.js'
 // Marionette View can deal with being passed a promise or a function
 const DewarRegView = import(/* webpackChunkName: "shipment" */ 'modules/shipment/views/dewarreg')
 const RegDewarView = import(/* webpackChunkName: "shipment" */ 'modules/shipment/views/regdewar')
-// RegDewarAddView was referenced in controller but not in old router?!
-// const RegDewarAddView = import(/* webpackChunkName: "shipment" */ 'modules/shipment/views/regdewaradd')
 const DewarRegistryView = import(/* webpackChunkName: "shipment" */ 'modules/shipment/views/dewarregistry')
 
 const ShipmentsView = import(/* webpackChunkName: "shipment" */ 'modules/shipment/views/shipments')
