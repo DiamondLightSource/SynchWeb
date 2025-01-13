@@ -12,6 +12,7 @@ define(['marionette',
 
     'modules/imaging/models/plan',
     'modules/imaging/collections/plans',
+    'modules/shipment/views/plate',
 
     'collections/beamlinesetups',
     
@@ -27,6 +28,7 @@ define(['marionette',
         SubSamples,
         TableView, table, FilterView, utils,
         DiffractionPlan, DiffractionPlans,
+        PlateView,
         BeamlineSetups,
         template, pointemplate, gridtemplate, xfetemplate,
         VMXiPoint, VMXiGrid, VMXiXFE,
@@ -360,53 +362,6 @@ define(['marionette',
             {id: 'manual', name: 'Manual' },
         ],
 
-        initialize: function(options) {
-            ClientFilterView.__super__.initialize.call(this, options)
-
-            this.filterablecollection = options.collection.fullCollection// || options.collection
-            this.shadowCollection = this.filterablecollection.clone()
-
-            this.listenTo(this.filterablecollection, 'add', function (model, collection, options) {
-                this.shadowCollection.add(model, options)
-            })
-            this.listenTo(this.filterablecollection, 'remove', function (model, collection, options) {
-                this.shadowCollection.remove(model, options)
-            })
-            this.listenTo(this.filterablecollection, 'sort', function (col) {
-                if (!this.query()) this.shadowCollection.reset(col.models)
-            })
-            this.listenTo(this.filterablecollection, 'reset', function (col, options) {
-                options = _.extend({reindex: true}, options || {})
-                if (options.reindex && options.from == null && options.to == null) {
-                    this.shadowCollection.reset(col.models)
-                    if (this.selected()) this._filter()
-                }
-            })
-        },
-
-        _filter: function() {
-            var id = this.selected()
-            this.trigger('selected:change', id, this.selectedName())
-            if (id) {
-                this.filterablecollection.reset(this.shadowCollection.filter(function(m) {
-                    if (id === 'region') {
-                        return m.get('X2') && m.get('Y2')
-
-                    } else if (id === 'point') {
-                        return m.get('X') && m.get('Y') && !m.get('X2')
-                    }
-                    else if (id === 'auto') {
-                        return m.get('SOURCE') == 'auto'
-
-                    } else if (id === 'manual') {
-                        return m.get('SOURCE') == 'manual'
-                    }
-                }), {reindex: false})
-            } else {
-                console.log('reset', this.shadowCollection)
-                this.filterablecollection.reset(this.shadowCollection.models, {reindex: false})
-            }
-        }
     })
     
 
@@ -517,6 +472,7 @@ define(['marionette',
             qfilt: '.qfilt',
             afilt: '.afilt',
             rimg: '.image',
+            plate: '.plate',
         },
         
         events: {
@@ -692,10 +648,11 @@ define(['marionette',
         },
 
         applyModel: function(modelParameter, isLimitedToSelected) {
+            var models = null
             if (isLimitedToSelected) {
-                var models = this.qsubsamples.where({ isGridSelected: true })
+                models = this.qsubsamples.where({ isGridSelected: true })
             } else {
-                var models = this.qsubsamples.fullCollection.toArray()
+                models = this.qsubsamples.fullCollection.toArray()
             }
             _.each(models, function(model) {
                 if (modelParameter.get('EXPERIMENTKIND') !== model.get('EXPERIMENTKIND')) return
@@ -772,11 +729,20 @@ define(['marionette',
             return this.ui.notcompleted.is(':checked') ? 1 : null
         },
 
+        getSearch: function() {
+            return this.table.filter.query() || null
+        },
+
+        getFilter: function() {
+            return this.afilt.$el.find('.current').attr('id') || null
+        },
+
         refreshSubSamples: function() {
-            this.subsamples.fetch()
+            this.subsamples.fetch().done(this.onSubsamplesReady.bind(this))
         },
         
-        initialize: function() {
+        initialize: function(options) {
+            this.params = options.params
             this._lastSample = null
             this._subsamples_ready = []
 
@@ -786,8 +752,9 @@ define(['marionette',
             this.unfilteredSubsamples = null
             this.subsamples = new SubSamples()
             this.subsamples.queryParams.cid = this.model.get('CONTAINERID')
-            this.subsamples.state.pageSize = 10
+            if (this.params.s) this.subsamples.queryParams.s = this.params.s
 
+            this.subsamples.state.pageSize = 10
             this._subsamples_ready.push(this.subsamples.fetch())
 
             this.inspections = new ContainerInspections()
@@ -841,6 +808,12 @@ define(['marionette',
             }
         },
 
+        onSubsamplesReady: function() {
+            this.getInspectionImages()
+            this.refreshQSubSamples()
+            this.listenTo(this.subsamples, 'change:isSelected', this.selectSubSample, this)
+            this.listenTo(this.subsamples, 'sync add remove change:READYFORQUEUE', this.refreshQSubSamples, this)
+        },
 
         populatePresets: function() {
             this.ui.preset.html(this.plans.opts())
@@ -877,7 +850,7 @@ define(['marionette',
         },
 
         selectSample: function() {
-            this.subsamples.at(0).set({ isSelected: true })
+            if (this.subsamples.at(0)) this.subsamples.at(0).set({ isSelected: true })
         },
 
         refreshQSubSamples: function() {
@@ -901,6 +874,8 @@ define(['marionette',
             this.ui.unqueuebutton.hide()
             this.subsamples.queryParams.nodata = this.getNoData.bind(this)
             this.subsamples.queryParams.notcompleted = this.getNotCompleted.bind(this)
+            this.subsamples.queryParams.s = this.getSearch.bind(this)
+            this.subsamples.queryParams.filter = this.getFilter.bind(this)
             this._ready.done(this.doOnRender.bind(this))
         },
 
@@ -926,6 +901,8 @@ define(['marionette',
                 collection: this.subsamples, 
                 columns: subSamplesColumns,
                 tableClass: 'subsamples', 
+                filter: 's',
+                search: this.params.s,
                 loading: true,
                 backgrid: { row: ClickableRow, emptyText: 'No sub samples found' },
                 noPageUrl: true,
@@ -991,10 +968,28 @@ define(['marionette',
             })
 
             this.qsmps.show(this.table2)
+
+            this.plateView = new PlateView({ collection: this.subsamples.fullCollection, type: this.type, inspectionimages: this.inspectionimages, showMaxScore: true })
+            this.listenTo(this.plateView, 'dropClicked', this.filterByLocation, this)
+            this.plate.show(this.plateView)
         },
 
         onShow: function() {
             this.rimg.show(this.image)
+        },
+
+        filterByLocation: function(pos) {
+            if (!pos) return;
+            var namedrop = this.type.getName(pos)+'d'+this.type.getDrop(pos)
+            if (this.table.filter.query() === namedrop) {
+                this.table.filter.clearSearchBox()
+            } else {
+                this.table.filter.searchBox().val(namedrop)
+            }
+            this.table.filter._updateUrl()
+            this.subsamples.fetch().done(this.selectSample.bind(this))
+            var i = this.inspectionimages.findWhere({ LOCATION: pos.toString() })
+            this.image.setModel(i)
         },
         
     })

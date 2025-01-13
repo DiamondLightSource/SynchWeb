@@ -610,7 +610,7 @@ class Imaging extends Page
             array_push($args, $this->arg('sid'));
         }
 
-        $images = $this->db->pq("SELECT i.containerid, si.containerinspectionid, ROUND(TIMESTAMPDIFF('HOUR', min(i2.bltimestamp), i.bltimestamp)/24,1) as delta, si.blsampleimageid, si.blsampleid, si.micronsperpixelx, si.micronsperpixely, si.blsampleimagescoreid, si.comments, TO_CHAR(si.bltimestamp, 'DD-MM-YYYY HH24:MI') as bltimestamp, sc.name as scorename, sc.score, sc.colour as scorecolour, max.maxscore, scorecolours.colour as maxscorecolour
+        $images = $this->db->pq("SELECT i.containerid, si.containerinspectionid, ROUND(TIMESTAMPDIFF('HOUR', min(i2.bltimestamp), i.bltimestamp)/24,1) as delta, si.blsampleimageid, si.blsampleid, si.micronsperpixelx, si.micronsperpixely, si.blsampleimagescoreid, si.comments, TO_CHAR(si.bltimestamp, 'DD-MM-YYYY HH24:MI') as bltimestamp, sc.name as scorename, sc.score, sc.colour as scorecolour, max.maxscore, scorecolours.colour as maxscorecolour, b.location
               FROM blsampleimage si
               LEFT OUTER JOIN blsampleimagescore sc ON sc.blsampleimagescoreid = si.blsampleimagescoreid
               INNER JOIN containerinspection i ON i.containerinspectionid = si.containerinspectionid
@@ -620,6 +620,7 @@ class Imaging extends Page
               INNER JOIN dewar d ON d.dewarid = c.dewarid
               INNER JOIN shipping s ON s.shippingid = d.shippingid
               INNER JOIN proposal p ON p.proposalid = s.proposalid
+              INNER JOIN blsample b ON b.blsampleid = si.blsampleid
 
               LEFT OUTER JOIN (SELECT blsampleid, max(score) as maxscore
                                FROM BLSampleImageScore sc

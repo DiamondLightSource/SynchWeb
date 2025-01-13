@@ -1,7 +1,7 @@
 define(['marionette', 'modules/dc/models/distl', 'utils',
         'jquery',
         'jquery.flot',
-        'jquery.flot.resize',
+        'jquery-flot-resize',
         'jquery.flot.selection',
 ], function(Marionette, DCDISTLModel, utils, $) {
        
