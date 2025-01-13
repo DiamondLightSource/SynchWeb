@@ -654,7 +654,7 @@ class Shipment extends Page
         }
 
 
-        $tot = $this->db->pq("SELECT count(r.facilitycode) as tot 
+        $tot = $this->db->pq("SELECT count(distinct r.facilitycode) as tot
               FROM dewarregistry r 
               LEFT OUTER JOIN dewarregistry_has_proposal rhp ON r.dewarregistryid = rhp.dewarregistryid
               LEFT OUTER JOIN proposal p ON p.proposalid = rhp.proposalid
