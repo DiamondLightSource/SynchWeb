@@ -193,7 +193,7 @@ define(['backbone', 'marionette',
                     var reprocessingsweeps = new ReprocessingImageSweeps(sweeps)
                     reprocessingsweeps.save()
 
-                    app.alert({ message: '1 reprocessing job successfully submitted'})
+                    app.message({ message: '1 reprocessing job successfully submitted'})
                     self._enqueue({ PROCESSINGJOBID: reprocessing.get('PROCESSINGJOBID') })
                 },
 
