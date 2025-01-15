@@ -529,31 +529,7 @@ define(['marionette',
 
         inspectionLoaded: function() {
             this.selectSample()
-            this.preCache(1)
         },
-
-        preCache: function(n) {
-            clearTimeout(this.cachethread)
-
-            var self = this
-            var i = this.inspectionimages.at(n)
-            if (this.caching && i) {
-                var xhr =  new XHRImage()
-                console.log('caching', i.urlFor('hd'))
-                xhr.load(i.urlFor('full'), function() {
-                    self.plateView.drawPlate()
-
-                    if (n+1 === self.inspectionimages.length) self.ui.status.html('')
-                    else self.ui.status.html('Loaded '+(n+1)+' out of '+self.inspectionimages.length+' images')
-
-                    self.cachethread = setTimeout(function() {
-                        self.preCache(++n)
-                    }, 200)
-                })
-            }
-
-        },
-
 
         playInspection: function(e) {
             e.preventDefault()
@@ -597,9 +573,7 @@ define(['marionette',
 
         initialize: function(options) {
             this.isPlaying = false
-            this.cachethread = null
             this.playthread = null
-            this.caching = !app.mobile()
 
             this.samples = new Samples(null, { state: {pageSize: 9999} })
             this.samples.queryParams.cid = options.model.get('CONTAINERID')
@@ -925,17 +899,13 @@ define(['marionette',
             }
 
             if (this.getOption('params').sid) {
-                const s = this.samples.findWhere({ BLSAMPLEID: this.getOption('params').sid })
+                const s = this.samples.findWhere({ BLSAMPLEID: this.getOption('params').sid.toString() })
                 if (s) s.set({ isSelected: true })
             } else this.samples.at(0).set({isSelected: true})
             this.sample.show(this.singlesample)
 
         },
 
-        onDestroy: function() {
-            clearTimeout(this.cachethread)
-            this.caching = false
-        },
     })
 
 })
