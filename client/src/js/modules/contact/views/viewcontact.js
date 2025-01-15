@@ -27,8 +27,10 @@ define(['marionette',
         doOnRender: function() {
             var edit = new Editable({ model: this.model, el: this.$el })
             edit.create('CARDNAME', 'text');
-            edit.create('FAMILYNAME', 'text');
-            edit.create('GIVENNAME', 'text');
+            if (!this.model.get('LOGIN')) {
+                edit.create('FAMILYNAME', 'text');
+                edit.create('GIVENNAME', 'text');
+            }
             edit.create('PHONENUMBER', 'text');
             edit.create('EMAILADDRESS', 'text');
             edit.create('LABNAME', 'text');
