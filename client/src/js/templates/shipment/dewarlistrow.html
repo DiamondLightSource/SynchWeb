@@ -10,18 +10,12 @@
     <td><%-STORAGELOCATION%></td>
     <td><%-CCOUNT%></td>
     <td>
-        <span class="deactivate"><a class="button deact" title="Deactivate Dewar"><i class="fa fa-power-off"></i> <span class="tw-hidden xl:tw-inline">Deactivate</span></a></span>
+        <a class="button deact" title="Deactivate Dewar"><i class="fa fa-power-off"></i> <span class="tw-hidden xl:tw-inline">Deactivate</span></a>
         <a class="button print" title="Click to print dewar contents" href="<%-APIURL%>/pdf/container/did/<%-DEWARID%>/prop/<%-PROP%>"><i class="fa fa-print"></i> <span class="tw-hidden xl:tw-inline">Print Report</span></a>
         <% const container = (app.type == "xpdf") ? "Puck" : "Container" %>
         <a class="button add add-container-small" data-testid="shipment-add-container" title="Click to Add a <%-container%>" href="/containers/add/did/<%-DEWARID%>"><i class="fa fa-plus"></i> <span class="add-container-text tw-hidden xl:tw-inline">Add <%-container%></span></a>
-        <% if (STORAGELOCATION != 'stores-out') { %>
-            <% if (app.options.get("shipping_service_app_url") && EXTERNALSHIPPINGIDFROMSYNCHROTRON) { %>
-                <% const link = `${app.options.get("shipping_service_app_url")}/shipment-requests/${EXTERNALSHIPPINGIDFROMSYNCHROTRON}/outgoing` %>
-                <a class="button" title="Click to view dispatch information" href="<%-link%>"><i class="fa fa-home"></i> <span class="tw-hidden xl:tw-inline">Dispatch</span></a>
-            <% } else { %>
-                <a class="button" title="Click to dispatch dewar back to your lab" href="/dewars/dispatch/<%-DEWARID%>"><i class="fa fa-home"></i> <span class="tw-hidden xl:tw-inline">Dispatch</span></a>
-            <% } %>
-            <a class="button" title="Click to transfer dewar to another beamline" href="/dewars/transfer/<%-DEWARID%>"><i class="fa fa-arrows-h"></i> <span class="tw-hidden xl:tw-inline">Transfer</span></a>
-        <% } %>
+        <a class="button ssdispatch" title="Click to view dispatch information" href=""><i class="fa fa-home"></i> <span class="tw-hidden xl:tw-inline">View Dispatch Request</span></a>
+        <a class="button dispatch" title="Click to dispatch dewar back to your lab" href="/dewars/dispatch/<%-DEWARID%>"><i class="fa fa-home"></i> <span class="tw-hidden xl:tw-inline">Dispatch</span></a>
+        <a class="button transfer" title="Click to transfer dewar to another beamline" href="/dewars/transfer/<%-DEWARID%>"><i class="fa fa-arrows-h"></i> <span class="tw-hidden xl:tw-inline">Transfer</span></a>
     </td>
 
