@@ -45,7 +45,7 @@ define(['marionette', 'backgrid',
         },
         
         success: function() {
-            app.alert({message: 'New dewar registered ' + this.model.get('FACILITYCODE'), notify: true})
+            app.message({message: 'New dewar registered ' + this.model.get('FACILITYCODE'), notify: true})
             this.ui.fc.val('')
             this.ui.date.val('')
             this.ui.serial.val('')
@@ -207,7 +207,7 @@ define(['marionette', 'backgrid',
                         m.set('PROPOSALS', props.join(','))
                         if (!m.get('PROP')) m.set('PROP', p.get('PROPOSAL'))
                         // This will be called multiple times for many proposals. Might be a cleaner method..?
-                        app.alert({message: 'Added registered dewar ' + m.get('FACILITYCODE') + ' to proposal(s) ' + props, notify: true})
+                        app.message({message: 'Added registered dewar ' + m.get('FACILITYCODE') + ' to proposal(s) ' + props, notify: true})
                     }
                 })
             }, this)
