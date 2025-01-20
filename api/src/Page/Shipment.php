@@ -3125,7 +3125,7 @@ class Shipment extends Page
 
         $shipping_id = (int) $shipment['SHIPPINGID'];
 
-        $token = md5(uniqid());
+        $token = md5(openssl_random_pseudo_bytes(7));
         $this->db->pq(
             "UPDATE dewar SET extra = JSON_SET(IFNULL(extra, '{}'), '$.token', :1 ) WHERE shippingid=:2",
             array($token, $shipping_id)
