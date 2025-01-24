@@ -13,11 +13,6 @@
     $isb  = array('user' => 'user', 'pass' => 'pass', 'db' => 'localhost/ispyb');
     $dbtype = 'mysql';
 
-    # Summary Database credentials 
-    ######### DELETE if not using connection. 
-    $summarydbconfig = array('user' => 'user', 'pass' => 'pass', 'db' => 'localhost/ispyb');
-    $ifsummary = true;
-
     # Encoded JWT key, used to sign and check validaty of jwt tokens
     # - Create one of these using /api/authenticate/key
     #   This can be changed to invalidate all currently active tokens
@@ -302,6 +297,8 @@
     # Beamlines on which to scale the gridplot to 1024
     $scale_grid = array('i24');
 
+    # URL for instructions for closed proposals
+    $closed_proposal_link = '';
 
     # These map proposal types to their proposalcode
     # - If these are not defined for a proposal type, the api then uses bl_types below
