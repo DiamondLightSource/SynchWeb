@@ -58,6 +58,7 @@ define(['marionette',
 
         ui: {
             add_dewar: '#add_dewar',
+            longwavelength: '.longwavelength',
         },
         
 
@@ -178,13 +179,19 @@ define(['marionette',
             if (!dynamicSelectedValues.includes(dynamic)) {
                 this.$el.find(".remoteormailin").hide()
                 this.$el.find(".remoteform").hide()
+                this.ui.longwavelength.hide()
             } else {
                 industrial_codes = ['in', 'sw']
                 industrial_visit = industrial_codes.includes(app.prop.slice(0,2))
                 if (industrial_visit) {
                     this.$el.find(".remoteormailin").show()
                 }
-                this.$el.find(".remoteform").show()
+                this.ui.longwavelength.show()
+                if (this.model.get('LONGWAVELENGTH') === 'Yes') {
+                    this.$el.find(".remoteform").hide()
+                } else {
+                    this.$el.find(".remoteform").show()
+                }
             }
         },
         
@@ -214,7 +221,13 @@ define(['marionette',
 
             edit.create("ENCLOSEDHARDDRIVE", 'select', { data: {'Yes': 'Yes', 'No': 'No'}})
             edit.create("ENCLOSEDTOOLS", 'select', { data: {'Yes': 'Yes', 'No': 'No'}})
-            edit.create("DYNAMIC", 'select', { data: {'Yes': 'Yes', 'No': 'No'}})
+            edit.create("DYNAMIC", 'select', { data: {
+                'No': 'I have a session already scheduled',
+                'UDC': 'I am sending pucks for Unattended Data Collection',
+                'Imaging': 'I am sending plates for imaging',
+                'Yes': 'I would like a session to be scheduled',
+                'Other': 'Something else',
+            }})
             industrial_codes = ['in', 'sw']
             industrial_visit = industrial_codes.includes(app.prop.slice(0,2))
             if (!industrial_visit) {
@@ -223,6 +236,7 @@ define(['marionette',
                 edit.create("REMOTEORMAILIN", 'select', { data: {'Remote': 'Remote', 'Mail-in': 'Mail-in', 'Other': 'Other'}})
             }
 
+            edit.create("LONGWAVELENGTH", 'select', { data: {'Yes': 'Yes', 'No': 'No'}})
             edit.create("SESSIONLENGTH", 'text')
             edit.create("ENERGY", 'text')
             edit.create("MICROFOCUSBEAM", 'select', { data: {'Yes': 'Yes', 'No': 'No'}})
@@ -233,7 +247,7 @@ define(['marionette',
             edit.create("MULTIAXISGONIOMETRY", 'select', { data: {'Yes': 'Yes', 'No': 'No'}})
 
             this.updateDynamic()
-            this.listenTo(this.model, "change:DYNAMIC", this.updateDynamic)
+            this.listenTo(this.model, "change", this.updateDynamic)
             
             var self = this
             this.contacts = new LabContacts(null, { state: { pageSize: 9999 } })
