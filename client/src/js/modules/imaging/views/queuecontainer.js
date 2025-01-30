@@ -12,6 +12,7 @@ define(['marionette',
 
     'modules/imaging/models/plan',
     'modules/imaging/collections/plans',
+    'modules/shipment/views/plate',
 
     'collections/beamlinesetups',
     
@@ -27,6 +28,7 @@ define(['marionette',
         SubSamples,
         TableView, table, FilterView, utils,
         DiffractionPlan, DiffractionPlans,
+        PlateView,
         BeamlineSetups,
         template, pointemplate, gridtemplate, xfetemplate,
         VMXiPoint, VMXiGrid, VMXiXFE,
@@ -365,6 +367,7 @@ define(['marionette',
 
             this.filterablecollection = options.collection.fullCollection// || options.collection
             this.shadowCollection = this.filterablecollection.clone()
+            this.selectedPos = null
 
             this.listenTo(this.filterablecollection, 'add', function (model, collection, options) {
                 this.shadowCollection.add(model, options)
@@ -387,19 +390,19 @@ define(['marionette',
         _filter: function() {
             var id = this.selected()
             this.trigger('selected:change', id, this.selectedName())
-            if (id) {
+            if (id || this.selectedPos) {
+                var self = this
                 this.filterablecollection.reset(this.shadowCollection.filter(function(m) {
                     if (id === 'region') {
-                        return m.get('X2') && m.get('Y2')
-
+                        return m.get('X2') && m.get('Y2') && (self.selectedPos == null || m.get('LOCATION') == self.selectedPos)
                     } else if (id === 'point') {
-                        return m.get('X') && m.get('Y') && !m.get('X2')
-                    }
-                    else if (id === 'auto') {
-                        return m.get('SOURCE') == 'auto'
-
+                        return m.get('X') && m.get('Y') && !m.get('X2') && (self.selectedPos == null || m.get('LOCATION') == self.selectedPos)
+                    } else if (id === 'auto') {
+                        return m.get('SOURCE') == 'auto' && (self.selectedPos == null || m.get('LOCATION') == self.selectedPos)
                     } else if (id === 'manual') {
-                        return m.get('SOURCE') == 'manual'
+                        return m.get('SOURCE') == 'manual' && (self.selectedPos == null || m.get('LOCATION') == self.selectedPos)
+                    } else if (!isNaN(self.selectedPos)) {
+                        return m.get('LOCATION') == self.selectedPos
                     }
                 }), {reindex: false})
             } else {
@@ -517,6 +520,7 @@ define(['marionette',
             qfilt: '.qfilt',
             afilt: '.afilt',
             rimg: '.image',
+            plate: '.plate',
         },
         
         events: {
@@ -575,6 +579,10 @@ define(['marionette',
             current = this.$el.find('.afilt').find('.current')
             if (current.length > 0) {
                 data.filter = current.attr('id')
+            }
+
+            if (this.avtypeselector.selectedPos) {
+                data.LOCATION = this.avtypeselector.selectedPos
             }
 
             var self = this
@@ -852,6 +860,7 @@ define(['marionette',
             this.getInspectionImages()
             this.refreshQSubSamples()
             this.listenTo(this.subsamples, 'change:isSelected', this.selectSubSample, this)
+            //this.listenTo(this.subsamples.fullCollection, 'change:isSelected', this.selectSubSample, this)
             this.listenTo(this.unfilteredSubsamples, 'sync add remove change:READYFORQUEUE', this.refreshQSubSamples, this)
             this.listenTo(this.unfilteredSubsamples, 'change', this.updateQueueLength)
             this.listenTo(this.model, 'change:CONTAINERQUEUEID', this.onContainerQueueIdChange)
@@ -878,7 +887,7 @@ define(['marionette',
         },
 
         selectSample: function() {
-            this.subsamples.at(0).set({ isSelected: true })
+            if (this.subsamples.length) this.subsamples.at(0).set({ isSelected: true })
         },
 
         refreshQSubSamples: function() {
@@ -888,12 +897,14 @@ define(['marionette',
         },
 
         selectSubSample: function() {
-            var ss = this.subsamples.findWhere({ isSelected: true })
-            var s = ss.get('BLSAMPLEID')
-            if (s !== this._lastSample) {
-                this.imagess.reset(this.subsamples.fullCollection.where({ BLSAMPLEID: s }))
-                var i = this.inspectionimages.findWhere({ BLSAMPLEID: s })
-                this.image.setModel(i)
+            ss = this.subsamples.fullCollection.findWhere({ isSelected: true })
+            if (ss) {
+                var s = ss.get('BLSAMPLEID')
+                if (s !== this._lastSample) {
+                    this.imagess.reset(this.subsamples.fullCollection.where({ BLSAMPLEID: s }))
+                    var i = this.inspectionimages.findWhere({ BLSAMPLEID: s })
+                    this.image.setModel(i)
+                }
             }
         },
         
@@ -992,12 +1003,31 @@ define(['marionette',
             })
 
             this.qsmps.show(this.table2)
+
+            this.plateView = new PlateView({ collection: this.subsamples.fullCollection, type: this.type, inspectionimages: this.inspectionimages })
+            this.listenTo(this.plateView, 'dropClicked', this.filterByLocation, this)
+            this.plate.show(this.plateView)
         },
 
         onShow: function() {
             this.rimg.show(this.image)
         },
         
+        filterByLocation: function(pos) {
+            let newPos = this.avtypeselector.selectedPos != pos
+            this.avtypeselector.selectedPos = null
+            this.avtypeselector._filter()
+            _.map(this.subsamples.fullCollection.where({ isSelected: true }), function(ss) {
+                ss.set({ isSelected: false })
+            })
+            if (newPos) {
+                this.avtypeselector.selectedPos = pos
+                this.avtypeselector._filter()
+            }
+            this.selectSample()
+
+        },
+
     })
         
 })
