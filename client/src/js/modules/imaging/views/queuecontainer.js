@@ -786,7 +786,6 @@ define(['marionette',
         },
         
         initialize: function() {
-            this._lastSample = null
             this._subsamples_ready = []
 
             this.platetypes = new PlateTypes()
@@ -860,7 +859,6 @@ define(['marionette',
             this.getInspectionImages()
             this.refreshQSubSamples()
             this.listenTo(this.subsamples, 'change:isSelected', this.selectSubSample, this)
-            //this.listenTo(this.subsamples.fullCollection, 'change:isSelected', this.selectSubSample, this)
             this.listenTo(this.unfilteredSubsamples, 'sync add remove change:READYFORQUEUE', this.refreshQSubSamples, this)
             this.listenTo(this.unfilteredSubsamples, 'change', this.updateQueueLength)
             this.listenTo(this.model, 'change:CONTAINERQUEUEID', this.onContainerQueueIdChange)
@@ -897,14 +895,12 @@ define(['marionette',
         },
 
         selectSubSample: function() {
-            ss = this.subsamples.fullCollection.findWhere({ isSelected: true })
+            var ss = this.subsamples.findWhere({ isSelected: true })
             if (ss) {
                 var s = ss.get('BLSAMPLEID')
-                if (s !== this._lastSample) {
-                    this.imagess.reset(this.subsamples.fullCollection.where({ BLSAMPLEID: s }))
-                    var i = this.inspectionimages.findWhere({ BLSAMPLEID: s })
-                    this.image.setModel(i)
-                }
+                this.imagess.reset(this.subsamples.fullCollection.where({ BLSAMPLEID: s }))
+                var i = this.inspectionimages.findWhere({ BLSAMPLEID: s })
+                this.image.setModel(i)
             }
         },
         
