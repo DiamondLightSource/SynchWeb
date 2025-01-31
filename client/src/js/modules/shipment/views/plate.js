@@ -33,6 +33,7 @@ define(['marionette', 'backbone', 'utils', 'backbone-validation'], function(Mari
                 
                 this.trigger('plate:select')
                 if (drop) drop.set('isSelected', true)
+                this.trigger('dropClicked', pos)
                 this.drawPlate()
             }
         },
@@ -187,7 +188,7 @@ define(['marionette', 'backbone', 'utils', 'backbone-validation'], function(Mari
                         var did = (k*this.pt.get('drop_per_well_x'))+j
                         if (this.pt.get('well_drop') > -1) {
                             if (did == this.pt.get('well_drop')) continue
-                                if (did > this.pt.get('well_drop')) did--;
+                            if (did > this.pt.get('well_drop')) did--;
                         }
         
                         var sampleid = i*this.pt.dropTotal()+did+1
