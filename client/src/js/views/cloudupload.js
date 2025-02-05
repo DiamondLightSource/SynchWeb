@@ -30,11 +30,17 @@ define([
                 $.cookie('ccp4_username', this.ui.username.val(), cookieOpts)
                 $.cookie('ccp4_cloudrunid', this.ui.cloudrunid.val(), cookieOpts)
             }
+            let data = { cloudrunid: this.ui.cloudrunid.val(), username: this.ui.username.val() }
+            if (this.model.get('AUTOPROCPROGRAMATTACHMENTID')) {
+                data.AUTOPROCPROGRAMATTACHMENTID = this.model.get('AUTOPROCPROGRAMATTACHMENTID')
+            } else if (this.model.get('DATACOLLECTIONFILEATTACHMENTID')) {
+                data.DATACOLLECTIONFILEATTACHMENTID = this.model.get('DATACOLLECTIONFILEATTACHMENTID')
+            }
             var self = this
             Backbone.ajax({
                 url: app.apiurl+'/processing/upload',
                 type: 'POST',
-                data: { id: this.model.get('AUTOPROCPROGRAMATTACHMENTID'), cloudrunid: this.ui.cloudrunid.val(), username: this.ui.username.val() },
+                data: data,
                 success: function() {
                     app.alert({ className: 'message notify', message: 'File successfully uploaded' })
                     self.closeDialog()

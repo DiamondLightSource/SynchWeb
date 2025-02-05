@@ -40,6 +40,8 @@ class Processing extends Page {
         'ccanom' => '[\d\.]+',
         'username' => '(\w|\s|\-|\.)+',
         'cloudrunid' => '(\w|\-)+',
+        'AUTOPROCPROGRAMATTACHMENTID' => '\d+',
+        'DATACOLLECTIONFILEATTACHMENTID' => '\d+',
     );
 
     /**
@@ -62,16 +64,17 @@ class Processing extends Page {
         }
     }
 
-    function _make_curl_file($filepath, $filename){
-        $file = $filepath . '/' . $filename;
+    function _make_curl_file($file){
         $mime = mime_content_type($file);
-        $output = new \CURLFile($file, $mime, $filename);
+        $info = pathinfo($file);
+        $name = $info['basename'];
+        $output = new \CURLFile($file, $mime, $name);
         return $output;
     }
 
     function _upload_to_cloud() {
         global $facility_name, $facility_short, $ccp4_cloud_upload_url;
-        if (!$this->has_arg('id')) {
+        if (!$this->has_arg('AUTOPROCPROGRAMATTACHMENTID') && !$this->has_arg('DATACOLLECTIONFILEATTACHMENTID')) {
             $this->_error('No file specified');
         }
         if (!$this->has_arg('username')) {
@@ -80,16 +83,28 @@ class Processing extends Page {
         if (!$this->has_arg('cloudrunid')) {
             $this->_error('No cloudrun id specified');
         }
+        if ($this->has_arg('AUTOPROCPROGRAMATTACHMENTID')) {
+            $select = ", concat(appa.filepath, '/', appa.filename) as filefullpath";
+            $join = "INNER JOIN processingjob pj ON dc.datacollectionid = pj.datacollectionid
+                INNER JOIN autoprocprogram app ON pj.processingjobid = app.processingjobid
+                INNER JOIN autoprocprogramattachment appa ON app.autoprocprogramid = appa.autoprocprogramid";
+            $where = "WHERE appa.autoprocprogramattachmentid=:1";
+            $args = array($this->arg('AUTOPROCPROGRAMATTACHMENTID'));
+        } else if ($this->has_arg('DATACOLLECTIONFILEATTACHMENTID')) {
+            $select = ", dcfa.filefullpath";
+            $join = "INNER JOIN datacollectionfileattachment dcfa ON dc.datacollectionid = dcfa.datacollectionid";
+            $where = "WHERE dcfa.datacollectionfileattachmentid=:1";
+            $args = array($this->arg('DATACOLLECTIONFILEATTACHMENTID'));
+        }
         $dc = $this->db->pq(
-            "SELECT appa.filepath, appa.filename, dc.imageprefix, dc.datacollectionnumber, concat(p.proposalcode, p.proposalnumber, '-', s.visit_number) as visit
-                FROM autoprocprogramattachment appa
-                INNER JOIN autoprocprogram app ON app.autoprocprogramid = appa.autoprocprogramid
-                INNER JOIN processingjob pj ON pj.processingjobid = app.processingjobid
-                INNER JOIN datacollection dc ON dc.datacollectionid = pj.datacollectionid
-                INNER JOIN blsession s ON s.sessionid = dc.sessionid
-                INNER JOIN proposal p ON p.proposalid = s.proposalid
-                WHERE appa.autoprocprogramattachmentid=:1",
-            array($this->arg('id')));
+            "SELECT dc.imageprefix, dc.datacollectionnumber, concat(p.proposalcode, p.proposalnumber, '-', s.visit_number) as visit
+                $select
+                FROM datacollection dc
+                INNER JOIN blsession s ON dc.sessionid = s.sessionid
+                INNER JOIN proposal p ON s.proposalid = p.proposalid
+                $join
+                $where",
+            $args);
         $dc = $dc[0];
         $dc['USERNAME'] = $this->arg('username');
         $dc['FACILITYNAME'] = strtolower(preg_replace( '/[\W]/', '', $facility_name));
@@ -103,7 +118,7 @@ class Processing extends Page {
             $ccp4_cloud_upload_url);
         $ch = curl_init($url);
         $headers = array('cloudrun_id: '.$this->arg('cloudrunid'));
-        $data = array('file' => $this->_make_curl_file($dc['FILEPATH'], $dc['FILENAME']));
+        $data = array('file' => $this->_make_curl_file($dc['FILEFULLPATH']));
         curl_setopt_array(
             $ch,
             array(
