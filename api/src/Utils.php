@@ -2,6 +2,8 @@
 
 namespace SynchWeb;
 
+use InvalidArgumentException;
+
 class Utils
 {
     public static $exitOnError = true;
@@ -15,6 +17,20 @@ class Utils
         if (Utils::$exitOnError) {
             exit();
         }
+    }
+
+    /**
+     * Generate a random 32 hex md5 string from a random byteString. Utilises openssl_random_pseudo_bytes under the hood.
+     * @uses [open_ssl_random_pseudo_bytes](https://www.php.net/manual/en/function.openssl-random-pseudo-bytes.php)
+     * @param int $length = 13 Specify the bytes of the random val. defaults to 13 as per uniqID(). This is likely enough for most uses.
+     * @return string
+     * @throws InvalidArgumentException if $length <= 0 
+     * @throws Exception if openSSL fails
+     */
+    public static function generateRandomMd5(int $length = 13):  string {
+        if ($length <= 0) throw new InvalidArgumentException('byteLength must be > 0');
+        $bytes = openssl_random_pseudo_bytes($length);
+        return md5(bin2hex($bytes));
     }
 
     public static function shouldLogUserActivityToDB($loginId): bool
