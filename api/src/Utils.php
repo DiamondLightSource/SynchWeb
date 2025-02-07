@@ -25,7 +25,7 @@ class Utils
      * @param int $length = 13 Specify the bytes of the random val. defaults to 13 as per uniqID(). This is likely enough for most uses.
      * @return string
      * @throws InvalidArgumentException if $length <= 0 
-     * @throws Exception if openSSL fails
+     * @throws \Exception if openSSL fails
      */
     public static function generateRandomMd5(int $length = 13):  string {
         if ($length <= 0) throw new InvalidArgumentException('byteLength must be > 0');
