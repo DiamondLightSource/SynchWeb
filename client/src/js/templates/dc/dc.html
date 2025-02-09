@@ -24,7 +24,7 @@
         <% if (SI != 1 ) { %> <li data-testid="dc-first-image">First Image: <%-SI%></li><% } %>
         <% if ((KAPPA && KAPPA !=0) || (PHI && PHI != 0) || (CHISTART && CHISTART !=0)) { %><li data-testid="dc-kappa-phi-chi"><% if (KAPPA != null) { %>&kappa;: <%-KAPPA%>&deg;<% } %> <% if (PHI != null) { %>&phi;: <%-PHI%>&deg;<% } %> <% if (CHISTART != null) { %>&chi;: <%-CHISTART%>&deg;<% } %></li><% } %>
         <li data-testid="dc-resolution">Resolution: <%-RESOLUTION%>&#197;</li>
-        <li data-testid="dc-wavelength">Wavelength: <%-WAVELENGTH%>&#197;</li>
+        <li data-testid="dc-wavelength">Wavelength: <%-WAVELENGTH%>&#197; (<%-ENERGY%>eV)</li>
         <li data-testid="dc-exposure-time">Exposure: <%-EXPOSURETIME%>s</li>
         <%if (DCC > 1 && TOTALDOSE) { %>
             <li data-testid="dc-dose">Total Dose:  <%-TOTALDOSE%>MGy</li>

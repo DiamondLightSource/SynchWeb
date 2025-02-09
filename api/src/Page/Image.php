@@ -20,11 +20,13 @@ class Image extends Page
             'aid' => '\d+', 
             'visit' => '\w+\d+-\d+',
             'thresh' => '\d',
+            'res' => '\d',
+            'ice' => '\d',
         );
 
         public static $dispatch = array(array('/id/:id(/n/:n)', 'get', '_xtal_image'),
                               array('/diff/id/:id(/f/:f)(/n/:n)', 'get', '_diffraction_image'),
-                              array('/di/id/:id(/thresh/:thresh)(/n/:n)', 'get', '_diffraction_viewer'),
+                              array('/di/id/:id(/thresh/:thresh)(/res/:res)(/ice/:ice)(/n/:n)', 'get', '_diffraction_viewer'),
                               array('/cam/bl/:bl(/n/:n)', 'get', '_forward_webcam'),
                               array('/oav/bl/:bl(/n/:n)', 'get', '_forward_oav'),
                               array('/fa/fid/:id', 'get', '_fault_attachment'),
@@ -192,7 +194,7 @@ class Image extends Page
             }
 
             $im = $info['LOC'] . '/' . $info['FT'];
-            $out = '/tmp/' . $this->arg('id') . '_' . $n . ($this->has_arg('thresh') ? '_th' : '') . '.jpg';
+            $out = '/tmp/' . $this->arg('id') . '_' . $n . ($this->has_arg('thresh') ? '_th' : '') . ($this->has_arg('res') ? '_res' : '') . ($this->has_arg('ice') ? '_ice' : '') . '.jpg';
             global $dials_rest_url, $dials_rest_jwt;
             if (!file_exists($out)) {                
                 if (!empty($dials_rest_url) && !empty($dials_rest_jwt)) {
@@ -212,6 +214,8 @@ class Image extends Page
                             'colour_scheme' => 'greyscale',
                             'brightness' => $this->has_arg('thresh') ? 1000 : 10,
                             'format' => 'png',
+                            'resolution_rings' => array('show' => $this->has_arg('res')),
+                            'ice_rings' => array('show' => $this->has_arg('ice')),
                         )
                     ));
                 } else {

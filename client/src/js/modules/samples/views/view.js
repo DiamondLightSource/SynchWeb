@@ -108,6 +108,7 @@ define(['marionette',
             edit.create('DIMENSION3', 'text')
             edit.create('SHAPE', 'text')
             edit.create('COLOR', 'text')
+            edit.create('SMILES', 'text')
 
             if (!this.model.get('HASDATA')) {
                 edit.create('CODE', 'text')

@@ -206,7 +206,7 @@ class Proposal extends Page
         $order = 'p.proposalid DESC';
 
         if ($this->has_arg('sort_by')) {
-            $cols = array('ST' => 'p.bltimestamp', 'PROPOSALCODE' => 'p.proposalcode', 'PROPOSALNUMBER' => 'p.proposalnumber', 'VCOUNT' => 'vcount', 'TITLE' => 'lower(p.title)');
+            $cols = array('ST' => 'p.bltimestamp', 'PROPOSALCODE' => 'p.proposalcode', 'PROPOSALNUMBER' => 'p.proposalnumber', 'VCOUNT' => 'vcount', 'TITLE' => 'lower(p.title)', 'STATE' => 'p.state');
             $dir = $this->has_arg('order') ? ($this->arg('order') == 'asc' ? 'ASC' : 'DESC') : 'ASC';
             if (array_key_exists($this->arg('sort_by'), $cols))
                 $order = $cols[$this->arg('sort_by')] . ' ' . $dir;
@@ -1205,8 +1205,8 @@ class Proposal extends Page
             $uas = new UAS($auto_user, $auto_pass);
             $code = $uas->update_session($uasSessionId, $data);
 
-            if ($code == 200) {
-                // Update ISPyB records
+            if ($code == 200 || $code == 404) {
+                // Update ISPyB records, even if UAS says session not found
                 $this->db->pq("UPDATE container SET sessionid=:1 WHERE containerid=:2", array($sessionId, $containerId));
                 // For debugging - actually just want to return Success!
                 $result = array(
@@ -1216,13 +1216,11 @@ class Proposal extends Page
                 );
             } else if ($code == 403) {
                 $this->_error('UAS Error - samples and/or investigators not valid. ISPyB/UAS Session ID: ' . $sessionId . ' / ' . $uasSessionId);
-            } else if ($code == 404) {
-                $this->_error('UAS Error - session not found in UAS, Session ID: ' . $sessionId . ' UAS Session ID: ' . $uasSessionId);
             } else {
-                $this->_error('UAS Error - something wrong creating a session for that container ' . $containerId . ', response code was: ' . $code);
+                $this->_error('UAS Error - something went wrong updating a session for that container ' . $containerId . ', response code was: ' . $code);
             }
         } else {
-            error_log("Something wrong - an Auto Collect session exists but with no containers " . $sessionId);
+            error_log("Something went wrong - an Auto Collect session exists but with no containers " . $sessionId);
 
             $this->_error('No valid containers on the existing Auto Collect Session id:', $sessionId);
         }

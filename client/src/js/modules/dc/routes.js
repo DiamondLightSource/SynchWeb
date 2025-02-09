@@ -16,6 +16,7 @@ const QueueBuilder = import(/* webpackChunkName: "dc" */ 'modules/dc/views/queue
 
 // import DataCollection from 'models/datacollection'
 import DCCol from 'collections/datacollections'
+import DCVisit from 'collections/datacollectionsforvisit'
 import Visit from 'models/visit'
 import RoutesUtil from 'utils/routes'
 // import store from 'app/store/store'
@@ -119,8 +120,8 @@ let routes = [
         visit: route.params.visit || '',
         options: {
           model: visitModel,
-          collection: new DCCol(null, {
-            queryParams: { visit: route.params.visit, t: 'fc', pp: app.mobile() ? 5 : 15 }, running: false
+          collection: new DCVisit(null, {
+            queryParams: { visit: route.params.visit }
           })
         }
     }),

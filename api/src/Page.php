@@ -222,7 +222,6 @@ class Page
         {
             $auth = $this->staff;
 
-            // Beamline Sample Registration
         }
         // Barcode Scanners
         else if ($this->bcr() && !$this->user->loginId)
@@ -1037,9 +1036,9 @@ class Page
 
     function _submit_zocalo_recipe($recipe, $parameters, $error_code = 500)
     {
-        global $zocalo_mx_reprocess_queue;
+        global $rabbitmq_zocalo_vhost;
 
-        if (isset($zocalo_mx_reprocess_queue))
+        if (isset($rabbitmq_zocalo_vhost))
         {
             // Send job to processing queue
             $zocalo_message = array(
@@ -1048,7 +1047,7 @@ class Page
                 ),
                 'parameters' => $parameters,
             );
-            $this->_send_zocalo_message($zocalo_mx_reprocess_queue, $zocalo_message, $error_code);
+            $this->_send_zocalo_message($rabbitmq_zocalo_vhost, $zocalo_message, $error_code);
         }
     }
 
@@ -1074,7 +1073,6 @@ class Page
 
         try
         {
-            error_log("Sending message" . var_export($zocalo_message, true));
             $queue = new Queue($rabbitmq_zocalo_host, $rabbitmq_zocalo_port, $rabbitmq_zocalo_username, $rabbitmq_zocalo_password, $rabbitmq_zocalo_vhost);
             $queue->send($zocalo_message, $rabbitmq_zocalo_routing_key);
         }

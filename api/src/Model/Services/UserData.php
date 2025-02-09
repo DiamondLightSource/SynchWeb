@@ -340,6 +340,7 @@ class UserData
                 ->whereIdEquals("personid", $personId)
                 ->update("person");
         }
+        return $laboratoryId;
     }
 
     function addGroupUser($personId, $gid)

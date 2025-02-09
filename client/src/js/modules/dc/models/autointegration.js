@@ -13,13 +13,13 @@ define(['backbone'], function(Backbone){
             var shells = this.get('SHELLS')
             if (!shells) return
 
-            this.attributes.CLASS = { RMERGE: {}, RMEAS: {}, COMPLETENESS: {} }
+            this.set('CLASS', { RMERGE: {}, RMEAS: {}, COMPLETENESS: {} })
             _.each(['overall', 'innerShell', 'outerShell'], function(k) {
                 var c = shells[k] ? shells[k].COMPLETENESS : null
-                this.attributes.CLASS.COMPLETENESS[k] = c > 95 ? 'active' : (c > 80 ? 'minor' : 'inactive')
+                this.set('CLASS[COMPLETENESS[k]]', c > 95 ? 'active' : (c > 80 ? 'minor' : 'inactive'))
 
                 var r = shells[k] ? shells[k].RMEAS : null
-                this.attributes.CLASS.RMEAS[k] = r < 0.5 ? 'active' : (r < 0.6 ? 'minor' : 'inactive')
+                this.set('CLASS[RMEAS[k]]', r < 0.5 ? 'active' : (r < 0.6 ? 'minor' : 'inactive'))
             }, this)
         },
 
