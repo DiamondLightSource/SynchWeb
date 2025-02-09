@@ -146,6 +146,7 @@ class Shipment extends Page
         'TOKEN' => '\w+',
         'tracking_number' => '\w+',
         'AWBURL' => '[\w\:\/\.\-]+',
+        'pickup_confirmation_code' => '\w+',
 
         'manifest' => '\d',
         'currentuser' => '\d',
@@ -200,6 +201,7 @@ class Shipment extends Page
         array('/dewars/transfer', 'post', '_transfer_dewar'),
         array('/dewars/dispatch', 'post', '_dispatch_dewar'),
         array('/dewars/confirmdispatch/did/:did/token/:TOKEN', 'post', '_dispatch_dewar_confirmation'),
+        array('/dewars/confirmpickup/sid/:sid/token/:TOKEN', 'post', '_pickup_dewar_confirmation'),
 
         array('/dewars/tracking(/:DEWARID)', 'get', '_get_dewar_tracking'),
 
@@ -1444,7 +1446,70 @@ class Shipment extends Page
         $this->_output(1);
     }
 
+    function _pickup_dewar_confirmation()
+    {
+        if (!$this->has_arg('sid'))
+            $this->_error('No shipment specified');
+        if (!$this->has_arg('TOKEN'))
+            $this->_error('No token specified');
+        if (!$this->has_arg('tracking_number'))
+            $this->_error('No tracking number specified');
 
+        // Check token against each dewar
+        $dewars = $this->db->pq(
+            "SELECT d.dewarid,
+                json_unquote(json_extract(d.extra, '$.token')) as token
+                FROM dewar d
+                WHERE d.shippingid=:1",
+            array($this->arg('sid'))
+        );
+
+        foreach ($dewars as $dew) {
+            if ($this->arg('TOKEN') !== $dew['TOKEN']) {
+                $this->_error('Incorrect token');
+            }
+        }
+
+        $this->db->pq("UPDATE shipping set shippingstatus='awb created' WHERE shippingid=:1", array($this->arg('sid')));
+
+        foreach ($dewars as $dew) {
+            // Update the dewar status and storage location
+            $this->db->pq(
+                "UPDATE dewar
+                set dewarstatus='awb created', storagelocation='off-site', trackingnumbertosynchrotron=:2
+                WHERE dewarid=:1",
+                array($dew['DEWARID'], $this->arg('tracking_number'))
+            );
+
+            // Update dewar transport history
+            $this->db->pq(
+                "INSERT INTO dewartransporthistory (dewartransporthistoryid,dewarid,dewarstatus,storagelocation,arrivaldate)
+                VALUES (s_dewartransporthistory.nextval,:1,'awb created','off-site',CURRENT_TIMESTAMP)
+                RETURNING dewartransporthistoryid INTO :id",
+                array($dew['DEWARID'])
+            );
+        }
+
+        if ($this->has_arg('pickup_confirmation_code')) {
+
+            $this->db->pq("UPDATE shipping set shippingstatus='pickup booked' WHERE shippingid=:1", array($this->arg('sid')));
+
+            foreach ($dewars as $dew) {
+                // Update the dewar status
+                $this->db->pq("UPDATE dewar set dewarstatus='pickup booked' WHERE dewarid=:1", array($dew['DEWARID']));
+
+                // Update dewar transport history (plus 1s so history appears in order)
+                $this->db->pq(
+                    "INSERT INTO dewartransporthistory (dewartransporthistoryid,dewarid,dewarstatus,storagelocation,arrivaldate)
+                    VALUES (s_dewartransporthistory.nextval,:1,'pickup booked','off-site',CURRENT_TIMESTAMP+1)
+                    RETURNING dewartransporthistoryid INTO :id",
+                    array($dew['DEWARID'])
+                );
+            }
+        }
+
+        $this->_output(1);
+    }
 
     function _get_dewar_tracking()
     {
@@ -3086,20 +3151,27 @@ class Shipment extends Page
     function _create_shipment_shipment_request($shipment, array $dewars): int
     {
 
-        // if (!is_null($shipment['EXTERNALSHIPPINGIDTOSYNCHROTRON'])) {
-        //     return $shipment['EXTERNALSHIPPINGIDTOSYNCHROTRON'];
-        // }
+        $shipping_id = (int) $shipment['SHIPPINGID'];
+
+        $token = md5(openssl_random_pseudo_bytes(7));
+        $this->db->pq(
+            "UPDATE dewar SET extra = JSON_SET(IFNULL(extra, '{}'), '$.token', :1 ) WHERE shippingid=:2",
+            array($token, $shipping_id)
+        );
+
+        $callback_url = "/api/shipment/dewars/confirmpickup/sid/{$shipping_id}/token/{$token}";
 
         $external_shipping_id = $this->_create_dewars_shipment_request(
             $dewars,
             $shipment['PROP'],
-            (int) $shipment['SHIPPINGID'],
-            (int) $shipment['SHIPPINGID']
+            $shipping_id,
+            $shipping_id,
+            $callback_url
         );
 
         $this->db->pq(
             "UPDATE shipping SET externalShippingIdToSynchrotron=:1 WHERE shippingId=:2",
-            array($external_shipping_id, $shipment['SHIPPINGID'])
+            array($external_shipping_id, $shipping_id)
         );
         return $external_shipping_id;
     }
