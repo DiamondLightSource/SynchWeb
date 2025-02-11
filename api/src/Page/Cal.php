@@ -3,6 +3,7 @@
 namespace SynchWeb\Page;
 
 use SynchWeb\Page;
+use SynchWeb\Utils;
 
 class Cal extends Page
 {
@@ -24,11 +25,11 @@ class Cal extends Page
                 if (sizeof($args)) {
                     $this->_output('/cal/ics/h/'.$args[0]['HASH'].'/calendar.ics');
                 } else {
-                    $h = md5(uniqid());
+                    $md5 = Utils::generateRandomMd5();
                     $this->db->pq("INSERT INTO calendarhash (calendarhashid,ckey,hash,beamline) 
-                        VALUES (s_calendarhash.nextval, :1, :2, :3)", array($arg, $h, $this->has_arg('bl') ? 1 : 0));
+                        VALUES (s_calendarhash.nextval, :1, :2, :3)", array($arg, $md5, $this->has_arg('bl') ? 1 : 0));
                     
-                    $this->_output('/cal/ics/h/'.$h.'/calendar.ics');
+                    $this->_output('/cal/ics/h/'.$md5.'/calendar.ics');
                 }
             }
         }
