@@ -47,7 +47,7 @@ define(['marionette', 'views/dialog'], function(Marionette, DialogView) {
                 }
 
                 var h = xhr.getAllResponseHeaders()
-                var m = h.match(/^Content-Type\:\s*(.*?)$/mi)
+                var m = h.match(/^Content-Type:\s*(.*?)$/mi)
                 var mimeType = m[1] || 'image/png'
 
                 if (mimeType == 'application/pdf' || mimeType == 'image/png') {

@@ -70,6 +70,7 @@
                 <span class="label">Safety Level</span>
                 <span class="SAFETYLEVEL"><%-SAFETYLEVEL%></span>
             </li>
+            <% if (!EXTERNALSHIPPINGIDTOSYNCHROTRON || !app.options.get("shipping_service_app_url_incoming")) { %>
             <li>
                 <span class="label">Courier</span>
                 <span class="DELIVERYAGENT_AGENTNAME"><%-DELIVERYAGENT_AGENTNAME%></span>
@@ -126,6 +127,7 @@
                 <span class="label">Estimated Delivery Date</span>
                 <span class="DELIVERYAGENT_DELIVERYDATE"><%-DELIVERYAGENT_DELIVERYDATE%></span>
             </li>
+            <% } %>
             <%
                 DYNAMIC=(typeof DYNAMIC !== 'undefined')? DYNAMIC : 'No';
                 REMOTEORMAILIN=(typeof REMOTEORMAILIN !== 'undefined')? REMOTEORMAILIN : null;

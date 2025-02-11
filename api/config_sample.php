@@ -13,11 +13,6 @@
     $isb  = array('user' => 'user', 'pass' => 'pass', 'db' => 'localhost/ispyb');
     $dbtype = 'mysql';
 
-    # Summary Database credentials 
-    ######### DELETE if not using connection. 
-    $summarydbconfig = array('user' => 'user', 'pass' => 'pass', 'db' => 'localhost/ispyb');
-    $ifsummary = true;
-
     # Encoded JWT key, used to sign and check validaty of jwt tokens
     # - Create one of these using /api/authenticate/key
     #   This can be changed to invalidate all currently active tokens
@@ -128,12 +123,12 @@
     $enabled_container_types = array();
 
     # Zocalo message broker credentials - Set to empty string to disable
-    $zocalo_server = 'tcp://activemq.server.ac.uk';
-    $zocalo_username = 'foo';
-    $zocalo_password = 'bar';
-
-    # Primary Zocalo entry point for recipe submission
-    $zocalo_mx_reprocess_queue = '/queue/zocolo.name';
+    $rabbitmq_zocalo_host = 'rabbitmq.server.ac.uk';
+    $rabbitmq_zocalo_port = 5672;
+    $rabbitmq_zocalo_username = 'foo';
+    $rabbitmq_zocalo_password = 'bar';
+    $rabbitmq_zocalo_vhost = 'zocalo';
+    $rabbitmq_zocalo_routing_key = 'processing_recipe';
 
     # This is used to trigger Zocalo recipes on adding new Protein sequences
     # Set to empty string to disable
@@ -192,18 +187,6 @@
     #   template in assets/emails/dewar-stores-in-in.html
     $in_contacts = array('Ind Contact' => 'in@server.ac.uk'
                         );
-
-
-    # Beamline Sample Registration Machines
-    # - Used for touchscreen application (unauthenticated)
-    $blsr = array('1.2.3.4', # my touchscreen computer
-                  );
-
-    # Beamline Sample Registration IP -> Beamline mapping
-    # - Third part of ip is used to identify beamline
-    #   x.x.103.x => i03
-    $ip2bl = array(103 => 'i03',
-                   );
 
     # Barcode readers
     # - These clients use the android app (unauthenticated)
@@ -314,6 +297,8 @@
     # Beamlines on which to scale the gridplot to 1024
     $scale_grid = array('i24');
 
+    # URL for instructions for closed proposals
+    $closed_proposal_link = '';
 
     # These map proposal types to their proposalcode
     # - If these are not defined for a proposal type, the api then uses bl_types below
@@ -393,4 +378,5 @@
     # Dials server values
     $dials_rest_url = "";
     $dials_rest_jwt = "";
+    $dials_rest_url_rings = false;
 ?>

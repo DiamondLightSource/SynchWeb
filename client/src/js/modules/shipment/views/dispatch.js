@@ -5,12 +5,12 @@ define(['marionette', 'views/form',
     'modules/shipment/collections/dewarhistory',
 
     'modules/shipment/models/dispatch',
-    
+
     'templates/shipment/dispatch.html',
     'jquery',
     'backbone',
     'backbone-validation',
-    
+
     ], function(Marionette, FormView,
         Visits, LabContacts, Countries, DewarHistory,
         DispatchModel,
@@ -19,11 +19,11 @@ define(['marionette', 'views/form',
     /*
      T&C Dialog
     */
-     var Terms = Backbone.Model.extend({
+    var Terms = Backbone.Model.extend({
         idAttribute: 'SHIPPINGID',
         urlRoot: '/shipment/terms',
     })
-            
+
     var TCDialog = DialogView.extend({
         template: _.template('<%=TERMS%>'),
         title: 'Terms & Conditions',
@@ -31,7 +31,7 @@ define(['marionette', 'views/form',
             'Accept': 'accept',
             'Cancel': 'closeDialog',
         },
-        
+
         accept: function() {
             var self = this
             this.model.set({ ACCEPTED: 1 })
@@ -44,7 +44,7 @@ define(['marionette', 'views/form',
         },
     })
 
-   
+
     var VVisits = Visits.extend({
         valueAttribute: 'VISIT',
     })
@@ -52,9 +52,9 @@ define(['marionette', 'views/form',
 
     return FormView.extend({
         template: template,
-        
+
         events: {
-            'change @ui.lc': 'getlcdetails',    
+            'change @ui.lc': 'getlcdetails',
             'change @ui.exp': 'updateLC',
             'click @ui.useAnotherCourierAccount': 'toggleCourierAccountEditing',
             'click @ui.facc': 'showTerms',
@@ -62,7 +62,7 @@ define(['marionette', 'views/form',
             'blur @ui.addr': 'formatAddress',
             'change @ui.country': 'showDispatchForm',
         },
-        
+
         ui: {
             lc: 'select[name=LABCONTACTID]',
 
@@ -105,18 +105,19 @@ define(['marionette', 'views/form',
                 SHIPPING: this.getOption('shipping').toJSON()
             }
         },
-        
+
         createModel: function() {
-            this.model = new DispatchModel({ 
-                FACILITYCODE: this.getOption('dewar').get('FACILITYCODE'), 
-                DEWARID: this.getOption('dewar').get('DEWARID'), 
+            this.model = new DispatchModel({
+                FACILITYCODE: this.getOption('dewar').get('FACILITYCODE'),
+                DEWARID: this.getOption('dewar').get('DEWARID'),
                 LABCONTACTID: this.getOption('dewar').get('LABCONTACTID'),
                 VISIT: this.getOption('dewar').get('FIRSTEXPERIMENT'),
+                UDCVISIT: this.getOption('dewar').get('UDCFIRSTEXPERIMENT'),
                 // If no agent specified on inbound, default to diamond dhl
                 DELIVERYAGENT_AGENTNAME: this.getOption('shipping').get('DELIVERYAGENT_AGENTNAME') || 'DHL'
             })
         },
-        
+
         success: function() {
             if (
                 app.options.get("shipping_service_app_url")
@@ -145,7 +146,7 @@ define(['marionette', 'views/form',
                 persist: true
             })
         },
-        
+
         onRender: function() {
             this.date('input[name=DELIVERYAGENT_SHIPPINGDATE]')
             this.$el.hide()
@@ -154,7 +155,7 @@ define(['marionette', 'views/form',
             var today = (d.getDate() < 10 ? '0'+d.getDate() : d.getDate()) + '-' + (d.getMonth() < 9 ? '0'+(d.getMonth()+1) : d.getMonth()+1) + '-' + d.getFullYear()
             this.$el.find('input[name=DELIVERYAGENT_SHIPPINGDATE]').val(today)
             this.$el.find('.facilityCourier').hide()
-            
+
             industrial_codes = ['in', 'sw']
             industrial_visit = industrial_codes.includes(app.prop.slice(0,2))
             if (industrial_visit) {
@@ -174,7 +175,8 @@ define(['marionette', 'views/form',
         },
 
         doOnRender: function() {
-            this.ui.exp.html(this.visits.opts()).val(this.model.get('VISIT'))
+            let visit = this.model.get('VISIT') || this.model.get('UDCVISIT')
+            this.ui.exp.html(this.visits.opts()).val(visit)
             this.updateLC()
             this.populateCountries()
             this.stripPostCode()
@@ -237,7 +239,7 @@ define(['marionette', 'views/form',
             var vis = this.visits.findWhere({ VISIT: this.ui.exp.val() })
             if (vis) {
                 var lc = vis.get('LC')
-                if (lc) { 
+                if (lc) {
                     var lcs = lc.split(',')
                     this.ui.lco.val(lcs[0].trim())
                 } else this.ui.lco.val('')
@@ -248,12 +250,12 @@ define(['marionette', 'views/form',
         refreshContacts: function() {
             this.contacts.fetch()
         },
-        
+
         updateContacts: function() {
             this.ui.lc.html(this.contacts.opts()).val(this.getOption('dewar').get('RETURNLABCONTACTID'))
             this.getlcdetails()
         },
-        
+
         getlcdetails: function() {
             var lc = this.contacts.findWhere({ LABCONTACTID: this.ui.lc.val() })
             if (lc) {
@@ -276,8 +278,7 @@ define(['marionette', 'views/form',
             this.dispatchCountry = this.ui.country.val()
             this.ui.courierSection.show();
             this.ui.dispatchDetails.show();
-            this.model.visitRequired = true
-            this.model.dispatchDetailsRequired = true
+            this.enableValidation()
             this.ui.submit.show();
             if (
                 this.terms.get("ACCEPTED") ||
@@ -292,9 +293,8 @@ define(['marionette', 'views/form',
                 && app.options.get("shipping_service_app_url")
                 && app.options.get("facility_courier_countries").includes(this.dispatchCountry)
             ){
-                this.model.visitRequired = false
+                this.disableValidation()
                 this.ui.dispatchDetails.hide()
-                this.model.dispatchDetailsRequired = false
                 this.ui.submit.text("Proceed")
                 this.ui.shippingadvice.html("<mark>On clicking 'Proceed' you will be redirected to the new Diamond shipping service to book the shipment. Please ensure all stages of the form are completed.</mark><br /><br />")
             } else {
@@ -303,13 +303,41 @@ define(['marionette', 'views/form',
             }
         },
 
+        enableValidation: function() {
+            this.model.visitRequired = true
+            this.model.dispatchDetailsRequired = true
+            this.model.validation.LOCATION.pattern = 'wwsdash'
+            this.model.validation.GIVENNAME.pattern = 'wwsdash'
+            this.model.validation.FAMILYNAME.pattern = 'wwsdash'
+            this.model.validation.LABNAME.pattern = 'wwsdash'
+            this.model.validation.DELIVERYAGENT_AGENTNAME.pattern = 'wwsdash'
+            this.model.validation.DELIVERYAGENT_SHIPPINGDATE.pattern = 'edate'
+            this.model.validation.EMAILADDRESS.pattern = 'email'
+            this.model.validation.AWBNUMBER.pattern = 'word'
+            this.model.validation.VISIT.pattern = 'visit'
+        },
+
+        disableValidation: function() {
+            this.model.visitRequired = false
+            this.model.dispatchDetailsRequired = false
+            this.model.validation.LOCATION.pattern = ''
+            this.model.validation.GIVENNAME.pattern = ''
+            this.model.validation.FAMILYNAME.pattern = ''
+            this.model.validation.LABNAME.pattern = ''
+            this.model.validation.DELIVERYAGENT_AGENTNAME.pattern = ''
+            this.model.validation.DELIVERYAGENT_SHIPPINGDATE.pattern = ''
+            this.model.validation.EMAILADDRESS.pattern = ''
+            this.model.validation.AWBNUMBER.pattern = ''
+            this.model.validation.VISIT.pattern = ''
+        },
+
         showTerms: function() {
             var terms = new TCDialog({ model: this.terms })
             this.listenTo(terms, 'terms:accepted', this.termsAccepted, this)
             if (!this.terms.get('ACCEPTED')) app.dialog.show(terms)
             return false
         },
-        
+
         toggleCourierAccountEditing: function(event) {
             if (event.target.checked) {
                 this.ui.courier.attr('disabled', false)
@@ -333,9 +361,8 @@ define(['marionette', 'views/form',
                 app.options.get("shipping_service_app_url")
                 && app.options.get("facility_courier_countries").includes(this.ui.country.val())
             ){
-                this.model.visitRequired = false
+                this.disableValidation()
                 this.ui.dispatchDetails.hide()
-                this.model.dispatchDetailsRequired = false
                 this.ui.submit.text("Proceed")
                 this.ui.shippingadvice.html("<mark>On clicking 'Proceed' you will be redirected to the new Diamond shipping service to book the shipment. Please ensure all stages of the form are completed.</mark><br /><br />")
             }

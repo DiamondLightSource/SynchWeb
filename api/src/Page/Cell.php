@@ -274,8 +274,8 @@ class Cell extends Page
         $pdb = $this->db->pq("SELECT TO_CHAR(p.pdbdate, 'YYYY') as year, $replace as bl, count(p.pdbentryid) as count
                 FROM pdbentry p
                 WHERE p.pdbdate > TO_DATE('2010-05', 'YYYY-MM')
-                GROUP BY $replace, TO_CHAR(p.pdbdate, 'YYYY')
-                ORDER BY TO_CHAR(p.pdbdate, 'YYYY')");
+                GROUP BY bl, year
+                ORDER BY year, bl");
 
         $isp = $this->db->pq("SELECT TO_CHAR(p.pdbdate, 'YYYY') as year, CASE WHEN p.autoprocprogramid > 0 THEN UPPER(s.beamlinename) ELSE $replace END as bl, count(p.pdbentryid) as count
                 FROM pdbentry p
@@ -284,8 +284,8 @@ class Cell extends Page
                 INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
                 INNER JOIN blsession s ON s.sessionid = dcg.sessionid
                 WHERE p.pdbdate > TO_DATE('2010-05', 'YYYY-MM')
-                GROUP BY CASE WHEN p.autoprocprogramid > 0 THEN UPPER(s.beamlinename) ELSE $replace END, TO_CHAR(p.pdbdate, 'YYYY')
-                ORDER BY TO_CHAR(p.pdbdate, 'YYYY')");
+                GROUP BY bl, year
+                ORDER BY year, bl");
 
         foreach ($pdb as $i => &$s) {
             $s['COUNT'] = intval(($s['COUNT']));
