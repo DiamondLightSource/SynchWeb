@@ -138,6 +138,9 @@ define(['marionette',
 
         },
 
+        onShow: function() {
+            this.listenTo(this.run, 'sync', this.plotYears)
+        },
         plotYears: function() {
             var ticks = []
             var cols = utils.getColors(3)
