@@ -41,7 +41,7 @@ define(['marionette',
         },
         
         showAttachments: function(e) {
-            e.preventDefault()
+            if (e) e.preventDefault()
 
             this.attachments = new AutoProcAttachments()
             this.attachments.queryParams.AUTOPROCPROGRAMID = this.model.get('AID')
@@ -52,6 +52,8 @@ define(['marionette',
                 view: new AutoProcAttachmentsView({ collection: this.attachments }), 
                 autosize: true 
             }))
+
+            this.listenTo(this.attachments, 'file:uploaded', this.showAttachments, this)
         },
 
         showLog: function(e) {
