@@ -1013,7 +1013,7 @@ define(['marionette',
             let newPos = this.avtypeselector.selectedPos != pos
             this.avtypeselector.selectedPos = null
             this.avtypeselector._filter()
-            _.map(this.subsamples.fullCollection.where({ isSelected: true }), function(ss) {
+            this.subsamples.fullCollection.where({ isSelected: true }).map((ss) => {
                 ss.set({ isSelected: false })
             })
             if (newPos) {
