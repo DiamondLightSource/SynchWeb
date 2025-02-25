@@ -3,7 +3,7 @@ define(['backbone'], function(Backbone) {
   var Search = Backbone.View.extend({
     /** @property */
     events: {
-        "keyup input[type=search]": "search",
+        "input input[type=search]": "search",
         "click a[data-backgrid-action=clear]": "clear",
         "submit": "search"
     },
