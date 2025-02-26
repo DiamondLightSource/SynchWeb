@@ -420,13 +420,16 @@ class Processing extends Page {
         // Set number of decimal places
         $nf = array(
             0 => array('ENERGY'),
+            1 => array(
+                'OVERALLCOMPLETENESS', 'INNERCOMPLETENESS', 'OUTERCOMPLETENESS',
+                'ANOMOVERALLCOMPLETENESS', 'ANOMINNERCOMPLETENESS', 'ANOMOUTERCOMPLETENESS',
+            ),
             2 => array(
-                'RESOLUTION', 'INNERRMEAS', 'OUTERCCHALF', 'INNERCCANOM',
+                'RESOLUTION', 'OUTERCCHALF', 'INNERCCANOM',
                 'CELL_A', 'CELL_B', 'CELL_C', 'CELL_AL', 'CELL_BE', 'CELL_GA',
                 'OVERALLRHIGH', 'OVERALLRLOW', 'INNERRHIGH', 'INNERRLOW', 'OUTERRHIGH', 'OUTERRLOW',
-                'OVERALLCOMPLETENESS', 'INNERCOMPLETENESS', 'OUTERCOMPLETENESS',
-                'ANOMOVERALLCOMPLETENESS', 'ANOMINNERCOMPLETENESS', 'ANOMOUTERCOMPLETENESS'
-            )
+            ),
+            3 => array('INNERRMEAS'),
         );
 
         foreach ($nf as $nff => $cols) {
