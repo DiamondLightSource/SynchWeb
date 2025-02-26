@@ -286,6 +286,7 @@ export default {
     return {
       container: {},
       containerId: 0,
+      siblingContainers: {}, // All containers using this Dewar and shippingID
       samplesCollection: null,
 
       containerHistory: [],
@@ -354,6 +355,7 @@ export default {
     this.getImagingCollections()
     this.getImagingScheduleCollections()
     this.getImagingScreensCollections()
+    this.fetchSiblingContainers()
   },
   methods: {
     loadContainerData() {
@@ -516,6 +518,21 @@ export default {
       } finally {
         // TODO: Toggle loading state off
       }
+    },
+    // 
+    async fetchSiblingContainers() {
+      // Fetch any other containers sharing the same Dewar & shipment, sorted by containerID.
+      var result = new Containers();
+      result.dewarID = this.container.DEWARID;
+      result.shipmentID = this.container.SHIPPINGID;
+      await result.fetch();
+
+      this.siblingContainers = _.chain(result.toJSON())
+      .map(sib => ({ dewarID: sib.DEWARID,  cid: sib.CONTAINERID }))
+      .sortBy((c) => c.cid)
+      .value();
+
+      console.log("Sibling Containers", this.siblingContainers)
     },
     async fetchContainers() {
       this.containersCollection = new Containers(null, { state: { pageSize: 9999 } })
