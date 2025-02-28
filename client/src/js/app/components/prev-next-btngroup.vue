@@ -83,7 +83,7 @@ export default {
   @apply tw-flex;
   @apply tw-flex-row;
   @apply tw-gap-2;
-  @apply tw-text-center;
+  @apply tw-items-center;
   @apply tw-border;
   @apply tw-rounded;
 }

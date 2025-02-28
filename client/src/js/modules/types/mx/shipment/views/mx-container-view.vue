@@ -2,6 +2,16 @@
   <div class="content">
     <h1 data-testid="container-header">Container {{container.NAME}}</h1>
 
+    <prev-next-btngroup
+        v-show="siblingContainers?.length > 1"
+        next-btn-label="Next Container"
+        prev-btn-label="Prev Container"
+        :next-target="this.nextContainerTarget"
+        :prev-target="this.prevContainerTarget"
+      >
+      {{ containerIndex +1 }} of {{ siblingContainers.length }}
+    </prev-next-btngroup>
+
     <p class="help">
       This page shows the contents of the selected container. Samples can be added and edited by clicking the pencil icon, and removed by clicking the x
     </p>
@@ -249,6 +259,7 @@ import Shipments from 'collections/shipments'
 import Containers from 'collections/containers'
 import Dewars from 'collections/dewars'
 
+import PrevNextBtngroup from 'app/components/prev-next-btngroup.vue'
 import BaseInputSelect from 'app/components/base-input-select.vue'
 import BaseInputText from 'app/components/base-input-text.vue'
 import BaseInputTextArea from 'app/components/base-input-textarea.vue'
@@ -263,6 +274,7 @@ import ValidContainerGraphic from 'modules/types/mx/samples/valid-container-grap
 export default {
   name: 'MxContainerView',
   components: {
+    'prev-next-btngroup': PrevNextBtngroup,
     'base-input-text': BaseInputText,
     'base-input-textarea': BaseInputTextArea,
     'base-input-select': BaseInputSelect,
@@ -287,6 +299,7 @@ export default {
       container: {},
       containerId: 0,
       siblingContainers: {}, // All containers using this Dewar and shippingID
+      containerIndex: 0,
       samplesCollection: null,
 
       containerHistory: [],
@@ -337,6 +350,14 @@ export default {
     containersSamplesGroupData() {
       return this.$store.getters['samples/getContainerSamplesGroupData']
     },
+    prevContainerTarget() {
+      const target = this.siblingContainers[this.containerIndex-1];
+      return target ? { relativeLink: "/containers/cid/" + target.cId, tooltip: target.cName } : null;
+    },
+    nextContainerTarget() {
+      const target = this.siblingContainers[this.containerIndex+1];
+      return target ? { relativeLink: "/containers/cid/" + target.cId, tooltip: target.cName } : null;
+    },
   },
   created: function() {
     // Get samples for this container id
@@ -355,7 +376,10 @@ export default {
     this.getImagingCollections()
     this.getImagingScheduleCollections()
     this.getImagingScreensCollections()
-    this.fetchSiblingContainers()
+
+  },
+  beforeMount: function(){
+    this.fetchSiblingContainers();
   },
   methods: {
     loadContainerData() {
@@ -519,21 +543,39 @@ export default {
         // TODO: Toggle loading state off
       }
     },
-    // 
+
+    /**
+     * Fetch any other containers sharing the same Dewar & shipment, sorted by NAME.
+     * Also tracks the index of the current Container
+     */
     async fetchSiblingContainers() {
-      // Fetch any other containers sharing the same Dewar & shipment, sorted by containerID.
-      var result = new Containers();
-      result.dewarID = this.container.DEWARID;
-      result.shipmentID = this.container.SHIPPINGID;
-      await result.fetch();
+      var result;
+
+      if (this.containersCollection?.length>0) {
+        // ! if ContainersCollection exists then filter it instead rather than re-fetching.
+        result = _.filter(this.containersCollection,  (c) => 
+          c.DEWARID === this.container.DEWARID &&
+          c.SHIPPINGID === this.container.SHIPPINGID
+        );
+
+      } else {
+        result = new Containers();
+        result.dewarID = this.container.DEWARID;
+        result.shipmentID = this.container.SHIPPINGID;
+        await result.fetch();
+
+      }
 
       this.siblingContainers = _.chain(result.toJSON())
-      .map(sib => ({ dewarID: sib.DEWARID,  cid: sib.CONTAINERID }))
-      .sortBy((c) => c.cid)
+      .map(sib => ({ dewarID: sib.DEWARID,  cId: sib.CONTAINERID, cName: sib.NAME }))
+      .sortBy((c) => c.cName)
+      .each((c, idx) => this.containerIndex  = (c.cId === this.containerId) ? idx : this.containerIndex)
       .value();
 
-      console.log("Sibling Containers", this.siblingContainers)
+      // console.log("Sibling Containers", this.siblingContainers)
+      // console.log("ContainerIdx", this.containerIndex)
     },
+    
     async fetchContainers() {
       this.containersCollection = new Containers(null, { state: { pageSize: 9999 } })
       this.containersCollection.queryParams.did = this.containersSamplesGroupData.dewarId
