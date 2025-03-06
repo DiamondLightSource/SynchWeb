@@ -18,15 +18,23 @@ define(['marionette',
         },
 
         render: function() {
-            this.$el.html('<a href="'+app.apiurl+'/download/'+this.column.escape('urlRoot')+'/attachments/'+this.model.escape(this.column.get('idParam'))+'/dl/2" class="button dl"><i class="fa fa-download"></i> Download</a>')
+            if (this.model.get('DELETED').toString() !== "0") {
+                // This file has been deleted. Show a warning of some kind
+                this.$el.html('<div>Removed</div>')
+            }
+            else {
 
-            if (this.model.get('FILETYPE') == 'Log' || this.model.get('FILETYPE') == 'Logfile') {
-                this.$el.append('<a class="vaplog button" href="'+app.apiurl+'/download/'+this.column.escape('urlRoot')+'/attachments/'+this.model.escape(this.column.get('idParam'))+'/dl/1"><i class="fa fa-search"></i> View</a>')
+                this.$el.html('<a href="'+app.apiurl+'/download/'+this.column.escape('urlRoot')+'/attachments/'+this.model.escape(this.column.get('idParam'))+'/dl/2" class="button dl"><i class="fa fa-download"></i> Download</a>')
+
+                if (this.model.get('FILETYPE') == 'Log' || this.model.get('FILETYPE') == 'Logfile') {
+                    this.$el.append('<a class="vaplog button" href="'+app.apiurl+'/download/'+this.column.escape('urlRoot')+'/attachments/'+this.model.escape(this.column.get('idParam'))+'/dl/1"><i class="fa fa-search"></i> View</a>')
+                }
+
+                if (this.model.get('FILETYPE') == 'Graph') {
+                    this.$el.append('<a class="vapplot button" href="#"><i class="fa fa-line-chart"></i> View</a>')
+                }
             }
 
-            if (this.model.get('FILETYPE') == 'Graph') {
-                this.$el.append('<a class="vapplot button" href="#"><i class="fa fa-line-chart"></i> View</a>')
-            }
 
             return this
         },
@@ -84,7 +92,7 @@ define(['marionette',
 
     return Marionette.LayoutView.extend({
         className: 'content',
-        template: '<div><h1>Attachments</h1><p class="help">This page lists all attachments for the selected autoprocessing</p><div class="wrapper"></div></div>',
+        template: '<div><h1>Attachments</h1><p class="help">This page lists all attachments for the selected autoprocessing</p><p style="padding: 0.2rem"><b>Note: Deleted Attachments can be reached via the Data Gateway / ICAT.</b></p><div class="wrapper"></div></div>',
         regions: { wrap: '.wrapper' },
         urlRoot: 'ap',
         idParam: 'AUTOPROCPROGRAMATTACHMENTID',
