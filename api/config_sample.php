@@ -220,6 +220,8 @@
     $facility_contact = "A person";
     $facility_phone = "01234 567890";
     $facility_email = "stores@facility.co.uk";
+    # Append to find logs/files etc once they have been moved to cold storage
+    $icat_base_url = "https://icat.yourFacility.ac.uk";
 
     // List of domestic free countries
     $facility_courier_countries = array('United Kingdom');
