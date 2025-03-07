@@ -3,14 +3,14 @@
     <h1 data-testid="container-header">Container {{container.NAME}}</h1>
 
     <prev-next-btngroup
-        v-show="siblingContainers?.length > 1"
+        v-show="prevNextTargets?.length > 1"
         next-btn-label="Next Container"
         prev-btn-label="Prev Container"
         path-prefix="/containers/cid/"
         :next-target="this.nextContainerTarget"
         :prev-target="this.prevContainerTarget"
       >
-      {{ containerIndex +1 }} of {{ siblingContainers.length }}
+      {{ currentContainerIdx +1 }} of {{ prevNextTargets.length }}
     </prev-next-btngroup>
 
     <p class="help">
@@ -300,7 +300,6 @@ export default {
       container: {},
       containerId: 0,
       siblingContainers: {}, // All containers using this Dewar and shippingID
-      containerIndex: 0,
       samplesCollection: null,
 
       containerHistory: [],
@@ -351,13 +350,21 @@ export default {
     containersSamplesGroupData() {
       return this.$store.getters['samples/getContainerSamplesGroupData']
     },
+    prevNextTargets() {
+      return _.chain(this.siblingContainers)
+      .map(sib => ({ value: sib.CONTAINERID, text: sib.NAME }))
+      .sortBy((c) => c.text)
+      .value();
+      // return _.map(this.siblingContainers, sib => ({ relativeLink: sib.cId, tooltip: sib.cName }));
+    },
+    currentContainerIdx() {
+      return _.findIndex(this.prevNextTargets, sib => sib.value === this.containerId);
+    },
     prevContainerTarget() {
-      const target = this.siblingContainers[this.containerIndex-1];
-      return target ? { relativeLink: target.cId, tooltip: target.cName } : null;
+      return this.prevNextTargets[this.currentContainerIdx-1];
     },
     nextContainerTarget() {
-      const target = this.siblingContainers[this.containerIndex+1];
-      return target ? { relativeLink: target.cId, tooltip: target.cName } : null;
+      return this.prevNextTargets[this.currentContainerIdx+1];
     },
   },
   created: function() {
@@ -554,6 +561,7 @@ export default {
 
       if (this.containersCollection?.length>0) {
         // ! if ContainersCollection exists then filter it instead rather than re-fetching.
+        // !! WARNING -  THis assumes that containersCollection has ALL containers of the dewar
         result = _.filter(this.containersCollection,  (c) => 
           c.DEWARID === this.container.DEWARID &&
           c.SHIPPINGID === this.container.SHIPPINGID
@@ -564,15 +572,9 @@ export default {
         result.dewarID = this.container.DEWARID;
         result.shipmentID = this.container.SHIPPINGID;
         await result.fetch();
-
       }
 
-      this.siblingContainers = _.chain(result.toJSON())
-      .map(sib => ({ dewarID: sib.DEWARID,  cId: sib.CONTAINERID, cName: sib.NAME }))
-      .sortBy((c) => c.cName)
-      .each((c, idx) => this.containerIndex  = (c.cId === this.containerId) ? idx : this.containerIndex)
-      .value();
-
+      this.siblingContainers = result.toJSON();
       // console.log("Sibling Containers", this.siblingContainers)
       // console.log("ContainerIdx", this.containerIndex)
     },
