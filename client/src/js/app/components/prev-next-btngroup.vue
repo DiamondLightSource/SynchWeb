@@ -35,14 +35,18 @@ export default {
   methods: {
     pushToNext() {
       if (this.nextTarget?.relativeLink)
-        router.push({ path: this.nextTarget.relativeLink });
+        router.push({ path: this.pathprefix + this.nextTarget.relativeLink });
     },
     pushToPrev() {
       if (this.prevTarget?.relativeLink)
-        router.push({ path: this.prevTarget.relativeLink });
+        router.push({ path: this.pathprefix + this.prevTarget.relativeLink });
     },
   },
   props: {
+    pathprefix: {
+      type: String,
+      default: ""
+    },
     nextBtnLabel: {
       type: String,
       default: "Next",

@@ -6,6 +6,7 @@
         v-show="siblingContainers?.length > 1"
         next-btn-label="Next Container"
         prev-btn-label="Prev Container"
+        path-prefix="/containers/cid/"
         :next-target="this.nextContainerTarget"
         :prev-target="this.prevContainerTarget"
       >
@@ -352,11 +353,11 @@ export default {
     },
     prevContainerTarget() {
       const target = this.siblingContainers[this.containerIndex-1];
-      return target ? { relativeLink: "/containers/cid/" + target.cId, tooltip: target.cName } : null;
+      return target ? { relativeLink: target.cId, tooltip: target.cName } : null;
     },
     nextContainerTarget() {
       const target = this.siblingContainers[this.containerIndex+1];
-      return target ? { relativeLink: "/containers/cid/" + target.cId, tooltip: target.cName } : null;
+      return target ? { relativeLink: target.cId, tooltip: target.cName } : null;
     },
   },
   created: function() {
