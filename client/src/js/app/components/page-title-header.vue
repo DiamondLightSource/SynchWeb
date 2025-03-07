@@ -3,6 +3,16 @@
     <h1 class="nou">
       <slot>Title</slot>
     </h1>
+
+    <prev-next-btngroup
+      v-show="this.prevNextTargets"
+      next-btn-label="Next Container"
+      prev-btn-label="Prev Container"
+      :path-prefix="this.prevNextPathPrefix"
+      :allTargets="this.prevNextTargets"
+      :currentValue="this.currentValue"
+    >
+    </prev-next-btngroup>
   </div>
 </template>
 
@@ -15,27 +25,44 @@ export default {
     "prev-next-btngroup": PrevNextBtngroup,
   },
   props: {
-    titleText: {
-      type: String,
-      default: "Title",
+    prevNextPathPrefix: {
+        type: String,
+        default: null
     },
+    prevNextTargets: {
+        type: Array,
+        default: []
+    },
+    currentValue: {
+        type: String,
+        default: null
+    },
+    prevNextBtnProps: {
+        type: Object,
+        default: () => ({
+            nextBtnLabel: "Next",
+            prevBtnLabel: "Prev",
+        })
+    },
+
   },
 };
 </script>
 
 <style scoped>
-    h1 {
-        padding: 0;
-    }
+h1 {
+  padding: 0;
+  @apply tw-flex-grow
+}
 
-    .header-row {
-        @apply tw-px-4;
-        @apply tw-pl-0;
-        @apply tw-py-2;
-        @apply tw-flex;
-        @apply tw-flex-row;
-        @apply tw-gap-2;
-        @apply tw-items-center;
-        border-bottom: 1px solid grey;
-    }
+.header-row {
+  @apply tw-px-4;
+  @apply tw-pl-0;
+  @apply tw-py-2;
+  @apply tw-flex;
+  @apply tw-flex-row;
+  @apply tw-gap-2;
+  @apply tw-items-center;
+  border-bottom: 1px solid grey;
+}
 </style>

@@ -1,16 +1,13 @@
 <template>
   <div class="content">
-    <h1 data-testid="container-header">Container {{container.NAME}}</h1>
-
-    <prev-next-btngroup
-        v-show="prevNextTargetLinks?.length > 1"
-        next-btn-label="Next Container"
-        prev-btn-label="Prev Container"
-        path-prefix="/containers/cid/"
-        :allTargets="this.prevNextTargetLinks"
-        :currentIdx="this.currentContainerIdx"
-      >
-    </prev-next-btngroup>
+    <!-- <h1 data-testid="container-header">Container {{container.NAME}}</h1> -->
+    <page-title-header
+      prevNextPathPrefix="/containers/cid/"
+      :prevNextTargets="this.prevNextTargetLinks"
+      :currentValue="this.containerId"
+    >
+      Container {{container.NAME }}
+    </page-title-header>
 
     <p class="help">
       This page shows the contents of the selected container. Samples can be added and edited by clicking the pencil icon, and removed by clicking the x
@@ -276,7 +273,8 @@ export default {
   name: 'MxContainerView',
   components: {
     'prev-next-btngroup': PrevNextBtngroup,
-        'base-input-text': BaseInputText,
+    'page-title-header': PageTitleHeader,
+    'base-input-text': BaseInputText,
     'base-input-textarea': BaseInputTextArea,
     'base-input-select': BaseInputSelect,
     'valid-container-graphic': ValidContainerGraphic,
@@ -286,7 +284,7 @@ export default {
     'single-sample-plate': SingleSample,
     'mx-puck-samples-table': MxPuckSamplesTable,
     'validation-observer': ValidationObserver,
-    'validation-provider': ValidationProvider
+    'validation-provider': ValidationProvider,
   },
   mixins: [ContainerMixin],
   props: {
@@ -355,9 +353,6 @@ export default {
       .map(sib => ({ value: sib.CONTAINERID, text: sib.NAME }))
       .sortBy((c) => c.text)
       .value();
-    },
-    currentContainerIdx() {
-      return _.findIndex(this.prevNextTargetLinks, sib => sib.value === this.containerId);
     },
   },
   created: function() {
