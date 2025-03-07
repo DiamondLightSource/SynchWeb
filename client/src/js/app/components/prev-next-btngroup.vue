@@ -2,17 +2,17 @@
   <div class="btn-group">
     <flat-button
       @click="pushToPrev()"
-      v-bind:level="prevTarget?.relativeLink ? 'primary' : 'disabled'"
-      v-bind:hint="prevTarget?.tooltip ?? prevTarget?.relativeLink"
+      v-bind:level="prevTarget?.value ? 'primary' : 'disabled'"
+      v-bind:hint="prevTarget?.text ?? prevTarget?.value"
     >
       {{ prevBtnLabel }}
     </flat-button>
-    <slot></slot>
+    {{ currentIdx +1 }} of {{ siblingTargets.length }}
 
     <flat-button
       @click="pushToNext()"
-      v-bind:level="nextTarget?.relativeLink ? 'primary' : 'disabled'"
-      v-bind:hint="nextTarget?.tooltip ?? nextTarget?.relativeLink"
+      v-bind:level="nextTarget?.value ? 'primary' : 'disabled'"
+      v-bind:hint="nextTarget?.text ?? nextTarget?.value"
     >
       {{ nextBtnLabel }}
     </flat-button>
@@ -25,27 +25,38 @@ import router from "../router/router";
 
 /**
  * A simple component that supplies functionality for prev & next router-links.
- * Button labels default to "Prev" & "Next" but alternatives can be supplied
+ * Button labels default to "Prev" & "Next" but alternatives can be supplied.
+ * Keeping state minimal for future re-use as the page is fully reloaded every time.
  */
 export default {
   name: "PrevNextBtnGroup",
   components: {
     "flat-button": FlatButton,
   },
+  computed: {
+    nextTarget() {
+      return this.allTargets[this.currentIdx+1];
+    },
+    prevTarget(){
+      return this.allTargets[this.currentIdx-1];
+    }
+  },
   methods: {
     pushToNext() {
-      if (this.nextTarget?.relativeLink)
-        router.push({ path: this.pathprefix + this.nextTarget.relativeLink });
+      console.log("Next Target:", this.nextTarget)
+      if (this.nextTarget?.value)
+        router.push({ path: this.pathprefix + this.nextTarget.value });
     },
     pushToPrev() {
-      if (this.prevTarget?.relativeLink)
-        router.push({ path: this.pathprefix + this.prevTarget.relativeLink });
+      console.log("Prev Target:", this.prevTarget)
+      if (this.prevTarget?.value)
+        router.push({ path: this.pathprefix + this.prevTarget.value });
     },
   },
   props: {
     pathprefix: {
       type: String,
-      default: ""
+      default: "",
     },
     nextBtnLabel: {
       type: String,
@@ -56,25 +67,14 @@ export default {
       default: "Prev",
     },
 
-    nextTarget: {
-      relativeLink: {
-        type: String,
-        default: null,
-      },
-      tooltip: {
-        type: String,
-        default: null,
-      },
+    allTargets: {
+      type: Array, // { value: string text: string }
+      default: [],
     },
-    prevTarget: {
-      relativeLink: {
-        type: String,
-        default: null,
-      },
-      tooltip: {
-        type: String,
-        default: null,
-      },
+
+    currentIdx: {
+      type: Number,
+      default: 0,
     },
   },
 };

@@ -3,14 +3,13 @@
     <h1 data-testid="container-header">Container {{container.NAME}}</h1>
 
     <prev-next-btngroup
-        v-show="prevNextTargets?.length > 1"
+        v-show="prevNextTargetLinks?.length > 1"
         next-btn-label="Next Container"
         prev-btn-label="Prev Container"
         path-prefix="/containers/cid/"
-        :next-target="this.nextContainerTarget"
-        :prev-target="this.prevContainerTarget"
+        :allTargets="this.prevNextTargetLinks"
+        :currentIdx="this.currentContainerIdx"
       >
-      {{ currentContainerIdx +1 }} of {{ prevNextTargets.length }}
     </prev-next-btngroup>
 
     <p class="help">
@@ -261,6 +260,7 @@ import Containers from 'collections/containers'
 import Dewars from 'collections/dewars'
 
 import PrevNextBtngroup from 'app/components/prev-next-btngroup.vue'
+import PageTitleHeader from 'app/components/page-title-header.vue'
 import BaseInputSelect from 'app/components/base-input-select.vue'
 import BaseInputText from 'app/components/base-input-text.vue'
 import BaseInputTextArea from 'app/components/base-input-textarea.vue'
@@ -276,7 +276,7 @@ export default {
   name: 'MxContainerView',
   components: {
     'prev-next-btngroup': PrevNextBtngroup,
-    'base-input-text': BaseInputText,
+        'base-input-text': BaseInputText,
     'base-input-textarea': BaseInputTextArea,
     'base-input-select': BaseInputSelect,
     'valid-container-graphic': ValidContainerGraphic,
@@ -350,21 +350,14 @@ export default {
     containersSamplesGroupData() {
       return this.$store.getters['samples/getContainerSamplesGroupData']
     },
-    prevNextTargets() {
+    prevNextTargetLinks() {
       return _.chain(this.siblingContainers)
       .map(sib => ({ value: sib.CONTAINERID, text: sib.NAME }))
       .sortBy((c) => c.text)
       .value();
-      // return _.map(this.siblingContainers, sib => ({ relativeLink: sib.cId, tooltip: sib.cName }));
     },
     currentContainerIdx() {
-      return _.findIndex(this.prevNextTargets, sib => sib.value === this.containerId);
-    },
-    prevContainerTarget() {
-      return this.prevNextTargets[this.currentContainerIdx-1];
-    },
-    nextContainerTarget() {
-      return this.prevNextTargets[this.currentContainerIdx+1];
+      return _.findIndex(this.prevNextTargetLinks, sib => sib.value === this.containerId);
     },
   },
   created: function() {
@@ -575,8 +568,6 @@ export default {
       }
 
       this.siblingContainers = result.toJSON();
-      // console.log("Sibling Containers", this.siblingContainers)
-      // console.log("ContainerIdx", this.containerIndex)
     },
     
     async fetchContainers() {
