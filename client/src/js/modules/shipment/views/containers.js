@@ -48,9 +48,17 @@ define(['marionette',
         cookie: true,
     })
     
+    var CustomHeaderCell = Backgrid.HeaderCell.extend({
+        render: function() {
+            // Allow HTML in the column header
+            this.$el.html(this.column.get("label"));
+            return this;
+        }
+    });
+
     return Marionette.LayoutView.extend({
         className: 'content',
-        template: '<div><h1>Containers</h1><div class="filter type"></div><div class="filter"><ul><li><label><input type="checkbox" name="currentuser" /> My Containers</label></li></ul></div><div class="wrapper"></div></div>',
+        template: '<div><h1>Containers</h1><div class="filter"><span class="type"></span><span><ul><li><label><input type="checkbox" name="currentuser" /> My Containers</label></li></ul></span></div><div class="wrapper"></div></div>',
         regions: { wrap: '.wrapper', type: '.type' },
         
         ui: {
@@ -61,7 +69,7 @@ define(['marionette',
             'change @ui.cur': 'refresh'
         },
 
-        hiddenColumns: [1,2,5,6,9,10,11],
+        hiddenColumns: [1,2,5,6,7,10,11,12],
 
         columns: [
             { name: 'NAME', label: 'Name', cell: 'string', editable: false },
@@ -69,7 +77,8 @@ define(['marionette',
             { name: 'BARCODE', label: 'Barcode', cell: 'string', editable: false },
             { name: 'SHIPMENT', label: 'Shipment', cell: 'string', editable: false },
             { name: 'SAMPLES', label: '# Samples', cell: 'string', editable: false },
-            { name: 'SUBSAMPLES', label: '# Subsamples', cell: 'string', editable: false },
+            { name: 'MANUAL', label: 'Manual Subsamples<br>Queued / Complete / Avail', cell: table.TemplateCell, template: '<%-QUEUEDMANUALSUBSAMPLES%> / <%-COMPLETEDMANUALSUBSAMPLES%> / <%-AVAILABLEMANUALSUBSAMPLES%>', editable: false, headerCell: CustomHeaderCell },
+            { name: 'AUTO', label: 'Auto Subsamples<br>Queued / Complete / Avail', cell: table.TemplateCell, template: '<%-QUEUEDAUTOSUBSAMPLES%> / <%-COMPLETEDAUTOSUBSAMPLES%> / <%-AVAILABLEAUTOSUBSAMPLES%>', editable: false, headerCell: CustomHeaderCell },
             { name: 'CONTAINERTYPE', label: 'Type', cell: 'string', editable: false },
             { name: 'CONTAINERSTATUS', label: 'Status', cell: 'string', editable: false },
             { name: 'LASTQUEUECOMPLETED', label: 'Completed', cell: 'string', editable: false },
@@ -86,7 +95,7 @@ define(['marionette',
             { id: 'queued', name: 'Queued'},
             { id: 'completed', name: 'Completed'},
             { id: 'processing', name: 'Processing'},
-            { id: 'subsamples', name: 'Has Subsamples'},
+            { id: 'subsamples', name: 'Has Manual Subsamples'},
         ],
 
         showImaging: true,
@@ -100,7 +109,9 @@ define(['marionette',
         },
 
         initialize: function(options) {
-            var filters = this.getOption('filters').slice(0)
+            this.imager = options.imager
+            // dont show Plates/Pucks/In Imager filters if in imager mode
+            var filters = this.getOption('filters').slice(this.imager ? 3 : 0)
             var columns = this.getOption('columns').slice(0)
             if (app.user_can('disp_cont') && !app.mobile() && this.getOption('showImaging')) {
                 columns.push({ name: 'VISIT', label: 'Visit', cell: 'string', editable: false })
@@ -109,12 +120,6 @@ define(['marionette',
                 columns.push({ label: '', cell: table.TemplateCell, editable: false, test: 'REQUESTEDRETURN', template: '<i class="fa fa-paper-plane-o" title="User requested return"></i>' })
                 columns.push({ label: '', cell: DisposeCell, editable: false })
                 filters.push({ id: 'todispose', name: 'To Dispose'})
-            }
-
-            columns[2].renderable = false
-            if (options.barcode) {
-                columns[1].renderable = false
-                columns[2].renderable = true
             }
 
             if (app.mobile()) {
@@ -141,12 +146,16 @@ define(['marionette',
         },
 
         updateCols: function(selected) {
-            var isPuck = (selected == null || selected == 'puck')
+            var isPuck = !this.imager && (selected == null || selected == 'puck')
 
             var dew = this.table.grid.columns.findWhere({ name: 'DEWAR' })
             var bc = this.table.grid.columns.findWhere({ name: 'BARCODE' })
+            var manual = this.table.grid.columns.findWhere({ name: 'MANUAL' })
+            var auto = this.table.grid.columns.findWhere({ name: 'AUTO' })
             dew.set('renderable', isPuck)
             bc.set('renderable', !isPuck)
+            manual.set('renderable', !isPuck)
+            auto.set('renderable', !isPuck)
         },
                                           
         onRender: function() {

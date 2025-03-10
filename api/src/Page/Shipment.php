@@ -2094,8 +2094,73 @@ class Shipment extends Page
             $totalQuery->joinClause("INNER JOIN shipping sh ON sh.shippingid = d.shippingid");
         }
 
+        $subsamples = '0 as queuedmanualsubsamples,
+                       0 as completedmanualsubsamples,
+                       0 as availablemanualsubsamples,
+                       0 as queuedautosubsamples,
+                       0 as completedautosubsamples,
+                       0 as availableautosubsamples,';
+
+        $manualsubsamples = "
+                (SELECT count(distinct ss.blsubsampleid) FROM blsubsample ss
+                    INNER JOIN blsample s2 ON s2.blsampleid = ss.blsampleid
+                    LEFT OUTER JOIN containerqueuesample cqs2 ON cqs2.blsubsampleid = ss.blsubsampleid
+                    LEFT OUTER JOIN containerqueue cq2 ON cq2.containerqueueid = cqs2.containerqueueid
+                    WHERE s2.containerid = c.containerid AND ss.source='manual'
+                    AND cqs2.containerqueuesampleid IS NOT NULL AND cqs2.containerqueueid IS NULL) as queuedmanualsubsamples,
+                (SELECT count(distinct ss.blsubsampleid) FROM blsubsample ss
+                    INNER JOIN blsample s2 ON s2.blsampleid = ss.blsampleid
+                    LEFT OUTER JOIN containerqueuesample cqs2 ON cqs2.blsubsampleid = ss.blsubsampleid
+                    LEFT OUTER JOIN containerqueue cq2 ON cq2.containerqueueid = cqs2.containerqueueid
+                    WHERE s2.containerid = c.containerid AND ss.source='manual'
+                    AND cq2.completedtimestamp IS NOT NULL) as completedmanualsubsamples,
+                (SELECT count(distinct ss.blsubsampleid) FROM blsubsample ss
+                    INNER JOIN blsample s2 ON s2.blsampleid = ss.blsampleid
+                    LEFT OUTER JOIN containerqueuesample cqs2 ON cqs2.blsubsampleid = ss.blsubsampleid
+                    LEFT OUTER JOIN containerqueue cq2 ON cq2.containerqueueid = cqs2.containerqueueid
+                    WHERE s2.containerid = c.containerid AND ss.source='manual'
+                    AND cqs2.containerqueuesampleid IS NULL) as availablemanualsubsamples,";
+        $autosubsamples = "
+                (SELECT COUNT(DISTINCT CASE WHEN cqs3.containerqueuesampleid IS NOT NULL AND cqs3.containerqueueid IS NULL THEN ss3.blsubsampleid ELSE NULL END)
+                    FROM blsample s3
+                    LEFT JOIN (
+                        SELECT si.blsampleid, MAX(si.blsampleimageid) AS max_blsampleimageid
+                        FROM BLSampleImage si
+                        GROUP BY si.blsampleid
+                    ) AS max_si ON s3.blsampleid = max_si.blsampleid
+                    LEFT JOIN BLSubSample ss3 ON max_si.max_blsampleimageid = ss3.blsampleimageid AND ss3.source = 'auto'
+                    LEFT OUTER JOIN ContainerQueueSample cqs3 ON cqs3.blsubsampleid = ss3.blsubsampleid
+                    WHERE s3.containerid = c.containerid
+                ) AS queuedautosubsamples,
+                (SELECT COUNT(DISTINCT CASE WHEN cq3.completedtimestamp IS NOT NULL THEN ss3.blsubsampleid ELSE NULL END)
+                    FROM blsample s3
+                    LEFT JOIN (
+                        SELECT si.blsampleid, MAX(si.blsampleimageid) AS max_blsampleimageid
+                        FROM BLSampleImage si
+                        GROUP BY si.blsampleid
+                    ) AS max_si ON s3.blsampleid = max_si.blsampleid
+                    LEFT JOIN BLSubSample ss3 ON max_si.max_blsampleimageid = ss3.blsampleimageid AND ss3.source = 'auto'
+                    LEFT OUTER JOIN ContainerQueueSample cqs3 ON cqs3.blsubsampleid = ss3.blsubsampleid
+                    LEFT OUTER JOIN containerqueue cq3 ON cq3.containerqueueid = cqs3.containerqueueid
+                    WHERE s3.containerid = c.containerid
+                ) AS completedautosubsamples,
+                (SELECT COUNT(DISTINCT CASE WHEN cqs3.containerqueuesampleid IS NULL THEN ss3.blsubsampleid ELSE NULL END)
+                    FROM blsample s3
+                    LEFT JOIN (
+                        SELECT si.blsampleid, MAX(si.blsampleimageid) AS max_blsampleimageid
+                        FROM BLSampleImage si
+                        GROUP BY si.blsampleid
+                    ) AS max_si ON s3.blsampleid = max_si.blsampleid
+                    LEFT JOIN BLSubSample ss3 ON max_si.max_blsampleimageid = ss3.blsampleimageid AND ss3.source = 'auto'
+                    LEFT OUTER JOIN ContainerQueueSample cqs3 ON cqs3.blsubsampleid = ss3.blsubsampleid
+                    WHERE s3.containerid = c.containerid
+                ) AS availableautosubsamples,";
+
 
         if ($this->has_arg('ty')) {
+            if ($this->arg('ty') != 'puck') {
+                $subsamples = $manualsubsamples . $autosubsamples;
+            }
             if ($this->arg('ty') == 'plate') {
                 $where .= " AND c.containertype NOT LIKE '%puck'";
             } else if ($this->arg('ty') == 'puck') {
@@ -2117,7 +2182,7 @@ class Shipment extends Page
             } else if ($this->arg('ty') == 'processing') {
                 $where .= " AND c.containerstatus = 'processing'";
             } else if ($this->arg('ty') == 'subsamples') {
-                $having .= " HAVING subsamples > 0";
+                $having .= " HAVING queuedmanualsubsamples+completedmanualsubsamples+availablemanualsubsamples > 0";
                 $subsamplesInTotal = ", count(distinct ss.blsubsampleid) as subsamples";
                 $totalQuery->joinClause("LEFT OUTER JOIN blsample s ON s.containerid = c.containerid");
                 $totalQuery->joinClause("LEFT OUTER JOIN blsubsample ss ON s.blsampleid = ss.blsampleid AND ss.source='manual'");
@@ -2177,9 +2242,10 @@ class Shipment extends Page
         }
 
         if ($this->has_arg('imager')) {
-            if ($this->arg('imager') == '1')
+            if ($this->arg('imager') == '1') {
                 $where .= ' AND c.imagerid IS NOT NULL';
-            else
+                $subsamples = $manualsubsamples . $autosubsamples;
+            } else
                 $where .= ' AND c.imagerid IS NULL AND c.requestedimagerid IS NULL';
         }
 
@@ -2187,6 +2253,7 @@ class Shipment extends Page
         if ($this->has_arg('iid')) {
             $where .= ' AND c.imagerid=:' . (sizeof($args) + 1);
             array_push($args, $this->arg('iid'));
+            $subsamples = $manualsubsamples . $autosubsamples;
         }
 
         if ($this->has_arg('CONTAINERREGISTRYID')) {
@@ -2199,21 +2266,29 @@ class Shipment extends Page
             array_push($args, $this->user->personId);
         }
 
-        $tot = $this->db->pq("SELECT count(distinct c.containerid) as tot 
-                $subsamplesInTotal
+        if ($this->has_arg('s')) {
+            $totalQuery->joinClause("INNER JOIN dewar d ON d.dewarid = c.dewarid");
+            $totalQuery->joinClause("INNER JOIN shipping sh ON sh.shippingid = d.shippingid");
+            $totalQuery->joinClause("INNER JOIN proposal p ON p.proposalid = sh.proposalid");
+            $searchfields = array('c.code', 'c.barcode', 'd.code', 'sh.shippingname', 'c.containertype', 'concat(p.proposalcode, p.proposalnumber)');
+            $conditions = array();
+            foreach ($searchfields as $sf) {
+                $st = sizeof($args) + 1;
+                array_push($conditions, $sf." LIKE CONCAT('%', :".$st.", '%')");
+                array_push($args, $this->arg('s'));
+            }
+            $where .= " AND (" . implode(" OR ", $conditions) . ")";
+        }
+
+        $tot = $this->db->pq("SELECT COUNT(*) as tot FROM
+                (SELECT $manualsubsamples
+                c.containerid
                 FROM container c 
                 {$totalQuery->getJoins()}
                 WHERE $where
-                $having", $args);
+                group by c.containerid
+                $having) as result", $args);
         $tot = sizeof($tot) ? intval($tot[0]['TOT']) : 0;
-
-        if ($this->has_arg('s')) {
-            $st = sizeof($args) + 1;
-            $where .= " AND (lower(c.code) LIKE lower(CONCAT(CONCAT('%',:" . $st . "), '%')) OR lower(c.barcode) LIKE lower(CONCAT(CONCAT('%',:" . ($st + 1) . "), '%')))";
-            array_push($args, $this->arg('s'));
-            array_push($args, $this->arg('s'));
-        }
-
 
         $pp = $this->has_arg('per_page') ? $this->arg('per_page') : 15;
         $pg = $this->has_arg('page') ? $this->arg('page') - 1 : 0;
@@ -2239,9 +2314,12 @@ class Shipment extends Page
 
         if ($this->has_arg('sort_by')) {
             $cols = array(
-                'NAME' => 'c.code', 'DEWAR' => 'd.code', 'SHIPMENT' => 'sh.shippingname', 'SAMPLES' => 'count(s.blsampleid)', 'SHIPPINGID' => 'sh.shippingid', 'LASTINSPECTION' => 'max(ci.bltimestamp)', 'INSPECTIONS' => 'count(ci.containerinspectionid)',
+                'NAME' => 'c.code', 'DEWAR' => 'd.code', 'SHIPMENT' => 'sh.shippingname', 'SAMPLES' => 'count(distinct s.blsampleid)',
+                'SHIPPINGID' => 'sh.shippingid', 'LASTINSPECTION' => 'max(ci.bltimestamp)', 'INSPECTIONS' => 'count(distinct ci.containerinspectionid)',
                 'DCCOUNT' => 'COUNT(distinct dc.datacollectionid)', 'SUBSAMPLES' => 'subsamples',
-                'LASTQUEUECOMPLETED' => 'max(cq2.completedtimestamp)', 'QUEUEDTIMESTAMP' => 'max(cq.createdtimestamp)'
+                'LASTQUEUECOMPLETED' => 'max(cq2.completedtimestamp)', 'QUEUEDTIMESTAMP' => 'max(cq.createdtimestamp)',
+                'CONTAINERTYPE' => 'c.containertype', 'CONTAINERSTATUS' => 'c.containerstatus', 'LASTINSPECTIONDAYS' => 'lastinspectiondays',
+                'AGE' => 'age', 'VISIT' => 'visit', 'REQUESTEDIMAGER' => 'requestedimager', 'IMAGER' => 'imager',
             );
             $dir = $this->has_arg('order') ? ($this->arg('order') == 'asc' ? 'ASC' : 'DESC') : 'ASC';
             if (array_key_exists($this->arg('sort_by'), $cols))
@@ -2253,6 +2331,7 @@ class Shipment extends Page
                 (SELECT sch.name FROM schedule sch WHERE sch.scheduleid = c.scheduleid) as schedule,
                 (SELECT i2.name FROM imager i2 WHERE i2.imagerid = c.requestedimagerid) as requestedimager,
                 (SELECT count(distinct ss.blsubsampleid) FROM blsubsample ss RIGHT OUTER JOIN blsample s2 ON s2.blsampleid = ss.blsampleid WHERE s2.containerid = c.containerid AND ss.source='manual') as subsamples,
+                $subsamples
                 (SELECT ses3.beamlinename FROM blsession ses3 WHERE d.firstexperimentid = ses3.sessionid) as firstexperimentbeamline,
                 (SELECT pp.name FROM processingpipeline pp WHERE c.prioritypipelineid = pp.processingpipelineid) as pipeline,
                 TO_CHAR(max(cq2.completedtimestamp), 'HH24:MI DD-MM-YYYY') as lastqueuecompleted, TIMESTAMPDIFF('MINUTE', max(cq2.completedtimestamp), max(cq2.createdtimestamp)) as lastqueuedwell,
