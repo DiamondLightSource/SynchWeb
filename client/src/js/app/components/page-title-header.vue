@@ -59,6 +59,7 @@ h1 {
   @apply tw-px-4;
   @apply tw-pl-0;
   @apply tw-py-2;
+  @apply tw-mb-4;
   @apply tw-flex;
   @apply tw-flex-row;
   @apply tw-gap-2;
