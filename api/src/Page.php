@@ -221,6 +221,7 @@ class Page
         if ($require_staff)
         {
             $auth = $this->staff;
+
         }
         // Barcode Scanners
         else if ($this->bcr() && !$this->user->loginId)

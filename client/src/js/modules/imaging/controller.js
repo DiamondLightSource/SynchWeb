@@ -87,7 +87,7 @@ define(['marionette',
             screens.fetch({
                 success: function(r) {
                     app.content.show(new ScreenAdmin({ collection: screens }))
-                    app.bc.reset([{ title: 'Crysallisation Screens', url: '/imaging/screen' }])
+                    app.bc.reset([{ title: 'Crystallisation Screens', url: '/imaging/screen' }])
                 },
 
                 error: function() {

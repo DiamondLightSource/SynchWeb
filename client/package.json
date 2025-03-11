@@ -38,7 +38,7 @@
     "imports-loader": "^0.8.0",
     "jest-environment-jsdom": "^29.5.0",
     "mini-css-extract-plugin": "^2.6.1",
-    "postcss": "^8.1.14",
+    "postcss": "^8.4.31",
     "postcss-color-function": "^4.1.0",
     "postcss-extend-rule": "^3.0.0",
     "postcss-import": "^13.0.0",
@@ -60,7 +60,6 @@
     "webpack-dev-server": "^4.11.1"
   },
   "dependencies": {
-    "@highcharts/map-collection": "^1.1.2",
     "backbone": "1.1.2",
     "backbone-validation": "0.9.1",
     "backbone.marionette": "2.1.0",
@@ -79,7 +78,6 @@
     "flot-axislabels": "^1.0.0",
     "flot-pie": "^1.0.0",
     "font-awesome": "^4.2.0",
-    "highcharts": "^7.2.2",
     "jquery": "^1.12.4",
     "jquery-color": "^3.0.0-alpha.1",
     "jquery-flot-resize": "^1.0.0",
@@ -97,7 +95,7 @@
     "tailwindcss": "^1.9.5",
     "three": "^0.143.0",
     "uglymol": "^0.6.4",
-    "underscore": "1.12.1",
+    "underscore": "1.8.3",
     "util": "^0.12.4",
     "vee-validate": "^2.2.15",
     "vue": "^2.6.10",
