@@ -596,7 +596,7 @@ class Sample extends Page
             $this->_error('No containerid specified');
         }
 
-        $args = array($this->proposalid, $this->arg('cid'), $this->arg('cid'), $this->arg('cid'));
+        $args = array($this->proposalid, $this->arg('cid'));
         $where = ' AND c.containerid=:2 AND cq2.completedtimestamp IS NULL';
 
         if ($this->has_arg('filter')) {
@@ -609,8 +609,14 @@ class Sample extends Page
             $where .= $filters[$this->arg('filter')];
         }
 
-        $first_inner_select_where = ' AND s.containerid=:3';
-        $second_inner_select_where = ' AND s.containerid=:4';
+        if ($this->has_arg('LOCATION')) {
+            $where .= ' AND s.location=:' . (sizeof($args) + 1);
+            array_push($args, $this->arg('LOCATION'));
+        }
+
+        $first_inner_select_where = ' AND s.containerid=:' . (sizeof($args) + 1);
+        $second_inner_select_where = ' AND s.containerid=:' . (sizeof($args) + 2);
+        array_push($args, $this->arg('cid'), $this->arg('cid'));
 
         $this->db->wait_rep_sync(true);
         $ss_query_string = $this->get_sub_samples_query($where, $first_inner_select_where, $second_inner_select_where);
