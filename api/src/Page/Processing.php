@@ -16,16 +16,10 @@ class Processing extends Page {
 
         array('/downstream/:id', 'get', '_downstream'),
         array('/downstream/images/:aid(/n/:n)', 'get', '_downstream_images'),
-        array(
-            '/downstream/mapmodel/:aid(/n/:n)',
-            'get',
-            '_downstream_mapmodel',
-        ),
-        array(
-            '/multiplex_jobs/groups/:blSampleGroupId',
-            'get',
-            '_get_latest_multiplex_job_result'
-        ),
+        array('/downstream/mapmodel/:aid(/n/:n)', 'get', '_downstream_mapmodel'),
+        array('/multiplex_jobs/groups/:blSampleGroupId', 'get', '_get_latest_multiplex_job_result'),
+
+        array('/upload', 'post', '_upload_to_cloud'),
     );
 
     public static $arg_list = array(
@@ -44,6 +38,10 @@ class Processing extends Page {
         'rmeas' => '[\d\.]+',
         'cchalf' => '[\d\.]+',
         'ccanom' => '[\d\.]+',
+        'username' => '(\w|\s|\-|\.)+',
+        'cloudrunid' => '(\w|\-)+',
+        'AUTOPROCPROGRAMATTACHMENTID' => '\d+',
+        'DATACOLLECTIONFILEATTACHMENTID' => '\d+',
     );
 
     /**
@@ -63,6 +61,80 @@ class Processing extends Page {
             if ($status == $state) {
                 return $value;
             }
+        }
+    }
+
+    function _make_curl_file($file){
+        $mime = mime_content_type($file);
+        $info = pathinfo($file);
+        $name = $info['basename'];
+        $output = new \CURLFile($file, $mime, $name);
+        return $output;
+    }
+
+    function _upload_to_cloud() {
+        global $facility_name, $facility_short, $ccp4_cloud_upload_url;
+        if (!$this->has_arg('AUTOPROCPROGRAMATTACHMENTID') && !$this->has_arg('DATACOLLECTIONFILEATTACHMENTID')) {
+            $this->_error('No file specified');
+        }
+        if (!$this->has_arg('username')) {
+            $this->_error('No username specified');
+        }
+        if (!$this->has_arg('cloudrunid')) {
+            $this->_error('No cloudrun id specified');
+        }
+        if ($this->has_arg('AUTOPROCPROGRAMATTACHMENTID')) {
+            $select = ", concat(appa.filepath, '/', appa.filename) as filefullpath";
+            $join = "INNER JOIN processingjob pj ON dc.datacollectionid = pj.datacollectionid
+                INNER JOIN autoprocprogram app ON pj.processingjobid = app.processingjobid
+                INNER JOIN autoprocprogramattachment appa ON app.autoprocprogramid = appa.autoprocprogramid";
+            $where = "WHERE appa.autoprocprogramattachmentid=:1";
+            $args = array($this->arg('AUTOPROCPROGRAMATTACHMENTID'));
+        } else if ($this->has_arg('DATACOLLECTIONFILEATTACHMENTID')) {
+            $select = ", dcfa.filefullpath";
+            $join = "INNER JOIN datacollectionfileattachment dcfa ON dc.datacollectionid = dcfa.datacollectionid";
+            $where = "WHERE dcfa.datacollectionfileattachmentid=:1";
+            $args = array($this->arg('DATACOLLECTIONFILEATTACHMENTID'));
+        }
+        $dc = $this->db->pq(
+            "SELECT dc.imageprefix, dc.datacollectionnumber, concat(p.proposalcode, p.proposalnumber, '-', s.visit_number) as visit
+                $select
+                FROM datacollection dc
+                INNER JOIN blsession s ON dc.sessionid = s.sessionid
+                INNER JOIN proposal p ON s.proposalid = p.proposalid
+                $join
+                $where",
+            $args);
+        $dc = $dc[0];
+        $dc['USERNAME'] = $this->arg('username');
+        $dc['FACILITYNAME'] = strtolower(preg_replace( '/[\W]/', '', $facility_name));
+        $dc['FACILITYSHORT'] = strtolower(preg_replace( '/[\W]/', '', $facility_short));
+        $url = preg_replace_callback('/<%=(\w+)%>/',
+            function($mat) use ($dc) {
+                if (array_key_exists($mat[1], $dc)) {
+                    return $dc[$mat[1]];
+                }
+            },
+            $ccp4_cloud_upload_url);
+        $ch = curl_init($url);
+        $headers = array('cloudrun_id: '.$this->arg('cloudrunid'));
+        $data = array('file' => $this->_make_curl_file($dc['FILEFULLPATH']));
+        curl_setopt_array(
+            $ch,
+            array(
+                CURLOPT_RETURNTRANSFER => TRUE,
+                CURLOPT_HTTPHEADER => $headers,
+                CURLOPT_TIMEOUT => 10,
+                CURLOPT_POST => TRUE,
+                CURLOPT_POSTFIELDS => $data,
+            )
+        );
+        $result = json_decode(curl_exec($ch));
+        curl_close($ch);
+        if (isset($result->error)) {
+            $this->_error($result);
+        } else {
+            $this->_output($result);
         }
     }
 
