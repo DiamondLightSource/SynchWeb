@@ -2320,6 +2320,7 @@ class Shipment extends Page
                 'LASTQUEUECOMPLETED' => 'max(cq2.completedtimestamp)', 'QUEUEDTIMESTAMP' => 'max(cq.createdtimestamp)',
                 'CONTAINERTYPE' => 'c.containertype', 'CONTAINERSTATUS' => 'c.containerstatus', 'LASTINSPECTIONDAYS' => 'lastinspectiondays',
                 'AGE' => 'age', 'VISIT' => 'visit', 'REQUESTEDIMAGER' => 'requestedimager', 'IMAGER' => 'imager',
+                'MANUAL' => 'queuedmanualsubsamples', 'AUTO' => 'queuedautosubsamples',
             );
             $dir = $this->has_arg('order') ? ($this->arg('order') == 'asc' ? 'ASC' : 'DESC') : 'ASC';
             if (array_key_exists($this->arg('sort_by'), $cols))
