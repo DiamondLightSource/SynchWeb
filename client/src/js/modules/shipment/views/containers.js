@@ -56,6 +56,19 @@ define(['marionette',
         }
     });
 
+    var highlightQueued = function(data, auto) {
+        const queued = auto ? data.QUEUEDAUTOSUBSAMPLES : data.QUEUEDMANUALSUBSAMPLES;
+        const completed = auto ? data.COMPLETEDAUTOSUBSAMPLES : data.COMPLETEDMANUALSUBSAMPLES;
+        const available = auto ? data.AVAILABLEAUTOSUBSAMPLES : data.AVAILABLEMANUALSUBSAMPLES;
+        return (queued > 0 ? '<span class="minor">'+queued+'</span>' : queued)+' / '+completed+' / '+available;
+    }
+
+    var queuedCompleted = function(data) {
+        if (data.LASTQUEUECOMPLETED) { return data.LASTQUEUECOMPLETED }
+        if (data.CONTAINERQUEUEID) { return 'Queued' }
+        return null
+    }
+
     return Marionette.LayoutView.extend({
         className: 'content',
         template: '<div><h1>Containers</h1><div class="filter"><span class="type"></span><span><ul><li><label><input type="checkbox" name="currentuser" /> My Containers</label></li></ul></span></div><div class="wrapper"></div></div>',
@@ -77,11 +90,11 @@ define(['marionette',
             { name: 'BARCODE', label: 'Barcode', cell: 'string', editable: false },
             { name: 'SHIPMENT', label: 'Shipment', cell: 'string', editable: false },
             { name: 'SAMPLES', label: '# Samples', cell: 'string', editable: false },
-            { name: 'MANUAL', label: 'Manual Subsamples<br>Queued / Complete / Avail', cell: table.TemplateCell, template: '<%-QUEUEDMANUALSUBSAMPLES%> / <%-COMPLETEDMANUALSUBSAMPLES%> / <%-AVAILABLEMANUALSUBSAMPLES%>', editable: false, headerCell: CustomHeaderCell },
-            { name: 'AUTO', label: 'Auto Subsamples<br>Queued / Complete / Avail', cell: table.TemplateCell, template: '<%-QUEUEDAUTOSUBSAMPLES%> / <%-COMPLETEDAUTOSUBSAMPLES%> / <%-AVAILABLEAUTOSUBSAMPLES%>', editable: false, headerCell: CustomHeaderCell },
+            { name: 'MANUAL', label: 'Manual Subsamples<br>Queued / Complete / Avail', cell: table.TemplateCell, template: d=>highlightQueued(d,false), editable: false, headerCell: CustomHeaderCell },
+            { name: 'AUTO', label: 'Auto Subsamples<br>Queued / Complete / Avail', cell: table.TemplateCell, template: d=>highlightQueued(d,true), editable: false, headerCell: CustomHeaderCell },
             { name: 'CONTAINERTYPE', label: 'Type', cell: 'string', editable: false },
             { name: 'CONTAINERSTATUS', label: 'Status', cell: 'string', editable: false },
-            { name: 'LASTQUEUECOMPLETED', label: 'Completed', cell: 'string', editable: false },
+            { name: 'LASTQUEUECOMPLETED', label: 'Completed', cell: table.TemplateCell, template: queuedCompleted, editable: false },
             { name: 'INSPECTIONS', label: 'Inspections', cell: 'string', editable: false },
             { name: 'LASTINSPECTIONDAYS', label: 'Last (d)', cell: 'string', editable: false },
             { name: 'AGE', label: 'Age (d)', cell: 'string', editable: false },
