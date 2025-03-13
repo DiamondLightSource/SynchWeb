@@ -2107,7 +2107,7 @@ class Shipment extends Page
                     LEFT OUTER JOIN containerqueuesample cqs2 ON cqs2.blsubsampleid = ss.blsubsampleid
                     LEFT OUTER JOIN containerqueue cq2 ON cq2.containerqueueid = cqs2.containerqueueid
                     WHERE s2.containerid = c.containerid AND ss.source='manual'
-                    AND cqs2.containerqueuesampleid IS NOT NULL AND cqs2.containerqueueid IS NULL) as queuedmanualsubsamples,
+                    AND cqs2.containerqueuesampleid IS NOT NULL AND cq2.completedtimestamp IS NULL) as queuedmanualsubsamples,
                 (SELECT count(distinct ss.blsubsampleid) FROM blsubsample ss
                     INNER JOIN blsample s2 ON s2.blsampleid = ss.blsampleid
                     LEFT OUTER JOIN containerqueuesample cqs2 ON cqs2.blsubsampleid = ss.blsubsampleid
@@ -2117,30 +2117,30 @@ class Shipment extends Page
                 (SELECT count(distinct ss.blsubsampleid) FROM blsubsample ss
                     INNER JOIN blsample s2 ON s2.blsampleid = ss.blsampleid
                     LEFT OUTER JOIN containerqueuesample cqs2 ON cqs2.blsubsampleid = ss.blsubsampleid
-                    LEFT OUTER JOIN containerqueue cq2 ON cq2.containerqueueid = cqs2.containerqueueid
                     WHERE s2.containerid = c.containerid AND ss.source='manual'
                     AND cqs2.containerqueuesampleid IS NULL) as availablemanualsubsamples,";
         $autosubsamples = "
-                (SELECT COUNT(DISTINCT CASE WHEN cqs3.containerqueuesampleid IS NOT NULL AND cqs3.containerqueueid IS NULL THEN ss3.blsubsampleid ELSE NULL END)
+                (SELECT COUNT(DISTINCT CASE WHEN cqs3.containerqueuesampleid IS NOT NULL AND cq3.completedtimestamp IS NULL THEN ss3.blsubsampleid ELSE NULL END)
                     FROM blsample s3
                     LEFT JOIN (
                         SELECT si.blsampleid, MAX(si.blsampleimageid) AS max_blsampleimageid
-                        FROM BLSampleImage si
+                        FROM blsampleimage si
                         GROUP BY si.blsampleid
                     ) AS max_si ON s3.blsampleid = max_si.blsampleid
-                    LEFT JOIN BLSubSample ss3 ON max_si.max_blsampleimageid = ss3.blsampleimageid AND ss3.source = 'auto'
-                    LEFT OUTER JOIN ContainerQueueSample cqs3 ON cqs3.blsubsampleid = ss3.blsubsampleid
+                    LEFT JOIN blsubsample ss3 ON max_si.max_blsampleimageid = ss3.blsampleimageid AND ss3.source = 'auto'
+                    LEFT OUTER JOIN containerqueuesample cqs3 ON cqs3.blsubsampleid = ss3.blsubsampleid
+                    LEFT OUTER JOIN containerqueue cq3 ON cq3.containerqueueid = cqs3.containerqueueid
                     WHERE s3.containerid = c.containerid
                 ) AS queuedautosubsamples,
                 (SELECT COUNT(DISTINCT CASE WHEN cq3.completedtimestamp IS NOT NULL THEN ss3.blsubsampleid ELSE NULL END)
                     FROM blsample s3
                     LEFT JOIN (
                         SELECT si.blsampleid, MAX(si.blsampleimageid) AS max_blsampleimageid
-                        FROM BLSampleImage si
+                        FROM blsampleimage si
                         GROUP BY si.blsampleid
                     ) AS max_si ON s3.blsampleid = max_si.blsampleid
-                    LEFT JOIN BLSubSample ss3 ON max_si.max_blsampleimageid = ss3.blsampleimageid AND ss3.source = 'auto'
-                    LEFT OUTER JOIN ContainerQueueSample cqs3 ON cqs3.blsubsampleid = ss3.blsubsampleid
+                    LEFT JOIN blsubsample ss3 ON max_si.max_blsampleimageid = ss3.blsampleimageid AND ss3.source = 'auto'
+                    LEFT OUTER JOIN containerqueuesample cqs3 ON cqs3.blsubsampleid = ss3.blsubsampleid
                     LEFT OUTER JOIN containerqueue cq3 ON cq3.containerqueueid = cqs3.containerqueueid
                     WHERE s3.containerid = c.containerid
                 ) AS completedautosubsamples,
@@ -2148,11 +2148,11 @@ class Shipment extends Page
                     FROM blsample s3
                     LEFT JOIN (
                         SELECT si.blsampleid, MAX(si.blsampleimageid) AS max_blsampleimageid
-                        FROM BLSampleImage si
+                        FROM blsampleimage si
                         GROUP BY si.blsampleid
                     ) AS max_si ON s3.blsampleid = max_si.blsampleid
-                    LEFT JOIN BLSubSample ss3 ON max_si.max_blsampleimageid = ss3.blsampleimageid AND ss3.source = 'auto'
-                    LEFT OUTER JOIN ContainerQueueSample cqs3 ON cqs3.blsubsampleid = ss3.blsubsampleid
+                    LEFT JOIN blsubsample ss3 ON max_si.max_blsampleimageid = ss3.blsampleimageid AND ss3.source = 'auto'
+                    LEFT OUTER JOIN containerqueuesample cqs3 ON cqs3.blsubsampleid = ss3.blsubsampleid
                     WHERE s3.containerid = c.containerid
                 ) AS availableautosubsamples,";
 
