@@ -167,8 +167,8 @@ define(['marionette',
             var auto = this.table.grid.columns.findWhere({ name: 'AUTO' })
             dew.set('renderable', isPuck)
             bc.set('renderable', !isPuck)
-            manual.set('renderable', !isPuck)
-            auto.set('renderable', !isPuck)
+            if (manual) manual.set('renderable', !isPuck)
+            if (auto) auto.set('renderable', !isPuck)
         },
                                           
         onRender: function() {
