@@ -109,7 +109,6 @@ define(['marionette',
             this.rruns.show(new TableView({ 
                 collection: this.run, 
                 columns: columns, 
-                filter: 's', 
                 tableClass: 'runs', 
                 loading: true,
                 backgrid: { emptyText: 'No dewar stats found' } 
@@ -119,7 +118,6 @@ define(['marionette',
             this.rcts.show(new TableView({ 
                 collection: this.countries, 
                 columns: columns2, 
-                filter: 's', 
                 tableClass: 'countries',
                 loading: true, 
                 backgrid: { emptyText: 'No dewar stats found' } 
