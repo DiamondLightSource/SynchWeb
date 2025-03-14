@@ -551,14 +551,12 @@ export default {
         // ! if ContainersCollection exists then filter it instead rather than re-fetching.
         // !! WARNING -  THis assumes that containersCollection has ALL containers of the dewar
         result = _.filter(this.containersCollection,  (c) => 
-          c.DEWARID === this.container.DEWARID &&
-          c.SHIPPINGID === this.container.SHIPPINGID
+          c.DEWARID === this.container.DEWARID
         );
 
       } else {
         result = new Containers();
         result.dewarID = this.container.DEWARID;
-        result.shipmentID = this.container.SHIPPINGID;
         await result.fetch();
       }
 
