@@ -80,16 +80,6 @@ class MySQL extends DatabaseParent {
         'Protein_has_PDB',
         'ExperimentType',
 
-        // Stat Views
-        'v_logonByHour',
-        'v_logonByMonthDay',
-        'v_logonByWeek',
-        'v_logonByWeekDay',
-        'v_logonByHour2',
-        'v_logonByMonthDay2',
-        'v_logonByWeek2',
-        'v_logonByWeekDay2',
-
         // Projects
         'Project',
         'Project_has_User',
