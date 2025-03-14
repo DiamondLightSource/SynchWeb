@@ -34,9 +34,7 @@ class Vstat extends Page
         array('/overview', 'get', '_overview'),
         array('/runs', 'get', '_runs'),
         array('/histogram', 'get', '_parameter_histogram'),
-
         array('/dewars', 'get', '_dewars_breakdown'),
-
     );
 
     var $dhl;
@@ -1074,10 +1072,6 @@ class Vstat extends Page
             array_push($args, $this->proposalid);
         }
 
-        if ($this->has_arg('data')) {
-            $having = 'HAVING count(dc.datacollectionid) > 0';
-        }
-
         if ($this->has_arg('history')) {
             $having = 'HAVING count(th.dewartransporthistoryid) > 1';
         }
@@ -1135,7 +1129,6 @@ class Vstat extends Page
                     sum(shipments) as shipments, 
                     sum(dewars) as dewars, 
                     sum(history) as history,
-                    sum(dcs) as dcs, 
                     sum(containers) as containers, 
                     sum(cta) as cta, 
                     country
@@ -1145,7 +1138,6 @@ class Vstat extends Page
                         count(distinct d.dewarid) as dewars, 
                         count(distinct th.dewartransporthistoryid) as history,
                         count(distinct c.containerid) as containers, 
-                        count(distinct dc.datacollectionid) as dcs, 
                         count(distinct cta.couriertermsacceptedid) as cta, 
                         YEAR(s.bltimestamp) as year, 
                         l.country, 
@@ -1163,9 +1155,6 @@ class Vstat extends Page
                     INNER JOIN laboratory l ON l.laboratoryid = pe.laboratoryid 
 
                     LEFT OUTER JOIN container c ON c.dewarid = d.dewarid
-                    LEFT OUTER JOIN blsample smp ON smp.containerid = c.containerid
-                    LEFT OUTER JOIN datacollection dc ON dc.blsampleid = smp.blsampleid
-
                     LEFT OUTER JOIN blsession ses ON ses.sessionid = d.firstexperimentid
                     WHERE 1=1 $where 
                     -- GROUP BY ses.startdate
@@ -1181,7 +1170,7 @@ class Vstat extends Page
             if ($d['COUNTRY'] && !$d['CODE'])
                 print_r(array($d['COUNTRY']));
 
-            foreach (array('SHIPMENTS', 'DEWARS', 'HISTORY', 'DCS', 'CONTAINERS', 'CTA') as $k)
+            foreach (array('SHIPMENTS', 'DEWARS', 'HISTORY', 'CONTAINERS', 'CTA') as $k)
                 $d[$k] = intval($d[$k]);
         }
 
