@@ -159,7 +159,7 @@ define(['marionette',
         },
 
         updateCols: function(selected) {
-            var isPuck = !this.imager && (selected == null || selected == 'puck')
+            var isPuck = !this.imager && (selected === null || selected === 'puck')
 
             var dew = this.table.grid.columns.findWhere({ name: 'DEWAR' })
             var bc = this.table.grid.columns.findWhere({ name: 'BARCODE' })
