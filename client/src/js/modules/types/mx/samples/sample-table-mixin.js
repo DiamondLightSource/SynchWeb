@@ -292,7 +292,12 @@ export default {
     async createNewSampleGroup(value) {
       this.$emit('update-sample-group-input-disabled', true)
       const sampleGroupModel = new SampleGroup({ NAME: value })
-      await this.$store.dispatch('saveModel', { model: sampleGroupModel })
+      const result = await this.$store.dispatch('saveModel', { model: sampleGroupModel })
+      if (result) {
+        const { NAME } = result.toJSON()
+        let message = 'Created sample group ' + NAME
+        this.$store.commit('notifications/addNotification', { title: 'Success', message: message, level: 'success' })
+      }
       this.$emit('update-sample-group-list')
     },
     canEditRow(location, editingRow) {
