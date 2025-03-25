@@ -65,16 +65,6 @@ export default {
     experimentKindList() {
       return this.$experimentKindList();
     },
-    centringMethodList() {
-      return this.$centringMethods().filter(method => method).reduce(
-        (acc, curr) => {
-          if (curr) acc.push({ value: curr, text: curr });
-
-          return acc;
-        },
-        []
-      ).sort(this.sortSelectField);
-    },
     spaceGroupList() {
       const spaceGroups = this.$spaceGroups().reduce((acc, item) => {
         acc.push({
@@ -159,6 +149,7 @@ export default {
       'SCREENINGMETHOD',
       'SCREENINGCOLLECTVALUE',
       'SHAPE',
+      'SMILES',
       'SPACEGROUP',
       'SYMBOL',
       'THEORETICALDENSITY',
@@ -311,7 +302,6 @@ export default {
   },
   inject: [
     "$spaceGroups",
-    "$centringMethods",
     "$anomalousList",
     "$experimentKindList",
     "$sampleLocation",

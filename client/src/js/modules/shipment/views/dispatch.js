@@ -282,7 +282,8 @@ define(['marionette', 'views/form',
             this.ui.submit.show();
             if (
                 this.terms.get("ACCEPTED") ||
-                !app.options.get("facility_courier_countries").includes(this.dispatchCountry)
+                (!app.options.get("facility_courier_countries").includes(this.dispatchCountry) &&
+                 !app.options.get("facility_courier_countries_nde").includes(this.dispatchCountry))
             ) {
                 this.ui.facc.hide()
             } else {

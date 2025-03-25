@@ -389,7 +389,28 @@ define(['jquery', 'marionette',
                 this.scale = this.perceivedw/(w+this.offset_w)
 
                 this.ctx.globalAlpha = 1
-                this.ctx.drawImage(this.snapshot, stx-this.offset_w/2, sty-this.offset_h/2, w+this.offset_w, h+this.offset_h, 0, 0, this.perceivedw, this.perceivedh)
+                let sx = stx-this.offset_w/2
+                let sy = sty-this.offset_h/2
+                let swidth = w+this.offset_w
+                let sheight = h+this.offset_h
+                let dx = 0
+                let dy = 0
+                let dwidth = this.perceivedw
+                let dheight = this.perceivedh
+                // Safari ignores sx values less than zero
+                if (sx < 0) {
+                    dx = Math.abs(sx * this.scale)
+                    sx = 0
+                    swidth = Math.min(this.perceivedw/this.scale, this.snapshot.width)
+                    dwidth = Math.min(this.perceivedw, this.snapshot.width*this.scale)
+                }
+                // Safari ignores swidth values greater than snapshot width - sx
+                if (swidth > this.snapshot.width - sx) {
+                    dwidth *= (this.snapshot.width - sx) / swidth
+                    swidth = this.snapshot.width - sx
+                }
+
+                this.ctx.drawImage(this.snapshot, sx, sy, swidth, sheight, dx, dy, dwidth, dheight)
             }
 
             var d = []
