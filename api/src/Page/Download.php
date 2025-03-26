@@ -203,7 +203,7 @@ class Download extends Page
         }
 
         $rows = $this->db->union(array(
-            "SELECT app.autoprocprogramid, appa.filename, appa.filepath, appa.filetype, appa.autoprocprogramattachmentid, dc.datacollectionid, appa.importancerank, appa.deleted
+            "SELECT app.autoprocprogramid, appa.filename, appa.filepath, appa.filetype, appa.autoprocprogramattachmentid, dc.datacollectionid, appa.importancerank
                 FROM autoprocintegration api 
                 INNER JOIN autoprocprogram app ON api.autoprocprogramid = app.autoprocprogramid 
                 INNER JOIN autoprocprogramattachment appa ON appa.autoprocprogramid = app.autoprocprogramid 
@@ -211,7 +211,7 @@ class Download extends Page
                 INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
                 INNER JOIN blsession s ON s.sessionid = dcg.sessionid
                 WHERE s.proposalid=:1 $where",
-            "SELECT app.autoprocprogramid, appa.filename, appa.filepath, appa.filetype, appa.autoprocprogramattachmentid, dc.datacollectionid, appa.importancerank, appa.deleted
+            "SELECT app.autoprocprogramid, appa.filename, appa.filepath, appa.filetype, appa.autoprocprogramattachmentid, dc.datacollectionid, appa.importancerank
                 FROM autoprocprogram app
                 INNER JOIN processingjob pj on pj.processingjobid = app.processingjobid
                 INNER JOIN autoprocprogramattachment appa ON appa.autoprocprogramid = app.autoprocprogramid 
