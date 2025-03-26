@@ -19,10 +19,11 @@ define(['marionette',
 
         render: function() {
 
-            // Passed in from the layout below.
+            // Passed into the column from the layout below.
             var iCatUrl = this.column.escape('iCatUrl');
+            var dcPurged = this.column.escape('dcPurgedProcessedData');
 
-            if (this.model.get('DELETED').toString() !== "0") {
+            if (dcPurged !== "0") {
                 // This file has been removed from store but may be available in iCat/Archive if the iCatURL is present.
                 iCatUrl 
                     ? this.$el.html('<a class="button" href=' + iCatUrl +' target="_blank">iCat link</a>') 
@@ -98,20 +99,28 @@ define(['marionette',
 
     return Marionette.LayoutView.extend({
         className: 'content',
-        template: '<div><h1>Attachments</h1><p class="help">This page lists all attachments for the selected autoprocessing</p><p style="padding: 0.2rem"><b>Note: Removed Attachments (non-industrial) may be reached via the Archive Link.</b></p><div class="wrapper"></div></div>',
+        template: '<div><h1>Attachments</h1><p class="help">This page lists all attachments for the selected autoprocessing</p><p style="padding: 0.2rem"><b>Note: Removed Attachments (non-industrial) may be reached via the iCat Link.</b></p><div class="wrapper"></div></div>',
         regions: { wrap: '.wrapper' },
         urlRoot: 'ap',
         idParam: 'AUTOPROCPROGRAMATTACHMENTID',
 
         initialize: function(options) {
 
-            var iCatProposalRootURL = this.getICatProposalRootUrl();
-            //iCatProposalRootURL ?? console.log("iCatRootURL", iCatProposalRootURL?.toString());
+            var proposalID = app.prop;
+            var iCatProposalRootURL = this.getICatProposalRootUrl(proposalID);
 
             var columns = [
                 { name: 'FILENAME', label: 'File', cell: 'string', editable: false },
                 { name: 'FILETYPE', label: 'Type', cell: 'string', editable: false },
-                { label: '', cell: OptionsCell, editable: false, urlRoot: this.getOption('urlRoot'), idParam: this.getOption('idParam'), iCatUrl: iCatProposalRootURL},
+                { 
+                    label: '', 
+                    cell: OptionsCell, 
+                    editable: false, 
+                    urlRoot: this.getOption('urlRoot'), 
+                    idParam: this.getOption('idParam'), 
+                    dcPurgedProcessedData: options.dcPurgedProcessedData, 
+                    iCatUrl: iCatProposalRootURL
+                },
             ]
                         
             this.table = new TableView({ 
@@ -130,11 +139,11 @@ define(['marionette',
          * We're just passing in the iCat project Root URL for each but this could be further extended within each OptionsCell if we want to target a specifc visit etc.
          * @returns {URL | undefined} undefined if baseUrl not set OR if proposal begins with "in" | "sw".
          */
-        getICatProposalRootUrl: function() {
+        getICatProposalRootUrl: function(proposalID) {
             // define prefixes that should skip the iCat link creation. Use Uppercase form.
             var denyIcatPrefixes = ["IN"];
 
-            var proposalIdUppercase = window.app.prop.toUpperCase();
+            var proposalIdUppercase = proposalID.toUpperCase();
             var propsalPrefix = proposalIdUppercase.slice(0,2)
             var iCatBaseURl = app.options.get("icat_base_url");
             

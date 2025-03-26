@@ -18,7 +18,8 @@ define(['marionette',
         RDPlotView, AIPlotsView, AutoProcAttachmentsView, APMessagesView, 
         LogView, TableView, table,
         utils, template) {
-       
+
+    var dcPurgedProcessedData = "0"; // dataCollection.PURGEDPROCESSEDDATA via options from DC.js
 
     var AutoIntegrationItem = Marionette.LayoutView.extend({
         template: template,
@@ -49,7 +50,7 @@ define(['marionette',
 
             app.dialog.show(new DialogView({ 
                 title: 'Auto Processing Attachments: '+this.model.escape('TYPE'),
-                view: new AutoProcAttachmentsView({ collection: this.attachments }), 
+                view: new AutoProcAttachmentsView({ collection: this.attachments, dcPurgedProcessedData }), 
                 autosize: true 
             }))
         },
@@ -122,6 +123,7 @@ define(['marionette',
         },
         
         initialize: function(options) {
+            dcPurgedProcessedData = options.dcPurgedProcessedData;
             this.collection = new AutoIntegrations(null, { id: options.id })
             this.collection.fetch().done(this.render.bind(this))
         },
