@@ -343,9 +343,13 @@ export default {
           attributes
         })
 
-        const { BLSAMPLEGROUPID } = result.toJSON()
+        if (result) {
+          const { BLSAMPLEGROUPID } = result.toJSON()
+          this.sampleGroupId = BLSAMPLEGROUPID
+          let message = 'Created sample group ' + this.groupName
+          this.$store.commit('notifications/addNotification', { title: 'Success', message: message, level: 'success' })
+        }
 
-        this.sampleGroupId = BLSAMPLEGROUPID
       }
     },
     addSelectedCells(cellsLocation) {
