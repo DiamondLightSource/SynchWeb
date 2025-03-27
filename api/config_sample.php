@@ -142,6 +142,8 @@
 
     # Visit directory on disk
     $visit_directory = '/dls/<%=BEAMLINENAME%>/data/<%=YEAR%>/<%=VISIT%>';
+    # If found ANYWHERE in a visit filePath the system will assume that any files there exist indefinitely
+    $visit_persist_storage_dir_segment = 'persistent/dir/name';
 
     # Diffraction image snapshots
     $jpeg_location = '<%=VISITDIR%>/jpegs/<%=IMDIRECTORY%>/<%=IMFILE%>.jpeg';
