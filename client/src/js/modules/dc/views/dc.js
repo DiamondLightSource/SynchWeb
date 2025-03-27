@@ -159,7 +159,6 @@ define(['marionette',
       
       
     loadDP: function(e) {
-      console.log('DC DP purged = ', this.model.get('PURGEDPROCESSEDDATA'));
       if (!this.dp) {
         this.dp = new DCDownstreamView({ 
           id: this.model.get('ID'),
