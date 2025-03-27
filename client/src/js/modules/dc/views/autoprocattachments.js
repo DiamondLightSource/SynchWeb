@@ -9,6 +9,8 @@ define(['marionette',
     AIPlotsView, PlotlyPlotView, LogView,
     TableView, utils) {
 
+    // string for comparison with filepaths. Pulled from config to share across optionsCells.
+    var persistentStorageSegment = undefined; 
     
     var OptionsCell = Backgrid.Cell.extend({
         events: {
@@ -23,8 +25,11 @@ define(['marionette',
             var iCatUrl = this.column.escape('iCatUrl');
             var dcPurged = this.column.escape('dcPurgedProcessedData');
 
-            if (dcPurged !== "0") {
-                // This file has been removed from store but may be available in iCat/Archive if the iCatURL is present.
+            // Files with persistentStorageSegment in their path are assumed to exist permanently and ignore the BLSESSION purged value
+            var isPersistentFile = this.doesFilepathContainPersistentStorageSegment(this.model.get('FILEPATH'));
+
+            if (!isPersistentFile && dcPurged !== "0") {
+                // if the iCatURL is present, this file has been removed from store but may be available in iCat/Archive. ELSE likley an industry proposal so no iCat link provided.
                 iCatUrl 
                     ? this.$el.html('<a class="button" href=' + iCatUrl +' target="_blank">iCat link</a>') 
                     : this.$el.html('<div>Removed</div>')
@@ -45,6 +50,8 @@ define(['marionette',
 
             return this
         },
+
+        doesFilepathContainPersistentStorageSegment: (filePath) => persistentStorageSegment ? filePath.includes(persistentStorageSegment) :  false,
 
         showPlots: function(e) {
             e.preventDefault()
@@ -105,6 +112,7 @@ define(['marionette',
         idParam: 'AUTOPROCPROGRAMATTACHMENTID',
 
         initialize: function(options) {
+            persistentStorageSegment = app.options.get('visit_persist_storage_dir_segment');
 
             var proposalID = app.prop;
             var iCatProposalRootURL = this.getICatProposalRootUrl(proposalID);
