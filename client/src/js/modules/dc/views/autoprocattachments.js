@@ -4,19 +4,21 @@ define(['marionette',
     'modules/dc/views/aiplots',
     'modules/dc/views/vue-plotly',
     'views/log',
+    'views/cloudupload',
     'views/table', 'utils'], 
     function(Marionette, Backbone, Backgrid, 
-    AIPlotsView, PlotlyPlotView, LogView,
+    AIPlotsView, PlotlyPlotView, LogView, CloudUploadView,
     TableView, utils) {
 
     // string for comparison with filepaths. Pulled from config to share across optionsCells.
     var persistentStorageSegment = undefined; 
-    
+
     var OptionsCell = Backgrid.Cell.extend({
         events: {
             'click a.dl': utils.signHandler,
             'click a.vaplog': 'showLog',
             'click a.vapplot': 'showPlots',
+            'click a.vapupload': 'showCloudUpload',
         },
 
         render: function() {
@@ -47,11 +49,19 @@ define(['marionette',
                 }
             }
 
+            if (app.options.get('ccp4_cloud_upload_url') && this.model.get('FILETYPE') == 'Result') {
+                this.$el.append('<a class="vapupload button" href="#"><i class="fa fa-cloud-upload"></i> CCP4 Cloud</a>')
+            }
 
             return this
         },
 
         doesFilepathContainPersistentStorageSegment: (filePath) => persistentStorageSegment ? filePath.includes(persistentStorageSegment) :  false,
+
+        showCloudUpload: function(e) {
+            e.preventDefault()
+            app.dialog.show(new CloudUploadView({ model: this.model, collection: this.model.collection }))
+        },
 
         showPlots: function(e) {
             e.preventDefault()

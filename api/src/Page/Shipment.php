@@ -89,7 +89,7 @@ class Shipment extends Page
         //'FIRSTEXPERIMENTID' => '\w+\d+-\d+',
 
         // Fields for responsive remote questions:
-        'DYNAMIC' => '1?|Yes|No',
+        'DYNAMIC' => '\w+',
         'REMOTEORMAILIN' => '.*',
         'SESSIONLENGTH' => '\w+',
         'ENERGY' => '.*',
@@ -101,6 +101,7 @@ class Shipment extends Page
         'MULTIAXISGONIOMETRY' => '1?|Yes|No',
         'ENCLOSEDHARDDRIVE' => '1?|Yes|No',
         'ENCLOSEDTOOLS' => '1?|Yes|No',
+        'LONGWAVELENGTH' => '1?|Yes|No',
 
         'COMMENTS' => '.*',
 
@@ -146,6 +147,7 @@ class Shipment extends Page
         'TOKEN' => '\w+',
         'tracking_number' => '\w+',
         'AWBURL' => '[\w\:\/\.\-]+',
+        'PROPOSALTYPE' => '\w+',
         'pickup_confirmation_code' => '\w+',
 
         'manifest' => '\d',
@@ -165,7 +167,8 @@ class Shipment extends Page
         'EXTRASUPPORTREQUIREMENT',
         'MULTIAXISGONIOMETRY',
         'ENCLOSEDHARDDRIVE',
-        'ENCLOSEDTOOLS'
+        'ENCLOSEDTOOLS',
+        'LONGWAVELENGTH',
     );
 
     public static $dispatch = array(
@@ -2592,6 +2595,7 @@ class Shipment extends Page
     function _get_container_types()
     {
         $where = '';
+        $args = array();
         // By default only return active container types.
         // If all param set return everything
         if ($this->has_arg('all')) {
@@ -2599,7 +2603,14 @@ class Shipment extends Page
         } else {
             $where .= 'ct.active = 1';
         }
-        $rows = $this->db->pq("SELECT ct.containerTypeId, name, ct.proposalType, ct.capacity, ct.wellPerRow, ct.dropPerWellX, ct.dropPerWellY, ct.dropHeight, ct.dropWidth, ct.wellDrop FROM ContainerType ct WHERE $where");
+        if ($this->has_arg('ty') && $this->arg('ty') == 'plate') {
+            $where .= " AND ct.wellperrow is not null";
+        }
+        if ($this->has_arg('PROPOSALTYPE')) {
+            $where .= ' AND ct.proposaltype = :1';
+            array_push($args, $this->arg('PROPOSALTYPE'));
+        }
+        $rows = $this->db->pq("SELECT ct.containerTypeId, name, ct.proposalType, ct.capacity, ct.wellPerRow, ct.dropPerWellX, ct.dropPerWellY, ct.dropHeight, ct.dropWidth, ct.wellDrop FROM ContainerType ct WHERE $where", $args);
         $this->_output(array('total' => count($rows), 'data' => $rows));
     }
 
@@ -2933,7 +2944,7 @@ class Shipment extends Page
 
         $dynamic = null;
         if ($this->has_arg('DYNAMIC')) {
-            $dynamic = $this->arg("DYNAMIC") ? "Yes" : "No";
+            $dynamic = $this->arg("DYNAMIC");
         }
 
         $extra_array = array(
@@ -2943,6 +2954,7 @@ class Shipment extends Page
         );
 
         if ($dynamic) {
+            $long_wavelength = $this->has_arg('LONGWAVELENGTH') ? $this->arg('LONGWAVELENGTH') : '';
             $remote_or_mailin = $this->has_arg('REMOTEORMAILIN') ? $this->arg('REMOTEORMAILIN') : '';
             $session_length = $this->has_arg('SESSIONLENGTH') ? $this->arg('SESSIONLENGTH') : '';
             $energy_requirements = $this->has_arg('ENERGY') ? $this->arg('ENERGY') : '';
@@ -2965,6 +2977,7 @@ class Shipment extends Page
                 $multi_axis_goniometry = $this->arg('MULTIAXISGONIOMETRY') ? "Yes" : "No";
             }
             $dynamic_options = array(
+                "LONGWAVELENGTH" => $long_wavelength,
                 "REMOTEORMAILIN" => $remote_or_mailin,
                 "SESSIONLENGTH" => $session_length,
                 "ENERGY" => $energy_requirements,

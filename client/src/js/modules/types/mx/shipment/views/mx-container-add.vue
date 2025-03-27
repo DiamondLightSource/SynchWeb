@@ -696,10 +696,6 @@ export default {
       let samples
       if (newVal) {
         samples = this.samples.map(sample => {
-          if (!sample.CENTRINGMETHOD) {
-            sample.CENTRINGMETHOD = 'diffraction'
-          }
-
           if (!sample.EXPERIMENTKIND) {
             sample.EXPERIMENTKIND = 'Ligand binding'
           }

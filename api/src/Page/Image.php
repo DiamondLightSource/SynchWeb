@@ -331,6 +331,7 @@ class Image extends Page
             $ch = curl_init();
             curl_setopt($ch, CURLOPT_URL, 'http://'.$img.'/axis-cgi/mjpg/video.cgi?fps=5&resolution=CIF&resolution=480x270');
             curl_setopt($ch, CURLOPT_HEADER, 0);
+            curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_ANY);
             $im = curl_exec($ch);
             curl_close($ch);
         }
