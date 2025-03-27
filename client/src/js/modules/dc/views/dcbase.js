@@ -155,7 +155,6 @@ define(['marionette',
             var d = []
             if (this.model.get('DCC') > 1) d.dcg = this.model.get('DCG')
             else d.id = this.model.get('ID')
-
             app.dialog.show(new DialogView({ 
                 title: 'Attachments', 
                 view: new AttachmentsView(d)

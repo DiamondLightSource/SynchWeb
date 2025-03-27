@@ -10,6 +10,8 @@ define(['marionette',
     AIPlotsView, PlotlyPlotView, LogView, CloudUploadView,
     TableView, utils) {
 
+    // string for comparison with filepaths. Pulled from config to share across optionsCells.
+    var persistentStorageSegment = undefined; 
 
     var OptionsCell = Backgrid.Cell.extend({
         events: {
@@ -20,14 +22,31 @@ define(['marionette',
         },
 
         render: function() {
-            this.$el.html('<a href="'+app.apiurl+'/download/'+this.column.escape('urlRoot')+'/attachments/'+this.model.escape(this.column.get('idParam'))+'/dl/2" class="button dl"><i class="fa fa-download"></i> Download</a>')
 
-            if (this.model.get('FILETYPE') == 'Log' || this.model.get('FILETYPE') == 'Logfile') {
-                this.$el.append('<a class="vaplog button" href="'+app.apiurl+'/download/'+this.column.escape('urlRoot')+'/attachments/'+this.model.escape(this.column.get('idParam'))+'/dl/1"><i class="fa fa-search"></i> View</a>')
+            // Passed into the column from the layout below.
+            var iCatUrl = this.column.escape('iCatUrl');
+            var dcPurged = this.column.escape('dcPurgedProcessedData');
+
+            // Files with persistentStorageSegment in their path are assumed to exist permanently and ignore the BLSESSION purged value
+            var isPersistentFile = this.doesFilepathContainPersistentStorageSegment(this.model.get('FILEPATH'));
+
+            if (!isPersistentFile && dcPurged !== "0") {
+                // if the iCatURL is present, this file has been removed from store but may be available in iCat/Archive. ELSE likley an industry proposal so no iCat link provided.
+                iCatUrl 
+                    ? this.$el.html('<a class="button" href=' + iCatUrl +' target="_blank">iCat link</a>') 
+                    : this.$el.html('<div>Removed</div>')
             }
+            else {
 
-            if (this.model.get('FILETYPE') == 'Graph') {
-                this.$el.append('<a class="vapplot button" href="#"><i class="fa fa-line-chart"></i> View</a>')
+                this.$el.html('<a href="'+app.apiurl+'/download/'+this.column.escape('urlRoot')+'/attachments/'+this.model.escape(this.column.get('idParam'))+'/dl/2" class="button dl"><i class="fa fa-download"></i> Download</a>')
+
+                if (this.model.get('FILETYPE') == 'Log' || this.model.get('FILETYPE') == 'Logfile') {
+                    this.$el.append('<a class="vaplog button" href="'+app.apiurl+'/download/'+this.column.escape('urlRoot')+'/attachments/'+this.model.escape(this.column.get('idParam'))+'/dl/1"><i class="fa fa-search"></i> View</a>')
+                }
+
+                if (this.model.get('FILETYPE') == 'Graph') {
+                    this.$el.append('<a class="vapplot button" href="#"><i class="fa fa-line-chart"></i> View</a>')
+                }
             }
 
             if (app.options.get('ccp4_cloud_upload_url') && this.model.get('FILETYPE') == 'Result') {
@@ -36,6 +55,8 @@ define(['marionette',
 
             return this
         },
+
+        doesFilepathContainPersistentStorageSegment: (filePath) => persistentStorageSegment ? filePath.includes(persistentStorageSegment) :  false,
 
         showCloudUpload: function(e) {
             e.preventDefault()
@@ -95,16 +116,29 @@ define(['marionette',
 
     return Marionette.LayoutView.extend({
         className: 'content',
-        template: '<div><h1>Attachments</h1><p class="help">This page lists all attachments for the selected autoprocessing</p><div class="wrapper"></div></div>',
+        template: '<div><h1>Attachments</h1><p class="help">This page lists all attachments for the selected autoprocessing</p><p style="padding: 0.2rem"><b>Note: Removed Attachments (non-industrial) may be reached via the iCat Link.</b></p><div class="wrapper"></div></div>',
         regions: { wrap: '.wrapper' },
         urlRoot: 'ap',
         idParam: 'AUTOPROCPROGRAMATTACHMENTID',
 
         initialize: function(options) {
+            persistentStorageSegment = app.options.get('visit_persist_storage_dir_segment');
+
+            var proposalID = app.prop;
+            var iCatProposalRootURL = this.getICatProposalRootUrl(proposalID);
+
             var columns = [
                 { name: 'FILENAME', label: 'File', cell: 'string', editable: false },
                 { name: 'FILETYPE', label: 'Type', cell: 'string', editable: false },
-                { label: '', cell: OptionsCell, editable: false, urlRoot: this.getOption('urlRoot'), idParam: this.getOption('idParam') },
+                { 
+                    label: '', 
+                    cell: OptionsCell, 
+                    editable: false, 
+                    urlRoot: this.getOption('urlRoot'), 
+                    idParam: this.getOption('idParam'), 
+                    dcPurgedProcessedData: options.dcPurgedProcessedData, 
+                    iCatUrl: iCatProposalRootURL
+                },
             ]
                         
             this.table = new TableView({ 
@@ -116,6 +150,26 @@ define(['marionette',
                 backgrid: { emptyText: 'No attachments found', } 
             })
         },
+
+        /**
+         * @summary Use the icat_base_url to create a link to the proposal Root.
+         * @see config.php & index.php
+         * We're just passing in the iCat project Root URL for each but this could be further extended within each OptionsCell if we want to target a specifc visit etc.
+         * @returns {URL | undefined} undefined if baseUrl not set OR if proposal begins with "in" | "sw".
+         */
+        getICatProposalRootUrl: function(proposalID) {
+            // define prefixes that should skip the iCat link creation. Use Uppercase form.
+            var denyIcatPrefixes = ["IN"];
+
+            var proposalIdUppercase = proposalID.toUpperCase();
+            var propsalPrefix = proposalIdUppercase.slice(0,2)
+            var iCatBaseURl = app.options.get("icat_base_url");
+            
+            return proposalIdUppercase && iCatBaseURl && !denyIcatPrefixes.includes(propsalPrefix)
+                ? new URL("browse/proposal/" + proposalIdUppercase + "/investigation" , iCatBaseURl)
+                : undefined;
+        },
+
 
         onRender: function() {
             this.wrap.show(this.table)
