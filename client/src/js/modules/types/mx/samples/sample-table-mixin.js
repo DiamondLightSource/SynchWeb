@@ -292,7 +292,12 @@ export default {
     async createNewSampleGroup(value) {
       this.$emit('update-sample-group-input-disabled', true)
       const sampleGroupModel = new SampleGroup({ NAME: value })
-      const result = await this.$store.dispatch('saveModel', { model: sampleGroupModel })
+      let result;
+      try {
+        result = await this.$store.dispatch('saveModel', { model: sampleGroupModel })
+      } catch (err) {
+        this.$store.commit('notifications/addNotification', { title: 'Error', message: err.message, level: 'error' })
+      }
       if (result) {
         const { NAME } = result.toJSON()
         let message = 'Created sample group ' + NAME
