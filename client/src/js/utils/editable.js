@@ -81,7 +81,7 @@ define(['marionette',
     /**
      * jEditable editing of current model in place
      */
-    return Marionette.Controller.extend({
+    return Marionette.View.extend({
         /**
          * @constructor
          * @param {object} options - Pass through the current model and $el.
