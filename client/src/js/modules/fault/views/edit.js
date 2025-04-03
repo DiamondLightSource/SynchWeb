@@ -113,11 +113,11 @@ define(['marionette', 'backbone',
     }))
 
 
-    var EmptyView = Marionette.ItemView.extend({
+    var EmptyView = Marionette.View.extend({
         tagName: 'tr',
     })
         
-    var TableView = Backbone.Marionette.CompositeView.extend({
+    var TableView = Marionette.View.extend({
         tagName: "table",
         template: table,
         childView: GridRow,
@@ -166,7 +166,7 @@ define(['marionette', 'backbone',
 
 
 
-    return Marionette.LayoutView.extend({
+    return Marionette.View.extend({
         className: 'content',
         template: template,
         regions: {

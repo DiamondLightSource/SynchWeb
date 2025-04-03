@@ -17,7 +17,7 @@ define(['marionette', 'backgrid',
         cookie: true,
     })
       
-    return Marionette.LayoutView.extend({
+    return Marionette.View.extend({
         className: 'content',
         template: _.template('<h1>Instances</h1><p class="help">This page shows the instances associated with the current <%-TYPE%></p><div class="instances"></div>'),
         regions: {

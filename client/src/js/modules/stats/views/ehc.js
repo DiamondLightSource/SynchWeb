@@ -1,6 +1,6 @@
 define(['marionette', 'modules/stats/collections/ehclogs', 'views/table', 'utils/table'], function(Marionette, EHC, TableView, table) {
     
-    return Marionette.LayoutView.extend({
+    return Marionette.View.extend({
         className: 'content',
         template: _.template('<h1>EHC Log</h1><div class="wrapper"></div>'),
 

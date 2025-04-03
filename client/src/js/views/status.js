@@ -6,7 +6,7 @@ define(['marionette',
     ], function(Marionette, PVView, StreamedPVView, utils, template) {
 
 
-    return Marionette.LayoutView.extend({
+    return Marionette.View.extend({
         template: template,
         className: 'content nopadding',
         templateHelpers: function() {

@@ -4,7 +4,7 @@ define(['marionette', 'backbone',
         'backbone-validation'
     ], function(Marionette, Backbone, Editable, template) {
 
-    return Marionette.LayoutView.extend({
+    return Marionette.View.extend({
         className: 'content',
         template: template,
 

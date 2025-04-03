@@ -15,7 +15,7 @@ define(['marionette',
     },
   })
     
-  return Marionette.LayoutView.extend({
+  return Marionette.View.extend({
     clickableRow: ClickableRow,
     className: 'content',
     template: _.template('<h1>Proposals</h1><p class="help">This page lists all proposals available to you. Click on a row to select that proposal</p><div class="wrapper"></div>'),

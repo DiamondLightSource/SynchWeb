@@ -21,7 +21,7 @@ define([
 
     })
 
-    var MessageView = Marionette.ItemView.extend({
+    var MessageView = Marionette.View.extend({
         template: _.template('<h3><%=icons[SEVERITY][2]%> <%-MESSAGE%></h3><div class="expand"><pre><%-DESCRIPTION%></pre></div>'),
         templateHelpers: function() {
             return {
@@ -60,7 +60,7 @@ define([
     })
 
 
-    var SeverityView = Marionette.LayoutView.extend({
+    var SeverityView = Marionette.View.extend({
         template: _.template('<h3 class="title"><%=icons[SEVERITY][0]%> <%-count%> <%-icons[SEVERITY][1]%></h3><div class="wrap"></div>'),
         templateHelpers: function() {
             return {
@@ -148,7 +148,7 @@ define([
     })
 
 
-    var ProgramView = Marionette.LayoutView.extend({
+    var ProgramView = Marionette.View.extend({
         template: _.template('<div class="wrap"></div>'),
         regions: {
             wrap: '.wrap',
@@ -182,7 +182,7 @@ define([
         }
     })
 
-    return Marionette.LayoutView.extend({
+    return Marionette.View.extend({
         template: _.template('<div class="wrapper"></div>'),
         className: 'content',
         regions: { 

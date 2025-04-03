@@ -10,7 +10,7 @@ define(['marionette',
         argument: 'PERSONID',
     })
         
-    return Marionette.LayoutView.extend({
+    return Marionette.View.extend({
         clickableRow: ClickableRow,
         className: 'content',
         template: _.template('<h1>Users</h1><p class="help">This page lists all users</p><div class="ra"><a href="/admin/users/add" class="button" title="Add new user"><i class="fa fa-plus"></i> Add User</a></div><div class="wrapper"></div>'),

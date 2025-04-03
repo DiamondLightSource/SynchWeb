@@ -7,7 +7,7 @@ define(['marionette', 'backbone', 'views/filter', 'modules/blstats/models/plstat
     ], function(Marionette, Backbone, FilterView, PLStats, utils, $) {
     
     
-    var SeriesItem = Marionette.ItemView.extend({
+    var SeriesItem = Marionette.View.extend({
         tagName: 'li',
         template: _.template('<label><input type="checkbox" name="<%-name%>" checked="checked" /> <%-name%><label>'),
         events: {
@@ -27,7 +27,7 @@ define(['marionette', 'backbone', 'views/filter', 'modules/blstats/models/plstat
     
     
     
-    return Marionette.LayoutView.extend({
+    return Marionette.View.extend({
         className: 'content',
         template: _.template('<h1>Auto Processing Statistics</h1><div class="filter types"></div><div class="filter series"></div><div class="plot_wrap"><div class="plot_container"><div id="logon"></div><p class="plot_title"></p></div></div><a href="#" class="button download"><i class="fa fa-download"></i> Download</a>'),
         

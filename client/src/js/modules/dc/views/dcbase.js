@@ -13,7 +13,7 @@ define(['marionette',
     ) {
 
 
-    var DCTitleBase = Marionette.LayoutView.extend({
+    var DCTitleBase = Marionette.View.extend({
         template: title_template,
 
         attachments: true,
@@ -43,7 +43,7 @@ define(['marionette',
     })
 
 
-    var DCBaseView = Marionette.LayoutView.extend({
+    var DCBaseView = Marionette.View.extend({
         titleView: DCTitleBase,
         fullPath: false,
 

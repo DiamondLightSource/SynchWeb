@@ -4,7 +4,7 @@ define(['marionette', 'modules/dc/models/mca', 'utils',
 ], function(Marionette, MCAModel, utils, $) {
        
   // DISTL Plot
-  return Marionette.ItemView.extend({
+  return Marionette.View.extend({
     template: false,
     model: MCAModel,
     modelEvents: { 'change': 'render' },

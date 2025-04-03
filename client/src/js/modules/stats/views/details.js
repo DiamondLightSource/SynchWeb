@@ -1,6 +1,6 @@
 define(['marionette', 'templates/stats/details.html'], function(Marionette, template) {
 
-    return Marionette.ItemView.extend({
+    return Marionette.View.extend({
         template: template,
         className: 'data_collection',
     })

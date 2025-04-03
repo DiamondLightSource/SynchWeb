@@ -5,7 +5,7 @@ define(['marionette', 'modules/dc/collections/dccomments',
         'templates/dc/dc_comments.html',
 ], function(Marionette, DCComments, DCComment, Editable, FormView, template, $) {
        
-    var CommentView = Marionette.ItemView.extend({
+    var CommentView = Marionette.View.extend({
         tagName: 'li',
         template: _.template('<h1><%-GIVENNAME%> <%-FAMILYNAME%><span class="r"><%-CREATETIME%></h1><div class="COMMENTS"><%=COMMENTSMD%></div>'),
 
@@ -18,7 +18,7 @@ define(['marionette', 'modules/dc/collections/dccomments',
         },
     })
 
-    var NoCommentsView = Marionette.ItemView.extend({
+    var NoCommentsView = Marionette.View.extend({
         tagName: 'li',
         template: _.template('No comments yet')
     })

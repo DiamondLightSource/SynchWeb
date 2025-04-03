@@ -32,7 +32,7 @@ define(['marionette',
         Editable, utils, template,
         Backbone){
 
-    return Marionette.LayoutView.extend({
+    return Marionette.View.extend({
         className: 'content',
         template: template,
         regions: { table: '.table', history: '.history', cont: '.dcontent', rtracking: '.tracking' },

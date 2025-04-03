@@ -57,7 +57,7 @@ define(['backbone',
     })
 
 
-    var DewarView = Marionette.ItemView.extend({
+    var DewarView = Marionette.View.extend({
         tagName: 'li',
         template: _.template('<label><input type="checkbox" /> <% if (FACILITYCODE) { %><%-FACILITYCODE%><% } else { %><%-CODE%><% } %></label>'),
         events: {
@@ -88,7 +88,7 @@ define(['backbone',
     })
 
 
-    return Marionette.LayoutView.extend({
+    return Marionette.View.extend({
         className: 'content',
         template: template,
 

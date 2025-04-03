@@ -1,7 +1,7 @@
 define(['marionette', 'backbone', 'vendor/backbone/backbone.syphon'], function(Marionette, Backbone) {
 
     // A Validated Grid Row
-    return ValidatedRow = Backbone.Marionette.ItemView.extend({
+    return ValidatedRow = Marionette.View.extend({
         tagName: 'tr',
             
         _baseEvents: {

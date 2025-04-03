@@ -8,7 +8,7 @@ define(['marionette',
     ], function(Marionette, PCStats, utils, $) {
     
     
-    return Marionette.LayoutView.extend({
+    return Marionette.View.extend({
         className: 'content',
         template: _.template('<h1>Reprocessing Statistics</h1><div class="plot_wrap"><div class="plot_container"><div id="logon"></div><p class="plot_title"></p></div></div><a href="#" class="button download"><i class="fa fa-download"></i> Download</a>'),
         

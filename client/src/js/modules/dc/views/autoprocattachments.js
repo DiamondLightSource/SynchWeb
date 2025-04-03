@@ -93,7 +93,7 @@ define(['marionette',
         },
     })
 
-    return Marionette.LayoutView.extend({
+    return Marionette.View.extend({
         className: 'content',
         template: '<div><h1>Attachments</h1><p class="help">This page lists all attachments for the selected autoprocessing</p><div class="wrapper"></div></div>',
         regions: { wrap: '.wrapper' },

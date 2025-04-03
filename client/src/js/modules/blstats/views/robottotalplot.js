@@ -1,6 +1,6 @@
 define(['marionette', 'jquery', 'jquery.flot'], function(Marionette, $) {
     
-    return Marionette.LayoutView.extend({
+    return Marionette.View.extend({
         template: false,
         
         collectionEvents: {

@@ -17,7 +17,7 @@ Editable, utils, XHRImage, template, Backbone) {
     
     
         
-    return Marionette.ItemView.extend({
+    return Marionette.View.extend({
         className: 'content',
         template: template,
         

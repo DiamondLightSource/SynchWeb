@@ -13,7 +13,7 @@ define(['jquery', 'marionette',
         'jquery-ui',
     ], function($, Marionette, Backbone, DISTL, GridInfo, XFMap, Attachments, canvas, viridis, template, HeatMap, utils, XHRImage) {
     
-    return Marionette.ItemView.extend(_.extend({}, canvas, {
+    return Marionette.View.extend(_.extend({}, canvas, {
         padMax: true,
         blurRadius: 1.5,
         snapshotId: 2,

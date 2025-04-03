@@ -21,7 +21,7 @@ define(['marionette', 'views/form',
     /*
      List of facility codes
     */
-    var FCode = Marionette.ItemView.extend({
+    var FCode = Marionette.View.extend({
         tagName: 'span',
         template: _.template('<select name=FCODES[]></select>'),
         ui: {

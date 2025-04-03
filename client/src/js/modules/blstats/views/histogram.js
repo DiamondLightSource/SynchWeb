@@ -5,7 +5,7 @@ define(['marionette', 'modules/blstats/models/histogram', 'utils',
         'jquery.flot.tickrotor',
 ], function(Marionette, Histogram, utils, $) {
     
-    return Marionette.ItemView.extend({
+    return Marionette.View.extend({
         template: _.template('<div id="visit_pie"></div><p><%-title%></p>'),
                               
         events: {

@@ -2,7 +2,7 @@ define([
     'marionette', 'templates/dc/dc_dimple.html', 'utils', 'utils/xhrimage', 'jquery.mp'
 ], function(Marionette, template, utils, XHRImage) {
     
-    return Marionette.ItemView.extend({
+    return Marionette.View.extend({
         template: template,
         className: 'clearfix',
     

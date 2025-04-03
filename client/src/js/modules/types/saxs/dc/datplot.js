@@ -5,7 +5,7 @@ define(['marionette', 'modules/types/gen/dc/models/dat', 'utils',
 ], function(Marionette, Dat, utils, $) {
        
     // DAT Plot
-    return Marionette.ItemView.extend({
+    return Marionette.View.extend({
         template: false,
         model: Dat,
         modelEvents: { 'change': 'render' },

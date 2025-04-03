@@ -41,7 +41,7 @@ define(['backbone',
 
       
     // Generic Message View
-    generic_msg: Marionette.ItemView.extend({
+    generic_msg: Marionette.View.extend({
         className: 'content',
         template: _.template('<h1><%-title%></h1><div><p><%=msg%></p></div>'),
         templateHelpers: function() {        
@@ -59,7 +59,7 @@ define(['backbone',
       
 
     // Alert Message View
-    alert: Marionette.ItemView.extend({
+    alert: Marionette.View.extend({
         persist: false,
         scrollTo: true,
         dismissible: false,

@@ -1,7 +1,7 @@
 define(['marionette', 'collections/dewars'], function(Marionette, Dewars) {
 
     
-    var DewarItem = Marionette.ItemView.extend({
+    var DewarItem = Marionette.View.extend({
         tagName: 'li',
         template: _.template('<a class="show" href="#"><%-SHIPPINGNAME%></a>: <%-CODE%> <%-FACILITYCODE%> - <%-DEWARSTATUS%>'),
         className: function() {
@@ -19,12 +19,12 @@ define(['marionette', 'collections/dewars'], function(Marionette, Dewars) {
         },
     })
     
-    var LoadingView = Marionette.ItemView.extend({
+    var LoadingView = Marionette.View.extend({
         tagName: 'li',
         template: _.template('<i class="fa fa-spin fa-spinner"></i>')
     })
 
-    var EmptyView = Marionette.ItemView.extend({
+    var EmptyView = Marionette.View.extend({
         tagName: 'li',
         template: _.template('No dewars registered yet')
     })

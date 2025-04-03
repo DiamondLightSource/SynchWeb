@@ -5,7 +5,7 @@ define(['marionette',
         utils,
         template, XHRImage) {
     
-    return Marionette.ItemView.extend({
+    return Marionette.View.extend({
         template: template,
 
         ui: {

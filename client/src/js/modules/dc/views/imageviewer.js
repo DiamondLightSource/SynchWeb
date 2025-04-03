@@ -11,7 +11,7 @@ define(['jquery', 'marionette',
     
     // Note we do not import the caman libray as Caman.
     // This is because Caman is added to the window global object
-    return Marionette.ItemView.extend(_.extend({}, CanvasMixin, {
+    return Marionette.View.extend(_.extend({}, CanvasMixin, {
         className: function() {
             return 'content' + (this.getOption('embed') ? ' embed' : '')
         },

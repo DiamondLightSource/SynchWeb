@@ -3,7 +3,7 @@ define(['marionette', 'backgrid', 'views/search', 'views/pages', 'backgrid-selec
   /*
     Generic Table UI with Paginator
   */
-  return Marionette.LayoutView.extend({
+  return Marionette.View.extend({
     template: _.template('<div class="perp"></div><div class="srch clearfix"></div><div class="tbl bg"></div><div class="page_wrap"></div>'),
     regions: { 'table': '.tbl', 'pages': '.page_wrap:last', search: '.srch', pp: '.perp' },
       

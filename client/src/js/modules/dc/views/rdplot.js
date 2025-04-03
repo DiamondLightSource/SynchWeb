@@ -6,7 +6,7 @@ define(['marionette', 'modules/dc/models/rd', 'utils',
 ], function(Marionette, RDModel, utils, template, $) {
        
 
-  return Marionette.ItemView.extend({
+  return Marionette.View.extend({
     template: template,
     model: RDModel,
     modelEvents: { 'change': 'render' },

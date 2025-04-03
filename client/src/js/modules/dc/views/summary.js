@@ -19,7 +19,7 @@ define(['backbone',
         valueAttribute: 'VALUE',
     }, KVCollection))
 
-    return Marionette.LayoutView.extend({
+    return Marionette.View.extend({
         className: 'content',
         template: template,
         

@@ -32,7 +32,7 @@ define(['backbone', 'marionette'], function(Backbone, Marionette) {
         }
     })
         
-    var FilterItemView = Marionette.ItemView.extend({
+    var FilterItemView = Marionette.View.extend({
         tagName: 'li',
         template: _.template("<%-name%>"),
         events: { 'click': 'select' },

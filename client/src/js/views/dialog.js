@@ -1,7 +1,6 @@
 define(['marionette'], function(Marionette) {
 
-    //return DialogView = Marionette.ItemView.extend({
-    return DialogView = Marionette.LayoutView.extend({
+    return DialogView = Marionette.View.extend({
         template: false,
         
         buttons: {

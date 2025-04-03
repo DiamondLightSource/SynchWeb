@@ -1,6 +1,6 @@
 // This module wraps a Vue application into a Marionette view
 define(['marionette', 'vue'], function(Marionette, Vue) {
-    return Marionette.ItemView.extend({
+    return Marionette.View.extend({
         vueView: null,
         // class or id?
         template: _.template('<div class="vue-container"></div>'),

@@ -1,6 +1,6 @@
 define(['marionette', 'modules/stats/collections/callouts', 'views/table'], function(Marionette, Callouts, TableView) {
     
-    return Marionette.LayoutView.extend({
+    return Marionette.View.extend({
         className: 'content',
         template: _.template('<h1>Callouts</h1><div class="wrapper"></div>'),
 

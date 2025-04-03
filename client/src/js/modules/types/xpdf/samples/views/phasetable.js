@@ -58,7 +58,7 @@ define([
 
 
 
-    return Marionette.LayoutView.extend({
+    return Marionette.View.extend({
         template: template,
         regions: {
             table: '.table',

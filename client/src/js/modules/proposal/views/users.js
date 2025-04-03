@@ -1,7 +1,7 @@
 define(['marionette', 'collections/users'], function(Marionette, Users) {
 
     
-    var UserItem = Marionette.ItemView.extend({
+    var UserItem = Marionette.View.extend({
         tagName: 'li',
         template: _.template("<%-FULLNAME%> - <% if (LAST) { %><%-VISITS%> Visits (Last Visit: <%-LAST%>)<% } else { %>*NEW*<% } %> [<%-REMOTE=='1' ? 'Remote' : 'On-site'%>] [<%-ROLE%>]"),
         className: function() {
@@ -9,12 +9,12 @@ define(['marionette', 'collections/users'], function(Marionette, Users) {
         },
     })
     
-    var LoadingView = Marionette.ItemView.extend({
+    var LoadingView = Marionette.View.extend({
         tagName: 'li',
         template: _.template('<i class="fa fa-spin fa-spinner"></i>')
     })
 
-    var EmptyView = Marionette.ItemView.extend({
+    var EmptyView = Marionette.View.extend({
         tagName: 'li',
         template: _.template('No users registered yet')
     })

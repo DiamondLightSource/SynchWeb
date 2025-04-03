@@ -6,7 +6,7 @@ define(['marionette', 'views/table',
         OnlineUsers, Actions, table) {
 
 
-    return Marionette.LayoutView.extend({
+    return Marionette.View.extend({
         className: 'content',
         template: _.template('<h1>Online Users</h1><div class="users"></div><div class="activity"></div>'),
         regions: {

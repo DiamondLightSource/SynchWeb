@@ -30,7 +30,7 @@ define(['marionette',
     apStatusItem: APStatusItem,
     apMessageStatusItem: APMessageStatusItem,
 
-    extraButtons: Marionette.ItemView.extend({
+    extraButtons: Marionette.View.extend({
       template: _.template('<% if (ARCHIVED == "0") { %>\
         <a href="#" class="reprocess button button-notext" title="Reprocess"><i class="fa fa-cog"></i> <span>Reprocess</span></a>\
       <% } %>\

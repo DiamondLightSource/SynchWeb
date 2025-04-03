@@ -1,6 +1,6 @@
 define(['marionette', 'backbone', 'utils', 'backbone-validation'], function(Marionette, Backbone, utils) {
     
-    return Marionette.ItemView.extend({
+    return Marionette.View.extend({
         template: false,
         tagName: 'canvas',
         className: 'plate',

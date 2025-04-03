@@ -167,7 +167,7 @@ define(['backbone',
     })
     
         
-    return Marionette.LayoutView.extend({
+    return Marionette.View.extend({
         title: 'Build GDA Queue',
         template: template,
         className: 'content',

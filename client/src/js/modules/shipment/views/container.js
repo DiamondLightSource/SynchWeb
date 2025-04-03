@@ -43,7 +43,7 @@ define(['marionette',
     utils, formatDate,
     Editable, template){
 
-    return Marionette.LayoutView.extend({
+    return Marionette.View.extend({
         className: 'content',
         template: template,
         samplesCollection: Samples,

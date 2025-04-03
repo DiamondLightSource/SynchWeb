@@ -1,7 +1,7 @@
 define(['marionette', 'modules/stats/models/hourlies'], function(Marionette, Hourlies) {
 
     
-    return Marionette.ItemView.extend({
+    return Marionette.View.extend({
         template: _.template('<div id="dc_hist"></div><p>Data Collections / Hour</p><div id="dc_hist2"></div><p>Samples Loaded / Hour</p>'),
         
         modelEvents: {

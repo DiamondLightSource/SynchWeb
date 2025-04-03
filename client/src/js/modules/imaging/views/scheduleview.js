@@ -2,7 +2,7 @@ define(['marionette', 'views/table', 'utils/table',
   'modules/imaging/collections/schedulecomponents'
   ], function(Marionette, TableView, table, ScheduleComponents) {
     
-    return Marionette.LayoutView.extend({
+    return Marionette.View.extend({
         className: 'content',
         template: _.template('<h1>Schedule for <%-NAME%></h1><p class="help">This page lists the components for the selected schedule</p><div class="wrapper"></div>'),
         regions: { 'wrap': '.wrapper' },

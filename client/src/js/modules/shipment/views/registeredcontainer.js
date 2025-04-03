@@ -31,7 +31,7 @@ define(['marionette',
     Editable, XHRImage, template, addreport, $){
 
 
-    var ProposalView = Marionette.ItemView.extend({
+    var ProposalView = Marionette.View.extend({
         tagName: 'li',
         // template: _.template('<%-PROPOSAL%>'),
         template: _.template('<%-PROPOSAL%> <% if (STAFF) { %><span class="r"><a class="button button-notext delete" href="#"><i class="fa fa-times"></i> <span>Delete</span></a></span><% } %>'),
@@ -135,7 +135,7 @@ define(['marionette',
         },
     })
             
-    return Marionette.LayoutView.extend({
+    return Marionette.View.extend({
         className: 'content',
         template: template,
 

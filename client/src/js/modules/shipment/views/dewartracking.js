@@ -1,7 +1,7 @@
 define(['marionette', 'views/table',
     'templates/shipment/tracking.html'], function(Marionette, TableView, template) {
 
-    return Marionette.LayoutView.extend({
+    return Marionette.View.extend({
         template: template,
 
         regions: {

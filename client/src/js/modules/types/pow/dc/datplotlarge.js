@@ -15,7 +15,7 @@ define(['backbone',
 
 
     // DAT Plot
-    return Marionette.ItemView.extend({
+    return Marionette.View.extend({
         template: false,
         model: Dat,
         modelEvents: { 'change': 'render' },

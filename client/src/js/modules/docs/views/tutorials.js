@@ -3,7 +3,7 @@ define(['marionette', 'backbone',
     ], function(Marionette, Backbone) {
     
         
-    var TutorialListItem = Marionette.ItemView.extend({
+    var TutorialListItem = Marionette.View.extend({
         tagName: 'li',
         template: _.template('<%-title%>'),
         
@@ -59,7 +59,7 @@ define(['marionette', 'backbone',
     })
         
         
-    var TutorialItem = Marionette.LayoutView.extend({
+    var TutorialItem = Marionette.View.extend({
         template: _.template('<div class="wrap"></div>'),
         regions: {
             cont: '.wrap'
@@ -79,7 +79,7 @@ define(['marionette', 'backbone',
             if (sel) {
                 var self = this
                 require(['/doc/'+sel.get('page')+'/index.html'], function(template) {
-                    self.cont.show(new Marionette.ItemView({
+                    self.cont.show(new Marionette.View({
                         template: template,
                         className: 'content',
                     }))
@@ -89,7 +89,7 @@ define(['marionette', 'backbone',
     })
         
         
-    return Marionette.LayoutView.extend({
+    return Marionette.View.extend({
         className: 'content',
         template: _.template('<h1>Tutorials</h1><div class="filter clearfix"></div><div class="cnt"></div>'),
         

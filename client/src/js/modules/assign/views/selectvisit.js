@@ -1,7 +1,7 @@
 define(['marionette', 'templates/assign/selectvisit.html'], function(Marionette, template) {
 
     
-    var VisitView = Marionette.ItemView.extend({
+    var VisitView = Marionette.View.extend({
         tagName: 'li',
         template: _.template('<a href="/assign/visit/<%-VISIT%>"><%-VISIT%></a>: <%-BL%> - <%-ST%>'),
         className: function() {
@@ -9,12 +9,12 @@ define(['marionette', 'templates/assign/selectvisit.html'], function(Marionette,
         },
     })
 
-    var EmptyView = Marionette.ItemView.extend({
+    var EmptyView = Marionette.View.extend({
         tagName: 'li',
         template: _.template('No upcoming / current visits')
     })
 
-    return Marionette.CompositeView.extend({
+    return Marionette.View.extend({
         template: template,
         className: 'content',
         childView: VisitView,

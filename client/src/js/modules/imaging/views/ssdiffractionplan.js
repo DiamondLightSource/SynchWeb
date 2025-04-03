@@ -14,7 +14,7 @@ define(['marionette',
     
     
         
-    return Marionette.ItemView.extend({
+    return Marionette.View.extend({
         className: 'content',
         template: template,
         

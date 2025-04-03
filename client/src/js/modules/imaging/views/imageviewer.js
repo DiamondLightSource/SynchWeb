@@ -23,7 +23,7 @@ define(['marionette',
         template) {
 
 
-    var ScoreButton = Marionette.ItemView.extend({
+    var ScoreButton = Marionette.View.extend({
         tagName: 'li',
         modelEvents: {
             'change': 'render',
@@ -53,7 +53,7 @@ define(['marionette',
     })
             
     
-    return Marionette.LayoutView.extend({
+    return Marionette.View.extend({
         template: template,
         className: 'image_large',
         showBeam: false,

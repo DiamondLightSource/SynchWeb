@@ -21,7 +21,7 @@ define(['marionette',
 
     ], function(Marionette, Backbone, PDBCodes, Analysed, Autoproc, AutoprocPie, AutoprocBars, States, StatesPie, Beamlines, BeamlineBars, FilterView, TableView, table, utils, template) {
     
-    return Marionette.LayoutView.extend({
+    return Marionette.View.extend({
         template: template,
         className: 'content',
 

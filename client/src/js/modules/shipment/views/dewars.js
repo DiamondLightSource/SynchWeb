@@ -156,12 +156,12 @@ define(['marionette', 'backbone',
     }))
 
 
-    var EmptyView = Marionette.ItemView.extend({
+    var EmptyView = Marionette.View.extend({
         tagName: 'tr',
         template: _.template('<td colspan="10">No dewars for this shipment</td>')
     })
 
-    return GridView = Backbone.Marionette.CompositeView.extend({
+    return GridView = Marionette.View.extend({
         tagName: 'table',
         emptyView: EmptyView,
         className: 'dewars reflow',

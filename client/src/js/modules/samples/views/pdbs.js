@@ -1,7 +1,7 @@
 define(['marionette', 'utils'], function(Marionette, utils) {
 
 
-    var UserItem = Marionette.ItemView.extend({
+    var UserItem = Marionette.View.extend({
         template: _.template(''),
         tagName: 'li',
         attributes: { 'data-testid': 'protein-pdb-list-item' },
@@ -28,7 +28,7 @@ define(['marionette', 'utils'], function(Marionette, utils) {
     })
     
     
-    var EmptyUserItem = Marionette.ItemView.extend({
+    var EmptyUserItem = Marionette.View.extend({
         template: _.template('No PDBs registered to this protein'),
         tagName: 'li',
         attributes: { 'data-testid': 'protein-pdb-no-item' },

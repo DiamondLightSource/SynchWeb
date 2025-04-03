@@ -1,6 +1,6 @@
 define(['marionette', 'views/filter', 'modules/blstats/models/logons'], function(Marionette, FilterView, Logons) {
     
-    return Marionette.LayoutView.extend({
+    return Marionette.View.extend({
         className: 'content',
         template: _.template('<h1>Logon Statistics</h1><div class="filter types"></div><div class="plot_wrap"><div class="plot_container"><div id="logon"></div><p>Logons per <span class="type"></span></p></div></div>'),
         

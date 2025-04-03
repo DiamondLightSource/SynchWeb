@@ -16,9 +16,9 @@ function(Marionette,
          DCImageStatusCollection, DCAPStatusCollection, DCAPMessageStatusCollection,
          DCItemView, GridItemView, RobotItemView, EdgeItemView, MCAItemView, ActionItemView) {
              
-  var EmptyCollectionView = Marionette.ItemView.extend({ className: 'data_collection', template: '<div><h1>No data collections yet</h1></div>' })
-  var GettingCollectionView = Marionette.ItemView.extend({ className: 'data_collection', template: '<div><h1><i class="fa fa-spin fa-cog"></i> Retrieving data collections</h1></div>' })
-  var EmptySearchView = Marionette.ItemView.extend({ className: 'data_collection', template: '<div><h1>No data collections found</h1></div>' })
+  var EmptyCollectionView = Marionette.View.extend({ className: 'data_collection', template: '<div><h1>No data collections yet</h1></div>' })
+  var GettingCollectionView = Marionette.View.extend({ className: 'data_collection', template: '<div><h1><i class="fa fa-spin fa-cog"></i> Retrieving data collections</h1></div>' })
+  var EmptySearchView = Marionette.View.extend({ className: 'data_collection', template: '<div><h1>No data collections found</h1></div>' })
        
              
   // The main history view

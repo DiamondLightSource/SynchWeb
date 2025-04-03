@@ -5,7 +5,7 @@ define(['marionette',
     ], function(Marionette, utils, XHRImage) {
             
     
-    var ImageViewer = Marionette.LayoutView.extend({
+    var ImageViewer = Marionette.View.extend({
         className: 'image_large',
 
         _baseUI: function() {

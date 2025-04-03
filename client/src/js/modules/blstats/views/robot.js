@@ -9,7 +9,7 @@ define(['marionette',
     
     ], function(Marionette, RobotAveragesView, RobotErrors, RobotTotals, RobotErrorsView, RobotTotalsView, RobotTotalsPlot, utils) {
     
-    return Marionette.LayoutView.extend({
+    return Marionette.View.extend({
         className: 'content',
         template: _.template('<h1>Robot Averages</h1><div class="plot_container"><div id="avg_time"></div></div><a href="#" class="button download"><i class="fa fa-download"></i> Download</a><div class="wrapper"></div><h1>Totals</h1><div class="plot_container"><div id="tots" style="height:250px"></div></div><div class="totals"></div>'),
         

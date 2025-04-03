@@ -18,7 +18,7 @@ define(['marionette',
         RobotView,
         PDBView){
     
-    return Marionette.LayoutView.extend({
+    return Marionette.View.extend({
         template: _.template('<div class="filter filter-nohide"></div><div class="wrapper"></div>'),
         regions: {
             types: '.filter',

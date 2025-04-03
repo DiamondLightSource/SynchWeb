@@ -61,13 +61,13 @@ define(['marionette', 'backbone',
         },
     })
 
-    var EmptyView = Marionette.ItemView.extend({
+    var EmptyView = Marionette.View.extend({
         tagName: 'tr',
         template: _.template('<td colspan="5">No crystallisation screens found</td>')
     })
     
     
-    return GridView = Backbone.Marionette.CompositeView.extend({
+    return GridView = Marionette.View.extend({
         className: 'content',
         template: template,
         childView: GridRow,

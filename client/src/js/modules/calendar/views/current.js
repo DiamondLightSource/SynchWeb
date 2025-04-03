@@ -9,7 +9,7 @@ define(['marionette',
         function(Marionette, Visit, Visits, Beamlines, UserView, DewarsView, Time, Template) {
 
 
-    var VisitItem = Marionette.ItemView.extend({
+    var VisitItem = Marionette.View.extend({
         tagName: 'li',
         className: function() {
             if (this.model.get('ACTIVE') == 1) return 'active'
@@ -57,7 +57,7 @@ define(['marionette',
         
     })
     
-    var NoVisits = Marionette.ItemView.extend({
+    var NoVisits = Marionette.View.extend({
         tagName: 'li',
         template: _.template('<p>No visits found</p>')
     })
@@ -70,7 +70,7 @@ define(['marionette',
         emptyView: NoVisits,
     })
     
-    return Marionette.LayoutView.extend({
+    return Marionette.View.extend({
         template: Template,
         className: 'content',
 

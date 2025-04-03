@@ -1,6 +1,6 @@
 define(['marionette', 'templates/dc/dimplepeaktable.html', 'templates/dc/dimplepeaktablerow.html'], function(Marionette, template, rowtemplate) {
 
-    var PeakItemView = Marionette.ItemView.extend({
+    var PeakItemView = Marionette.View.extend({
         tagName: 'tr',
         template: rowtemplate,
         
@@ -15,7 +15,7 @@ define(['marionette', 'templates/dc/dimplepeaktable.html', 'templates/dc/dimplep
     })
 
     
-    return Marionette.CompositeView.extend({
+    return Marionette.View.extend({
         template: template,
         tagName: 'table',
         className: 'peaks',

@@ -48,7 +48,7 @@ define(['marionette',
         },
     })
     
-    return Marionette.LayoutView.extend({
+    return Marionette.View.extend({
         className: 'content',
         template: template,
         regions: { wrap: '.wrapper', type: '.bl', img: '.img' },

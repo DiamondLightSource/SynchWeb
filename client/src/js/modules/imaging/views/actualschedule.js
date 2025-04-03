@@ -1,6 +1,6 @@
 define(['marionette', 'views/table', 'utils/table', 'modules/imaging/collections/inspections'], function(Marionette, TableView, table, Inspections) {
     
-    return Marionette.LayoutView.extend({
+    return Marionette.View.extend({
         className: 'content',
         template: '<div><h1>Inspection Schedule</h1><p class="help">This page lists all container inspections both completed and scheduled for the selected container</p><div class="wrapper"></div></div>',
         regions: { 'wrap': '.wrapper' },

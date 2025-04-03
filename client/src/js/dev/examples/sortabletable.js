@@ -9,7 +9,7 @@ define(['backbone', 'marionette', 'views/sortabletable'], function(Backbone, Mar
         comparator: 'ORDER',
     })
 
-    return Marionette.LayoutView.extend({
+    return Marionette.View.extend({
         template: _.template('<div class="test"></div>'),
         regions: {
             test: '.test'

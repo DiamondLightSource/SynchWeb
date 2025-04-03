@@ -1,7 +1,7 @@
 define(['marionette'], function(Marionette) {
 
 
-    var UserItem = Marionette.ItemView.extend({
+    var UserItem = Marionette.View.extend({
         template: _.template('<%-FULLNAME%><% if (IS_OWNER) { %><span class="r"><a class="button button-notext delete" href="#"><i class="fa fa-times"></i> <span>Delete</span></a></span><% } %>'),
         tagName: 'li',
         
@@ -15,7 +15,7 @@ define(['marionette'], function(Marionette) {
     })
     
     
-    var EmptyUserItem = Marionette.ItemView.extend({
+    var EmptyUserItem = Marionette.View.extend({
         template: _.template('No users registered on this project'),
         tagName: 'li',
     })

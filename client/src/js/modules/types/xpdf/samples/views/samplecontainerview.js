@@ -113,7 +113,7 @@ define([
     })
 
 
-    var SampleGroupView = Marionette.LayoutView.extend({
+    var SampleGroupView = Marionette.View.extend({
         template: _.template('<h3>Group: <%-INDEX%></h3><div class="members"></div>'),
         regions: {
             rmembers: '.members',
@@ -161,7 +161,7 @@ define([
     })
 
 
-    var EmptyGroupView = Marionette.ItemView.extend({
+    var EmptyGroupView = Marionette.View.extend({
         template: _.template('This instance is not in any groups yet')
     })
 
@@ -172,7 +172,7 @@ define([
     })
 
 
-    return Marionette.LayoutView.extend({
+    return Marionette.View.extend({
         template: _.template('<div class="ra"><a href="#" class="button new"><i class="fa fa-plus"></i> <span>Create Group</span></div><div class="groups"></div>'),
         regions: {
             rgroups: '.groups',

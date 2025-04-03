@@ -4,7 +4,7 @@ define(['marionette', 'modules/dc/models/edge', 'utils',
 ], function(Marionette, EdgeModel, utils, $) {
        
   // DISTL Plot
-  return Marionette.ItemView.extend({
+  return Marionette.View.extend({
     template: false,
     model: EdgeModel,
     modelEvents: { 'change': 'render' },

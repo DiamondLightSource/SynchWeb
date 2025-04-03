@@ -72,7 +72,7 @@ define([
 
             remove: function() {
                 this.vueView.$destroy()
-                //Marionette.LayoutView.prototype.remove.apply(this)
+                //Marionette.View.prototype.remove.apply(this)
             },
 
             createModel(){this.model = new Phase()}

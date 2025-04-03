@@ -8,7 +8,7 @@ define(['marionette', 'backbone', 'modules/dc/collections/aiplots',
 ], function(Marionette, Backbone, AIPlots, utils, template, $) {
        
 
-    var SeriesSelect = Marionette.ItemView.extend({
+    var SeriesSelect = Marionette.View.extend({
         template: _.template('<label><input type="checkbox"> <%-TYPE%></label>'),
         tagName: 'li',
         ui: {
@@ -34,7 +34,7 @@ define(['marionette', 'backbone', 'modules/dc/collections/aiplots',
         className: 'clearfix'
     })
 
-    return Marionette.LayoutView.extend({
+    return Marionette.View.extend({
         template: template,
 
         regions: {

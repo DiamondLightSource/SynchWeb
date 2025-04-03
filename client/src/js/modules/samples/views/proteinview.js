@@ -27,7 +27,7 @@ define(['marionette',
         template, Backbone) {
 
         
-    return Marionette.LayoutView.extend({
+    return Marionette.View.extend({
         className: 'content',
         template: template,
         showContainers: true,

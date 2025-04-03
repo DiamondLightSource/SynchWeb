@@ -6,7 +6,7 @@ define(['marionette',
     'templates/fault/filters.html',
     ], function(Marionette, Beamlines, Systems, Components, SubComponents, filtertemplate) {
     
-    return FilterView = Marionette.ItemView.extend({
+    return FilterView = Marionette.View.extend({
         template: filtertemplate,
         className: 'filter filter-nohide',
         

@@ -10,7 +10,7 @@ define(['marionette', 'backgrid', 'views/table', 'views/filter',
         cookie: true,
     })
         
-    return Marionette.LayoutView.extend({
+    return Marionette.View.extend({
         className: 'content',
         template: Template,
         regions: { 'wrap': '.wrapper', type: '.type' },

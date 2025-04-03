@@ -7,7 +7,7 @@ define(['marionette',
     Collection interface to jQuery UI Tabs
    
   */
-  var TabItem = Marionette.ItemView.extend({
+  var TabItem = Marionette.View.extend({
     tagName: 'li',
     initialize: function(options) {
       var id = this.model.escape(this.getOption('tabID')).replace(/\s+/g, '')
@@ -21,7 +21,7 @@ define(['marionette',
     tagName: 'ul',
   })
     
-  var TabContentItem = Marionette.ItemView.extend({
+  var TabContentItem = Marionette.View.extend({
     template: false,
     initialize: function(options) {
       this.subview = new (_.isFunction(options.tabContentInner) ? options.tabContentInner.call(this) : options.tabContentInner)(options)
@@ -51,7 +51,7 @@ define(['marionette',
   })
        
        
-  return Marionette.LayoutView.extend({
+  return Marionette.View.extend({
     template: _.template('<div class="tab-container"><section class="tabs"></section><section class="tab-content"></section></div>'),
     regions: { tabs: '.tabs', content: '.tab-content' },
       

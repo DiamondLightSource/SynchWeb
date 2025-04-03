@@ -16,7 +16,7 @@ define(['marionette',
         utils, table, template, Backgrid) {
 
     
-    return Marionette.LayoutView.extend({
+    return Marionette.View.extend({
         className: 'content',
         template: template,
         regions: { 

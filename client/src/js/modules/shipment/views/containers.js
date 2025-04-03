@@ -48,7 +48,7 @@ define(['marionette',
         cookie: true,
     })
     
-    return Marionette.LayoutView.extend({
+    return Marionette.View.extend({
         className: 'content',
         template: '<div><h1>Containers</h1><div class="filter type"></div><div class="filter"><ul><li><label><input type="checkbox" name="currentuser" /> My Containers</label></li></ul></div><div class="wrapper"></div></div>',
         regions: { wrap: '.wrapper', type: '.type' },

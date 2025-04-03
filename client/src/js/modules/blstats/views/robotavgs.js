@@ -1,6 +1,6 @@
 define(['marionette', 'modules/blstats/models/robotavgs', 'jquery', 'jquery.flot'], function(Marionette, RobotAverages, $) {
     
-    return Marionette.LayoutView.extend({
+    return Marionette.View.extend({
         template: false,
         
         modelEvents: {

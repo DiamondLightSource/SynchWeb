@@ -74,7 +74,7 @@ define(['backbone',
     })
         
         
-    //return Marionette.LayoutView.extend({
+    //return Marionette.View.extend({
     return FormView.extend({
         setupOnConstruct: false,
         className: 'content',

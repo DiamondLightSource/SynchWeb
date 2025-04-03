@@ -16,7 +16,7 @@ define(['marionette',
         ErrorLog, ErrorLogView,
         template) {
 
-    return Marionette.LayoutView.extend({
+    return Marionette.View.extend({
         template: template,
         className: 'content',
         

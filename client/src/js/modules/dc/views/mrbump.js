@@ -1,7 +1,7 @@
 define(['marionette', 'templates/dc/dc_mrbump.html', 'utils', 'jquery.mp'
 ], function(Marionette, template, utils) {
     
-    return Marionette.ItemView.extend({
+    return Marionette.View.extend({
         template: template,
         className: 'clearfix',
     

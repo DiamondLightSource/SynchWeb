@@ -5,7 +5,7 @@ define(['marionette', 'views/pages',
     ], function(Marionette, Pages, $) {
 
 
-    return Marionette.LayoutView.extend({
+    return Marionette.View.extend({
         template: _.template('<div class="page_wrap"></div><div class="legend clearfix"></div><div class="plot_container"><div id="visit_breakdown"></div></div>'),
         
         collectionEvents: {

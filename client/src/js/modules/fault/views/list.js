@@ -6,7 +6,7 @@ define(['marionette', 'modules/fault/views/filters', 'views/table', 'utils/table
     })
 
     
-    return Marionette.LayoutView.extend({
+    return Marionette.View.extend({
         className: 'content',
         template: _.template('<h1>Faults</h1><% if (app.user_can(\'fault_add\')) { %><div class="r"><a class="button add" href="/faults/add"><i class="fa fa-plus"></i> Add Fault Report</a></div><% } %><div class="filters"></div><div class="wrapper"></div>'),
         regions: { wrap: '.wrapper', flts: '.filters' },

@@ -335,7 +335,7 @@ define(['marionette',
      The grid view for samples in a container
      Works for both viewing and editing containers   
     */
-    var GridView = Marionette.CompositeView.extend({
+    var GridView = Marionette.View.extend({
         tagName: 'table',
         className: 'samples reflow',
         template: sampletable,

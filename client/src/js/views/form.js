@@ -14,7 +14,7 @@ define(['marionette', 'backbone',
      - Provides various form helpers
      
     */
-    return FormView = Marionette.LayoutView.extend(_.extend({}, forms, {
+    return FormView = Marionette.View.extend(_.extend({}, forms, {
         className: 'content',
         setupOnConstruct: true,
         

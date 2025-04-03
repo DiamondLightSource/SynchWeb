@@ -1,7 +1,7 @@
 define(['marionette', 'collections/pvs'], function(Marionette, PVs) {
 
     
-    var PVItemView = Marionette.ItemView.extend({
+    var PVItemView = Marionette.View.extend({
         template: _.template('<h1><%-NAME%></h1><p><%-VALUE%></p>'),
         className: function() {
             return 'pv ' + this.model.get('CLASS')

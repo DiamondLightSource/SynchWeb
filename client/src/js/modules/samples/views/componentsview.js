@@ -1,6 +1,6 @@
 define(['marionette', 'backbone', 'utils/editable'], function(Marionette, Backbone) {
 
-    var ComponentView = Marionette.ItemView.extend({
+    var ComponentView = Marionette.View.extend({
         tagName: 'li',
         getTemplate: function() {
             return this.getOption('editable') 
@@ -95,7 +95,7 @@ define(['marionette', 'backbone', 'utils/editable'], function(Marionette, Backbo
         },
     })
 
-    var EmptyView = Marionette.ItemView.extend({
+    var EmptyView = Marionette.View.extend({
         tagName: 'li',
         template: _.template('No Components')
     })

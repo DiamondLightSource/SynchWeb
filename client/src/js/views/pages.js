@@ -1,6 +1,6 @@
 define(['marionette', 'backgrid', 'backgrid-paginator'], function(Marionette, Backgrid) {
 
-    return Marionette.ItemView.extend({
+    return Marionette.View.extend({
         template: _.template('<div class="per_page"><select name="pp"></select></div>'),
         events: {
             'change select': 'changePageSize',

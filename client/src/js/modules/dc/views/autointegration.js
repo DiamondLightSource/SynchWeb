@@ -20,7 +20,7 @@ define(['marionette',
         utils, template) {
        
 
-    var AutoIntegrationItem = Marionette.LayoutView.extend({
+    var AutoIntegrationItem = Marionette.View.extend({
         template: template,
         modelEvents: { 'change': 'render' },
         
@@ -116,7 +116,7 @@ define(['marionette',
     })
 
         
-    return Marionette.LayoutView.extend({
+    return Marionette.View.extend({
         template: _.template('<div class="ui-tabs summary"></div><div class="sw"></div><div class="res"></div>'),
         regions: {
             wrap: '.sw',

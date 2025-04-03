@@ -42,7 +42,7 @@ define(['backbone', 'backgrid', 'marionette', 'views/table'],
         }
     })
 
-    return Marionette.LayoutView.extend({
+    return Marionette.View.extend({
         className: 'content',
         template: _.template('<h1>Data Collection Errors</h1><div class="wrapper"></div>'),
         regions: { wrap: '.wrapper' },

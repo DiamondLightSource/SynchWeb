@@ -4,7 +4,7 @@ define(['marionette', 'utils/canvas', 'utils',
     'templates/dc/samplechanger.html'
     ], function(Marionette, canvas, utils, Samples, template) {
 
-    return Marionette.LayoutView.extend({
+    return Marionette.View.extend({
         className: 'sample_status',
         template: template,
         fullScreen: false,

@@ -6,7 +6,7 @@ define(['marionette', 'modules/dc/models/distl', 'utils',
 ], function(Marionette, DCDISTLModel, utils, $) {
        
   // DISTL Plot
-  return Marionette.ItemView.extend({
+  return Marionette.View.extend({
       template: false,
       model: DCDISTLModel,
       modelEvents: { 'change': 'render' },

@@ -16,17 +16,17 @@ define(['backbone', 'marionette',
 
     var DownstreamsCollection = Backbone.Collection.extend()
 
-    var DownStreamError = Marionette.ItemView.extend({
+    var DownStreamError = Marionette.View.extend({
         template: downstreamerror
     })
 
-    var DownStreamRunning = Marionette.ItemView.extend({
+    var DownStreamRunning = Marionette.View.extend({
         template: _.template('<p>This job is currently running</p>')
     })
         
-    var EmptyAP = Marionette.ItemView.extend({ template: '<p>No downstream processing available for this data collection</p>', tagName: 'p' })
+    var EmptyAP = Marionette.View.extend({ template: '<p>No downstream processing available for this data collection</p>', tagName: 'p' })
         
-    var DefaultDP = Marionette.LayoutView.extend({
+    var DefaultDP = Marionette.View.extend({
         template: _.template('<div class="summary"></div>'),
 
         regions: {
@@ -139,7 +139,7 @@ define(['backbone', 'marionette',
     })
 
 
-    return Marionette.LayoutView.extend({
+    return Marionette.View.extend({
         template: _.template('<div class="sw"></div><div class="res"></div>'),
         regions: {
             wrap: '.sw',

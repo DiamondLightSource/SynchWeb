@@ -9,7 +9,7 @@ define(['marionette', 'backbone', 'collections/visits', 'collections/bls', 'view
     var Months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
     
     
-    var EventItemView = Marionette.ItemView.extend({
+    var EventItemView = Marionette.View.extend({
         template: _.template('<%-BL%>: <a class="setVisit" href="/dc/visit/<%-VISIT%>"><%-VISIT%></a> (<%-LEN%>h)<% if(LC) { %><br />&nbsp; - <%-LC%><% } %><%if(SESSIONTYPE) { %><br />[<%-SESSIONTYPE%>]<% } %>'),
         tagName: 'li',
         events:{
@@ -30,7 +30,7 @@ define(['marionette', 'backbone', 'collections/visits', 'collections/bls', 'view
     })
     
     
-    var EventHourView = Marionette.CompositeView.extend({
+    var EventHourView = Marionette.View.extend({
         template: _.template('<% if (hour < 10) {%>0<% } %><%-hour%>:00 <ul></ul>'),
         tagName: 'li',
         
@@ -45,7 +45,7 @@ define(['marionette', 'backbone', 'collections/visits', 'collections/bls', 'view
     
     
     
-    var DayItemView = Marionette.CompositeView.extend({
+    var DayItemView = Marionette.View.extend({
         tagName: 'li',
         
         childView: EventHourView,
@@ -111,7 +111,7 @@ define(['marionette', 'backbone', 'collections/visits', 'collections/bls', 'view
         }
     })
     
-    var DayListItemView = Marionette.ItemView.extend({
+    var DayListItemView = Marionette.View.extend({
         tagName: 'li',
         
         templateHelpers: function() {
@@ -207,7 +207,7 @@ define(['marionette', 'backbone', 'collections/visits', 'collections/bls', 'view
         },
     })
     
-    var CalendarCompositeView = Marionette.CompositeView.extend({
+    var CalendarCompositeView = Marionette.View.extend({
         template: calendarTemplate,
         childView: DayItemView,
         childViewContainer: 'ul.calendar_main',
@@ -397,7 +397,7 @@ define(['marionette', 'backbone', 'collections/visits', 'collections/bls', 'view
         },
     })
 
-    return Marionette.LayoutView.extend({
+    return Marionette.View.extend({
         template: template,
         className: 'content',
         beamline: 'all',

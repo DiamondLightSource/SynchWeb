@@ -4,7 +4,7 @@ define(['marionette',
   'templates/dc/dc_xoalign.html',
   ], function(Marionette, AutoIndexings, template, xotemplate) {
        
-  var AutoIndexingItem = Marionette.ItemView.extend({ 
+  var AutoIndexingItem = Marionette.View.extend({ 
       modelEvents: { 'change': 'render' },
 
       getTemplate: function(m) {
@@ -12,7 +12,7 @@ define(['marionette',
       }
   })
        
-  var EmptyStrategies = Marionette.ItemView.extend({ template: '<div>No strategies available for this data collection</div>' })
+  var EmptyStrategies = Marionette.View.extend({ template: '<div>No strategies available for this data collection</div>' })
        
   return Marionette.CollectionView.extend({
     childView: AutoIndexingItem,

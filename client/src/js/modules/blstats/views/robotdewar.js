@@ -4,7 +4,7 @@ define(['marionette', 'modules/blstats/models/robotdewar', 'utils',
         'jquery-flot-resize',
 ], function(Marionette, Dewar, utils, $) {
     
-    return Marionette.ItemView.extend({
+    return Marionette.View.extend({
         template: false,
         modelEvents: { 'change': 'render' },
                                                

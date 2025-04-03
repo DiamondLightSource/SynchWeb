@@ -131,7 +131,7 @@ define(['marionette',
 
 
 
-        return Marionette.LayoutView.extend({
+        return Marionette.View.extend({
             template: _.template('<% if (!EMBED) { %><h1>Reprocessing</h1><p class="help">Here you can find all reprocessing jobs and their statuses</p><% } %><div class="filter"></div><div class="wrapper"></div>'),
             className: 'content',
 

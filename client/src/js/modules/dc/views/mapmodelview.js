@@ -8,7 +8,7 @@ define(['marionette',
     ], function(Marionette, Uglymol, zlib,
         DownStreams, DIMPLEPeaks, DIMPLEPeakTable,  template, defaultViewerOptions) {
 
-    return Marionette.LayoutView.extend({
+    return Marionette.View.extend({
         template: template,
         className: 'content',
         

@@ -5,7 +5,7 @@ define(['marionette',
     ], function(Marionette, XHRImage, template, templatemin) {
     
         
-    var ThumbView = Marionette.ItemView.extend({
+    var ThumbView = Marionette.View.extend({
         tagName: 'figure',
         template: _.template('<a href="/containers/cid/<%-CONTAINERID%>/iid/<%-CONTAINERINSPECTIONID%>/sid/<%-BLSAMPLEID%>"><img /></a><figcaption>+<%-DELTA%>d</figcaption>'),
         
@@ -73,7 +73,7 @@ define(['marionette',
     })
         
     
-    return Marionette.LayoutView.extend({
+    return Marionette.View.extend({
         // template: template,
         getTemplate: function() {
             return this.getOption('embed') ? templatemin : template

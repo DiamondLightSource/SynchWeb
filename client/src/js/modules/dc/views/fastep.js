@@ -3,7 +3,7 @@ define(['marionette',
     'templates/dc/dc_fastep.html', 'utils'], function(Marionette, DownstreamBase,
         template, utils) {
     
-    return Marionette.ItemView.extend({
+    return Marionette.View.extend({
         template: template,
         modelEvents: { 'change': 'render' },
         

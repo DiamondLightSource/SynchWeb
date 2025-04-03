@@ -5,7 +5,7 @@ define(['marionette',
     "./uglymolhelper"], function(Marionette, Attachments, Uglymol, zlib,
         template, defaultViewerOptions) {
 
-    return Marionette.LayoutView.extend({
+    return Marionette.View.extend({
         template: template,
         className: 'content',
         

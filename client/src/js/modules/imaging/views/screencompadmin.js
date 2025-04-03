@@ -25,7 +25,7 @@ define(['marionette', 'backbone', 'backgrid', 'views/table', 'views/filter',
 
 
     
-    return Backbone.Marionette.LayoutView.extend({
+    return Marionette.View.extend({
         className: 'content',
         template: template,
 

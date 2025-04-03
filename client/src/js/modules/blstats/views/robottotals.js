@@ -1,6 +1,6 @@
 define(['marionette', 'views/table', 'utils/table'], function(Marionette, TableView, table) {
     
-    return Marionette.LayoutView.extend({
+    return Marionette.View.extend({
         className: 'content',
         template: _.template('<div class="wrapper"></div>'),
 

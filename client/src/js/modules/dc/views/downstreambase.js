@@ -6,7 +6,7 @@ define(['marionette',
         AutoProcAttachments, AutoProcAttachmentsView, 
         LogView, utils) {
     
-    return Marionette.ItemView.extend({
+    return Marionette.View.extend({
         modelEvents: { 'change': 'render' },
         
         events: {

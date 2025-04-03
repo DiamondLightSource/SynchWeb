@@ -5,7 +5,7 @@ define(['marionette', 'utils',
 ], function(Marionette, utils, $) {
        
 
-    return Marionette.ItemView.extend({
+    return Marionette.View.extend({
         template: false,
         modelEvents: { 'change': 'render' },
 

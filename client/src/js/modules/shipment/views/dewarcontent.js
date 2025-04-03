@@ -4,12 +4,12 @@ define(['marionette', 'modules/shipment/views/movecontainer',
     'templates/shipment/containerli.html'], function(Marionette, MoveContainerView, PagesView,
         utils, template) {
     
-    var EmptyDewar = Marionette.ItemView.extend({
+    var EmptyDewar = Marionette.View.extend({
         tagName: 'li',
         template: '<li>No Containers for this dewar</li>'
     })
     
-    var ContainerItemView = Marionette.ItemView.extend({
+    var ContainerItemView = Marionette.View.extend({
         tagName: 'li',
         attributes: { 'data-testid': 'shipment-containers-list-item' },
         template: template,
@@ -52,7 +52,7 @@ define(['marionette', 'modules/shipment/views/movecontainer',
         },
     })
 
-    return Marionette.LayoutView.extend({
+    return Marionette.View.extend({
         template: _.template('<div class="rcont"></div><div class="rpages page_wrap"></div>'),
         regions: {
             rcont: '.rcont',

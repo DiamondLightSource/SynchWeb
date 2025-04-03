@@ -8,7 +8,7 @@ define(['backbone', 'marionette',
         APMessagesView,
         LogView, utils) {
     
-    return Marionette.LayoutView.extend({
+    return Marionette.View.extend({
         className: 'downstream-item',
         links: true,
         mapLink: true,

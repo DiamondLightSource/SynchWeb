@@ -6,7 +6,7 @@ define(['marionette',
     ], function(Marionette, AutoIntegrations, DISTLView, dctemplate) {
 
 
-    return Marionette.ItemView.extend({
+    return Marionette.View.extend({
         template: dctemplate,
         className: 'dc',
         modelEvents: {

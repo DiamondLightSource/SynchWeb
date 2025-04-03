@@ -8,7 +8,7 @@ define(['marionette', 'templates/stats/breakdown.html',
     'jquery.flot.tooltip',
     ], function(Marionette, template, utils, formatDate, $) {
 
-    return Marionette.ItemView.extend({
+    return Marionette.View.extend({
         template: template,
         
         modelEvents: {

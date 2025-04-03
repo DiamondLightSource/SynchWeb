@@ -5,7 +5,7 @@ define(['marionette', 'utils', 'utils/canvas', 'jquery', 'backbone', 'backbone-v
      Puck Canvas Object
      - mixin CanvasUtils
     */
-    return Marionette.ItemView.extend(_.extend({}, CanvasUtils, Backbone.Validation.mixin, {
+    return Marionette.View.extend(_.extend({}, CanvasUtils, Backbone.Validation.mixin, {
         capacity: 16,
         tagName: 'canvas',
         template: false,

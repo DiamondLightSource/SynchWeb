@@ -90,7 +90,7 @@ define(['marionette', 'backbone', 'views/table', 'views/validatedrow', 'utils',
     })
 
 
-    return Marionette.CompositeView.extend({
+    return Marionette.View.extend({
         editable: true,
         template: template,
         childView: ComponentGridRow,

@@ -9,7 +9,7 @@ define([
     'templates/stats/runs_overview.html',
     'jquery'
 ], function(Marionette, Beamlines, BeamlineStatsView, FilterView, template, $) {
-    return Marionette.LayoutView.extend({
+    return Marionette.View.extend({
         template: template,
         className: 'content',
         regions: {

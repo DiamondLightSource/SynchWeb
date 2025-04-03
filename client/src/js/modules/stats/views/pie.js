@@ -5,7 +5,7 @@ define(['marionette', 'modules/stats/models/pie', 'utils',
         'flot-pie',
 ], function(Marionette, Pie, utils, $) {
     
-    return Marionette.ItemView.extend({
+    return Marionette.View.extend({
         template: false,
         modelEvents: { 'change': 'render' },
                                                

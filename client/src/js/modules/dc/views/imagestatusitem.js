@@ -5,7 +5,7 @@ define(['marionette',
         'jquery.mp'
 ], function(Marionette, utils, XHRImage, $) {
        
-    return Marionette.ItemView.extend({
+    return Marionette.View.extend({
         modelEvents: { 'change': 'render' },
         template: false,
       

@@ -16,7 +16,7 @@ define(['marionette',
     Shipments, Dewars, Containers, Sample, Samples, SingleSampleView, DistinctProteins,
     template) {
     
-    return Marionette.LayoutView.extend({
+    return Marionette.View.extend({
         template: template,
         className: 'content',
         regions: {

@@ -11,7 +11,7 @@ define(['marionette',
         template,
         itemtemplate) {
 
-    var DCItem = Marionette.ItemView.extend({
+    var DCItem = Marionette.View.extend({
         template: itemtemplate,
         className: 'cells data_collection clearfix',
         
@@ -27,13 +27,13 @@ define(['marionette',
         }
     })
     
-    var NoDCs = Marionette.ItemView.extend({
+    var NoDCs = Marionette.View.extend({
         className: 'data_collection',
         template: _.template('<div>No data collections found</div>')
         
     })
     
-    return Marionette.CompositeView.extend({
+    return Marionette.View.extend({
         template: template,
         className: 'content',
         

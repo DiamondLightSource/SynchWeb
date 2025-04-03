@@ -1,6 +1,6 @@
 define(['marionette', 'modules/blstats/collections/roboterrors', 'views/table'], function(Marionette, RobotErrors, TableView) {
     
-    return Marionette.LayoutView.extend({
+    return Marionette.View.extend({
         className: 'content',
         template: _.template('<h1>Robot Errors</h1><div class="wrapper"></div>'),
 
