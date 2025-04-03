@@ -230,7 +230,7 @@ define(['marionette', 'modules/dc/views/getdcview', 'modules/dc/views/imageviewe
 
   }
        
-  app.addInitializer(function() {
+  app.start(function() {
     app.on('dclist:show', function(visit) {
       if (visit) {
           // Record the visit number 

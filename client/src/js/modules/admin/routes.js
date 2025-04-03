@@ -31,7 +31,7 @@ import User from 'models/user'
 import Users from 'collections/users'
 
 // Register marionette navigation events
-app.addInitializer(function() {
+app.start(function() {
     app.on('group:show', function(gid) {
         app.navigate('/admin/groups/'+gid)
     })

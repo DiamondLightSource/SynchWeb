@@ -18,7 +18,7 @@ const RunsOverview = import(/* webpackChunkName: "stats" */ 'modules/stats/views
 // Initialize MarionetteApplication if not already existing
 let application = MarionetteApplication.getInstance()
 
-application.addInitializer(function() {
+application.start(function() {
     application.on('stats:show', function(visit) {
         application.navigate('/stats/visit/'+visit)
     })

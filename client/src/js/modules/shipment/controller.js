@@ -461,7 +461,7 @@ define(['backbone',
   }
        
         
-  app.addInitializer(function() {
+  app.start(function() {
     app.on('shipments:show', function() {
       app.navigate('shipments')
       controller.list()

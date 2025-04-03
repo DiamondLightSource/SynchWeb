@@ -21,7 +21,7 @@ const CrystalAddWrapper = () => import(/* webpackChunkName: "samples" */ 'module
 const SampleGroups = () => import(/* webpackChunkName: "samples" */ 'modules/samples/components/sample-groups.vue')
 const SampleGroupCreateAndEdit = () => import(/* webpackChunkName: "samples" */ 'js/modules/samples/components/sample-group-create-and-edit.vue')
 
-app.addInitializer(function() {
+app.start(function() {
   app.on('samples:show', function() {
     app.navigate('/samples')
   })

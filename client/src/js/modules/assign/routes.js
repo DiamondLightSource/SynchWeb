@@ -19,7 +19,7 @@ let visitModel = {}
 let application = MarionetteApplication.getInstance()
 
 
-application.addInitializer(function() {
+application.start(function() {
     application.on('assign:visit', function(visit) {
         application.navigate('/assign/visit/'+visit)
     })

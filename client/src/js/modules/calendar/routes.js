@@ -12,7 +12,7 @@ import CurrentView from 'modules/calendar/views/current.js'
 // hook into the marionette event bus...
 let application = MarionetteApplication.getInstance()
 
-application.addInitializer(function() {
+application.start(function() {
     application.on('current:show', function() {
       application.navigate('/current')
     })

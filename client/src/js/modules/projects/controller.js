@@ -36,7 +36,7 @@ define(['underscore', 'marionette',
     }
        
        
-    app.addInitializer(function() {
+    app.start(function() {
         app.on('projects:view', function(pid) {
             app.navigate('projects/pid/'+pid)
             controller.view(pid)

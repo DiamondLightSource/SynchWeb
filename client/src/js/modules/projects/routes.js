@@ -15,7 +15,7 @@ const ProjectView = import(/* webpackChunkName: "projects" */ 'modules/projects/
 
 let bc = { title: 'Projects', url: '/projects' }
 
-app.addInitializer(function() {
+app.start(function() {
     app.on('projects:view', function(pid) {
         app.navigate('/projects/pid/'+pid)
     })

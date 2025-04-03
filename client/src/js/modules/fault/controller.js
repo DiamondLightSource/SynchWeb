@@ -69,7 +69,7 @@ define(['marionette',
     }
         
        
-    app.addInitializer(function() {
+    app.start(function() {
         app.on('fault:show', function(fid) {
             app.navigate('faults/fid/'+fid)
             controller.view(fid)

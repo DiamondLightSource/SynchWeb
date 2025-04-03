@@ -57,7 +57,7 @@ const DewarsOverviewWrapper = () => import(/* webpackChunkName: "shipment" */ 'm
 // Initialize MarionetteApplication if not already existing
 let application = MarionetteApplication.getInstance()
 
-app.addInitializer(function() {
+app.start(function() {
   application.on('shipments:show', function() {
       application.navigate('/shipments')
   })

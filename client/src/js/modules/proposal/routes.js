@@ -13,7 +13,7 @@ let application = MarionetteApplication.getInstance()
 
 console.log("LOADING LEGACY PROPOSAL ROUTES")
 
-application.addInitializer(function() {
+application.start(function() {
   application.on('proposals:show', function() {
     application.navigate('/proposal')
   })

@@ -22,7 +22,7 @@ define(['underscore', 'marionette',
   }
        
        
-  app.addInitializer(function() {
+  app.start(function() {
     app.log('init router')
     app.on('proposals:show', function() {
       app.navigate('proposal')

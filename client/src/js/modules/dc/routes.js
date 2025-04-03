@@ -27,7 +27,7 @@ let application = MarionetteApplication.getInstance()
 // Use to check if visit model is OK
 let visitModel = {}
 
-application.addInitializer(function() {
+application.start(function() {
   application.on('dclist:show', function(visit) {
       if (visit) {
           application.navigate('/dc/visit/'+visit)

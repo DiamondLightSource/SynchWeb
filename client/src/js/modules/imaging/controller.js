@@ -142,7 +142,7 @@ define(['marionette',
         },
     }
 
-    app.addInitializer(function() {
+    app.start(function() {
         app.on('schedule:view', function(sid) {
             app.navigate('/admin/imaging/schedule/'+sid)
             controller.view_schedule(sid)

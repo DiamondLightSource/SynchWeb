@@ -202,7 +202,7 @@ define(['marionette',
                    
     }
 
-    app.addInitializer(function() {
+    app.start(function() {
         app.on('group:show', function(gid) {
             app.navigate('admin/groups/'+gid)
             controller.viewGroup(gid)

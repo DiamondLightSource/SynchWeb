@@ -31,7 +31,7 @@ define(['underscore', 'marionette',
   }
     
     
-  app.addInitializer(function() {
+  app.start(function() {
     app.on('current:show', function() {
         controller.current()
     })

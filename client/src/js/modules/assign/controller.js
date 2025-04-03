@@ -48,7 +48,7 @@ define(['marionette',
         }
     }
        
-    app.addInitializer(function() {
+    app.start(function() {
         app.on('assign:visit', function(visit) {
             app.navigate('assign/visit/'+visit)
             controller.assign(visit)

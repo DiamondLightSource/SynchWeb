@@ -125,7 +125,7 @@ define(['marionette',
     }
         
        
-    app.addInitializer(function() {
+    app.start(function() {
         app.on('stats:show', function(visit) {
             app.navigate('stats/visit/'+visit)
             controller.visit(visit)

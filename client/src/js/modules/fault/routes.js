@@ -18,7 +18,7 @@ import FaultTypeEditor from 'modules/fault/views/edit'
 // Initialize MarionetteApplication if not already existing
 let application = MarionetteApplication.getInstance()
 
-application.addInitializer(function() {
+application.start(function() {
     application.on('fault:show', function(fid) {
         application.navigate('/faults/fid/'+fid)
     })

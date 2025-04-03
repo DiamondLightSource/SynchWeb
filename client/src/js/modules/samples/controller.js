@@ -239,7 +239,7 @@ define(['marionette',
   }
        
        
-  app.addInitializer(function() {
+  app.start(function() {
     app.on('samples:show', function() {
       app.navigate('samples')
       controller.list()

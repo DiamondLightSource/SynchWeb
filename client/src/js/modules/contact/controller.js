@@ -85,7 +85,7 @@ define(['marionette',
     }
     
     
-    app.addInitializer(function() {
+    app.start(function() {
         app.on('contact:show', function(cid) {
             app.navigate('contacts/cid/'+cid)
             controller.view(cid)

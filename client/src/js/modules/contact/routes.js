@@ -23,7 +23,7 @@ const bc = { title: 'Home Lab Contacts', url: '/contacts' }
 let application = MarionetteApplication.getInstance()
 
 
-application.addInitializer(function() {
+application.start(function() {
     application.on('contact:show', function(cid) {
       console.log("Show contact")
       application.navigate('/contacts/cid/'+cid)
