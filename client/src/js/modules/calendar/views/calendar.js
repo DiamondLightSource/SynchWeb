@@ -30,7 +30,7 @@ define(['marionette', 'backbone', 'collections/visits', 'collections/bls', 'view
     })
     
     
-    var EventHourView = Marionette.View.extend({
+    var EventHourView = Marionette.CollectionView.extend({
         template: _.template('<% if (hour < 10) {%>0<% } %><%-hour%>:00 <ul></ul>'),
         tagName: 'li',
         
@@ -45,7 +45,7 @@ define(['marionette', 'backbone', 'collections/visits', 'collections/bls', 'view
     
     
     
-    var DayItemView = Marionette.View.extend({
+    var DayItemView = Marionette.CollectionView.extend({
         tagName: 'li',
         
         childView: EventHourView,
@@ -207,7 +207,7 @@ define(['marionette', 'backbone', 'collections/visits', 'collections/bls', 'view
         },
     })
     
-    var CalendarCompositeView = Marionette.View.extend({
+    var CalendarCompositeView = Marionette.CollectionView.extend({
         template: calendarTemplate,
         childView: DayItemView,
         childViewContainer: 'ul.calendar_main',

@@ -15,7 +15,7 @@ define(['marionette', 'templates/dc/dimplepeaktable.html', 'templates/dc/dimplep
     })
 
     
-    return Marionette.View.extend({
+    return Marionette.CollectionView.extend({
         template: template,
         tagName: 'table',
         className: 'peaks',

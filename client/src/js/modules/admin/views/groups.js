@@ -95,7 +95,7 @@ define(['marionette', 'backbone',
         tagName: 'tr',
     })
         
-    var TableView = Marionette.View.extend({
+    var TableView = Marionette.CollectionView.extend({
         tagName: "table",
         template: table,
         childView: GridRow,

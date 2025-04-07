@@ -33,7 +33,7 @@ define(['marionette',
         
     })
     
-    return Marionette.View.extend({
+    return Marionette.CollectionView.extend({
         template: template,
         className: 'content',
         

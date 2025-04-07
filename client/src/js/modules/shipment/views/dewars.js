@@ -161,7 +161,7 @@ define(['marionette', 'backbone',
         template: _.template('<td colspan="10">No dewars for this shipment</td>')
     })
 
-    return GridView = Marionette.View.extend({
+    return GridView = Marionette.CollectionView.extend({
         tagName: 'table',
         emptyView: EmptyView,
         className: 'dewars reflow',

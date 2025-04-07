@@ -62,7 +62,7 @@ define(['marionette', 'backbone',
         template: _.template('<td colspan="4">No schedules found</td>')
     })
     
-    return GridView = Marionette.View.extend({
+    return GridView = Marionette.CollectionView.extend({
         className: 'content',
         template: template,
         childView: GridRow,

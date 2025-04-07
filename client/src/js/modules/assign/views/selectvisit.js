@@ -14,7 +14,7 @@ define(['marionette', 'templates/assign/selectvisit.html'], function(Marionette,
         template: _.template('No upcoming / current visits')
     })
 
-    return Marionette.View.extend({
+    return Marionette.CollectionView.extend({
         template: template,
         className: 'content',
         childView: VisitView,

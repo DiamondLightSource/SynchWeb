@@ -24,7 +24,7 @@ define(['marionette', 'backbone', 'views/pages',
 
             
     
-    var ContainerView = Marionette.View.extend({
+    var ContainerView = Marionette.CollectionView.extend({
         template: _.template('<span class="r"><a class="button button-notext" title="Click to view container contents" href="/containers/cid/<%-CONTAINERID%>"><i class="fa fa-search"></i> <span>View Container</span></a></span><h1><%-NAME%></h1>'),
         className: function() { return  'container' + (this.getOption('assigned') ? ' assigned' : '') },
         
@@ -130,7 +130,7 @@ define(['marionette', 'backbone', 'views/pages',
             
             
     // List of Dewars in Shipment
-    var DewarView = Marionette.View.extend({
+    var DewarView = Marionette.CollectionView.extend({
         template: _.template('<h1 class="clearfix"><%-CODE%><span class="r deactivate"><a class="button deact"><i class="fa  fa-power-off"></i> Deactivate Dewar</a></span></h1><div class="containers clearfix"></div>'),
         className: function() {
             var classes = 'dewar clearfix'
@@ -183,7 +183,7 @@ define(['marionette', 'backbone', 'views/pages',
             
             
     // List of Shipments
-    var ShipmentView = Marionette.View.extend({
+    var ShipmentView = Marionette.CollectionView.extend({
         template: _.template('<h1><%-SHIPPINGNAME%></h1>'),
         childView: DewarView,
         className: 'shipment',
@@ -196,7 +196,7 @@ define(['marionette', 'backbone', 'views/pages',
             
             
     // Sample Changer Positions
-    var PositionView = Marionette.View.extend({
+    var PositionView = Marionette.CollectionView.extend({
         className:'bl_puck',
         template: _.template('<%-id%> <span class="name"></span><div class="ac"></div>'),
         
@@ -284,7 +284,7 @@ define(['marionette', 'backbone', 'views/pages',
 
             
             
-    return Marionette.View.extend({
+    return Marionette.CollectionView.extend({
         template: template,
         className: 'content',
         childView: ShipmentView,
