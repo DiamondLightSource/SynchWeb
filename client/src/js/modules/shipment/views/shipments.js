@@ -55,7 +55,7 @@ define(['marionette',
     onRender: function() {
       if (app.proposal && app.proposal.get('ACTIVE') != 1) this.ui.add.hide()
 
-      this.wrap.show(this.table)
+      this.getRegion('wrap').show(this.table)
     }
   })
 

@@ -150,9 +150,9 @@ define(['marionette',
         },
         
         doRender: function() {
-            this.pv.show(new VisitList({ collection: this.prev }))
-            this.nv.show(new VisitList({ collection: this.next }))
-            if (app.staff) this.com.show(new VisitList({ collection: this.cm }))
+            this.getRegion('pv').show(new VisitList({ collection: this.prev }))
+            this.getRegion('nv').show(new VisitList({ collection: this.next }))
+            if (app.staff) this.getRegion('com').show(new VisitList({ collection: this.cm }))
 
             this.ui.time.text(this.time.time())
         },

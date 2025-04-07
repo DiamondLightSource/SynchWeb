@@ -74,7 +74,7 @@ define(['marionette',
         
         onShow: function() {
             this.plot = new RobotAveragesView({ el : this.ui.plot })
-            this.wrap.show(new RobotErrorsView({ collection: this.roboterrors }))
+            this.getRegion('wrap').show(new RobotErrorsView({ collection: this.roboterrors }))
 
             this.plot2 = new RobotTotalsPlot({ el: this.ui.tot, collection: this.robottotals })
             this.plot2.render()

@@ -198,7 +198,7 @@ define(['marionette',
         onRender: function() {
             if (app.proposal && app.proposal.get('ACTIVE') != '1') this.ui.add_dewar.hide()
 
-            this.table.show(new DewarsView({ collection: this.dewars }))
+            this.getRegion('table').show(new DewarsView({ collection: this.dewars }))
             this.cont.show(new DewarContentView({ collection: this.dewarcontent }))
             this.history.show(new DewarHistoryView({ collection: this.dewarhistory }))
             this.rtracking.show(new DewarTrackingView({ collection: this.dewartracking }))

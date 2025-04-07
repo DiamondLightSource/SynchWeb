@@ -33,7 +33,7 @@ define(['marionette', 'backgrid',
         row: ClickableRow,
 
         onRender: function(options) {
-            this.wrap.show(new TableView({
+            this.getRegion('wrap').show(new TableView({
                 tableClass: 'samples',
                 collection: this.collection,
                 columns: [

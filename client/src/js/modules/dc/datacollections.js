@@ -134,9 +134,9 @@ function(Marionette, Pages, DCListView,
                                       
     onRender: function() {    
         this.data_collections.show(this.dclist)
-        this.pages.show(this.paginator)
+        this.getRegion('pages').show(this.paginator)
         this.pages2.show(this.paginator2)
-        this.search.show(this.filter)
+        this.getRegion('search').show(this.filter)
         if (this.getOption('filters')) {
             this.type.show(this.ty)
         }

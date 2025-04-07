@@ -164,7 +164,7 @@ define(['marionette',
         update: function() {
             if (this.collection.length) {
                 this.$el.removeClass('ui-tabs')
-                this.wrap.show(new DCAPTabView({
+                this.getRegion('wrap').show(new DCAPTabView({
                     collection: this.collection,
                     id: this.getOption('id'),
                     el: this.$el.find('.res'),

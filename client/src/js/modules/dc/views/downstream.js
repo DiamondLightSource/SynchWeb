@@ -162,7 +162,7 @@ define(['backbone', 'marionette',
         update: function() {
             if (this.collection.length) {
                 this.$el.removeClass('ui-tabs')
-                this.wrap.show(new DownstreamsViewTab({
+                this.getRegion('wrap').show(new DownstreamsViewTab({
                     downstreams: this.collection,
                     id: this.getOption('id'),
                     el: this.$el.find('.res'),
@@ -170,7 +170,7 @@ define(['backbone', 'marionette',
                 }))
             } else {
                 this.$el.addClass('ui-tabs')
-                this.wrap.show(new EmptyAP())
+                this.getRegion('wrap').show(new EmptyAP())
             }
             
             this.$el.slideDown()

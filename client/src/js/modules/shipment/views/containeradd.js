@@ -168,12 +168,12 @@ define(['backbone',
                 delete this.proteins.queryParams.SAFETYLEVEL;
                 this.proteins.fetch()
             }
-            if (this.table.currentView) this.table.currentView.toggleAuto(this.ui.auto.is(':checked'))
+            if (this.getRegion('table').currentView) this.getRegion('table').currentView.toggleAuto(this.ui.auto.is(':checked'))
         },
 
         updateSpaceGroups: function(e) {
             // Use full list of spacegroups
-            if (this.table.currentView) this.table.currentView.toggleSpaceGroups(this.ui.spacegroups.is(':checked'))
+            if (this.getRegion('table').currentView) this.getRegion('table').currentView.toggleSpaceGroups(this.ui.spacegroups.is(':checked'))
         },
         updateName: function(e) {
             var rc = this.containerregistry.findWhere({ CONTAINERREGISTRYID: this.ui.registry.val() })
@@ -283,9 +283,9 @@ define(['backbone',
         toggleExtra: function (e) {
             e.preventDefault()
             //this.$el.find('.extra').toggleClass('show')
-            if (this.table.currentView) {
-                this.table.currentView.toggleExtra()
-                this.table.currentView.extraState() ? this.ui.extrastate.addClass('fa-minus').removeClass('fa-plus')
+            if (this.getRegion('table').currentView) {
+                this.getRegion('table').currentView.toggleExtra()
+                this.getRegion('table').currentView.extraState() ? this.ui.extrastate.addClass('fa-minus').removeClass('fa-plus')
                                                     : this.ui.extrastate.addClass('fa-plus').removeClass('fa-minus')
             }
         },
@@ -311,7 +311,7 @@ define(['backbone',
                 this.puck.$el.css('width', app.mobile() ? '100%' : '25%')
                 this.puck.show(new PuckView({ collection: this.samples, capacity: this.model.get('CAPACITY') }))
                 this.stable = new SampleTableView({ proteins: this.proteins, gproteins: this.gproteins, collection: this.samples, childTemplate: row, template: table, auto: this.ui.auto.is(':checked'), allSpacegroups: this.ui.spacegroups.is(':checked') })
-                this.table.show(this.stable)
+                this.getRegion('table').show(this.stable)
                 this.single.empty()
                 this.grp.empty()
                 this.ui.pc.show()
@@ -325,7 +325,7 @@ define(['backbone',
                 this.puck.show(new PlateView({ collection: this.samples, type: this.type, showValid: true }))
                 this.buildCollection()
                 this.stable = new SampleTableView({ proteins: this.proteins, gproteins: this.gproteins, collection: this.samples, childTemplate: row, template: table, type: 'non-xtal', allSpacegroups: this.ui.spacegroups.is(':checked') })
-                this.table.show(this.stable)
+                this.getRegion('table').show(this.stable)
                 this.single.empty()
                 this.grp.empty()
                 this.ui.pc.show()
@@ -337,7 +337,7 @@ define(['backbone',
             } else {
                 if (!app.mobile()) this.puck.$el.css('width', app.mobile() ? '100%' : '50%')
                 this.puck.show(new PlateView({ collection: this.samples, type: this.type, showValid: true }))
-                this.table.empty()
+                this.getRegion('table').empty()
                 this.stable.destroy()
                 this.singlesample = new SingleSample({ proteins: this.proteins, gproteins: this.gproteins, platetypes: this.ctypes, samples: this.samples, isForImager: this.isForImager.bind(this) })
                 this.single.show(this.singlesample)
@@ -414,7 +414,7 @@ define(['backbone',
         
         insertContent: function(data) {
             this.samples.set(data.samples, { remove: false })
-            this.table.currentView.render()
+            this.getRegion('table').currentView.render()
             this.ui.name.val(data.title)
         },
         
@@ -460,7 +460,7 @@ define(['backbone',
                 samp.set(s)
             }, this)
 
-            this.table.currentView.render()
+            this.getRegion('table').currentView.render()
             
             this.ui.name.val(this.cache.get('data').title)
             
@@ -622,7 +622,7 @@ define(['backbone',
         doOnShow: function() {
             console.log('show new puck')
             //this.puck.show(new PuckView({ collection: this.samples }))
-            //this.table.show(new SampleTableView({ proteins: this.proteins, collection: this.samples, childTemplate: row, template: table }))
+            //this.getRegion('table').show(new SampleTableView({ proteins: this.proteins, collection: this.samples, childTemplate: row, template: table }))
             this.ui.type.html(this.ctypes.opts())
             this.setType()
             

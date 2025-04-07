@@ -164,7 +164,7 @@ define(['backbone',
                 { label: '', cell: table.TemplateCell, template: '<a href="'+app.apiurl+'/download/ap/archive/<%-AID%>" class="button button-notext dll" title="Download autoprocessing archive"><i class="fa fa-download"></i> <span>Download autoprocessing archive</span></a>', editable: false },
             ]
             
-            this.wrap.show(new TableView({
+            this.getRegion('wrap').show(new TableView({
                 collection: this.collection,
                 columns: columns,
                 tableClass: '',

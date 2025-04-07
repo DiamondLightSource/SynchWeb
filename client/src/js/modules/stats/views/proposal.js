@@ -69,7 +69,7 @@ define(['marionette',
             var average = new Pie({ data: this.getOption('pies').average })
             this.pie = new PieView({ model: average, el: this.$el.find('#visit_pie') }).render()
 
-            this.wrap.show(this.table)
+            this.getRegion('wrap').show(this.table)
         },
         
     })

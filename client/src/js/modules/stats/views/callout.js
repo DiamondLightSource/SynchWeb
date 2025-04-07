@@ -21,7 +21,7 @@ define(['marionette', 'modules/stats/collections/callouts', 'views/table'], func
         },
                                           
         onRender: function() {
-            this.wrap.show(this.table)
+            this.getRegion('wrap').show(this.table)
         },
     })
 

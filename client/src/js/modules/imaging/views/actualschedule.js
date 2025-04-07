@@ -26,7 +26,7 @@ define(['marionette', 'views/table', 'utils/table', 'modules/imaging/collections
         },
                                           
         onRender: function() {
-            this.wrap.show(this.table)
+            this.getRegion('wrap').show(this.table)
         },
         
     })

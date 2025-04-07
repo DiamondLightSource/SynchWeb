@@ -96,12 +96,12 @@ define(['marionette', 'backgrid', 'views/table', 'views/filter', 'utils/table',
     },
                                       
     onRender: function() {
-      this.wrap.show(this.table)
+      this.getRegion('wrap').show(this.table)
       this.type.show(this.ty)
     },
       
     onShow: function() {
-      this.table.focusSearch()
+      this.getRegion('table').focusSearch()
     },
   })
 

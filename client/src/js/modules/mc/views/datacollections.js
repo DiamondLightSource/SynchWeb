@@ -236,7 +236,7 @@ define(['backbone', 'marionette',
         },
                                           
         onRender: function() {
-            this.pages.show(this.paginator)
+            this.getRegion('pages').show(this.paginator)
             this.srch.show(this.search)
             this.ui.opts.hide()
 

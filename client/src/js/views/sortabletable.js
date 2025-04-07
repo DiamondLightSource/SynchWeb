@@ -87,7 +87,7 @@ define(['backbone', 'views/table', 'backgrid', 'jquery', 'jquery-ui/ui/widgets/s
         onRender: function() {
             SortableTable.__super__.onRender.call(this)
 
-            this.table.$el.find('tbody').sortable({
+            this.getRegion('table').$el.find('tbody').sortable({
                 stop: function(e, ui) {
                     ui.item.trigger('drop', ui.item.index());
                 }

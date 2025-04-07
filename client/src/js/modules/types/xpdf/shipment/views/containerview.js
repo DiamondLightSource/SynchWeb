@@ -64,7 +64,7 @@ define([
                 }
             } 
 
-            this.table.show(new SampleTableView({ collection: this.samples, blSamples: this.blSamples, proteins: this.proteins, containerId: this.model.get('CONTAINERID') }))
+            this.getRegion('table').show(new SampleTableView({ collection: this.samples, blSamples: this.blSamples, proteins: this.proteins, containerId: this.model.get('CONTAINERID') }))
         }
     
     })

@@ -74,7 +74,7 @@ define(['backbone', 'backgrid', 'marionette', 'views/table'],
         },
                                           
         onRender: function() {
-            this.wrap.show(this.table)
+            this.getRegion('wrap').show(this.table)
         },
     })
 

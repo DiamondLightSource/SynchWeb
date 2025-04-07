@@ -94,7 +94,7 @@ define(['marionette',
         },
                                           
         onRender: function() {
-            this.wrap.show(this.table)
+            this.getRegion('wrap').show(this.table)
             $.when(this.ready).done(this.showFilter.bind(this))
             this.ui.fe.datepicker({ dateFormat: "dd-mm-yy" })
         },
@@ -118,7 +118,7 @@ define(['marionette',
         },
           
         onShow: function() {
-            this.table.focusSearch()
+            this.getRegion('table').focusSearch()
         },
         
     })

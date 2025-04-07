@@ -23,7 +23,7 @@ define(['marionette', 'modules/stats/collections/ehclogs', 'views/table', 'utils
         },
                                           
         onRender: function() {
-            this.wrap.show(this.table)
+            this.getRegion('wrap').show(this.table)
         },
     })
 

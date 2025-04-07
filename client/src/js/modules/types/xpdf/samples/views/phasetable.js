@@ -96,7 +96,7 @@ define([
 
             if (this.getOption('editable')) columns.push({ label: '', cell: RemoveCell, editable: false })
 
-            this.table.show(new TableView({
+            this.getRegion('table').show(new TableView({
                 collection: this.collection,
                 columns: columns,
                 pages: false,

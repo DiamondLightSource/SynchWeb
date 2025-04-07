@@ -128,10 +128,10 @@ define(['marionette',
             _.each(groups, function(programs, group) {
                 _.each(programs, function(program) {
                     var id = group+program
-                    var col = this.table.grid.columns.where({ pid: id });
+                    var col = this.getRegion('table').grid.columns.where({ pid: id });
                     var title = program.replace('+', '+ ').replace('.', '. ')
                     if (!col.length) {
-                        this.table.grid.insertColumn(
+                        this.getRegion('table').grid.insertColumn(
                             { label: title , cell: APItemCell, editable: false, group: group, program: program, pid: id }
                         )
                     }
@@ -156,7 +156,7 @@ define(['marionette',
         
         onRender: function() {
             this.updateStatus()
-            this.wrap.show(this.table)
+            this.getRegion('wrap').show(this.table)
         }
     })
 })

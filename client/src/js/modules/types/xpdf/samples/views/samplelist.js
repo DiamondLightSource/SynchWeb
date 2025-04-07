@@ -63,7 +63,7 @@ define([
         onRender: function() {
             if (this.getOption('hideButton')) this.ui.new.hide()
 
-            this.wrap.show(new TableView({
+            this.getRegion('wrap').show(new TableView({
                 tableClass: 'proteins',
                 collection: this.collection,
                 columns: [

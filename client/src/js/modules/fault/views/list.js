@@ -39,12 +39,12 @@ define(['marionette', 'modules/fault/views/filters', 'views/table', 'utils/table
         },
                                           
         onRender: function() {
-            this.wrap.show(this.table)
+            this.getRegion('wrap').show(this.table)
             if (this.getOption('filters')) this.flts.show(this.filters)
         },
           
         onShow: function() {
-            this.table.focusSearch()
+            this.getRegion('table').focusSearch()
         },
     })
 

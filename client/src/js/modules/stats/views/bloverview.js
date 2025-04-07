@@ -218,8 +218,8 @@ define(['marionette',
                                           
         onRender: function() {
             this.wrap.show(this.table)
-            this.wrap2.show(this.table2)
-            this.wrap3.show(this.table4)
+            this.getRegion('wrap2').show(this.table2)
+            this.getRegion('wrap3').show(this.table4)
             this.showFilter()
 
             $.when(this.ready).done(this.popuateRuns.bind(this))
@@ -294,7 +294,7 @@ define(['marionette',
         },
           
         onShow: function() {
-            this.table.focusSearch()
+            this.getRegion('table').focusSearch()
         },
         
     })

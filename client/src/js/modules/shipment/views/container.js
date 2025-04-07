@@ -74,8 +74,8 @@ define(['marionette',
 
         toggleExtra: function (e) {
             e.preventDefault()
-            this.table.currentView.toggleExtra()
-            this.table.currentView.extraState() ? this.ui.extrastate.addClass('fa-minus').removeClass('fa-plus')
+            this.getRegion('table').currentView.toggleExtra()
+            this.getRegion('table').currentView.extraState() ? this.ui.extrastate.addClass('fa-minus').removeClass('fa-plus')
                                                 : this.ui.extrastate.addClass('fa-plus').removeClass('fa-minus')
         },
 
@@ -253,7 +253,7 @@ define(['marionette',
             } else this.puck.show(new PuckView({ collection: this.samples, capacity: this.model.get('CAPACITY') }))
             // For editing a plate show all spacegroups - saves needing another control to filter mx faviourites
             this.sampletable = new SampleTableView({ proteins: this.proteins, collection: this.samples, in_use: (this.model.get('CONTAINERSTATUS') === 'processing'), type: type, auto: this.model.get('CONTAINERQUEUEID') ? true : false, allSpacegroups: true  })
-            this.table.show(this.sampletable)
+            this.getRegion('table').show(this.sampletable)
         }
     })
 

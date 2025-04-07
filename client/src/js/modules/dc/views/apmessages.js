@@ -82,13 +82,13 @@ define([
         },
 
         expand: function() {
-            this.wrap.$el.slideToggle()
+            this.getRegion('wrap').$el.slideToggle()
         },
 
         onRender: function() {
             var messages = new APMessages(this.getOption('messages').where({ SEVERITY: this.model.get('SEVERITY') }))
-            this.wrap.show(new MessagesView({ collection: messages }))
-            this.wrap.$el.hide()
+            this.getRegion('wrap').show(new MessagesView({ collection: messages }))
+            this.getRegion('wrap').$el.hide()
         }
     })
 
@@ -156,7 +156,7 @@ define([
 
         onRender: function() {
             var messages = new APMessages(this.getOption('messages').where({ PROCESSINGPROGRAMS: this.model.get('PROCESSINGPROGRAMS') }))
-            this.wrap.show(new SeveritiesView({ messages: messages }))
+            this.getRegion('wrap').show(new SeveritiesView({ messages: messages }))
         }
     })
 
@@ -210,14 +210,14 @@ define([
 
         onRender: function() {
             if (this.getOption('embed')) {
-                this.wrap.show(new ProgramsView({ messages: this.messages }))
+                this.getRegion('wrap').show(new ProgramsView({ messages: this.messages }))
             } else {
                 this.ready.done(this.doOnRender.bind(this))
             }
         },
 
         doOnRender: function() {
-            this.wrap.show(new ProgramsViewTab({ messages: this.messages }))
+            this.getRegion('wrap').show(new ProgramsViewTab({ messages: this.messages }))
         },
 
     })

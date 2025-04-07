@@ -80,7 +80,7 @@ define([
                 this.puck.show(new PlateView({ collection: this.samples, type: this.type, showValid: true }))
             this.buildCollection()
             this.stable = new SampleTableView({ blSamples: this.blSamples, proteins: this.proteins, gproteins: this.gproteins, collection: this.samples, childTemplate: row, template: table })
-            this.table.show(this.stable)
+            this.getRegion('table').show(this.stable)
             this.single.empty()
             this.ui.pc.show()
             

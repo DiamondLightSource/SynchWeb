@@ -216,7 +216,7 @@ define(['marionette', 'backgrid',
         onRender: function() {
             this.wrap.show(this.table)
             if (app.staff) {
-                this.wrap2.show(this.table2)
+                this.getRegion('wrap2').show(this.table2)
 
                 this.addview = new AddDewarView()
                 this.listenTo(this.addview, 'model:saved', this.addToCollection)

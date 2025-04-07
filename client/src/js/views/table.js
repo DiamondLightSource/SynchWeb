@@ -29,17 +29,17 @@ define(['marionette', 'backgrid', 'views/search', 'views/pages', 'backgrid-selec
     },
                                       
     displaySpinner: function() {
-      this.table.$el.addClass('loading')
+      this.getRegion('table').$el.addClass('loading')
     },
 
     removeSpinner: function() {
-      this.table.$el.removeClass('loading')
+      this.getRegion('table').$el.removeClass('loading')
     },
                                       
     onRender: function() {
       console.log('render')
       this.table.show(this.grid)
-      if (!this.getOption('noTableHolder')) this.table.$el.addClass('table')
+      if (!this.getOption('noTableHolder')) this.getRegion('table').$el.addClass('table')
       if (this.getOption('pages')) this.pages.show(this.paginator)
       else this.$el.find('.page_wrap').hide()
       if (this.filter) this.search.show(this.filter)

@@ -197,9 +197,9 @@ define(['marionette',
 
 
         onRender: function() {
-            this.wrap2.show(this.table2)
-            this.wrap3.show(this.table4)
-            this.wrap4.show(this.table3)
+            this.getRegion('wrap2').show(this.table2)
+            this.getRegion('wrap3').show(this.table4)
+            this.getRegion('wrap4').show(this.table3)
             this.showFilter()
 
             this.rl.show(this.runtable)
