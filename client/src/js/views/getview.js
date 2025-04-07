@@ -1,6 +1,6 @@
 define(['marionette'], function(Marionette) {
     
-    var GetView = Marionette.Object.extend({
+    var GetView = Marionette.MnObject.extend({
         views: {},
         default: null,
 
