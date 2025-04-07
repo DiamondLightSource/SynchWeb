@@ -140,7 +140,7 @@ define(['marionette',
                 rflt: '.filter',
             },
 
-            templateHelpers: function() {
+            templateContext: function() {
                 return {
                     EMBED: this.getOption('embed')
                 }

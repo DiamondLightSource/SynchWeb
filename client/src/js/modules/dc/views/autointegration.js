@@ -72,12 +72,12 @@ define(['marionette',
         
         showRD: function(e) {
             e.preventDefault()
-            app.dialog.show(new DialogView({ title: 'RD Plot', view: new RDPlotView({ aid: this.model.get('AID'), id: this.getOption('templateHelpers').DCID }), autoSize: true }))
+            app.dialog.show(new DialogView({ title: 'RD Plot', view: new RDPlotView({ aid: this.model.get('AID'), id: this.getOption('templateContext').DCID }), autoSize: true }))
         },
 
         showPlots: function(e) {
             e.preventDefault()
-            app.dialog.show(new DialogView({ title: 'Integration Statistic Plots', view: new AIPlotsView({ aid: this.model.get('AID'), id: this.getOption('templateHelpers').DCID }), autoSize: true }))
+            app.dialog.show(new DialogView({ title: 'Integration Statistic Plots', view: new AIPlotsView({ aid: this.model.get('AID'), id: this.getOption('templateContext').DCID }), autoSize: true }))
         },
         
     })
@@ -90,10 +90,10 @@ define(['marionette',
         
         childViewOptions: function() {
             var dcId = this.getOption('id')
-            // These templateHelpers are just used to extract values for AIPlots View (see ShowPlots/ShowRD above)
+            // These templateContext are just used to extract values for AIPlots View (see ShowPlots/ShowRD above)
             // They don't seem to be used as part of the template rendering, hence just an object rather than a function
             return {
-                templateHelpers: {
+                templateContext: {
                     DCID: dcId,
                     APIURL: app.apiurl,
                     PROPOSAL_TYPE: app.type,

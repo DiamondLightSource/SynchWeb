@@ -74,7 +74,7 @@ define([
 
         editable: true,
 
-        templateHelpers: function() {
+        templateContext: function() {
             return {
                 IS_STAFF: app.staff
             }

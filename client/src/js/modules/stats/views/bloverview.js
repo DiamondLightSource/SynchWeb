@@ -33,7 +33,7 @@ define(['marionette',
             ex: '.exp'
         },
         
-        templateHelpers: function() {
+        templateContext: function() {
             return {
                 BL: this.getOption('bl')
             }

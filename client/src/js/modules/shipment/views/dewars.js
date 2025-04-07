@@ -20,7 +20,7 @@ define(['marionette', 'backbone',
         },
         tagName: 'tr',
         attributes: { 'data-testid': 'shipment-dewars-table-row' },
-        templateHelpers: function() {
+        templateContext: function() {
             return {
                 APIURL: app.apiurl,
                 PROP: app.prop,

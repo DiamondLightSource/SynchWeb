@@ -91,7 +91,7 @@ define(['backbone', 'marionette',
         childViewOptions: function() {
             return {
                 holderWidth: this.getOption('holderWidth'),
-                templateHelpers: function() {
+                templateContext: function() {
                     return {
                         DCID: this.getOption('DCID'),
                         APIURL: app.apiurl,

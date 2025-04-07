@@ -62,7 +62,7 @@ define(['backbone', 'marionette',
             }))
             this.wrappedView = new (this.getOption('childView'))({ 
                 model: this.model,
-                templateHelpers: this.getOption('templateHelpers'),
+                templateContext: this.getOption('templateContext'),
                 holderWidth: this.getOption('holderWidth'),
             })
             this.wrapper.show(this.wrappedView)

@@ -177,7 +177,7 @@ define(['backbone',
             que: '.queue',
         },
         
-        templateHelpers: function() {
+        templateContext: function() {
             return {
                 BL: this.getOption('bl'),
                 VISIT: this.getOption('visit')

@@ -20,7 +20,7 @@ define(['marionette', 'backgrid', 'views/table', 'views/filter',
         title: 'Protein',
         url: 'protein',
     
-        templateHelpers: function() {
+        templateContext: function() {
             var validOnly = app.options.get('valid_components') 
             return {
               title: this.getOption('title'),

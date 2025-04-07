@@ -34,7 +34,7 @@ define(['marionette',
             if (this.getOption('extraButtons')) {
                 this.extraView = new (this.getOption('extraButtons'))({ 
                     model: this.model, 
-                    templateHelpers: this.getOption('templateHelpers'),
+                    templateContext: this.getOption('templateContext'),
                     el: this.ui.extra
                 })
                 this.extraView.render()
@@ -165,7 +165,7 @@ define(['marionette',
         onRender: function() {
             this.titleView = new (this.getOption('titleView'))({ 
                 model: this.model, 
-                templateHelpers: this.getOption('templateHelpers'), 
+                templateContext: this.getOption('templateContext'),
                 extraButtons: this.getOption('extraButtons'),
                 el: this.ui.title,
             })

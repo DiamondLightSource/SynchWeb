@@ -61,7 +61,7 @@ define(['marionette',
             'change @ui.fe': 'updateDate'
         },
 
-        templateHelpers: function() {
+        templateContext: function() {
             return {
                 can: app.user_can
             }

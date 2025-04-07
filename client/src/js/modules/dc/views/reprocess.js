@@ -167,7 +167,7 @@ define(['marionette',
             'click @ui.ind': 'toggleIndividual',
         },
 
-        templateHelpers: function() {
+        templateContext: function() {
             return {
                 VISIT: this.getOption('visit')
             }

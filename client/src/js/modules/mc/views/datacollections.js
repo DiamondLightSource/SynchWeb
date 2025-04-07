@@ -75,7 +75,7 @@ define(['backbone', 'marionette',
             sg: 'select[name=sg]',
         },
 
-        templateHelpers: function() {
+        templateContext: function() {
             return {
                 VISIT: this.getOption('params').visit
             }

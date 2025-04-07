@@ -298,7 +298,7 @@ define(['marionette', 'backbone', 'views/pages',
             ui.draggable.trigger('drop:unassign', { shipments: this.collection, visit: this.getOption('visit').get('VISIT') })
         },
         
-        templateHelpers: function() {
+        templateContext: function() {
             return {
                 VISIT: this.getOption('visit').toJSON(),
                 APP_TYPE: app.type,

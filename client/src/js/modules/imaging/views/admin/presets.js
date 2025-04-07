@@ -215,7 +215,7 @@ define(['marionette',
         },
 
 
-        templateHelpers: function() {
+        templateContext: function() {
             return {
                 PRESETPROPOSAL: app.options.get('preset_proposal'),
             }

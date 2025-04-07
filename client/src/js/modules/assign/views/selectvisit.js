@@ -21,7 +21,7 @@ define(['marionette', 'templates/assign/selectvisit.html'], function(Marionette,
         childViewContainer: 'ul.visits',
         emptyView: EmptyView,
 
-        templateHelpers: function() {
+        templateContext: function() {
             return {
                 APP_TYPE: app.type,
             }

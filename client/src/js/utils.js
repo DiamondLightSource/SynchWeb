@@ -44,7 +44,7 @@ define(['backbone',
     generic_msg: Marionette.View.extend({
         className: 'content',
         template: _.template('<h1><%-title%></h1><div><p><%=msg%></p></div>'),
-        templateHelpers: function() {        
+        templateContext: function() {
             return {
                 msg: this.message,
                 title: this.title,
@@ -74,7 +74,7 @@ define(['backbone',
                 : _.template('<%=msg%>')
         },
 
-        templateHelpers: function() {        
+        templateContext: function() {
             return {
                 msg: this.getOption('message'),
             }

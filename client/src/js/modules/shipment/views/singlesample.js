@@ -207,7 +207,7 @@ define(['backbone',
         },
         
         
-        templateHelpers: function() {
+        templateContext: function() {
             return {
                 existingContainer: this.getOption('existingContainer')
             }

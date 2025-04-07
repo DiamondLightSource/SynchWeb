@@ -50,7 +50,7 @@ define(['marionette',
             'change @ui.all': 'changeRun',
         },
 
-        templateHelpers: function() {
+        templateContext: function() {
             return {
                 BL: this.getOption('bl')
             }

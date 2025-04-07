@@ -20,7 +20,7 @@ define(['jquery', 'marionette',
             return this.getOption('embed') ? embed : template
         },
         
-        templateHelpers: function() {
+        templateContext: function() {
             return {
                 VIS_LINK: app.prop+'-'+this.model.get('VN')
             }

@@ -14,7 +14,7 @@ define(['marionette',
             dcl: '.dcl',
         },
 
-        templateHelpers: function() {
+        templateContext: function() {
             return {
                 BL: this.getOption('bl')
             }

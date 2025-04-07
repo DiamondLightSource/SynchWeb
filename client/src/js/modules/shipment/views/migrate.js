@@ -15,7 +15,7 @@ define(['marionette',
         template: template,
         className: 'content',
 
-        templateHelpers: function() {
+        templateContext: function() {
             var validOnly = app.options.get('valid_components')
             return {
                 proposal: app.prop,

@@ -23,7 +23,7 @@ define(['marionette',
                     else us.push(u)
             }, this)
             
-            this.options.templateHelpers = { us: us }
+            this.options.templateContext = { us: us }
         }
     })
     
@@ -46,7 +46,7 @@ define(['marionette',
         },
         emptyView: NoDCs,
         
-        templateHelpers: function() {
+        templateContext: function() {
             return {
                 cell: this.getOption('cell'),
                 pdb: this.getOption('pdb'),

@@ -21,7 +21,7 @@ Editable, utils, XHRImage, template, Backbone) {
         className: 'content',
         template: template,
         
-        templateHelpers: function() {
+        templateContext: function() {
             return {
                 APIURL: app.apiurl
             }

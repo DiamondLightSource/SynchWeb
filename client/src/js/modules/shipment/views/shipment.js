@@ -38,7 +38,7 @@ define(['marionette',
         regions: { table: '.table', history: '.history', cont: '.dcontent', rtracking: '.tracking' },
         //modelEvents: { 'change': 'render' },
         
-        templateHelpers: function() {
+        templateContext: function() {
             return {
                 APIURL: app.apiurl,
                 PROP: app.prop,

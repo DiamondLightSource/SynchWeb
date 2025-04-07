@@ -17,7 +17,7 @@ define(['marionette',
         template: template,
         regions: { rshps: '.shipments' },
         
-        templateHelpers: function() {
+        templateContext: function() {
             return {
                 APIURL: app.apiurl
             }

@@ -11,7 +11,7 @@ define(['marionette', 'views/table', 'utils/table'], function(Marionette, TableV
     template: _.template('<h1>Registered Dewars</h1><div class="ra"><% if (STAFF) { %><a href="#" class="button all">Show All</a><% } %> <a class="button" href="/dewars/add"><i class="fa fa-plus"></i> Register Dewar</a></div><div class="wrapper"></div>'),
     regions: { wrap: '.wrapper', type: '.type' },
     
-    templateHelpers: function() {
+    templateContext: function() {
       return {
         STAFF: app.staff
       }

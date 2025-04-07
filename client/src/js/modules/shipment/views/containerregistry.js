@@ -59,7 +59,7 @@ define(['marionette',
             add: '.add',
         },
         
-        templateHelpers: function () {
+        templateContext: function () {
             return { STAFF: app.staff }
         },
 

@@ -33,7 +33,7 @@ define(['marionette',
             wrap: '.wrapper', 
         },
 
-        templateHelpers: function() {
+        templateContext: function() {
             return {
                 PROPOSAL: app.prop,
             }

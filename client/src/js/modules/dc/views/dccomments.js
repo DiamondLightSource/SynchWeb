@@ -44,7 +44,7 @@ define(['marionette', 'modules/dc/collections/dccomments',
         },
 
 
-        templateHelpers: function() {
+        templateContext: function() {
             return {
                 DC: this.dc.toJSON(),
             }

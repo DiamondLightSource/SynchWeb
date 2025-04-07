@@ -3,7 +3,7 @@ define(['marionette', 'collections/pvs'], function(Marionette, PVs) {
 
   const PVStreamItemView = Marionette.View.extend({
     template: _.template(`<h1 class="tw-font-bold"><%- NAME %></h1> <p class="tw-text-xs"><%= FORMATTEDVALUE  %></p>`),
-    templateHelpers: function() {
+    templateContext: function() {
       return {
         FORMATTEDVALUE: this.model.get('VALUE').replace(/\\n/g, '<br />')
       }

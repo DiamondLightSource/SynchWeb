@@ -262,7 +262,7 @@ define(['backbone', 'marionette', 'views/dialog',
             'click a.multicrystal': 'closeDialog',
         },
 
-        templateHelpers: function() {
+        templateContext: function() {
             return {
                 VISIT: this.getOption('visit')
             }

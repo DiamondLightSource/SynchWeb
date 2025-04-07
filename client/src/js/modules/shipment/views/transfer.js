@@ -54,7 +54,7 @@ define(['marionette', 'views/form',
 
 
 
-        templateHelpers: function() {
+        templateContext: function() {
             return {
                 DEWAR: this.getOption('dewar').toJSON()
             }

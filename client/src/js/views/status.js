@@ -9,7 +9,7 @@ define(['marionette',
     return Marionette.View.extend({
         template: template,
         className: 'content nopadding',
-        templateHelpers: function() {
+        templateContext: function() {
             return {
                 BL: this.getOption('bl'),
                 APIURL: app.apiurl

@@ -66,7 +66,7 @@ define(['marionette',
             'click a.unqueue': 'confirmUnqueueContainer',
         },
 
-        templateHelpers: function() {
+        templateContext: function() {
             return {
                 IS_STAFF: app.staff,
             }

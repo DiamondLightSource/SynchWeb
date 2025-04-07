@@ -24,7 +24,7 @@ define(['marionette',
             'click @ui.submit': 'rebookPickup',
         },
 
-        templateHelpers: function() {
+        templateContext: function() {
             var obj = { RETURN: this.getOption('return') }
             _.each(this.shipment.attributes, function(v,k) {
                 obj[k] = v

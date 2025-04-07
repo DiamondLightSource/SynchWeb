@@ -24,7 +24,7 @@ define(['marionette', 'backgrid',
             wrap: '.instances'
         },
 
-        templateHelpers: function() {
+        templateContext: function() {
             return {
                 TYPE: this.collection.queryParams.crid ? 'sample' : 'proposal'
             }

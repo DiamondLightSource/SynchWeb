@@ -129,7 +129,7 @@ define([
             $.when.apply($, this.deferred).then(this.doOnRender.bind(this))
         },
 
-        templateHelpers: function() {
+        templateContext: function() {
             return {
                 INDEX: this.model.collection.indexOf(this.model) + 1
             }

@@ -90,7 +90,7 @@ define(['backbone',
         // Just affects what is selected for new container
         defaultPipeline: 'xia2/DIALS',
 
-        templateHelpers: function() {
+        templateContext: function() {
             return {
                 SHIPPINGID: this.dewar.get('SHIPPINGID'),
                 SHIPMENT: this.dewar.get('SHIPPINGNAME'),

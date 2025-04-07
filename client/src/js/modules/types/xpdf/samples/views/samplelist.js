@@ -46,7 +46,7 @@ define([
 
         row: ClickableRow,
 
-        templateHelpers: function() {
+        templateContext: function() {
             return {
                 TYPE: this.collection.queryParams.pid ? 'phase' : 'proposal'
             }

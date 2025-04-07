@@ -95,7 +95,7 @@ define(['marionette', 'backbone',
             'keypress @ui.addu': 'keypressUser',
         },
 
-        templateHelpers: function() {
+        templateContext: function() {
             return {
                 editUsers: app.user_can('manage_vusers'),
             }

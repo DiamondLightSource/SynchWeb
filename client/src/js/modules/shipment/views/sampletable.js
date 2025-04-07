@@ -367,7 +367,7 @@ define(['marionette',
             this.in_use = options.in_use
             
             this.options.childViewOptions = {
-                templateHelpers: function () {
+                templateContext: function () {
                     return {
                         IN_USE: options.in_use
                     }

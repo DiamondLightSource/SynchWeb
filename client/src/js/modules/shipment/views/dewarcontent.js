@@ -19,7 +19,7 @@ define(['marionette', 'modules/shipment/views/movecontainer',
             'click a.print': utils.signHandler,
         },
 
-        templateHelpers: function() {
+        templateContext: function() {
             return {
                 APIURL: app.apiurl,
                 PROP: app.prop,

@@ -36,7 +36,7 @@ define(['marionette',
         // template: _.template('<%-PROPOSAL%>'),
         template: _.template('<%-PROPOSAL%> <% if (STAFF) { %><span class="r"><a class="button button-notext delete" href="#"><i class="fa fa-times"></i> <span>Delete</span></a></span><% } %>'),
         
-        templateHelpers: function () {
+        templateContext: function () {
             return { STAFF: app.staff }
         },
 
@@ -148,7 +148,7 @@ define(['marionette',
             ar: 'div.addreport'
         },
 
-        templateHelpers: function () {
+        templateContext: function () {
             return { STAFF: app.staff }
         },
 

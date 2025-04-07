@@ -20,7 +20,7 @@ define(['marionette', 'backbone', 'views/table', 'views/validatedrow', 'utils',
             return this.model.get('new') || this.model.get('edit') ? rowtemplatenew : rowtemplate
         },
 
-        templateHelpers: function() {
+        templateContext: function() {
             return {
                 editable: this.getOption('editable')
             }
@@ -103,7 +103,7 @@ define(['marionette', 'backbone', 'views/table', 'views/validatedrow', 'utils',
             }
         },
 
-        templateHelpers: function() {
+        templateContext: function() {
             return {
                 canSave: !(this.model && this.model.get('SCREENCOMPONENTGROUPID') > 0),
                 editable: this.getOption('editable'),

@@ -99,7 +99,7 @@ define(['marionette', 'views/form',
         labContactCountry : null,
         dispatchCountry: null,
 
-        templateHelpers: function() {
+        templateContext: function() {
             return {
                 DEWAR: this.getOption('dewar').toJSON(),
                 SHIPPING: this.getOption('shipping').toJSON()

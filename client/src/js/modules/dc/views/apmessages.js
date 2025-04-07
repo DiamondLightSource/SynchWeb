@@ -23,7 +23,7 @@ define([
 
     var MessageView = Marionette.View.extend({
         template: _.template('<h3><%=icons[SEVERITY][2]%> <%-MESSAGE%></h3><div class="expand"><pre><%-DESCRIPTION%></pre></div>'),
-        templateHelpers: function() {
+        templateContext: function() {
             return {
                 icons: icons,
             }
@@ -62,7 +62,7 @@ define([
 
     var SeverityView = Marionette.View.extend({
         template: _.template('<h3 class="title"><%=icons[SEVERITY][0]%> <%-count%> <%-icons[SEVERITY][1]%></h3><div class="wrap"></div>'),
-        templateHelpers: function() {
+        templateContext: function() {
             return {
                 icons: icons,
                 count: this.getOption('messages').where({ SEVERITY: this.model.get('SEVERITY') }).length

@@ -115,7 +115,7 @@ define(['marionette',
                 childViewOptions: function() {
                     var is_owner = self.model.get('IS_OWNER')
                     return {
-                        templateHelpers: function() {
+                        templateContext: function() {
                             return {
                                 IS_OWNER: is_owner,
                             }

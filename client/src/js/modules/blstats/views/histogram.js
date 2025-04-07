@@ -31,7 +31,7 @@ define(['marionette', 'modules/blstats/models/histogram', 'utils',
             })
         },
 
-        templateHelpers: function() {
+        templateContext: function() {
             return {
                 title: this.getOption('title')
             }

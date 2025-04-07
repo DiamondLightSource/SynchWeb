@@ -10,7 +10,7 @@ define(['marionette', 'views/form',
     return FormView.extend({
         template: template,
 
-        templateHelpers: function() {
+        templateContext: function() {
             return {
                 IS_STAFF: app.staff,
                 IS_CLONE: this.clone

@@ -125,7 +125,7 @@ define(['backbone',
             'keyup input':  'validateField',
         },
 
-        templateHelpers: function() {
+        templateContext: function() {
             var obj = { RETURN: this.getOption('return') }
             _.each(this.shipment.attributes, function(v,k) {
                 obj[k] = v

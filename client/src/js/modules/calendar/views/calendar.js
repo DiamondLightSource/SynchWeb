@@ -51,7 +51,7 @@ define(['marionette', 'backbone', 'collections/visits', 'collections/bls', 'view
         childView: EventHourView,
         childViewContainer: 'ul',
         
-        templateHelpers: function () {
+        templateContext: function () {
             return {
                 dayNames: Days,
                 monthNames: Months,
@@ -114,7 +114,7 @@ define(['marionette', 'backbone', 'collections/visits', 'collections/bls', 'view
     var DayListItemView = Marionette.View.extend({
         tagName: 'li',
         
-        templateHelpers: function() {
+        templateContext: function() {
             return {
                 dayNames: Days,
             }
