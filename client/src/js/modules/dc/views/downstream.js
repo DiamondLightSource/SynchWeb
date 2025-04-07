@@ -54,7 +54,7 @@ define(['backbone', 'marionette',
     })
 
     var DownstreamView = Marionette.CollectionView.extend({
-        getChildView: function(model) {
+        childView: function(model) {
             var types = {
                 'Fast EP': FastEP,
                 'Dimple': DIMPLE,

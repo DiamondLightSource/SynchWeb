@@ -73,7 +73,7 @@ function(Marionette,
         if (this.getOption('apMessageStatus')) this.apmessagestatuses.fetch({ data: { ids: ids }, type: 'POST' })
     },
                                                           
-    getChildView: function(item) {
+    childView: function(item) {
       const ty = item.get('TYPE');
       const collectionType = item.get('DCT');
       const views = this.getOption("dcViews");
