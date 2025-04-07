@@ -111,7 +111,7 @@ define(['marionette', 'backbone', 'utils/editable'], function(Marionette, Backbo
             // console.log('cv opts', options)
         },
 
-        getEmptyView: function() {
+        emptyView: function() {
             return this.getOption('showEmpty') ? EmptyView : null
         },
 

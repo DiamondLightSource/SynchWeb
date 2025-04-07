@@ -91,7 +91,7 @@ function(Marionette,
       return views.data
     },
                                                 
-    getEmptyView: function() {
+    emptyView: function() {
       if (this.collection.queryParams.s()) return EmptySearchView
       else if (this.collection.fetched) return EmptyCollectionView
       else return GettingCollectionView

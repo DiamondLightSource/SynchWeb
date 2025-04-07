@@ -24,10 +24,9 @@ define(['marionette', 'collections/users'], function(Marionette, Users) {
         //childViewContainer: '.users',
         tagName: 'ul',
         childView: UserItem,
-        emptyView: LoadingView,
         className: 'visit_users',
 
-        getEmptyView: function(e) {
+        emptyView: function(e) {
             if (this.collection.fetched) return EmptyView
             else return LoadingView
         },

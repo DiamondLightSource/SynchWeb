@@ -35,7 +35,7 @@ define(['marionette', 'collections/dewars'], function(Marionette, Dewars) {
         emptyView: LoadingView,
         className: 'visit_users',
 
-        getEmptyView: function(e) {
+        emptyView: function(e) {
             if (this.collection.fetched) return EmptyView
             else return LoadingView
         },
