@@ -101,7 +101,7 @@ define(['marionette', 'backbone',
         childView: GridRow,
         
 
-        childEvents: {
+        childViewEvents: {
             'row:click': 'rowClick',
         },
 

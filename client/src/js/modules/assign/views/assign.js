@@ -140,7 +140,7 @@ define(['marionette', 'backbone', 'views/pages',
         },
         
         childView: ContainerView,
-        childEvents: {
+        childViewEvents: {
             'remove:container': 'removeContainer',
         },
         
@@ -206,7 +206,7 @@ define(['marionette', 'backbone', 'views/pages',
         },
         childViewContainer: '.ac',
         
-        childEvents: {
+        childViewEvents: {
             'remove:container': 'removeContainer',
         },
 

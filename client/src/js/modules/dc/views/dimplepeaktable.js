@@ -23,7 +23,7 @@ define(['marionette', 'templates/dc/dimplepeaktable.html', 'templates/dc/dimplep
         childView: PeakItemView,
         childViewContainer: 'tbody',
         
-        childEvents: {
+        childViewEvents: {
             'peak:show': 'showPeak',
         },
         

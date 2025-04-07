@@ -43,7 +43,7 @@ define(['marionette', 'modules/shipment/views/movecontainer',
         childView: ContainerItemView,
         emptyView: EmptyDewar,
         
-        childEvents: {
+        childViewEvents: {
             'container:moved': 'triggerRefresh',
         },
         

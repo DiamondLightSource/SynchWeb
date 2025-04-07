@@ -155,7 +155,7 @@ define(['marionette', 'backbone', 'collections/visits', 'collections/bls', 'view
     var DayListView = Marionette.CollectionView.extend({
         childView: DayListItemView,
         
-        childEvents: {
+        childViewEvents: {
             'gotoDay': 'doGotoDay',
         },
         

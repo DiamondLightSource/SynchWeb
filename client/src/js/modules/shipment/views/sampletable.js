@@ -345,7 +345,7 @@ define(['marionette',
             'hover tr td': 'hoverRow',
         },
 
-        childEvents: {
+        childViewEvents: {
             'cloned': 'updateCloneStatus',
             'clone:stop': 'stopClone',
         },
