@@ -46,7 +46,7 @@ function(Marionette,
             imagestatuses: this.imagestatuses,
             apstatuses: this.apstatuses,
             apmessagestatuses: this.apmessagestatuses,
-            templateHelpers: function() {
+            templateContext: function() {
               return {
                 IS_VISIT: is_vis,
                 VIS_LINK: vl,
