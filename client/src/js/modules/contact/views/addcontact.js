@@ -28,10 +28,24 @@ define(['views/form',
             ad: 'textarea[name=ADDRESS]',
             ci: 'input[name=CITY]',
             pc: 'input[name=POSTCODE]',
+            lb: '.leaveblank',
         },
 
         events: {
             'change @ui.pid': 'fillUserInfo',
+            'change @ui.country': 'onCountryChange',
+        },
+
+        onCountryChange: function() {
+            let country = this.ui.country.val()
+            if (
+                app.options.get('facility_courier_countries').indexOf(country) > -1 ||
+                app.options.get('facility_courier_countries_nde').indexOf(country) > -1
+            ) {
+                this.ui.lb.html('<br />Academic users from '+country+' can leave this blank to use the facility courier.')
+            } else {
+                this.ui.lb.html('')
+            }
         },
 
         fillUserInfo: function() {
@@ -65,7 +79,10 @@ define(['views/form',
             Promise.all([this.countries.fetch(), this.users.fetch()]).then(() => {
                 this.populateCountries();
                 this.populateUsers();
+                this.onCountryChange();
             })
+            this.ui.ad.css('height', '100px')
+            this.ui.ad.css('width', '50%')
         },
 
         populateCountries: function() {
