@@ -84,7 +84,7 @@ define(['marionette',
             time: 'span.time'
         },
 
-        templateHelpers: function() {
+        templateContext: function() {
             return {
                 SITE_NAME: app.config.site_name || 'Diamond House',
                 IS_STAFF: app.staff
