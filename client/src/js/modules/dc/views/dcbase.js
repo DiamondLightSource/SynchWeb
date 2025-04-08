@@ -171,7 +171,7 @@ define(['marionette',
             })
             this.titleView.render()
 
-            var vis_link =this.getOption('templateHelpers')()['VIS_LINK']
+            var vis_link = this.getOption('templateContext')()['VIS_LINK']
             this.ui.ul.prepend('<li data-testid="dc-group" class="group">Group: <a href="/dc/visit/'+vis_link+'/dcg/'+this.model.escape('DCG')+'"><span class="DCC">'+this.model.escape('DCC')+'</span> Data Collections</a></li>')
             this.ui.ul.prepend('<li data-testid="dc-sample" class="sample"><span class="wrap">Sample: <a href="/samples/sid/'+this.model.escape('BLSAMPLEID')+'">'+this.model.escape('SAMPLE')+'</a></span></li>')
             
