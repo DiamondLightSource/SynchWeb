@@ -27,6 +27,7 @@ define(['marionette',
                      { name: 'PROPOSALCODE', label: 'Code', cell: 'string', editable: false },
                      { name: 'PROPOSALNUMBER', label: 'Number', cell: 'string', editable: false },
                      { name: 'VCOUNT', label: 'Visits', cell: 'string', editable: false },
+                     { name: 'STATE', label: 'State', cell: 'string', editable: false },
                      { name: 'TITLE', label: 'Title', cell: 'string', editable: false }]
                     
       this.table = new TableView({ collection: options.collection, columns: columns, tableClass: 'proposals', filter: 's', search: options.params.s, loading: true, backgrid: { row: this.getOption('clickableRow'), emptyText: 'No proposals found', } })

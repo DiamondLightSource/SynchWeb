@@ -1,7 +1,7 @@
 define(['marionette', 'modules/blstats/models/histogram', 'utils',
         'jquery',
         'jquery.flot',
-        'jquery.flot.resize',
+        'jquery-flot-resize',
         'jquery.flot.tickrotor',
 ], function(Marionette, Histogram, utils, $) {
     

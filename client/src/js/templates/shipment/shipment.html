@@ -70,6 +70,7 @@
                 <span class="label">Safety Level</span>
                 <span class="SAFETYLEVEL"><%-SAFETYLEVEL%></span>
             </li>
+            <% if (!EXTERNALSHIPPINGIDTOSYNCHROTRON || !app.options.get("shipping_service_app_url_incoming")) { %>
             <li>
                 <span class="label">Courier</span>
                 <span class="DELIVERYAGENT_AGENTNAME"><%-DELIVERYAGENT_AGENTNAME%></span>
@@ -126,8 +127,28 @@
                 <span class="label">Estimated Delivery Date</span>
                 <span class="DELIVERYAGENT_DELIVERYDATE"><%-DELIVERYAGENT_DELIVERYDATE%></span>
             </li>
+            <% } %>
             <%
-                DYNAMIC=(typeof DYNAMIC !== 'undefined')? DYNAMIC : 'No';
+                switch(DYNAMIC) {
+                    case 'No':
+                        DYNAMIC = 'I have a session already scheduled';
+                        break;
+                    case 'UDC':
+                        DYNAMIC = 'I am sending pucks for Unattended Data Collection';
+                        break;
+                    case 'Imaging':
+                        DYNAMIC = 'I am sending plates for imaging';
+                        break;
+                    case 'Yes':
+                        DYNAMIC = 'I would like a session to be scheduled';
+                        break;
+                    case 'Other':
+                        DYNAMIC = 'Something else';
+                        break;
+                    default:
+                        DYNAMIC = '';
+                        break;
+                };
                 REMOTEORMAILIN=(typeof REMOTEORMAILIN !== 'undefined')? REMOTEORMAILIN : null;
                 SESSIONLENGTH=(typeof SESSIONLENGTH !== 'undefined')? SESSIONLENGTH : null;
                 ENERGY=(typeof ENERGY !== 'undefined')? ENERGY : null;
@@ -139,6 +160,7 @@
                 ENCLOSEDTOOLS=(typeof ENCLOSEDTOOLS !== 'undefined')? ENCLOSEDTOOLS : null; 
                 EXTRASUPPORTREQUIREMENT=(typeof EXTRASUPPORTREQUIREMENT !== 'undefined')? EXTRASUPPORTREQUIREMENT : null;
                 MULTIAXISGONIOMETRY=(typeof MULTIAXISGONIOMETRY !== 'undefined')? MULTIAXISGONIOMETRY : null;
+                LONGWAVELENGTH=(typeof LONGWAVELENGTH !== 'undefined')? LONGWAVELENGTH : null;
             %>
             <li>
                 <span class="label">Hard drive enclosed</span>
@@ -151,11 +173,14 @@
             </li>
 
             <li>
-                <span class="label">Responsive</span>
+                <span class="label">Scheduling</span>
                 <span class="DYNAMIC"><%-DYNAMIC %></span>
             </li>
 
-                
+                <li class="longwavelength">
+                    <span class="label">Long wavelength</span>
+                    <span class="LONGWAVELENGTH"><%-LONGWAVELENGTH %></span>
+                </li>
 
                 <li class="remoteormailin">
                     <span class="label">Remote or mail in</span>
