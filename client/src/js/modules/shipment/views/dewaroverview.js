@@ -97,6 +97,7 @@ define(['marionette',
             this.getRegion('wrap').show(this.table)
             $.when(this.ready).done(this.showFilter.bind(this))
             this.ui.fe.datepicker({ dateFormat: "dd-mm-yy" })
+            this.getRegion('table').focusSearch()
         },
 
         showFilter: function() {
@@ -115,10 +116,6 @@ define(['marionette',
                 filters: [{ id: '1', name: 'Imager Requested'}],
             })
             this.img.show(this.ty2)
-        },
-          
-        onShow: function() {
-            this.getRegion('table').focusSearch()
         },
         
     })

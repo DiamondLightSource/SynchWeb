@@ -614,7 +614,7 @@ define(['backbone',
         },
 
         
-        onShow: function() {
+        onRender: function() {
             this.getOption('visit') ? this.$el.find('a.autofill').show() : this.$el.find('a.autofill').hide()
             $.when.apply($, this.ready).then(this.doOnShow.bind(this))
         },

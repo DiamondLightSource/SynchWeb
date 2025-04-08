@@ -229,6 +229,8 @@ define(['marionette',
             this.ex.show(new HistogramPlot({ collection: this.hists[1] }))
             this.rbsx.show(new HistogramPlot({ collection: this.hists[2] }))
             this.rbsy.show(new HistogramPlot({ collection: this.hists[3] }))
+
+            this.getRegion('table').focusSearch()
         },
 
         updateFilter: function(selected) {
@@ -291,10 +293,6 @@ define(['marionette',
             })
             this.listenTo(this.ty, 'selected:change', this.updateFilter, this)
             this.type.show(this.ty)
-        },
-          
-        onShow: function() {
-            this.getRegion('table').focusSearch()
         },
         
     })

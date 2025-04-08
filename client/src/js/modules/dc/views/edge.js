@@ -8,7 +8,7 @@ define(['marionette', 'backbone', 'modules/dc/views/edgeplot', 'modules/projects
     template: template,
     plotView: EdgeView,
     
-    onShow: function() {
+    onRender: function() {
       this.edgeview  = new (this.getOption('plotView'))({ id: this.model.get('ID'), el: $('.edge', this.$el) })
         
       Backbone.Validation.unbind(this)

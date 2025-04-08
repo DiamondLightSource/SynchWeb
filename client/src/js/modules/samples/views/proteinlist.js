@@ -82,6 +82,7 @@ define(['marionette', 'backgrid', 'views/table', 'views/filter',
         onRender: function() {
           this.getRegion('wrap').show(this.table)
           if (this.getOption('showFilter')) this.tr.done(this.showFilter.bind(this))
+          this.getRegion('table').focusSearch()
         },
     
         showFilter: function() {
@@ -92,11 +93,8 @@ define(['marionette', 'backgrid', 'views/table', 'views/filter',
                 name: 'type',
                 filters: this.types.map(function(m) { return { id: m.get('COMPONENTTYPEID'), name: m.get('NAME') } })
             })
-            this.type.show(this.ty)
+            this.getRegion('type').show(this.ty)
         },
-          
-        onShow: function() {
-          this.getRegion('table').focusSearch()
-        },
+
     })
 })

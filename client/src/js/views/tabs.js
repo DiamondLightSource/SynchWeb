@@ -30,9 +30,6 @@ define(['marionette',
     onRender: function() {
         this.$el.html(this.subview.render().$el)
         this.$el.attr('id', 'tabs-'+this.model.get(this.options.tabID).replace(/\s+/g, ''))
-    },
-      
-    onShow: function() {
         this.subview.triggerMethod('show');
     },
       

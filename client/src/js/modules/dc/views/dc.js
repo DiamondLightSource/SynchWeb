@@ -44,7 +44,7 @@ define(['marionette',
       this.dp = null
     },
       
-    onShow: function() {
+    onRender: function() {
       // element not always available at this point?
       var w = 0.175*$(window).width()*0.95
       var h = $(window).width() > 1280 ? w : ($(window).width() > 800 ? w*1.3 : (w*1.65))

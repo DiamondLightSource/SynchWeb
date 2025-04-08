@@ -1003,9 +1003,6 @@ define(['marionette',
             this.plateView = new PlateView({ collection: this.subsamples.fullCollection, type: this.type, inspectionimages: this.inspectionimages })
             this.listenTo(this.plateView, 'dropClicked', this.filterByLocation, this)
             this.plate.show(this.plateView)
-        },
-
-        onShow: function() {
             this.rimg.show(this.image)
         },
         

@@ -27,7 +27,7 @@ define(['marionette',
         },
 
 
-        onShow: function() {
+        onRender: function() {
             var w = 0.175*$(window).width()*0.95
             var h = $(window).width() > 1280 ? w : ($(window).width() > 800 ? w*1.3 : (w*1.65))
             $('.distl', this.$el).height(h*($(window).width() > 800 ? 0.4 : 1.2))

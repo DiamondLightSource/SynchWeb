@@ -150,10 +150,6 @@ define(['marionette',
         onRender: function() {
             this.first = true
             $.when(this.ready).done(this.populateRuns.bind(this))
-        },
-
-        
-        onShow: function() {
             this.bd.show(new BreakdownView({ large: true, model: this.breakdown, params: this.getOption('params') }))
             this.en.show(new HistgramPlot({ collection: new Backbone.Collection([this.henergy]) }))
             this.ex.show(new HistgramPlot({ collection: new Backbone.Collection([this.exp]) }))

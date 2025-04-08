@@ -92,7 +92,7 @@ define(['marionette',
     },
       
 
-    onShow: function() {
+    onRender: function() {
       this.ui.holder.hide()
       this.ui.zoom.hide()
       this.ui.warningli.hide()

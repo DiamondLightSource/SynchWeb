@@ -39,9 +39,6 @@ define(['marionette', 'views/table', 'utils/table'], function(Marionette, TableV
     onRender: function() {
       if (app.proposal && app.proposal.get('ACTIVE') != 1) this.ui.add.hide()
       this.getRegion('wrap').show(this.table)
-    },
-      
-    onShow: function() {
       this.getRegion('table').focusSearch()
     },
   })

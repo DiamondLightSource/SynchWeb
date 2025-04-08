@@ -35,7 +35,7 @@ define(['marionette',
             rbd: '.dewar',
         },
         
-        onShow: function() {
+        onRender: function() {
             this.bd.show(new BreakdownView({ model: this.getOption('breakdown'), params: this.getOption('params') }))
             this.det.show(new DetailsView({ model: this.getOption('breakdown') }))
             this.hrs.show(new HourliesView({ visit: this.model.get('VISIT') }))

@@ -98,9 +98,6 @@ define(['marionette', 'backgrid', 'views/table', 'views/filter', 'utils/table',
     onRender: function() {
       this.getRegion('wrap').show(this.table)
       this.type.show(this.ty)
-    },
-      
-    onShow: function() {
       this.getRegion('table').focusSearch()
     },
   })

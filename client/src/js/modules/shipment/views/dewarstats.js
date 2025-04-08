@@ -136,9 +136,6 @@ define(['marionette',
                 backgrid: { emptyText: 'No dewar stats found' } 
             }))
 
-        },
-
-        onShow: function() {
             this.listenTo(this.run, 'sync', this.plotYears)
         },
         plotYears: function() {

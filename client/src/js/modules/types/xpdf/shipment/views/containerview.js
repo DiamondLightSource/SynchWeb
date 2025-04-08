@@ -44,7 +44,7 @@ define([
             this.blSamples.fetch()
         },
         
-        onShow: function() {
+        onRender: function() {
             this._ready.done(this.doOnShow.bind(this))
         },
         

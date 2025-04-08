@@ -206,9 +206,7 @@ define(['marionette', 'views/form',
             this.$el.find(".remoteormailin").hide()
             
             this.checkFCodes()
-        },
 
-        onShow: function() {
             this.ui.name.focus()
         },
 

@@ -70,9 +70,6 @@ define(['marionette', 'backbone', 'views/filter', 'modules/blstats/models/blstat
             this.listenTo(this.typeselector, 'selected:change', this.switchType, this)
             this.types.show(this.typeselector)
             this.srs.show(new SeriesSelector({ collection: this.series }))
-        },
-        
-        onShow: function() {
             this.switchType(this.getOption('type') || 'dc')
         },
         

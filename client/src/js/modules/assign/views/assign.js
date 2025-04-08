@@ -372,7 +372,7 @@ define(['marionette', 'backbone', 'views/pages',
         },
         
         
-        onShow: function() {
+        onRender: function() {
             var pucks = 10
             if (this.getOption('visit').get('BL') in app.config.pucks) {
                 pucks = app.config.pucks[this.getOption('visit').get('BL')]

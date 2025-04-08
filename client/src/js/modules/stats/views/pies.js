@@ -33,7 +33,7 @@ define(['marionette', 'views/pages',
             this.paginator = new Pages({ collection: options.collection })
         },
         
-        onShow: function() {
+        onRender: function() {
             this.pgs.show(this.paginator)
             this.doPlot()
         },

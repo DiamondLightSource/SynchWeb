@@ -837,16 +837,13 @@ define(['marionette',
             this.users.fetch().done(function() {
                 edit.create('OWNERID', 'select', { data: self.users.kv() })
             })
+
+            $.when.apply($, this._ready).then(this.doOnShow.bind(this))
         },
 
 
         resetZoom: function() {
             if (this.image) this.image.resetZoom(100)
-        },
-
-
-        onShow: function() {
-            $.when.apply($, this._ready).then(this.doOnShow.bind(this))
         },
 
         swipeStart: function(e) {

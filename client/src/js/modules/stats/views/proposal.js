@@ -62,7 +62,7 @@ define(['marionette',
             this.table = new TableView({ collection: this.collection, columns: columns, tableClass: 'visits', loading: true, backgrid: { row: ClickableRow, emptyText: 'No runs found', } })
         },
         
-        onShow: function() {
+        onRender: function() {
             this.ps.show(new PiesView({ collection: this.getOption('pies') }))
             this.hrs.show(new HourliesView())
             

@@ -8,7 +8,7 @@ define(['marionette', 'backbone', 'modules/dc/views/mcaplot', 'modules/projects/
     template: template,
     plotView: MCAView,
       
-    onShow: function() {
+    onRender: function() {
       this.mcaview  = new (this.getOption('plotView'))({ id: this.model.get('ID'), el: $('.mca', this.$el) })
         
       Backbone.Validation.unbind(this)

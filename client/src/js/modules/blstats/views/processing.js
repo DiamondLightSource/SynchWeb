@@ -44,9 +44,6 @@ define(['marionette',
         
         onRender: function() {
             this.listenTo(this.stats, 'sync', this.plotStats, this)
-        },
-
-        onShow: function() {
             this.plotStats()
         },
         

@@ -153,6 +153,7 @@ define(['marionette',
             })
 
             this.updateAutoCollection()
+            this._ready.done(this.doOnShow.bind(this))
         },
 
 
@@ -224,11 +225,6 @@ define(['marionette',
                     app.alert({ message: 'Something went wrong unqueuing this container' })
                 }
             })
-        },
-
-
-        onShow: function() {
-            this._ready.done(this.doOnShow.bind(this))
         },
 
         doOnShow: function() {

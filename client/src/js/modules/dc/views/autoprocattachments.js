@@ -119,9 +119,6 @@ define(['marionette',
 
         onRender: function() {
             this.getRegion('wrap').show(this.table)
-        },
-          
-        onShow: function() {
             this.getRegion('table').focusSearch()
         },
 
