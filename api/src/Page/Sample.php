@@ -2704,23 +2704,22 @@ class Sample extends Page
         if (!$this->has_arg('prop'))
             $this->_error('No proposal specified');
 
-        $sgid = $this->_create_sample_group();
+        $name = $this->has_arg('NAME') ? $this->arg('NAME') : NULL;
 
-        $this->_output($sgid);
+        $sg = $this->db->pq("SELECT blsg.blsamplegroupid
+            FROM blsamplegroup blsg
+            WHERE blsg.name=:1 and blsg.proposalid=:2", array($name, $this->proposalid));
+        if (sizeof($sg)) $this->_error('The specified sample group name already exists');
+
+        $this->db->pq("INSERT INTO blsamplegroup (blsamplegroupid, name, proposalid, ownerid) VALUES(NULL, :1, :2, :3)",
+            array($name, $this->proposalid, $this->user->personId));
+        $sgid = $this->db->id();
 
         $this->_output(array(
             'BLSAMPLEGROUPID' => $sgid,
-            'NAME' => $this->has_arg('NAME') ? $this->arg('NAME') : NULL,
+            'NAME' => $name,
             'SAMPLEGROUPSAMPLES' => 0
         ));
-    }
-
-    function _create_sample_group()
-    {
-        $name = $this->has_arg('NAME') ? $this->arg('NAME') : NULL;
-        $this->db->pq("INSERT INTO blsamplegroup (blsamplegroupid, name, proposalid, ownerid) VALUES(NULL, :1, :2, :3)",
-            array($name, $this->proposalid, $this->user->personId));
-        return $this->db->id();
     }
 
     function _get_sample_groups_by_sample()
@@ -2728,14 +2727,11 @@ class Sample extends Page
         if (!$this->has_arg('prop'))
             $this->_error('No proposal specified');
 
-        $where = 'bsg.proposalid = :1';
-        $args = array($this->proposalid);
-
         if (!$this->has_arg('BLSAMPLEID'))
             $this->_error('No sample specified');
 
-        $where .= ' AND b.blsampleid = :2';
-        array_push($args, $this->arg('BLSAMPLEID'));
+        $where = 'bsg.proposalid = :1 AND b.blsampleid = :2';
+        $args = array($this->proposalid, $this->arg('BLSAMPLEID'));
 
         $tot = $this->db->pq("SELECT count(*) as total
                 FROM blsamplegroup bsg
