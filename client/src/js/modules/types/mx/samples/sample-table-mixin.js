@@ -300,7 +300,7 @@ export default {
       }
       if (result) {
         const { NAME } = result.toJSON()
-        let message = 'Created sample group ' + NAME
+        const message = 'Created sample group ' + NAME
         this.$store.commit('notifications/addNotification', { title: 'Success', message: message, level: 'success' })
       }
       this.$emit('update-sample-group-list')
