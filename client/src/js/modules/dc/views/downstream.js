@@ -24,7 +24,7 @@ define(['backbone', 'marionette',
         template: _.template('<p>This job is currently running</p>')
     })
         
-    var EmptyAP = Marionette.View.extend({ template: '<p>No downstream processing available for this data collection</p>', tagName: 'p' })
+    var EmptyAP = Marionette.View.extend({ template: _.template('<p>No downstream processing available for this data collection</p>'), tagName: 'p' })
         
     var DefaultDP = Marionette.View.extend({
         template: _.template('<div class="summary"></div>'),

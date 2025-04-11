@@ -12,7 +12,7 @@ define(['marionette',
       }
   })
        
-  var EmptyStrategies = Marionette.View.extend({ template: '<div>No strategies available for this data collection</div>' })
+  var EmptyStrategies = Marionette.View.extend({ template: _.template('<div>No strategies available for this data collection</div>') })
        
   return Marionette.CollectionView.extend({
     childView: AutoIndexingItem,
