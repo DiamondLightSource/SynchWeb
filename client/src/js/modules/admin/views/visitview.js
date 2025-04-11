@@ -206,7 +206,7 @@ define(['marionette', 'backbone',
                 return self.beamcalendars.kv()
             } })
 
-            this.rusers.show(this.table)
+            this.getRegion('rusers').show(this.table)
 
             if (app.user_can('manage_vusers')) {
                 this.ui.addu.autocomplete({ 

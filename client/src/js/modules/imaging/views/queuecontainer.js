@@ -939,7 +939,7 @@ define(['marionette',
                 noPageUrl: true,
             })
 
-            this.asmps.show(this.table)
+            this.getRegion('asmps').show(this.table)
 
             const queuedSubSamples = [
                 { label: '#', cell: table.TemplateCell, editable: false, template: '<%-(RID+1)%>' },
@@ -970,8 +970,8 @@ define(['marionette',
                 collection: this.subsamples,
             })
 
-            this.qfilt.show(this.typeselector)
-            this.afilt.show(this.avtypeselector)
+            this.getRegion('qfilt').show(this.typeselector)
+            this.getRegion('afilt').show(this.avtypeselector)
 
             if (this.model.get('CONTAINERQUEUEID')) {
                 this.ui.rpreset.hide()
@@ -998,12 +998,12 @@ define(['marionette',
                 noPageUrl: true,
             })
 
-            this.qsmps.show(this.table2)
+            this.getRegion('qsmps').show(this.table2)
 
             this.plateView = new PlateView({ collection: this.subsamples.fullCollection, type: this.type, inspectionimages: this.inspectionimages })
             this.listenTo(this.plateView, 'dropClicked', this.filterByLocation, this)
-            this.plate.show(this.plateView)
-            this.rimg.show(this.image)
+            this.getRegion('plate').show(this.plateView)
+            this.getRegion('rimg').show(this.image)
         },
         
         filterByLocation: function(pos) {

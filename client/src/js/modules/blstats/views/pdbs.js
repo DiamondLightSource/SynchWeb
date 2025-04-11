@@ -130,8 +130,8 @@ define(['marionette',
 
 
         onRender: function() {
-            this.ana.show(this.anatable)
-            this.ty.show(this.types)
+            this.getRegion('ana').show(this.anatable)
+            this.getRegion('ty').show(this.types)
 
             this.updateDiff()
             this.app = new AutoprocPie({ model: this.autoproc, el: this.ui.app })

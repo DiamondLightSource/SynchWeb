@@ -78,7 +78,7 @@ define(['marionette',
 
             this.plot2 = new RobotTotalsPlot({ el: this.ui.tot, collection: this.robottotals })
             this.plot2.render()
-            this.tot.show(new RobotTotalsView({ collection: this.robottotals }))
+            this.getRegion('tot').show(new RobotTotalsView({ collection: this.robottotals }))
         },
         
     })

@@ -328,7 +328,7 @@ define(['backbone',
                 DESCRIPTION: this.ui.DESCRIPTION.val(),
             })
 
-            this.rdew.show(new DewarsView({ collection: this.dewars }))
+            this.getRegion('rdew').show(new DewarsView({ collection: this.dewars }))
             this.updateWeight()
   
             var columns = [
@@ -347,7 +347,7 @@ define(['backbone',
                 columns: columns, tableClass: 'quote', loading: true, noPageUrl: true, noSearchUrl: true, pages: false,
                 backgrid: { emptyText: 'No quotes found' } 
             })
-            this.qt.show(this.qtable)
+            this.getRegion('qt').show(this.qtable)
 
             $.when.apply($, this.ready).done(this.doOnRender.bind(this))
         },

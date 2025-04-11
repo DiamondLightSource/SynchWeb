@@ -150,14 +150,14 @@ define(['marionette',
         onRender: function() {
             this.first = true
             $.when(this.ready).done(this.populateRuns.bind(this))
-            this.bd.show(new BreakdownView({ large: true, model: this.breakdown, params: this.getOption('params') }))
-            this.en.show(new HistgramPlot({ collection: new Backbone.Collection([this.henergy]) }))
-            this.ex.show(new HistgramPlot({ collection: new Backbone.Collection([this.exp]) }))
-            this.rbsx.show(new HistgramPlot({ collection: new Backbone.Collection([this.bsx]) }))
-            this.rbsy.show(new HistgramPlot({ collection: new Backbone.Collection([this.bsy]) }))
+            this.getRegion('bd').show(new BreakdownView({ large: true, model: this.breakdown, params: this.getOption('params') }))
+            this.getRegion('en').show(new HistgramPlot({ collection: new Backbone.Collection([this.henergy]) }))
+            this.getRegion('ex').show(new HistgramPlot({ collection: new Backbone.Collection([this.exp]) }))
+            this.getRegion('rbsx').show(new HistgramPlot({ collection: new Backbone.Collection([this.bsx]) }))
+            this.getRegion('rbsy').show(new HistgramPlot({ collection: new Backbone.Collection([this.bsy]) }))
 
-            this.flt.show(new FaultListView({ collection: this.faults, filters: false, search: false }))
-            this.rbt.show(new RobotErrorsView({ collection: this.roboterrors }))
+            this.getRegion('flt').show(new FaultListView({ collection: this.faults, filters: false, search: false }))
+            this.getRegion('rbt').show(new RobotErrorsView({ collection: this.roboterrors }))
             this.profile = new RobotDewarPlot({ el: this.ui.rbd, model: this.rdewar })
         },
     })

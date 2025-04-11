@@ -24,11 +24,11 @@ define([
             if (beamline) {
                 url = url.replace(regexExp, '')+'/bl/'+ beamline
                 window.history.pushState({}, '', url)
-                this.stats.show(new BeamlineStatsView({ bl: beamline }))
+                this.getRegion('stats').show(new BeamlineStatsView({ bl: beamline }))
             } else {
                 url = url.replace(regexExp, '')
                 window.history.pushState({}, '', url)
-                this.stats.currentView.destroy()
+                this.getRegion('stats').currentView.destroy()
             }
         },
         showFilter: function() {
@@ -42,7 +42,7 @@ define([
             })
         
             this.listenTo(this.beamlinePills, 'selected:change', this.showBeamlineStats.bind(this))
-            this.pills.show(this.beamlinePills)
+            this.getRegion('pills').show(this.beamlinePills)
         },
         showBeamlineOverview: function() {
             var params = this.getOption('params')

@@ -80,7 +80,7 @@ define(['marionette',
                          { name: 'PUSAGE', label: 'Usage (%)', cell: 'string', editable: false },
             ]
                         
-            this.imgrs.show(new TableView({ 
+            this.getRegion('imgrs').show(new TableView({ 
                 collection: this.imagers, 
                 columns: columns, 
                 tableClass: 'imagers', 
@@ -106,7 +106,7 @@ define(['marionette',
                 { label: 'Scored', cell: table.TemplateCell, editable: false, template: "<%-IMAGESSCORED == '1' ? 'Yes' : 'No' %>" },
             ]
                         
-            this.insp.show(new TableView({ 
+            this.getRegion('insp').show(new TableView({ 
                 collection: this.inspections, 
                 columns: inspectionsColumns, 
                 tableClass: 'inspections', 
@@ -125,9 +125,9 @@ define(['marionette',
             ]
 
             this.ty = new FilterView({ collection: this.inspections, filters: filters, mobile: true, url: false, name: 'ty' })
-            this.insf.show(this.ty)
+            this.getRegion('insf').show(this.ty)
 
-            this.ctrs.show(new ContainersView({ collection: this.containers, params: {}, barcode: true }))
+            this.getRegion('ctrs').show(new ContainersView({ collection: this.containers, params: {}, barcode: true }))
         },
         
     })

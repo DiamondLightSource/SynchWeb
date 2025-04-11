@@ -143,7 +143,7 @@ define([
                 BLSAMPLEID: null
             }))
 
-            this.rmembers.show(new TableView({
+            this.getRegion('rmembers').show(new TableView({
                 collection: this.collection,
                 columns: [
                     { name: 'SAMPLE', label: 'Name', cell: InstanceCell, editable: false, containers: this.getOption('containers') },

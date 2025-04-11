@@ -117,7 +117,7 @@ define(['marionette',
                 })
             }
 
-            this.rruns.show(new TableView({ 
+            this.getRegion('rruns').show(new TableView({ 
                 collection: this.run, 
                 columns: columns, 
                 filter: 's', 
@@ -127,7 +127,7 @@ define(['marionette',
             }))
 
             var columns2 = [{ name: 'COUNTRY', label: 'Country', cell: 'string', editable: false }].concat(columns.slice(1))
-            this.rcts.show(new TableView({ 
+            this.getRegion('rcts').show(new TableView({ 
                 collection: this.countries, 
                 columns: columns2, 
                 filter: 's', 

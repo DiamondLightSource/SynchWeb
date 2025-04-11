@@ -248,7 +248,7 @@ define(['marionette',
         },
 
         doOnRender: function() {
-            this.rprms.show(new TableView({
+            this.getRegion('rprms').show(new TableView({
                 tableClass: 'subsamples', 
                 collection: this.params,
                 columns: [
@@ -272,7 +272,7 @@ define(['marionette',
 // RESOLUTIONMAX
 // RESOLUTIONMIN
 
-            this.rdets.show(new TableView({
+            this.getRegion('rdets').show(new TableView({
                 tableClass: 'subsamples', 
                 collection: this.detectors,
                 columns: [

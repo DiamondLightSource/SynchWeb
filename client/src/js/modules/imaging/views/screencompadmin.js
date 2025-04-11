@@ -112,11 +112,11 @@ define(['marionette', 'backbone', 'backgrid', 'views/table', 'views/filter',
             }
 
             this.groupview = new GroupView({ components: this.components, editable: app.prop == this.model.get('PROP') })
-            this.group.show(this.groupview)
+            this.getRegion('group').show(this.groupview)
 
             this.filterview = new FilterView({ filters: this.positions, url: false, className: 'plate-12-wide', value: 1 })
             this.listenTo(this.filterview, 'selected:change', this.setGroup, this)
-            this.plate.show(this.filterview)
+            this.getRegion('plate').show(this.filterview)
             this.setGroup(1)
         },
 

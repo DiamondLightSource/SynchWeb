@@ -102,10 +102,10 @@ define(['marionette',
             var GetSampleView = require('modules/samples/views/getsampleview')
             // var GetDCView = require('modules/dc/views/getdcview')
 
-            this.pdb.show(new PDBView({ collection: this.pdbs }))
-            this.smp.show(GetSampleView.SampleList.get(app.type, { collection: this.samples, noPageUrl: true, noFilterUrl: true, noSearchUrl: true }))
-            this.dc.show(GetDCView.DCView.get(app.type, { model: this.model, collection: this.dcs, params: { visit: null }, noPageUrl: true, noFilterUrl: true, noSearchUrl: true }))
-            if (this.getOption('showContainers')) this.cont.show(new ContainersView({ collection: this.containers, params: {} }))
+            this.getRegion('pdb').show(new PDBView({ collection: this.pdbs }))
+            this.getRegion('smp').show(GetSampleView.SampleList.get(app.type, { collection: this.samples, noPageUrl: true, noFilterUrl: true, noSearchUrl: true }))
+            this.getRegion('dc').show(GetDCView.DCView.get(app.type, { model: this.model, collection: this.dcs, params: { visit: null }, noPageUrl: true, noFilterUrl: true, noSearchUrl: true }))
+            if (this.getOption('showContainers')) this.getRegion('cont').show(new ContainersView({ collection: this.containers, params: {} }))
         },
         
     })

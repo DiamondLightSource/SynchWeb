@@ -186,7 +186,7 @@ define(['marionette',
                     { label: 'Results', cell: ResultsCell, editable: false }
                 )
 
-                this.rwrap.show(new TableView({
+                this.getRegion('rwrap').show(new TableView({
                     columns: columns,
                     collection: this.collection,  
                     backgrid: { emptyText: 'No reprocessings found' },

@@ -57,7 +57,7 @@ define(['backbone', 'marionette',
         },
 
         onRender: function() {
-            this.messages.show(new APMessagesView({
+            this.getRegion('messages').show(new APMessagesView({
                 messages: new Backbone.Collection(this.model.get('MESSAGES')), embed: true 
             }))
             this.wrappedView = new (this.getOption('childView'))({ 
@@ -65,7 +65,7 @@ define(['backbone', 'marionette',
                 templateContext: this.getOption('templateContext'),
                 holderWidth: this.getOption('holderWidth'),
             })
-            this.wrapper.show(this.wrappedView)
+            this.getRegion('wrapper').show(this.wrappedView)
 
             if (!this.model.get('AUTOMATIC')) {
                 this.ui.links.html('<i class="fa fa-refresh" title="Reprocessed"></i> ')

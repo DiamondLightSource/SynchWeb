@@ -163,14 +163,14 @@ define(['marionette',
         },
 
         onRender: function() {
-            this.wrap.show(this.table)
+            this.getRegion('wrap').show(this.table)
             if (app.staff) {
                 this.getRegion('wrap2').show(this.table2)
 
                 this.addview = new AddContainerView()
                 this.listenTo(this.addview, 'model:saved', this.addToCollection)
-                this.add.show(this.addview)
-                this.type.show(this.ty)
+                this.getRegion('add').show(this.addview)
+                this.getRegion('type').show(this.ty)
             }
         }
     })

@@ -233,7 +233,7 @@ define(['marionette',
         var validOnly = app.options.get('valid_components')
         
         if (!validOnly) {
-            this.rprots.show(new TableView({
+            this.getRegion('rprots').show(new TableView({
                     collection: this.proteins, 
                     columns: columns,
                     tableClass: 'proteins', 
@@ -258,7 +258,7 @@ define(['marionette',
                 { name: 'LABNAME', label: 'Laboratory', cell: 'string', editable: false },
             ]
 
-            this.rconts.show(new TableView({ 
+            this.getRegion('rconts').show(new TableView({ 
                 collection: this.contacts, 
                 columns: columns2,
                 tableClass: 'labcontacts', 

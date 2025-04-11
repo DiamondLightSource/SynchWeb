@@ -77,13 +77,13 @@ define(['marionette',
 
 
             // Show the Data Collections in the history region
-            this.history.show(GetDCView.DCView.get(app.type, { model: this.model, collection: this.dcs, params: { visit: null }, noPageUrl: true, noFilterUrl: true, noSearchUrl: true}))
+            this.getRegion('history').show(GetDCView.DCView.get(app.type, { model: this.model, collection: this.dcs, params: { visit: null }, noPageUrl: true, noFilterUrl: true, noSearchUrl: true}))
             
             // Show the phase table
-            this.rphases.show(new PhaseTableView({ collection: this.model.get('components'), editable: false }))
+            this.getRegion('rphases').show(new PhaseTableView({ collection: this.model.get('components'), editable: false }))
 
             // Show the sample containers
-            this.rcont.show(new SampleContainersView({ 
+            this.getRegion('rcont').show(new SampleContainersView({ 
                 collection: this.groups, 
                 containers: this.containers,
                 parent: this.model,

@@ -249,8 +249,8 @@ define(['backbone',
         
 
         onRender: function() {
-            this.smps.show(this.table)
-            this.que.show(this.queuetable)
+            this.getRegion('smps').show(this.table)
+            this.getRegion('que').show(this.queuetable)
         },
         
 

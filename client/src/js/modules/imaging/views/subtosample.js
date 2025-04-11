@@ -139,10 +139,10 @@ define(['marionette',
 
         onDomRefresh: function() {
             this.puck = new Puck({ collection: this.samples })
-            console.log('puck', this.pk.$el)
-            this.pk.show(this.puck)
+            console.log('puck', this.getRegion('pk').$el)
+            this.getRegion('pk').show(this.puck)
             this.single = new SingleSampleView({ proteins: this.proteins, existingContainer: true })
-            this.ss.show(this.single)
+            this.getRegion('ss').show(this.single)
         },
         
     })

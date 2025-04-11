@@ -146,8 +146,8 @@ define(['marionette',
         
         
         onRender: function() {
-            this.prms.show(this.permstable)
-            this.usrs.show(this.userstable)
+            this.getRegion('prms').show(this.permstable)
+            this.getRegion('usrs').show(this.userstable)
 
             this.ui.addp.autocomplete({ 
                 source: function(req, resp) {

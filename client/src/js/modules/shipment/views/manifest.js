@@ -89,7 +89,7 @@ define(['marionette',
                 })
             }
 
-            this.rshps.show(new TableView({ collection: this.shipments, columns: columns, filter: 's', tableClass: 'shipments', backgrid: { row: ClickableRow, emptyText: 'No shipments found' } }))
+            this.getRegion('rshps').show(new TableView({ collection: this.shipments, columns: columns, filter: 's', tableClass: 'shipments', backgrid: { row: ClickableRow, emptyText: 'No shipments found' } }))
 
         }
         

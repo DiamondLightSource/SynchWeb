@@ -60,8 +60,8 @@ define(['marionette', 'modules/shipment/views/movecontainer',
         },
 
         onRender: function() {
-            this.rcont.show(new ContainersView({ collection: this.getOption('collection') }))
-            this.rpages.show(new PagesView({ collection: this.getOption('collection') }))
+            this.getRegion('rcont').show(new ContainersView({ collection: this.getOption('collection') }))
+            this.getRegion('rpages').show(new PagesView({ collection: this.getOption('collection') }))
         }
     })
     

@@ -29,8 +29,8 @@ define(['marionette', 'views/table',
                 { name: 'TIME', label: 'Time', cell: 'string', editable: false },
             ]
             
-            this.onl.show(new TableView({ collection: this.online, columns: columns, search: false, tableClass: 'users', pages: true, backgrid: { emptyText: 'No users online' } } ))
-            this.act.show(new TableView({ collection: this.last, columns: columns, search: false, tableClass: 'activity' }))
+            this.getRegion('onl').show(new TableView({ collection: this.online, columns: columns, search: false, tableClass: 'users', pages: true, backgrid: { emptyText: 'No users online' } } ))
+            this.getRegion('act').show(new TableView({ collection: this.last, columns: columns, search: false, tableClass: 'activity' }))
         },
 
 

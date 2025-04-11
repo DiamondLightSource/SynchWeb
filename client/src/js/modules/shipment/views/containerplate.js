@@ -814,7 +814,7 @@ define(['marionette',
                 if (!this.model.get('CONTAINERQUEUEID')) subSamplesTableColumns.push({ label: '', cell: ActionCell, editable: false })
 
                 this.subtable = new TableView({ collection: this.subsamples, columns: subSamplesTableColumns, tableClass: 'subsamples', loading: false, pages: false, backgrid: { row: ClickableRow, emptyText: 'No subsamples found', } })
-                this.subs.show(this.subtable)
+                this.getRegion('subs').show(this.subtable)
             }
 
             const containerHistoryTableColumns = [
@@ -825,7 +825,7 @@ define(['marionette',
             ]
 
             this.histtable = new TableView({ collection: this.history, columns: containerHistoryTableColumns, tableClass: 'hist', loading: true, pages: true, backgrid: { emptyText: 'No history found', } })
-            this.hist.show(this.histtable)
+            this.getRegion('hist').show(this.histtable)
 
             this.updateReturn()
             this.updatedQueued()
@@ -879,7 +879,7 @@ define(['marionette',
             this.type = this.ctypes.findWhere({ name: this.model.get('CONTAINERTYPE') })
             this.plateView = new PlateView({ collection: this.samples, type: this.type, showImageStatus: this.model.get('INSPECTIONS') > 0 })
             this.listenTo(this.plateView, 'plate:select', this.resetZoom, this)
-            this.plate.show(this.plateView)
+            this.getRegion('plate').show(this.plateView)
             this.singlesample = new SingleSample({ proteins: this.proteins, existingContainer: true, gproteins: this.gproteins })
 
             var total = _.map(_.range(1, parseInt(this.model.get('CAPACITY'))+1), function(e) { return e.toString() })
@@ -899,7 +899,7 @@ define(['marionette',
 
             if (this.model.get('SCREENID')) {
                 this.groupview = new ScreenGroupView({ components: this.screencomponents, editable: false })
-                this.grp.show(this.groupview)
+                this.getRegion('grp').show(this.groupview)
             }
 
             if (this.model.get('INSPECTIONS') > 0) {
@@ -935,8 +935,8 @@ define(['marionette',
                 this.ui.prog.hide()
                 this.ui.prog.progressbar({ value: 0 })
 
-                this.img.show(this.image)
-                this.sten.show(new ImageHistoryView({ historyimages: this.startendimages, embed: true }))
+                this.getRegion('img').show(this.image)
+                this.getRegion('sten').show(new ImageHistoryView({ historyimages: this.startendimages, embed: true }))
 
             }
 
@@ -944,7 +944,7 @@ define(['marionette',
                 const s = this.samples.findWhere({ BLSAMPLEID: this.getOption('params').sid })
                 if (s) s.set({ isSelected: true })
             } else this.samples.at(0).set({isSelected: true})
-            this.sample.show(this.singlesample)
+            this.getRegion('sample').show(this.singlesample)
 
         },
 

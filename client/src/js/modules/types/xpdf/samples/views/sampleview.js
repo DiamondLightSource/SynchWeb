@@ -84,10 +84,10 @@ define([
             // edit.create('NAME', 'text_underscore')
             
             // Table of phases
-            this.rphase.show(new PhaseTable({ collection: this.model.get('components') }))
+            this.getRegion('rphase').show(new PhaseTable({ collection: this.model.get('components') }))
             
             // Table of instances
-            this.rinstance.show(new InstanceList({ collection: this.instances }))
+            this.getRegion('rinstance').show(new InstanceList({ collection: this.instances }))
 
             this.updateComposition()
         },

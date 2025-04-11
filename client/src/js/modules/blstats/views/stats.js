@@ -40,7 +40,7 @@ define(['marionette',
                 urlFragment: 'statistics',
             })
             this.listenTo(this.typeselector, 'selected:change', this.switchType, this)
-            this.types.show(this.typeselector)
+            this.getRegion('types').show(this.typeselector)
             this.switchType(this.getOption('type') || 'lgon')
         },
         
@@ -57,7 +57,7 @@ define(['marionette',
             }
             
             if (!types[type]) return
-            this.cont.show(new types[type]({ type: this.getOption('subtype') }))
+            this.getRegion('cont').show(new types[type]({ type: this.getOption('subtype') }))
         },
         
     })

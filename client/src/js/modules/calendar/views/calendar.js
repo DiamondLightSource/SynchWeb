@@ -424,7 +424,7 @@ define(['marionette', 'backbone', 'collections/visits', 'collections/bls', 'view
                 })
 
                 this.listenTo(this.displayBeamlinesView, 'selected:change', this.handleBeamlineChange)
-                this.bl.show(this.displayBeamlinesView)
+                this.getRegion('bl').show(this.displayBeamlinesView)
             })
         },
 
@@ -453,7 +453,7 @@ define(['marionette', 'backbone', 'collections/visits', 'collections/bls', 'view
                 m: this.getOption('m')
             })
 
-            this.calendar.show(this.calendarView)
+            this.getRegion('calendar').show(this.calendarView)
         },
 
         onRender() {

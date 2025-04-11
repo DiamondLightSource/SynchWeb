@@ -110,7 +110,7 @@ define(['marionette',
         
         onRender: function() {
             this.thumbs = new ThumbsView({ collection: this.images, autoLoad: this.getOption('autoLoad') })
-            this.thm.show(this.thumbs)
+            this.getRegion('thm').show(this.thumbs)
         },
 
         load: function() {

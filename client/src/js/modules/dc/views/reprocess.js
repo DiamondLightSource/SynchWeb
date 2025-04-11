@@ -247,7 +247,7 @@ define(['marionette',
             }, this)
 
             this.distlview = new DCDistlsView({ collection: this.collection })
-            this.dcr.show(this.distlview)
+            this.getRegion('dcr').show(this.distlview)
             this.listenTo(this.distlview, 'childview:set:cell', this.setCell, this)
             this.listenTo(this.distlview, 'childview:clone:dc', this.cloneDC, this)
         },

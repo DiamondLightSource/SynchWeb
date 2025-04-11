@@ -144,7 +144,7 @@ define(['marionette',
             ]
 
             this.histtable = new TableView({ collection: this.history, columns: columns, tableClass: 'history', loading: true, pages: true, backgrid: { emptyText: 'No history found', } })
-            this.hist.show(this.histtable)
+            this.getRegion('hist').show(this.histtable)
 
             // Enable editing of the container owner
             // The template restricts this to staff only
@@ -242,11 +242,11 @@ define(['marionette',
 
             if (this.model.get('CONTAINERTYPE') == 'PCRStrip') {
                 this.$el.find('.puck').css('width', '50%')
-                // this.puck.$el.width(this.puck.$el.parent().width()/2)
+                // this.getRegion('puck').$el.width(this.getRegion('puck').$el.parent().width()/2)
                 this.platetypes = new PlateTypes()
                 this.type = this.platetypes.findWhere({ name: this.model.get('CONTAINERTYPE') })
-                this.puck.show(new PlateView({ collection: this.samples, type: this.type }))
-            } else this.puck.show(new PuckView({ collection: this.samples, capacity: this.model.get('CAPACITY') }))
+                this.getRegion('puck').show(new PlateView({ collection: this.samples, type: this.type }))
+            } else this.getRegion('puck').show(new PuckView({ collection: this.samples, capacity: this.model.get('CAPACITY') }))
             // For editing a plate show all spacegroups - saves needing another control to filter mx faviourites
             this.sampletable = new SampleTableView({ proteins: this.proteins, collection: this.samples, in_use: (this.model.get('CONTAINERSTATUS') === 'processing'), type: type, auto: this.model.get('CONTAINERQUEUEID') ? true : false, allSpacegroups: true  })
             this.getRegion('table').show(this.sampletable)

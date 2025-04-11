@@ -63,8 +63,8 @@ define(['marionette',
         },
         
         onRender: function() {
-            this.ps.show(new PiesView({ collection: this.getOption('pies') }))
-            this.hrs.show(new HourliesView())
+            this.getRegion('ps').show(new PiesView({ collection: this.getOption('pies') }))
+            this.getRegion('hrs').show(new HourliesView())
             
             var average = new Pie({ data: this.getOption('pies').average })
             this.pie = new PieView({ model: average, el: this.$el.find('#visit_pie') }).render()

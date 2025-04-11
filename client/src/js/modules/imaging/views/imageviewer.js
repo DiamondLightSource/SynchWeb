@@ -131,10 +131,10 @@ define(['marionette',
             e.preventDefault()
             
             if (this.ui.hist.hasClass('button-highlight')) {
-                this.hist.$el.fadeOut()
+                this.getRegion('hist').$el.fadeOut()
                 this.ui.hist.removeClass('button-highlight')
             } else {
-                this.hist.$el.fadeIn()
+                this.getRegion('hist').$el.fadeIn()
                 this.history.load()
                 this.ui.hist.addClass('button-highlight')
             }
@@ -308,7 +308,7 @@ define(['marionette',
 
             this.ui.score.html(this.scores.opts())
             if (this.model) this.ui.score.val(this.model.get('BLSAMPLEIMAGESCOREID'))
-            this.scb.show(new ScoreButtons({ collection: this.scores }))
+            this.getRegion('scb').show(new ScoreButtons({ collection: this.scores }))
         },
         
         updateScore: function() {
@@ -353,8 +353,8 @@ define(['marionette',
         onRender: function() {
             if (this.ready) this.ready.done(this.updateScores.bind(this))
             if (this.historyimages) {
-                this.hist.show(this.history)
-                this.hist.$el.hide()
+                this.getRegion('hist').show(this.history)
+                this.getRegion('hist').$el.hide()
             } else (this.ui.hist.hide())
 
             if (this.getOption('move') !== null && !this.getOption('move')) this.ui.move.hide()

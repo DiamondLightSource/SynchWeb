@@ -40,8 +40,8 @@ define(['marionette', 'modules/fault/views/filters', 'views/table', 'utils/table
                                           
         onRender: function() {
             this.getRegion('wrap').show(this.table)
-            if (this.getOption('filters')) this.flts.show(this.filters)
-            this.getRegion('table').focusSearch()
+            if (this.getOption('filters')) this.getRegion('flts').show(this.filters)
+            this.table.focusSearch()
         },
     })
 

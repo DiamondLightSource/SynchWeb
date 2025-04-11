@@ -24,7 +24,7 @@ define(['marionette', 'views/table',
 
         onRender: function() {
             console.log('dhl', this.collection)
-            this.rtr.show(new TableView({
+            this.getRegion('rtr').show(new TableView({
                 collection: this.collection,
                 columns: [
                     { name: 'DATE', label: 'Date', cell: 'string', editable: false },

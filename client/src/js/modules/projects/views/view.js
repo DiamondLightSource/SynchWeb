@@ -105,12 +105,12 @@ define(['marionette',
                 edit.create('ACRONYM', 'text')
             }
 
-            this.dc.show(new DCView({ model: this.model, collection: this.dcs, params: { visit: null }, noPageUrl: true, noFilterUrl: true, noSearchUrl: true }))
-            this.smp.show(new SampleList({ collection: this.samples, noPageUrl: true, noFilterUrl: true, noSearchUrl: true }))
-            this.prt.show(new ProteinList({ collection: this.proteins, noPageUrl: true, noSearchUrl: true }))
+            this.getRegion('dc').show(new DCView({ model: this.model, collection: this.dcs, params: { visit: null }, noPageUrl: true, noFilterUrl: true, noSearchUrl: true }))
+            this.getRegion('smp').show(new SampleList({ collection: this.samples, noPageUrl: true, noFilterUrl: true, noSearchUrl: true }))
+            this.getRegion('prt').show(new ProteinList({ collection: this.proteins, noPageUrl: true, noSearchUrl: true }))
             
             var self = this
-            this.usr.show(new ProjectUserView({
+            this.getRegion('usr').show(new ProjectUserView({
                 collection: this.users,
                 childViewOptions: function() {
                     var is_owner = self.model.get('IS_OWNER')

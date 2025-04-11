@@ -143,15 +143,15 @@ define(['marionette',
         updateCols: function(selected) {
             var isPuck = (selected == null || selected == 'puck')
 
-            var dew = this.getRegion('table').grid.columns.findWhere({ name: 'DEWAR' })
-            var bc = this.getRegion('table').grid.columns.findWhere({ name: 'BARCODE' })
+            var dew = this.table.grid.columns.findWhere({ name: 'DEWAR' })
+            var bc = this.table.grid.columns.findWhere({ name: 'BARCODE' })
             dew.set('renderable', isPuck)
             bc.set('renderable', !isPuck)
         },
                                           
         onRender: function() {
             this.getRegion('wrap').show(this.table)
-            if (this.getOption('showFilter')) this.type.show(this.ty)
+            if (this.getOption('showFilter')) this.getRegion('type').show(this.ty)
 
             this.collection.queryParams.currentuser = this.getCurrent.bind(this)
             this.updateCols(this.ty.selected())

@@ -36,23 +36,23 @@ define(['marionette',
         },
         
         onRender: function() {
-            this.bd.show(new BreakdownView({ model: this.getOption('breakdown'), params: this.getOption('params') }))
-            this.det.show(new DetailsView({ model: this.getOption('breakdown') }))
-            this.hrs.show(new HourliesView({ visit: this.model.get('VISIT') }))
-            if (app.staff) this.ehc.show(new EHCLogView({ visit: this.model.get('VISIT') }))
-            if (app.staff) this.call.show(new CalloutView({ visit: this.model.get('VISIT') }))
+            this.getRegion('bd').show(new BreakdownView({ model: this.getOption('breakdown'), params: this.getOption('params') }))
+            this.getRegion('det').show(new DetailsView({ model: this.getOption('breakdown') }))
+            this.getRegion('hrs').show(new HourliesView({ visit: this.model.get('VISIT') }))
+            if (app.staff) this.getRegion('ehc').show(new EHCLogView({ visit: this.model.get('VISIT') }))
+            if (app.staff) this.getRegion('call').show(new CalloutView({ visit: this.model.get('VISIT') }))
             
             this.pie = new PieView({ visit: this.model.get('VISIT'), el: this.$el.find('#visit_pie') })
             
             this.faults = new Faults(null, { queryParams: { visit: this.model.get('VISIT') } })
             this.faults.fetch()
             
-            this.flt.show(new FaultListView({ collection: this.faults, filters: false, search: false }))
+            this.getRegion('flt').show(new FaultListView({ collection: this.faults, filters: false, search: false }))
             
             this.roboterrors = new RobotErrors(null, { queryParams: { visit: this.model.get('VISIT') } })
             this.roboterrors.fetch()
             
-            this.rbt.show(new RobotErrorsView({ collection: this.roboterrors }))
+            this.getRegion('rbt').show(new RobotErrorsView({ collection: this.roboterrors }))
             this.profile = new RobotDewarPlot({ el: this.ui.rbd, visit: this.model.get('VISIT') })
         },
     })

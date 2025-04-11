@@ -202,7 +202,7 @@ define(['marionette',
             this.getRegion('wrap4').show(this.table3)
             this.showFilter()
 
-            this.rl.show(this.runtable)
+            this.getRegion('rl').show(this.runtable)
 
             $.when(this.ready).done(this.popuateRuns.bind(this))
             $.when(this.ready2).done(this.showFilter2.bind(this))
@@ -248,7 +248,7 @@ define(['marionette',
                 filters: this.types.map(function(b) { return { id: b.get('PROPOSALCODE'), name: b.get('PROPOSALCODE') } }),
             })
             this.listenTo(this.ty2, 'selected:change', this.updateFilter2, this)
-            this.type2.show(this.ty2)
+            this.getRegion('type2').show(this.ty2)
         },
 
 
@@ -278,7 +278,7 @@ define(['marionette',
                 ],
             })
             this.listenTo(this.ty, 'selected:change', this.updateFilter, this)
-            this.type.show(this.ty)
+            this.getRegion('type').show(this.ty)
         },
         
     })

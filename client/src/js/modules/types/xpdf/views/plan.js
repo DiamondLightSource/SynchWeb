@@ -555,7 +555,7 @@ define(['marionette',
                 backgrid: { emptyText: 'No instances found' },
             })
 
-            this.asmps.show(this.table)
+            this.getRegion('asmps').show(this.table)
 
 
             var columns2 = [
@@ -581,7 +581,7 @@ define(['marionette',
 
             this.listenTo(this.datacollectionplans, 'order:updated', this.saveOrder)
             
-            this.psmps.show(this.table2)
+            this.getRegion('psmps').show(this.table2)
         },
         
         saveOrder: function() {

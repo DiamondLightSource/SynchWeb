@@ -182,10 +182,10 @@ define(['marionette', 'backbone',
 
         onRender: function(){
             var groupview = new GroupsView({ collection: this.groups })
-            this.grps.show(groupview)
+            this.getRegion('grps').show(groupview)
 
             var prmsview = new PermsView({ collection: this.perms })
-            this.prms.show(prmsview)
+            this.getRegion('prms').show(prmsview)
         },
 
     })

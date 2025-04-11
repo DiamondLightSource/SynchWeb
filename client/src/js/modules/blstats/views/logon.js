@@ -32,7 +32,7 @@ define(['marionette', 'views/filter', 'modules/blstats/models/logons'], function
         
         onRender: function() {
             console.log('render logon')
-            this.types.show(this.typeselector)
+            this.getRegion('types').show(this.typeselector)
             this.switchType('hour')
         },
         

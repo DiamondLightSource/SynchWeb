@@ -97,7 +97,7 @@ define(['marionette',
             this.getRegion('wrap').show(this.table)
             $.when(this.ready).done(this.showFilter.bind(this))
             this.ui.fe.datepicker({ dateFormat: "dd-mm-yy" })
-            this.getRegion('table').focusSearch()
+            this.table.focusSearch()
         },
 
         showFilter: function() {
@@ -107,7 +107,7 @@ define(['marionette',
                 name: 'bl',
                 filters: this.beamlines.map(function(b) { return { id: b.get('BEAMLINE'), name: b.get('BEAMLINE') } }),
             })
-            this.type.show(this.ty)
+            this.getRegion('type').show(this.ty)
 
             this.ty2 = new FilterView({
                 url: false,
@@ -115,7 +115,7 @@ define(['marionette',
                 name: 'requestedimager',
                 filters: [{ id: '1', name: 'Imager Requested'}],
             })
-            this.img.show(this.ty2)
+            this.getRegion('img').show(this.ty2)
         },
         
     })

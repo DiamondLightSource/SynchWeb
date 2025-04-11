@@ -36,7 +36,7 @@ define(['marionette', 'backbone',
             edit.create('TITLE', 'text')
             edit.create('STATE', 'select', { data: { Open: 'Open', Closed: 'Closed' } })
 
-            this.rvisits.show(new EditVisitsList({ params: {}, collection: this.visits }))
+            this.getRegion('rvisits').show(new EditVisitsList({ params: {}, collection: this.visits }))
         }
 
     })

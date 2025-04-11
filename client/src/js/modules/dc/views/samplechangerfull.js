@@ -37,7 +37,7 @@ define(['marionette',
             this.$el.find('.key').show().css('float', 'none')
             
             this.dcs = new DCs(null, { running: false, state: { pageSize: 5 } })
-            this.dcl.show(new DCList({ collection: this.dcs, params: { visit: null}, }))
+            this.getRegion('dcl').show(new DCList({ collection: this.dcs, params: { visit: null}, }))
             
             this.$el.find('.filter, .srch, .dcl .content > h1').hide()
         },

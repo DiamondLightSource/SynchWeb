@@ -61,7 +61,7 @@ define(['marionette', 'backbone', 'modules/dc/collections/aiplots',
             var cur = this.plots.findWhere({ AUTOPROCPROGRAMID: this.getOption('aid') })
             if (cur) cur.set('isSelected', true)
 
-            this.rprogs.show(new SeriesSelector({ collection: this.plots }))
+            this.getRegion('rprogs').show(new SeriesSelector({ collection: this.plots }))
 
             if (!this.plots.length) {
                 this.$el.find('.plot').text('No plots available for this datacollection')
@@ -78,7 +78,7 @@ define(['marionette', 'backbone', 'modules/dc/collections/aiplots',
                 if (['completeness', 'r_merge', 'i_over_sigma_mean'].indexOf(m) > -1) pl.isSelected = true
                 return pl
             }))
-            this.rplots.show(new SeriesSelector({ collection: this.availplots }))
+            this.getRegion('rplots').show(new SeriesSelector({ collection: this.availplots }))
             this.plot()
         },
 

@@ -82,7 +82,7 @@ define(['marionette', 'backgrid', 'views/table', 'views/filter',
         onRender: function() {
           this.getRegion('wrap').show(this.table)
           if (this.getOption('showFilter')) this.tr.done(this.showFilter.bind(this))
-          this.getRegion('table').focusSearch()
+          this.table.focusSearch()
         },
     
         showFilter: function() {

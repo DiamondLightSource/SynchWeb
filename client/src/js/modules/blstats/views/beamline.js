@@ -68,8 +68,8 @@ define(['marionette', 'backbone', 'views/filter', 'modules/blstats/models/blstat
                 url: false,
             })
             this.listenTo(this.typeselector, 'selected:change', this.switchType, this)
-            this.types.show(this.typeselector)
-            this.srs.show(new SeriesSelector({ collection: this.series }))
+            this.getRegion('types').show(this.typeselector)
+            this.getRegion('srs').show(new SeriesSelector({ collection: this.series }))
             this.switchType(this.getOption('type') || 'dc')
         },
         

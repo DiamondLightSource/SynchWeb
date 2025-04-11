@@ -114,9 +114,9 @@ define(['marionette',
                 var peaks = new DIMPLEPeaks(this.downstream.get('PKLIST'), { parse: true })
                 this.peaktable = new DIMPLEPeakTable({ collection: peaks })
                 this.listenTo(this.peaktable, 'peak:show', this.gotoPeak, this)
-                this.peaks.show(this.peaktable)
+                this.getRegion('peaks').show(this.peaktable)
                 
-                if (peaks.length) this.peaks.$el.show()
+                if (peaks.length) this.getRegion('peaks').$el.show()
                 else this.gotoResidue()
             } else {
                 this.gotoResidue()

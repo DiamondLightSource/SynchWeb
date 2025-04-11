@@ -189,10 +189,10 @@ define(['marionette',
                 edit.create('LABCONTACTID', 'select', { data: self.contacts.kv() })
             })
 
-            this.hist.show(this.histtable)
-            this.dew.show(this.dewtable)
-            this.rep.show(this.reptable)
-            this.props.show(this.proptable)
+            this.getRegion('hist').show(this.histtable)
+            this.getRegion('dew').show(this.dewtable)
+            this.getRegion('rep').show(this.reptable)
+            this.getRegion('props').show(this.proptable)
 
             if (app.staff) {
                 edit.create('NEWFACILITYCODE')

@@ -136,7 +136,7 @@ define(['marionette',
             this.update()
             this.listenTo(this.collection, 'sync', this.update, this)
 
-            this.summary.show(new TableView({
+            this.getRegion('summary').show(new TableView({
                 className: 'ui-tabs-panel ui-widget-content',
                 tableClass: 'reflow procsummary',
                 noTableHolder: true,

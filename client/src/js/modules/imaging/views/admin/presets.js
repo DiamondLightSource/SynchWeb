@@ -237,7 +237,7 @@ define(['marionette',
 
 
         onRender: function() {
-            this.rprs.show(new TableView({
+            this.getRegion('rprs').show(new TableView({
                 collection: this.plans,
                 tableClass: 'subsamples', 
                 columns: [

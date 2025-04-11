@@ -66,8 +66,8 @@ define(['marionette',
             edit.create('SEQUENCE', 'text')
             edit.create('DENSITY', 'text')
         
-            this.rsamples.show(new SampleList({collection: this.crystals, noPageUrl: true, noFilterUrl: true, noSearchUrl: true, hideButton: true }))
-            this.cif.show(new PDBView({ collection: this.cifs }))
+            this.getRegion('rsamples').show(new SampleList({collection: this.crystals, noPageUrl: true, noFilterUrl: true, noSearchUrl: true, hideButton: true }))
+            this.getRegion('cif').show(new PDBView({ collection: this.cifs }))
         },
 
         updateMolecularMass: function() {

@@ -234,15 +234,15 @@ define(['marionette',
         
         
         onRender: function() {  
-            this.hist.show(this.histtable)
-            this.con.show(this.conttable)
-            this.rep.show(this.reptable)
-            this.props.show(new ProposalsView({ collection: this.proposals }))
+            this.getRegion('hist').show(this.histtable)
+            this.getRegion('con').show(this.conttable)
+            this.getRegion('rep').show(this.reptable)
+            this.getRegion('props').show(new ProposalsView({ collection: this.proposals }))
             if (app.staff) {
                 var edit = new Editable({ model: this.model, el: this.$el })
                 edit.create('COMMENTS', 'text');
 
-                this.ar.show(new AddReport({ CONTAINERREGISTRYID: this.model.get('CONTAINERREGISTRYID') }))
+                this.getRegion('ar').show(new AddReport({ CONTAINERREGISTRYID: this.model.get('CONTAINERREGISTRYID') }))
             }
         },
         

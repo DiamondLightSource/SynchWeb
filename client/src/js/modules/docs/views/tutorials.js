@@ -79,7 +79,7 @@ define(['marionette', 'backbone',
             if (sel) {
                 var self = this
                 require(['/doc/'+sel.get('page')+'/index.html'], function(template) {
-                    self.cont.show(new Marionette.View({
+                    self.getRegion('cont').show(new Marionette.View({
                         template: template,
                         className: 'content',
                     }))
@@ -104,8 +104,8 @@ define(['marionette', 'backbone',
         },
         
         onRender: function() {
-            this.menu.show(new TutorialList({ collection: this.tutorials }))
-            this.cnt.show(new TutorialItem({ collection: this.tutorials }))
+            this.getRegion('menu').show(new TutorialList({ collection: this.tutorials }))
+            this.getRegion('cnt').show(new TutorialItem({ collection: this.tutorials }))
             this.tutorials.at(0).set({ isSelected: true })
         },
         

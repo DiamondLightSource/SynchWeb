@@ -70,7 +70,7 @@ define(['marionette', 'modules/dc/collections/dccomments',
         },
     
         onRender: function() {
-            this.comments.show(new CommentsView({ collection: this.collection }))
+            this.getRegion('comments').show(new CommentsView({ collection: this.collection }))
         },
 
 

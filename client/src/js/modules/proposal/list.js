@@ -9,9 +9,11 @@ define(['marionette',
       'click': 'onClick',
     },
     onClick: function() {
+      console.log('list.js onClick')
       app.cookie(this.model.get('PROPOSALCODE') + this.model.get('PROPOSALNUMBER'))
       app.type = this.model.get('TYPE')
       app.trigger('visits:show')
+      console.log('list.js visits:show sent')
     },
   })
     
@@ -37,8 +39,10 @@ define(['marionette',
       this.getRegion('wrap').show(this.table)
     },
       
-    onShow: function() {
-      this.getRegion('table').focusSearch()
+    onAttach: function() {
+      console.log('onAttach firing')
+      console.log(this.getRegions())
+      this.table.focusSearch()
     },
   })
 

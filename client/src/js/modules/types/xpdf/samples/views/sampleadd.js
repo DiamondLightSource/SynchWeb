@@ -44,7 +44,7 @@ define([
         
         onRender: function(e) {
             this.listenTo(this.model.get('components'), 'change add remove', this.calculateDensity)
-            this.rphase.show(new CrystalPhaseTable({collection: this.model.get('components') }))
+            this.getRegion('rphase').show(new CrystalPhaseTable({collection: this.model.get('components') }))
         }
         
     })

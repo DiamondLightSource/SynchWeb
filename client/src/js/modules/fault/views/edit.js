@@ -247,13 +247,13 @@ define(['marionette', 'backbone',
         onRender: function(){
             var sysview = new SystemsView({ collection: this.systems })
             this.listenTo(sysview, 'row:click', this.setSystem, this)
-            this.sys.show(sysview)
+            this.getRegion('sys').show(sysview)
 
             var compview = new ComponentsView({ collection: this.components })
             this.listenTo(compview, 'row:click', this.setComponent, this)
-            this.comp.show(compview)
+            this.getRegion('comp').show(compview)
 
-            this.scomp.show(new SubComponentsView({ collection: this.subcomponents }))
+            this.getRegion('scomp').show(new SubComponentsView({ collection: this.subcomponents }))
         },
 
     })

@@ -37,7 +37,7 @@ define(['backbone', 'marionette',
             var collection = new Backbone.Collection([
                 this.model.get('PROCESS')
             ])
-            this.summary.show(new TableView({
+            this.getRegion('summary').show(new TableView({
                 tableClass: 'reflow autoprocess',
                 noTableHolder: true,
                 collection: collection,

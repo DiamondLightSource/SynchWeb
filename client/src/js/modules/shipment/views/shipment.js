@@ -144,7 +144,7 @@ define(['marionette',
             this.dewars.fetch().done(function() {
                 console.log('dewars fetch', self.dewars)
                 if (self.dewars.length) self.showDewar(self.dewars.at(0).get('DEWARID'), refresh)
-                if (refresh) self.table.currentView.render()
+                if (refresh) self.getRegion('table').currentView.render()
             })
         },
         
@@ -199,11 +199,11 @@ define(['marionette',
             if (app.proposal && app.proposal.get('ACTIVE') != '1') this.ui.add_dewar.hide()
 
             this.getRegion('table').show(new DewarsView({ collection: this.dewars }))
-            this.cont.show(new DewarContentView({ collection: this.dewarcontent }))
-            this.history.show(new DewarHistoryView({ collection: this.dewarhistory }))
-            this.rtracking.show(new DewarTrackingView({ collection: this.dewartracking }))
+            this.getRegion('cont').show(new DewarContentView({ collection: this.dewarcontent }))
+            this.getRegion('history').show(new DewarHistoryView({ collection: this.dewarhistory }))
+            this.getRegion('rtracking').show(new DewarTrackingView({ collection: this.dewartracking }))
             
-            this.listenTo(this.cont.currentView, 'refresh:dewars', this.refreshDewar, this)
+            this.listenTo(this.getRegion('cont').currentView, 'refresh:dewars', this.refreshDewar, this)
             
             var edit = new Editable({ model: this.model, el: this.$el })
             edit.create('SHIPPINGNAME', 'textlong')

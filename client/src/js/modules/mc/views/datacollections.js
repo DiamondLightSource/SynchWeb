@@ -237,14 +237,14 @@ define(['backbone', 'marionette',
                                           
         onRender: function() {
             this.getRegion('pages').show(this.paginator)
-            this.srch.show(this.search)
+            this.getRegion('srch').show(this.search)
             this.ui.opts.hide()
 
             var distlview = new DCsDISTLView({ collection: this.collection })
-            this.dcs.show(distlview)
+            this.getRegion('dcs').show(distlview)
             this.listenTo(distlview, 'childview:set:cell', this.setCell, this)
 
-            this.rps.show(new ReprocessOverview({ collection: this.reprocessings, embed: true, results: true }))
+            this.getRegion('rps').show(new ReprocessOverview({ collection: this.reprocessings, embed: true, results: true }))
 
             // asynchronously load space groups into the select menu
             this.showSpaceGroups()

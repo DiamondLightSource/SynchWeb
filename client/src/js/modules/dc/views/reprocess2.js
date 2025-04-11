@@ -565,7 +565,7 @@ define(['backbone', 'marionette', 'views/dialog',
             this.showSpaceGroups()
 
             this.distlview = new DCDistlsView({ collection: this.collection, pipelines: this.pipelines, spacegroups: this.spacegroups })
-            this.dcr.show(this.distlview)
+            this.getRegion('dcr').show(this.distlview)
             // this.listenTo(this.distlview, 'childview:set:cell', this.setCell, this)
             this.listenTo(this.distlview, 'childview:clone:dc', this.cloneDC, this)
 

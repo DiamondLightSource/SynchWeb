@@ -127,11 +127,11 @@ define(['marionette',
                 edit.create('PROTEINID', 'autocomplete', { autocomplete: { source: opts } })
             })
             
-            this.history.show(GetDCView.DCView.get(app.type, { model: this.model, collection: this.dcs, params: { visit: null }, noPageUrl: true, noFilterUrl: true, noSearchUrl: true }))
+            this.getRegion('history').show(GetDCView.DCView.get(app.type, { model: this.model, collection: this.dcs, params: { visit: null }, noPageUrl: true, noFilterUrl: true, noSearchUrl: true }))
 
             console.log('sample', this.model)
-            this.comps.show(new ComponentsView({ showEmpty: true, collection: this.model.get('components'), viewLink: true, editinline: true, CRYSTALID: this.model.get('CRYSTALID') }))
-            if (this.model.get('INSPECTIONS') > 0) this.imh.show(new ImageHistoryView({ historyimages: this.inspectionimages, embed: true }))
+            this.getRegion('comps').show(new ComponentsView({ showEmpty: true, collection: this.model.get('components'), viewLink: true, editinline: true, CRYSTALID: this.model.get('CRYSTALID') }))
+            if (this.model.get('INSPECTIONS') > 0) this.getRegion('imh').show(new ImageHistoryView({ historyimages: this.inspectionimages, embed: true }))
 
 
             this.ui.comp.autocomplete({ 
@@ -160,7 +160,7 @@ define(['marionette',
                 loading: false, pages: false, 
                 backgrid: { emptyText: 'No subsamples found', row: ClickableRow } 
             })
-            this.rsubsamples.show(this.subtable)
+            this.getRegion('rsubsamples').show(this.subtable)
         },
 
         selectGlobalProtein: function(e, ui) {

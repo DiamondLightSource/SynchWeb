@@ -34,7 +34,7 @@ define(['marionette', 'views/pages',
         },
         
         onRender: function() {
-            this.pgs.show(this.paginator)
+            this.getRegion('pgs').show(this.paginator)
             this.doPlot()
         },
         
