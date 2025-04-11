@@ -74,8 +74,8 @@ define(['marionette',
     },
       
     onRender: function() {
-      this.tabs.show(this.tabView);
-      this.content.show(this.tabContentView);
+      this.getRegion('tabs').show(this.tabView);
+      this.getRegion('content').show(this.tabContentView);
       this.$el.find('.tab-container').tabs();
     },
 
