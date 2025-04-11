@@ -22,7 +22,7 @@ function(Marionette, Pages, DCListView,
          template) {
 
              
-  return Marionette.LayoutView.extend({
+  return Marionette.View.extend({
     dcListView: DCListView,
     filters: true,
     sampleChanger: true,
@@ -106,7 +106,7 @@ function(Marionette, Pages, DCListView,
         return false
     },
     
-    templateHelpers: function() {
+    templateContext: function() {
         return {
             IS_VISIT: !(!this.getOption('params').visit),
             IS_SAMPLE: !(!this.getOption('params').sid),
@@ -133,22 +133,22 @@ function(Marionette, Pages, DCListView,
     },
                                       
     onRender: function() {    
-        this.data_collections.show(this.dclist)
+        this.getRegion('data_collections').show(this.dclist)
         this.getRegion('pages').show(this.paginator)
-        this.pages2.show(this.paginator2)
+        this.getRegion('pages2').show(this.paginator2)
         this.getRegion('search').show(this.filter)
         if (this.getOption('filters')) {
-            this.type.show(this.ty)
+            this.getRegion('type').show(this.ty)
         }
         
         if (this.model && this.model.get('ACTIVE') == 1) {
             // Sample changer
             console.log('get sc', this.getOption('sampleChanger'))
-            if (this.getOption('sampleChanger') && this.options.params.visit && !app.mobile()) this.sc.show(new SampleChanger({ visit: this.options.params.visit, dcs: this.collection, bl: this.model.get('BL') }))
+            if (this.getOption('sampleChanger') && this.options.params.visit && !app.mobile()) this.getRegion('sc').show(new SampleChanger({ visit: this.options.params.visit, dcs: this.collection, bl: this.model.get('BL') }))
         }
         
         if (this.model && this.model.get('CAMS') == 1) {
-            this.status.show(new StatusView({ bl: this.model.get('BL') }))
+            this.getRegion('status').show(new StatusView({ bl: this.model.get('BL') }))
         }
 
         if (app.mobile()) {
@@ -163,7 +163,7 @@ function(Marionette, Pages, DCListView,
     */
     onDomRefresh: function() {
       console.log('dom refresh dclist')
-      if (this.sc.hasView()) this.sc.currentView.triggerMethod('dom:refresh')
+      if (this.getRegion('sc').hasView()) this.getRegion('sc').currentView.triggerMethod('dom:refresh')
       this.dclist.triggerMethod('dom:refresh')
     },
       
