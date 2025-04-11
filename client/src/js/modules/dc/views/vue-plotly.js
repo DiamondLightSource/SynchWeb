@@ -13,7 +13,7 @@ define(['vue',
                     plot: this.$getOption('data'),
                 }
             },
-            template: '<section class="content"><plotlychart v-bind:data="plot.data" v-bind:layout="plot.layout"></plotlychart></section>',
+            template: _.template('<section class="content"><plotlychart v-bind:data="plot.data" v-bind:layout="plot.layout"></plotlychart></section>'),
         })
     })
 })

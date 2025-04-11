@@ -2,7 +2,7 @@ define(['marionette', 'views/table', 'utils/table', 'modules/imaging/collections
     
     return Marionette.View.extend({
         className: 'content',
-        template: '<div><h1>Inspection Schedule</h1><p class="help">This page lists all container inspections both completed and scheduled for the selected container</p><div class="wrapper"></div></div>',
+        template: _.template('<div><h1>Inspection Schedule</h1><p class="help">This page lists all container inspections both completed and scheduled for the selected container</p><div class="wrapper"></div></div>'),
         regions: { 'wrap': '.wrapper' },
         
         initialize: function(options) {

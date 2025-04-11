@@ -25,7 +25,7 @@ define(['marionette',
     
   return Marionette.View.extend({
     className: 'content',
-    template: '<div><h1>Shipments</h1><p class="help">This page shows a list of shipments associated with the currently selected proposal</p><p class="help">In order to register your samples you need to create a shipment. Shipments contain dewars, dewars contain containers, and containers individual samples. These can be created sequentially by viewing a particular shipment</p><div class="ra"><a class="button add" href="/shipments/add" data-testid="add-shipment-button"><i class="fa fa-plus"></i> Add Shipment</a></div><div class="wrapper"></div></div>',
+    template: _.template('<div><h1>Shipments</h1><p class="help">This page shows a list of shipments associated with the currently selected proposal</p><p class="help">In order to register your samples you need to create a shipment. Shipments contain dewars, dewars contain containers, and containers individual samples. These can be created sequentially by viewing a particular shipment</p><div class="ra"><a class="button add" href="/shipments/add" data-testid="add-shipment-button"><i class="fa fa-plus"></i> Add Shipment</a></div><div class="wrapper"></div></div>'),
     regions: { 'wrap': '.wrapper' },
     ui: {
       add: 'a.add',

@@ -11,7 +11,7 @@ define([
     return ContainersView.extend({
         showFilter: false,
         showImaging: false,
-        template: '<div><h1>Pucks</h1><div class="filter type"></div><div class="filter"><ul><li><label><input type="checkbox" name="currentuser" /> My Pucks</label></li></ul></div><div class="wrapper"></div></div>',
+        template: _.template('<div><h1>Pucks</h1><div class="filter type"></div><div class="filter"><ul><li><label><input type="checkbox" name="currentuser" /> My Pucks</label></li></ul></div><div class="wrapper"></div></div>'),
         
         columns: [
             { name: 'NAME', label: 'Name', cell: 'string', editable: false },

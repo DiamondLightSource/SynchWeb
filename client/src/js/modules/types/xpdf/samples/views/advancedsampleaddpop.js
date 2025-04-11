@@ -61,7 +61,7 @@ define([
 
         /*return  FormView.extend({
             id: 'vue-wrapper',
-            template: '<div id="vue-container"></div>',
+            template: _.template('<div id="vue-container"></div>'),
             vueView: undefined,
 
             render: function(){

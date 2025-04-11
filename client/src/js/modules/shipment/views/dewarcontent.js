@@ -6,7 +6,7 @@ define(['marionette', 'modules/shipment/views/movecontainer',
     
     var EmptyDewar = Marionette.View.extend({
         tagName: 'li',
-        template: '<li>No Containers for this dewar</li>'
+        template: _.template('<li>No Containers for this dewar</li>')
     })
     
     var ContainerItemView = Marionette.View.extend({

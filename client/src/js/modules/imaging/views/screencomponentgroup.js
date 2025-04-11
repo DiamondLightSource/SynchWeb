@@ -86,7 +86,7 @@ define(['marionette', 'backbone', 'views/table', 'views/validatedrow', 'utils',
     })
 
     var EmptyComponentView = ValidatedRow.extend({
-        template: '<tr><td colspan="5">No components for this group</td></tr>'
+        template: _.template('<tr><td colspan="5">No components for this group</td></tr>')
     })
 
 
