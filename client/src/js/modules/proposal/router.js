@@ -7,7 +7,7 @@ define(['marionette', 'modules/proposal/controller'], function(Marionette, c) {
             'proposal(/s/:s)(/page/:page)': 'list',
         },
         
-        loadEvents: ['proposals:show', 'visits:show'],
+        loadEvents: ['proposals:show'],
     })
        
     return new Router({

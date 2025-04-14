@@ -15,11 +15,7 @@ console.log("LOADING LEGACY PROPOSAL ROUTES")
 
 application.start(function() {
   application.on('proposals:show', function() {
-    application.navigate('/proposal')
-  })
-
-  application.on('visits:show', function() {
-    application.navigate('/visits')
+    application.navigate('/proposals')
   })
 })
 
