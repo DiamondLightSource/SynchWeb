@@ -3,6 +3,21 @@ define(['marionette', 'backgrid', 'views/search', 'views/pages', 'backgrid-selec
   /*
     Generic Table UI with Paginator
   */
+
+  const GridWrapperView = Marionette.View.extend({
+    render() {
+      this.$el.append(this.grid.render().el)
+      return this
+    },
+    initialize(options) {
+      this.grid = options.grid
+    },
+    onDestroy() {
+      this.grid.remove()
+    }
+  });
+
+
   return Marionette.View.extend({
     template: _.template('<div class="perp"></div><div class="srch clearfix"></div><div class="tbl bg"></div><div class="page_wrap"></div>'),
     regions: { 'table': '.tbl', 'pages': '.page_wrap:last', search: '.srch', pp: '.perp' },
@@ -38,11 +53,12 @@ define(['marionette', 'backgrid', 'views/search', 'views/pages', 'backgrid-selec
                                       
     onRender: function() {
       console.log('render')
-      this.table.show(this.grid)
+      const wrapper = new GridWrapperView({ grid: this.grid })
+      this.getRegion('table').show(wrapper)
       if (!this.getOption('noTableHolder')) this.getRegion('table').$el.addClass('table')
-      if (this.getOption('pages')) this.pages.show(this.paginator)
+      if (this.getOption('pages')) this.getRegion('pages').show(this.paginator)
       else this.$el.find('.page_wrap').hide()
-      if (this.filter) this.search.show(this.filter)
+      if (this.filter) this.getRegion('search').show(this.filter)
     },
     
     focusSearch: function() {
