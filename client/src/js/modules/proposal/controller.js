@@ -20,16 +20,13 @@ define(['underscore', 'marionette',
     },
        
   }
-       
-       
-  app.start(function() {
-    app.log('init router')
-    app.on('proposals:show', function() {
-      app.navigate('proposal')
-      controller.list()
-    })
-      
+
+  app.on('proposals:show', function() {
+    app.navigate('proposal')
+    controller.list()
   })
+       
+  app.start()
        
   return controller
 })

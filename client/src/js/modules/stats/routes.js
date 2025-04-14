@@ -18,19 +18,19 @@ const RunsOverview = import(/* webpackChunkName: "stats" */ 'modules/stats/views
 // Initialize MarionetteApplication if not already existing
 let application = MarionetteApplication.getInstance()
 
-application.start(function() {
-    application.on('stats:show', function(visit) {
-        application.navigate('/stats/visit/'+visit)
-    })
-
-    application.on('pstats:show', function() {
-        application.navigate('/stats')
-    })
-
-    application.on('bloverview:show', function(bl) {
-        application.navigate('/stats/overview/bl/'+bl)
-    })
+application.on('stats:show', function(visit) {
+    application.navigate('/stats/visit/'+visit)
 })
+
+application.on('pstats:show', function() {
+    application.navigate('/stats')
+})
+
+application.on('bloverview:show', function(bl) {
+    application.navigate('/stats/overview/bl/'+bl)
+})
+
+application.start()
 
 // Main breadcrumb link
 let bc = { title: 'Visit Statistics', url: '/stats' }

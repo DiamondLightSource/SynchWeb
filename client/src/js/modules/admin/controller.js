@@ -202,27 +202,27 @@ define(['marionette',
                    
     }
 
-    app.start(function() {
-        app.on('group:show', function(gid) {
-            app.navigate('admin/groups/'+gid)
-            controller.viewGroup(gid)
-        })
-
-        app.on('proposal:show', function(proposal) {
-            app.navigate('admin/proposals/'+proposal)
-            controller.viewProposal(proposal)
-        })
-
-        app.on('visit:show', function(visit) {
-            app.navigate('admin/proposals/visit/'+visit)
-            controller.viewVisit(visit)
-        })
-
-        app.on('useradm:show', function(person) {
-            app.navigate('admin/users/'+person)
-            controller.viewUser(person)
-        })
+    app.on('group:show', function(gid) {
+        app.navigate('admin/groups/'+gid)
+        controller.viewGroup(gid)
     })
+
+    app.on('proposal:show', function(proposal) {
+        app.navigate('admin/proposals/'+proposal)
+        controller.viewProposal(proposal)
+    })
+
+    app.on('visit:show', function(visit) {
+        app.navigate('admin/proposals/visit/'+visit)
+        controller.viewVisit(visit)
+    })
+
+    app.on('useradm:show', function(person) {
+        app.navigate('admin/users/'+person)
+        controller.viewUser(person)
+    })
+
+    app.start()
 
        
        

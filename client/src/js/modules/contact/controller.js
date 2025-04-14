@@ -83,19 +83,18 @@ define(['marionette',
             
         },
     }
-    
-    
-    app.start(function() {
-        app.on('contact:show', function(cid) {
-            app.navigate('contacts/cid/'+cid)
-            controller.view(cid)
-        })
 
-        app.on('user:show', function(uid) {
-            app.navigate('contacts/user/'+uid)
-            controller.edit_user(uid)
-        })
+    app.on('contact:show', function(cid) {
+        app.navigate('contacts/cid/'+cid)
+        controller.view(cid)
     })
+
+    app.on('user:show', function(uid) {
+        app.navigate('contacts/user/'+uid)
+        controller.edit_user(uid)
+    })
+
+    app.start()
     
     
     return controller

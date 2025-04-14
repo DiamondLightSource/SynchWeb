@@ -22,18 +22,18 @@ const bc = { title: 'Home Lab Contacts', url: '/contacts' }
 // Initialize MarionetteApplication if not already existing
 let application = MarionetteApplication.getInstance()
 
-
-application.start(function() {
-    application.on('contact:show', function(cid) {
-      console.log("Show contact")
-      application.navigate('/contacts/cid/'+cid)
-    })
-
-    application.on('user:show', function(uid) {
-      console.log("user:show")
-      application.navigate('/contacts/user/'+uid)
-  })
+application.on('contact:show', function(cid) {
+  console.log("Show contact")
+  application.navigate('/contacts/cid/'+cid)
 })
+
+application.on('user:show', function(uid) {
+  console.log("user:show")
+  application.navigate('/contacts/user/'+uid)
+})
+
+
+application.start()
 
 const routes = [
   {

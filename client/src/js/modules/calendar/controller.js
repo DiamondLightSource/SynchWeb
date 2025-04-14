@@ -30,16 +30,15 @@ define(['underscore', 'marionette',
     }
   }
     
-    
-  app.start(function() {
-    app.on('current:show', function() {
-        controller.current()
-    })
-
-    app.on('go:home', function() {
-        controller.goHome()
-    })
+  app.on('current:show', function() {
+      controller.current()
   })
+
+  app.on('go:home', function() {
+      controller.goHome()
+  })
+
+  app.start()
        
   return controller
 })

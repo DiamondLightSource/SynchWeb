@@ -6,11 +6,11 @@
 // Because we are using wrapper vue components we can use the standard lazy loading async method
 const ConexsSubmissionWrapper = () => import(/* webpackChunkName: "submission" */ 'modules/submission/components/conexs-submission-wrapper.vue')
 
-app.start(function() {
-    app.on('conexs:show', function() {
-      app.navigate('/conexs')
-    })
+app.on('conexs:show', function() {
+  app.navigate('/conexs')
 })
+
+app.start()
 
 const routes = [
     // Submission routes

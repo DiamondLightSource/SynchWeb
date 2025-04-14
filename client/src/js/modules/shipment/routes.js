@@ -57,27 +57,27 @@ const DewarsOverviewWrapper = () => import(/* webpackChunkName: "shipment" */ 'm
 // Initialize MarionetteApplication if not already existing
 let application = MarionetteApplication.getInstance()
 
-app.start(function() {
-  application.on('shipments:show', function() {
-      application.navigate('/shipments')
-  })
-
-  application.on('shipment:show', function(sid) {
-      application.navigate('/shipments/sid/'+sid)
-  })
-
-  application.on('container:show', function(cid, iid, sid) {
-      application.navigate('/containers/cid/'+cid+(iid?'/iid/'+iid:'')+(sid?'/sid/'+sid:''))
-  })
-
-  application.on('rdewar:show', function(fc) {
-      application.navigate('/dewars/registry/'+fc)
-  })
-
-  application.on('rcontainer:show', function(crid) {
-      application.navigate('/containers/registry/'+crid)
-  })
+application.on('shipments:show', function() {
+  application.navigate('/shipments')
 })
+
+application.on('shipment:show', function(sid) {
+  application.navigate('/shipments/sid/'+sid)
+})
+
+application.on('container:show', function(cid, iid, sid) {
+  application.navigate('/containers/cid/'+cid+(iid?'/iid/'+iid:'')+(sid?'/sid/'+sid:''))
+})
+
+application.on('rdewar:show', function(fc) {
+  application.navigate('/dewars/registry/'+fc)
+})
+
+application.on('rcontainer:show', function(crid) {
+  application.navigate('/containers/registry/'+crid)
+})
+
+app.start()
 
 let bc = { title: 'Shipments', url: '/shipments' }
 

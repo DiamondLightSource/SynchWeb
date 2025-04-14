@@ -15,11 +15,11 @@ const ProjectView = import(/* webpackChunkName: "projects" */ 'modules/projects/
 
 let bc = { title: 'Projects', url: '/projects' }
 
-app.start(function() {
-    app.on('projects:view', function(pid) {
-        app.navigate('/projects/pid/'+pid)
-    })
+app.on('projects:view', function(pid) {
+    app.navigate('/projects/pid/'+pid)
 })
+
+app.start()
 
 const routes = [
   {

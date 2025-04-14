@@ -18,12 +18,11 @@ let visitModel = {}
 // hook into the marionette event bus...
 let application = MarionetteApplication.getInstance()
 
-
-application.start(function() {
-    application.on('assign:visit', function(visit) {
-        application.navigate('/assign/visit/'+visit)
-    })
+application.on('assign:visit', function(visit) {
+    application.navigate('/assign/visit/'+visit)
 })
+
+application.start()
 
 // AssignView does not use the standard convention of model option
 // So we do the lookup in a navigation guard and pass the model as a 'visit' option

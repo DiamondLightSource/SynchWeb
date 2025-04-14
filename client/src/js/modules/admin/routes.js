@@ -31,23 +31,24 @@ import User from 'models/user'
 import Users from 'collections/users'
 
 // Register marionette navigation events
-app.start(function() {
-    app.on('group:show', function(gid) {
-        app.navigate('/admin/groups/'+gid)
-    })
 
-    app.on('proposal:show', function(proposal) {
-        app.navigate('/admin/proposals/'+proposal)
-    })
-
-    app.on('visit:show', function(visit) {
-        app.navigate('/admin/proposals/visit/'+visit)
-    })
-
-    app.on('useradm:show', function(person) {
-        app.navigate('/admin/users/'+person)
-    })
+app.on('group:show', function(gid) {
+    app.navigate('/admin/groups/'+gid)
 })
+
+app.on('proposal:show', function(proposal) {
+    app.navigate('/admin/proposals/'+proposal)
+})
+
+app.on('visit:show', function(visit) {
+    app.navigate('/admin/proposals/visit/'+visit)
+})
+
+app.on('useradm:show', function(person) {
+    app.navigate('/admin/users/'+person)
+})
+
+app.start()
 
 let bc = { title: 'Manage Groups & Permissions', url: '/admin/groups' }
 let bc2 = { title: 'Manage Proposals & Visits', url: '/admin/proposals' }

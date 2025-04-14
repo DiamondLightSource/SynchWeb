@@ -34,14 +34,13 @@ define(['underscore', 'marionette',
             })
         }
     }
-       
-       
-    app.start(function() {
-        app.on('projects:view', function(pid) {
-            app.navigate('projects/pid/'+pid)
-            controller.view(pid)
-        })
+
+    app.on('projects:view', function(pid) {
+        app.navigate('projects/pid/'+pid)
+        controller.view(pid)
     })
        
+    app.start()
+
     return controller
 })

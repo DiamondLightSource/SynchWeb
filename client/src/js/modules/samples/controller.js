@@ -238,48 +238,47 @@ define(['marionette',
 
   }
        
-       
-  app.start(function() {
-    app.on('samples:show', function() {
-      app.navigate('samples')
-      controller.list()
-    })
-      
-    app.on('proteins:show', function() {
-      app.navigate('proteins')
-      controller.proteinlist()
-    })
-
-    app.on('samples:view', function(sid) {
-      app.navigate('samples/sid/'+sid)
-      controller.view(sid)
-    })
-
-    app.on('instances:view', function(sid) {
-      app.navigate('instances/sid/'+sid)
-      controller.view(sid)
-    })
-
-    app.on('crystals:view', function(cid) {
-      app.navigate('crystals/cid/'+cid)
-      controller.crystalview(cid)
-    })
-
-    app.on('xsamples:view', function(cid) {
-      app.navigate('xsamples/cid/'+cid)
-      controller.crystalview(cid)
-    })
-      
-    app.on('proteins:view', function(pid) {
-      app.navigate('proteins/pid/'+pid)
-      controller.proteinview(pid)
-    })
-
-    app.on('phases:view', function(pid) {
-      app.navigate('phases/pid/'+pid)
-      controller.proteinview(pid)
-    })
+  app.on('samples:show', function() {
+    app.navigate('samples')
+    controller.list()
   })
-       
+
+  app.on('proteins:show', function() {
+    app.navigate('proteins')
+    controller.proteinlist()
+  })
+
+  app.on('samples:view', function(sid) {
+    app.navigate('samples/sid/'+sid)
+    controller.view(sid)
+  })
+
+  app.on('instances:view', function(sid) {
+    app.navigate('instances/sid/'+sid)
+    controller.view(sid)
+  })
+
+  app.on('crystals:view', function(cid) {
+    app.navigate('crystals/cid/'+cid)
+    controller.crystalview(cid)
+  })
+
+  app.on('xsamples:view', function(cid) {
+    app.navigate('xsamples/cid/'+cid)
+    controller.crystalview(cid)
+  })
+
+  app.on('proteins:view', function(pid) {
+    app.navigate('proteins/pid/'+pid)
+    controller.proteinview(pid)
+  })
+
+  app.on('phases:view', function(pid) {
+    app.navigate('phases/pid/'+pid)
+    controller.proteinview(pid)
+  })
+
+  app.start()
+
   return controller
 })

@@ -142,17 +142,17 @@ define(['marionette',
         },
     }
 
-    app.start(function() {
-        app.on('schedule:view', function(sid) {
-            app.navigate('/admin/imaging/schedule/'+sid)
-            controller.view_schedule(sid)
-        })
-
-        app.on('screen:view', function(sid) {
-            app.navigate('/imaging/screen/'+sid)
-            controller.view_screen(sid)
-        })
+    app.on('schedule:view', function(sid) {
+        app.navigate('/admin/imaging/schedule/'+sid)
+        controller.view_schedule(sid)
     })
+
+    app.on('screen:view', function(sid) {
+        app.navigate('/imaging/screen/'+sid)
+        controller.view_screen(sid)
+    })
+
+    app.start()
        
     return controller
 })

@@ -459,34 +459,33 @@ define(['backbone',
     },
 
   }
-       
-        
-  app.start(function() {
-    app.on('shipments:show', function() {
-      app.navigate('shipments')
-      controller.list()
-    })
-      
-    app.on('shipment:show', function(sid) {
-      app.navigate('shipments/sid/'+sid)
-      controller.view(sid)
-    })
-      
-    app.on('container:show', function(cid, iid, sid) {
-      app.navigate('containers/cid/'+cid+(iid?'/iid/'+iid:'')+(sid?'/sid/'+sid:''))
-      controller.view_container(cid, iid, sid)
-    })
 
-    app.on('rdewar:show', function(fc) {
-      app.navigate('dewars/registry/'+fc)
-      controller.view_dewar(fc)
-    })
-
-    app.on('rcontainer:show', function(crid) {
-      app.navigate('containers/registry/'+crid)
-      controller.view_rcontainer(crid)
-    })
+  app.on('shipments:show', function() {
+    app.navigate('shipments')
+    controller.list()
   })
-       
+
+  app.on('shipment:show', function(sid) {
+    app.navigate('shipments/sid/'+sid)
+    controller.view(sid)
+  })
+
+  app.on('container:show', function(cid, iid, sid) {
+    app.navigate('containers/cid/'+cid+(iid?'/iid/'+iid:'')+(sid?'/sid/'+sid:''))
+    controller.view_container(cid, iid, sid)
+  })
+
+  app.on('rdewar:show', function(fc) {
+    app.navigate('dewars/registry/'+fc)
+    controller.view_dewar(fc)
+  })
+
+  app.on('rcontainer:show', function(crid) {
+    app.navigate('containers/registry/'+crid)
+    controller.view_rcontainer(crid)
+  })
+
+  app.start()
+
   return controller
 })

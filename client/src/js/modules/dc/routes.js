@@ -27,22 +27,19 @@ let application = MarionetteApplication.getInstance()
 // Use to check if visit model is OK
 let visitModel = {}
 
-application.start(function() {
-  application.on('dclist:show', function(visit) {
-      if (visit) {
-          application.navigate('/dc/visit/'+visit)
-          // controller.dc_list(visit)
-      } else {
-        application.navigate('/dc')
-      //   controller.dc_list()
-      }
-  })
-
-  application.on('dc:show', function(type, id, visit) {
-      application.navigate('/dc/'+(visit ? ('visit/'+visit) : '') + '/ty/'+type+'/id/'+id)
-  //   controller.dc_list(visit, null, null, null, type, id)
-  })
+application.on('dclist:show', function(visit) {
+  if (visit) {
+      application.navigate('/dc/visit/'+visit)
+  } else {
+    application.navigate('/dc')
+  }
 })
+
+application.on('dc:show', function(type, id, visit) {
+  application.navigate('/dc/'+(visit ? ('visit/'+visit) : '') + '/ty/'+type+'/id/'+id)
+})
+
+application.start()
 
 // appRoutes: {
 //     'dc': 'dc_list',

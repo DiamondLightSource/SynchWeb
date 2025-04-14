@@ -18,11 +18,11 @@ import FaultTypeEditor from 'modules/fault/views/edit'
 // Initialize MarionetteApplication if not already existing
 let application = MarionetteApplication.getInstance()
 
-application.start(function() {
-    application.on('fault:show', function(fid) {
-        application.navigate('/faults/fid/'+fid)
-    })
+application.on('fault:show', function(fid) {
+    application.navigate('/faults/fid/'+fid)
 })
+
+application.start()
    
 
 var bc = { title: 'Fault Database', url: '/fault' }

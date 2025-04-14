@@ -123,24 +123,23 @@ define(['marionette',
             app.content.show(new RunsOverview({ params: { bl } }))
         }
     }
-        
-       
-    app.start(function() {
-        app.on('stats:show', function(visit) {
-            app.navigate('stats/visit/'+visit)
-            controller.visit(visit)
-        })
 
-        app.on('pstats:show', function() {
-            app.navigate('stats')
-            controller.proposal()
-        })
-
-        app.on('bloverview:show', function(bl) {
-            app.navigate('stats/overview/bl/'+bl)
-            controller.bl_overview(bl)
-        })
+    app.on('stats:show', function(visit) {
+        app.navigate('stats/visit/'+visit)
+        controller.visit(visit)
     })
-       
+
+    app.on('pstats:show', function() {
+        app.navigate('stats')
+        controller.proposal()
+    })
+
+    app.on('bloverview:show', function(bl) {
+        app.navigate('stats/overview/bl/'+bl)
+        controller.bl_overview(bl)
+    })
+
+    app.start()
+
     return controller
 })

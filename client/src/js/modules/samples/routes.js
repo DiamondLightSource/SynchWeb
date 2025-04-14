@@ -21,43 +21,43 @@ const CrystalAddWrapper = () => import(/* webpackChunkName: "samples" */ 'module
 const SampleGroups = () => import(/* webpackChunkName: "samples" */ 'modules/samples/components/sample-groups.vue')
 const SampleGroupCreateAndEdit = () => import(/* webpackChunkName: "samples" */ 'js/modules/samples/components/sample-group-create-and-edit.vue')
 
-app.start(function() {
-  app.on('samples:show', function() {
-    app.navigate('/samples')
-  })
-
-  app.on('proteins:show', function() {
-    app.navigate('/proteins')
-  })
-
-  app.on('samples:view', function(sid) {
-    app.navigate('/samples/sid/'+sid)
-  })
-
-  app.on('instances:view', function(sid) {
-    app.navigate('/instances/sid/'+sid)
-  })
-
-  app.on('crystals:view', function(cid) {
-    app.navigate('/crystals/cid/'+cid)
-  })
-
-  app.on('xsamples:view', function(cid) {
-    app.navigate('/xsamples/cid/'+cid)
-  })
-
-  app.on('proteins:view', function(pid) {
-    app.navigate('/proteins/pid/'+pid)
-  })
-
-  app.on('phases:view', function(pid) {
-    app.navigate('/phases/pid/'+pid)
-  })
-
-  app.on('protein:clone', function(pid) {
-    app.navigate('/proteins/clone/pid/'+pid)
-  })
+app.on('samples:show', function() {
+  app.navigate('/samples')
 })
+
+app.on('proteins:show', function() {
+  app.navigate('/proteins')
+})
+
+app.on('samples:view', function(sid) {
+  app.navigate('/samples/sid/'+sid)
+})
+
+app.on('instances:view', function(sid) {
+  app.navigate('/instances/sid/'+sid)
+})
+
+app.on('crystals:view', function(cid) {
+  app.navigate('/crystals/cid/'+cid)
+})
+
+app.on('xsamples:view', function(cid) {
+  app.navigate('/xsamples/cid/'+cid)
+})
+
+app.on('proteins:view', function(pid) {
+  app.navigate('/proteins/pid/'+pid)
+})
+
+app.on('phases:view', function(pid) {
+  app.navigate('/phases/pid/'+pid)
+})
+
+app.on('protein:clone', function(pid) {
+  app.navigate('/proteins/clone/pid/'+pid)
+})
+
+app.start()
 
 const routes = [
   // Samples routes

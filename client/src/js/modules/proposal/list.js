@@ -11,7 +11,7 @@ define(['marionette',
     onClick: function() {
       app.cookie(this.model.get('PROPOSALCODE') + this.model.get('PROPOSALNUMBER'))
       app.type = this.model.get('TYPE')
-      app.navigate('/visits');
+      app.trigger('visits:show')
     },
   })
     

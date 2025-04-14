@@ -47,13 +47,13 @@ define(['marionette',
             })
         }
     }
-       
-    app.start(function() {
-        app.on('assign:visit', function(visit) {
-            app.navigate('assign/visit/'+visit)
-            controller.assign(visit)
-        })
+
+    app.on('assign:visit', function(visit) {
+        app.navigate('assign/visit/'+visit)
+        controller.assign(visit)
     })
+
+    app.start()
        
     return controller
 })

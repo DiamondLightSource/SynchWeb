@@ -27,17 +27,17 @@ import PresetAdmin from 'modules/imaging/views/admin/presets'
 // hook into the marionette event bus...
 let application = MarionetteApplication.getInstance()
 
-application.start(function() {
-    application.on('schedule:view', function(sid) {
-        application.navigate('/admin/imaging/schedule/'+sid)
-        // controller.view_schedule(sid)
-    })
-
-    application.on('screen:view', function(sid) {
-        application.navigate('/imaging/screen/'+sid)
-        // controller.view_screen(sid)
-    })
+application.on('schedule:view', function(sid) {
+    application.navigate('/admin/imaging/schedule/'+sid)
+    // controller.view_schedule(sid)
 })
+
+application.on('screen:view', function(sid) {
+    application.navigate('/imaging/screen/'+sid)
+    // controller.view_screen(sid)
+})
+
+application.start()
 
 
 

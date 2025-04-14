@@ -67,14 +67,13 @@ define(['marionette',
             app.content.show(new FaultTypeEditor())
         }
     }
-        
-       
-    app.start(function() {
-        app.on('fault:show', function(fid) {
-            app.navigate('faults/fid/'+fid)
-            controller.view(fid)
-        })
+
+    app.on('fault:show', function(fid) {
+        app.navigate('faults/fid/'+fid)
+        controller.view(fid)
     })
        
+    app.start()
+
     return controller
 })
