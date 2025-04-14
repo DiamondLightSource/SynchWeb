@@ -1,6 +1,6 @@
-define(['backbone'], function(Backbone) {
+define(['marionette', 'backbone'], function(Marionette, Backbone) {
 
-  var Search = Backbone.View.extend({
+  var Search = Marionette.View.extend({
     /** @property */
     events: {
         "keyup input[type=search]": "search",
