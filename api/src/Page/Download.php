@@ -12,6 +12,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\HttpFoundation\Response;
 use ZipStream\Option\Archive;
 use ZipStream\ZipStream;
+use SynchWeb\Utils;
 
 ini_set('max_execution_time', 0); // To allow large file downloads
 
@@ -66,7 +67,7 @@ class Download extends Page
     {
         if (!$this->has_arg('validity'))
             $this->_error('No validity specified');
-        $token = md5(uniqid());
+        $token = Utils::generateRandomMd5();
 
         $this->db->pq("INSERT INTO SW_onceToken (token, validity, proposalid, personid) VALUES (:1, :2, :3, :4)", array($token, $this->arg('validity'), $this->proposalid, $this->user->personId));
         $this->_output(array('token' => $token));
