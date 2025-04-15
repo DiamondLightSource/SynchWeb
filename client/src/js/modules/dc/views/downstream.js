@@ -14,6 +14,8 @@ define(['backbone', 'marionette',
         TableView, 
         FastEP, DIMPLE, MrBUMP, BigEP, Shelxt, downstreamerror) {
 
+    var dcPurgedProcessedData = "0"; // dataCollection.PURGEDPROCESSEDDATA via options from DC.js
+
     var DownstreamsCollection = Backbone.Collection.extend()
 
     var DownStreamError = Marionette.ItemView.extend({
@@ -68,6 +70,7 @@ define(['backbone', 'marionette',
             if (model.get('PROCESS').PROCESSINGSTATUS != 1) {
                 return DownstreamWrapper.extend({
                     links: false,
+                    dcPurgedProcessedData,
                     childView: model.get('PROCESS').PROCESSINGSTATUS == null
                         ?  DownStreamRunning : DownStreamError
                 })
@@ -77,6 +80,7 @@ define(['backbone', 'marionette',
             for (var key in types) {
                 if (tabType.indexOf(key) > -1) {
                     return DownstreamWrapper.extend({
+                        dcPurgedProcessedData,
                         childView: types[key],
                     })
                 }
@@ -84,6 +88,7 @@ define(['backbone', 'marionette',
 
             return DownstreamWrapper.extend({
                 childView: DefaultDP,
+                dcPurgedProcessedData,
                 mapLink: false
             })
         },
@@ -146,6 +151,7 @@ define(['backbone', 'marionette',
         },
         
         initialize: function(options) {
+            dcPurgedProcessedData = options.dcPurgedProcessedData;
             this.collection = new DownStreams(null, { id: options.id })
             this.collection.fetch().done(this.render.bind(this))
         },

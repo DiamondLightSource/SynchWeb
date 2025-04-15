@@ -474,6 +474,7 @@ class DC extends Page
                     d.numberofpixelsx as detectornumberofpixelsx,
                     d.numberofpixelsy as detectornumberofpixelsy,
                     ses.archived,
+                    ses.purgedProcessedData,
                     IFNULL(dc.rotationaxis, 'Omega') as rotationaxis,
                     dc.detector2theta";
             $groupby = 'GROUP BY smp.name,
@@ -611,6 +612,7 @@ class DC extends Page
                     max(d.numberofpixelsx) as detectornumberofpixelsx,
                     max(d.numberofpixelsy) as detectornumberofpixelsy,
                     max(ses.archived) as archived,
+                    max(ses.purgedProcessedData) as purgedProcessedData,
                     IFNULL(max(dc.rotationaxis), 'Omega') as rotationaxis,
                     dc.detector2theta";
             $groupby = "GROUP BY dc.datacollectiongroupid";
@@ -771,6 +773,7 @@ class DC extends Page
                     '',
                     '',
                     ses.archived,
+                    ses.purgedProcessedData,
                     '',
                     ''
                 FROM energyscan es
@@ -867,6 +870,7 @@ class DC extends Page
                 '',
                 '',
                 ses.archived,
+                ses.purgedProcessedData,
                 '',
                 ''
             FROM xfefluorescencespectrum xrf
@@ -963,6 +967,7 @@ class DC extends Page
                 '',
                 '',
                 ses.archived,
+                ses.purgedProcessedData,
                 '',
                 ''
             FROM robotaction r
