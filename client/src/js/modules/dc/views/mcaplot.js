@@ -16,7 +16,10 @@ define(['marionette', 'modules/dc/models/mca', 'utils',
         this.model.fetch().done(function() { console.log(self.model) })
     },
                                                
-    onRender: function() {
+    render: function() {
+        // Bind UI elements if not already done (render might be called multiple times)
+        this.bindUIElements()
+
         var self = this
         var m = this.model
         var data = [{ label: 'XRF', data: m.get('XRF'), color: 'rgb(100,100,100)' }, { label: 'Compton', data: m.get('COMPTON'), color: 'rgb(200,200,200)' }]
@@ -42,6 +45,7 @@ define(['marionette', 'modules/dc/models/mca', 'utils',
         })
         this.$el.css('opacity', 1)
         this.plot = pl
+        return this
     },
             
     onDestroy: function() {

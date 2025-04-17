@@ -56,7 +56,9 @@ define(['marionette', 'modules/dc/models/distl', 'utils',
       },
       
       
-      onRender: function() {
+      render: function() {
+          // Bind UI elements if not already done (render might be called multiple times)
+          this.bindUIElements()
           var p = this.getOption('parent')
           if (this.model.get('data')) {
               
@@ -104,6 +106,7 @@ define(['marionette', 'modules/dc/models/distl', 'utils',
               this.plot = $.plot(this.$el, d, options)
               this.$el.css('opacity', 1)
           }
+          return this
       },
         
       onDestroy: function() {

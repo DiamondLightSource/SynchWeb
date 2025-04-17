@@ -38,7 +38,9 @@ define(['marionette'], function(Marionette) {
         },
         
         
-        onRender: function() {
+        render: function() {
+            // Bind UI elements if not already done (render might be called multiple times)
+            this.bindUIElements()
             //if (this.getOption('view')) this.getOption('view').$el = this.$el
 
             if (this.getOption('autoSize')) {
@@ -59,6 +61,8 @@ define(['marionette'], function(Marionette) {
             if (this.getOption('view')) {   
                 //this.getOption('view').render()
             }
+
+            return this
         },
         
         onDomRefresh: function() {

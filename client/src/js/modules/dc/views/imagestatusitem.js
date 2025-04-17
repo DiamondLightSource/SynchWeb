@@ -57,7 +57,9 @@ define(['marionette',
             }
         },
       
-        onRender: function() {
+        render: function() {
+            // Bind UI elements if not already done (render might be called multiple times)
+            this.bindUIElements()
             console.log('render im status', this.getOption('TYPE'))
             var id = this.model.get('ID')
         
@@ -84,6 +86,8 @@ define(['marionette',
             }
             
             this.lazyLoad($(window))
+
+            return this
         },
         
         onDestroy: function() {

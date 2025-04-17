@@ -15,7 +15,9 @@ define(['marionette', 'modules/dc/models/edge', 'utils',
       this.$el.css('opacity', 0)
     },
                                                
-    onRender: function() {
+    render: function() {
+        // Bind UI elements if not already done (render might be called multiple times)
+        this.bindUIElements()
         var options = $.extend({}, utils.default_plot, {
         yaxes: [{}, { position: 'right' }],
         series: {
@@ -28,8 +30,9 @@ define(['marionette', 'modules/dc/models/edge', 'utils',
             { data: this.model.get('FDP'), label: 'f&rsquo;&rsquo;', yaxis: 2 },
             { data: this.model.get('FP'), label: 'f&rsquo;', yaxis: 2 },]
                      
-      this.plot = $.plot(this.$el, data, options)
-      this.$el.css('opacity', 1)
+        this.plot = $.plot(this.$el, data, options)
+        this.$el.css('opacity', 1)
+        return this
     },
       
       

@@ -71,11 +71,14 @@ define(['marionette', 'views/dialog'], function(Marionette, DialogView) {
             xhr.send()
         },
 
-        onRender: function() {
+        render: function() {
+            // Bind UI elements if not already done (render might be called multiple times)
+            this.bindUIElements()
             this.$el.append(this.iframe)
             
             this.$el.find('iframe').css('width', "99%")
             this.$el.find('iframe').css('height', "98%")
+            return this
         }
         
     })
