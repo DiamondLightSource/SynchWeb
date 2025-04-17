@@ -37,7 +37,7 @@ define(['marionette',
         },
 
         onRender: function() {
-            this.messages.show(new APMessagesView({ messages: new Backbone.Collection(this.model.get('MESSAGES')), embed: true }))
+            this.getRegion('messages').show(new APMessagesView({ messages: new Backbone.Collection(this.model.get('MESSAGES')), embed: true }))
         },
         
         showAttachments: function(e) {
