@@ -22,19 +22,19 @@ define(['marionette',
   })
     
   var TabContentItem = Marionette.View.extend({
-    template: false,
+    template: _.template('<div class="tab-content-inner"></div>'),
+
+    regions: {
+      inner: '.tab-content-inner'
+    },
+
     initialize: function(options) {
       this.subview = new (_.isFunction(options.tabContentInner) ? options.tabContentInner.call(this) : options.tabContentInner)(options)
     },
       
     onRender: function() {
-        this.$el.html(this.subview.render().$el)
         this.$el.attr('id', 'tabs-'+this.model.get(this.options.tabID).replace(/\s+/g, ''))
-        this.subview.triggerMethod('show');
-    },
-      
-    onDomRefresh: function() {
-        this.subview.triggerMethod('domRefresh');
+        this.showChildView('inner', this.subview);
     },
       
     onDestroy: function() {

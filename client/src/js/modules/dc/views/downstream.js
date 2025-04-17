@@ -162,12 +162,13 @@ define(['backbone', 'marionette',
         update: function() {
             if (this.collection.length) {
                 this.$el.removeClass('ui-tabs')
-                this.getRegion('wrap').show(new DownstreamsViewTab({
+                this.dsvt = new DownstreamsViewTab({
                     downstreams: this.collection,
                     id: this.getOption('id'),
                     el: this.$el.find('.res'),
                     holderWidth: this.$el.parent().width()
-                }))
+                })
+                this.getRegion('wrap').show(this.dsvt)
             } else {
                 this.$el.addClass('ui-tabs')
                 this.getRegion('wrap').show(new EmptyAP())
