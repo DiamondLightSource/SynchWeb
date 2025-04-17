@@ -67,6 +67,8 @@ define(['marionette',
       this.apmessagestatus = new (this.getOption('apMessageStatusItem'))({ ID: this.model.get('ID'), statuses: this.getOption('apmessagestatuses'), el: this.$el })
 
       this.updateInPlace(true)
+
+      DCBase.prototype.onRender.call(this)
     },
 
 
