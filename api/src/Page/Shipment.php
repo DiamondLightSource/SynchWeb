@@ -1066,7 +1066,7 @@ class Shipment extends Page
         $proposal = $dewar['PROPOSAL'];
         $external_id = (int) $dewar['DEWARID'];
         $shipping_id = (int) $dewar['SHIPPINGID'];
-        $token = md5(uniqid());
+        $token = Utils::generateRandomMd5();
         $this->db->pq(
             "UPDATE dewar SET extra = JSON_SET(IFNULL(extra, '{}'), '$.token', :1 ) WHERE dewarid=:2",
             array($token, $external_id)
@@ -3266,7 +3266,7 @@ class Shipment extends Page
 
         $shipping_id = (int) $shipment['SHIPPINGID'];
 
-        $token = md5(openssl_random_pseudo_bytes(7));
+        $token = Utils::generateRandomMd5(7);
         $this->db->pq(
             "UPDATE dewar SET extra = JSON_SET(IFNULL(extra, '{}'), '$.token', :1 ) WHERE shippingid=:2",
             array($token, $shipping_id)
