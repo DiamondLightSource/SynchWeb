@@ -14,6 +14,11 @@
         "i23": 4
     },
 
+    "onlyStaffCanAssign": {
+            "i03": true,
+            "i04-1": false
+    },
+
     "_gsMajorAxisOrientation" : "Determines whether the major grid scan axis determines the orientation of the view",
     "gsMajorAxisOrientation"  : true,
 
