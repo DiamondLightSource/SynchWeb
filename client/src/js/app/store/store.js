@@ -233,9 +233,9 @@ const store = new Vuex.Store({
             resolve(result)
           },
 
-          error: function(err) {
-            let response = err.responseJSON || {status: 400, message: 'Error saving model'}
-            reject(response)
+          error: function(model, response) {
+            let err = response.responseJSON || {status: 400, message: 'Error saving model'}
+            reject(err)
           },
         })
       })
