@@ -55,11 +55,19 @@ define(['marionette', 'backbone', 'views/pages',
         // Assign Containers
         assignContainer: function(e, options) {
             console.log('confirm container on to', options.id, this.model)
-            utils.confirm({
-                title: 'Confirm Container Assignment',
-                content: 'Are you sure you want to assign &quot;'+this.model.get('NAME')+'&quot; to sample changer position &quot;'+options.id+'&quot;?',
-                callback: this.doAssign.bind(this, options)
-            })
+            staffOnly = false
+            if (options.bl in app.config.onlyStaffCanAssign) {
+                staffOnly = app.config.onlyStaffCanAssign[options.bl]
+            }
+            if (staffOnly && !app.staff) {
+                app.alert({ message: 'Only staff are able to assign containers on '+options.bl })
+            } else {
+                utils.confirm({
+                    title: 'Confirm Container Assignment',
+                    content: 'Are you sure you want to assign &quot;'+this.model.get('NAME')+'&quot; to sample changer position '+options.id+'?',
+                    callback: this.doAssign.bind(this, options)
+                })
+            }
         },
         
         doAssign: function(options) {
@@ -91,11 +99,22 @@ define(['marionette', 'backbone', 'views/pages',
         // Unassign Containers
         unassignContainer: function(e, options) {
             console.log('unassign container', this.model)
-            utils.confirm({
-                title: 'Confirm Container Unassignment',
-                content: 'Are you sure you want to unassign &quot;'+this.model.get('NAME')+'&quot; from sample changer position &quot;'+this.model.get('SAMPLECHANGERLOCATION')+'&quot;?',
-                callback: this.doUnAssign.bind(this, options)
-            })
+            staffOnly = false
+            if (options.bl in app.config.onlyStaffCanAssign) {
+                staffOnly = app.config.onlyStaffCanAssign[options.bl]
+            }
+            console.log(staffOnly)
+            console.log(app.staff)
+            console.log(options)
+            if (staffOnly && !app.staff) {
+                app.alert({ message: 'Only staff are able to unassign containers on '+options.bl })
+            } else {
+                utils.confirm({
+                    title: 'Confirm Container Unassignment',
+                    content: 'Are you sure you want to unassign &quot;'+this.model.get('NAME')+'&quot; from sample changer position '+this.model.get('SAMPLECHANGERLOCATION')+'?',
+                    callback: this.doUnAssign.bind(this, options)
+                })
+            }
         },
         
         doUnAssign: function(options) {
@@ -231,6 +250,7 @@ define(['marionette', 'backbone', 'views/pages',
         initialize: function(options) {
             this.collection = new Containers()
             this.assigned = options.assigned
+            this.bl = options.bl
             this.listenTo(this.assigned, 'change sync reset add remove', this.updateCollection, this)
             this.updateCollection()
 
@@ -264,7 +284,7 @@ define(['marionette', 'backbone', 'views/pages',
         },
         
         handleDrop: function(e, ui) {
-            ui.draggable.trigger('drop:assign', { id: this.model.get('id'), assigned: this.assigned, visit: this.getOption('visit') })
+            ui.draggable.trigger('drop:assign', { id: this.model.get('id'), assigned: this.assigned, visit: this.getOption('visit'), bl: this.bl })
         }
         
     })
@@ -277,6 +297,7 @@ define(['marionette', 'backbone', 'views/pages',
             return {
                 assigned: this.getOption('assigned'),
                 visit: this.getOption('visit'),
+                bl: this.getOption('bl'),
                 pucknames: this.getOption('pucknames')
             }
         }
@@ -295,7 +316,7 @@ define(['marionette', 'backbone', 'views/pages',
         },
         
         handleDrop: function(e, ui) {
-            ui.draggable.trigger('drop:unassign', { shipments: this.collection, visit: this.getOption('visit').get('VISIT') })
+            ui.draggable.trigger('drop:unassign', { shipments: this.collection, visit: this.getOption('visit').get('VISIT'), bl: this.bl })
         },
         
         templateHelpers: function() {
@@ -328,6 +349,8 @@ define(['marionette', 'backbone', 'views/pages',
             this.pucknames.state.pageSize = 100
             this.pucknames.queryParams.bl = this.getOption('visit').get('BL')
             this.pucknames.fetch()
+
+            this.bl = this.getOption('visit').get('BL')
         },
         
         generateShipments: function() {
@@ -383,6 +406,7 @@ define(['marionette', 'backbone', 'views/pages',
                 collection: positions,
                 assigned: this.assigned,
                 visit: this.getOption('visit').get('VISIT'),
+                bl: this.bl,
                 shipments: this.collection,
                 pucknames: this.pucknames,
             })
