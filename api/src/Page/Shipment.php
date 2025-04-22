@@ -629,18 +629,23 @@ class Shipment extends Page
         $args = array($this->proposalid);
         $where = 'p.proposalid=:1';
 
+        if ($this->staff) {
+            if ($this->has_arg('all')) {
+                $where = '1=1';
+                $args = array();
+            } else if ($this->has_arg('FACILITYCODE')) {
+                $where = 'r.facilitycode=:1';
+                $args = array($this->arg('FACILITYCODE'));
+            }
+        } else {
+            if ($this->has_arg('FACILITYCODE')) {
+                $where .= ' AND r.facilitycode=:' . (sizeof($args) + 1);
+                array_push($args, $this->arg('FACILITYCODE'));
+            }
+        }
+
         $fields = "r.dewarregistryid, max(CONCAT(p.proposalcode, p.proposalnumber)) as prop, r.facilitycode, TO_CHAR(r.purchasedate, 'DD-MM-YYYY') as purchasedate, ROUND(TIMESTAMPDIFF('DAY',r.purchasedate, CURRENT_TIMESTAMP)/30.42,1) as age, r.labcontactid, count(distinct d.dewarid) as dewars, GROUP_CONCAT(distinct CONCAT(p.proposalcode,p.proposalnumber) SEPARATOR ', ') as proposals, r.bltimestamp, TO_CHAR(max(d.bltimestamp),'DD-MM-YYYY') as lastuse, count(dr.dewarreportid) as reports, r.manufacturerserialnumber";
         $group = "r.facilitycode";
-
-        if ($this->has_arg('all') && $this->staff) {
-            $args = array();
-            $where = '1=1';
-        }
-
-        if ($this->has_arg('FACILITYCODE')) {
-            $where .= ' AND r.facilitycode=:' . (sizeof($args) + 1);
-            array_push($args, $this->arg('FACILITYCODE'));
-        }
 
         if ($this->has_arg('s')) {
             $st = sizeof($args) + 1;
@@ -654,7 +659,7 @@ class Shipment extends Page
         }
 
 
-        $tot = $this->db->pq("SELECT count(r.facilitycode) as tot 
+        $tot = $this->db->pq("SELECT count(distinct r.facilitycode) as tot
               FROM dewarregistry r 
               LEFT OUTER JOIN dewarregistry_has_proposal rhp ON r.dewarregistryid = rhp.dewarregistryid
               LEFT OUTER JOIN proposal p ON p.proposalid = rhp.proposalid
