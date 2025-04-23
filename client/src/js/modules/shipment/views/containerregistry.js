@@ -156,7 +156,16 @@ define(['marionette',
                         props.push(p.get('PROPOSAL'))
                         m.set('PROPOSALS', props.join(','))
                         // This will be called multiple times for many proposals. Might be a cleaner method..?
-                        app.alert({message: 'Added registered container ' + m.get('BARCODE') + ' to proposal(s) ' + props, notify: true})
+                        app.message({message: 'Added registered container ' + m.get('BARCODE') + ' to proposal ' + p.get('PROPOSAL'), notify: true})
+                    },
+                    error: function(model, response, options) {
+                        var errorMsg
+                        try {
+                            errorMsg = response.responseJSON.message
+                        } catch (e) {
+                            errorMsg = 'An unknown error occurred.'
+                        }
+                        app.alert({message: 'Failed to add ' + m.get('BARCODE') + ' to proposal ' + p.get('PROPOSAL') + ': ' + errorMsg, notify: true})
                     }
                 })
             }, this)
