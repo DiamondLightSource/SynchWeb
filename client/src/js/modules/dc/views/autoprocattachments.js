@@ -23,21 +23,16 @@ define(['marionette',
 
         render: function() {
 
-            // Passed into the column from the layout below.
-            var iCatUrl = this.column.escape('iCatUrl');
-            var dcPurged = this.column.escape('dcPurgedProcessedData');
+            // Passed into the column from the layout.
+            var iCatBaseUrl = this.column.escape('iCatUrl');
+            var isIndustry = this.column.escape('isIndustryProposal').toLowerCase() === 'true';
+            var isSessionPurged = this.column.escape('dcPurgedProcessedData') !== "0";
 
-            // Files with persistentStorageSegment in their path are assumed to exist permanently and ignore the BLSESSION purged value
-            var isPersistentFile = this.doesFilepathContainPersistentStorageSegment(this.model.get('FILEPATH'));
-
-            if (!isPersistentFile && dcPurged !== "0") {
-                // if the iCatURL is present, this file has been removed from store but may be available in iCat/Archive. ELSE likley an industry proposal so no iCat link provided.
-                iCatUrl 
-                    ? this.$el.html('<a class="button" href=' + iCatUrl +' target="_blank">iCat link</a>') 
-                    : this.$el.html('<div>Removed</div>')
-            }
-            else {
-
+            // Files with "visit_persist_storage_dir_segment" (config.php) in their path are assumed to exist permanently and ignore the BLSESSION purged value
+            var isPersistentFile = persistentStorageSegment ? this.model.get('FILEPATH').includes(persistentStorageSegment) :  false;
+            
+            if (isPersistentFile == true | isSessionPurged == false) {
+                // Default behaviour
                 this.$el.html('<a href="'+app.apiurl+'/download/'+this.column.escape('urlRoot')+'/attachments/'+this.model.escape(this.column.get('idParam'))+'/dl/2" class="button dl"><i class="fa fa-download"></i> Download</a>')
 
                 if (this.model.get('FILETYPE') == 'Log' || this.model.get('FILETYPE') == 'Logfile') {
@@ -48,6 +43,20 @@ define(['marionette',
                     this.$el.append('<a class="vapplot button" href="#"><i class="fa fa-line-chart"></i> View</a>')
                 }
             }
+            else {
+                if (isSessionPurged == true) {
+                    // Append "Removed" for ANY assets of purged industrial proposals
+                    if (isIndustry == true) { this.$el.html('<div>Removed</div>') }
+                    else {
+                        // if !industrial Proposal && iCatURL is present in config, this file has been removed from store but may be available in iCat/Archive.
+                        iCatBaseUrl !== ""
+                            ? this.$el.html('<a class="button" href=' + iCatBaseUrl +' target="_blank">iCat link</a>') 
+                            : this.$el.html('<div>iCatURL missing</div>')
+                    }
+                }
+                
+                // non purged session. This should be caught in the main if block!
+            }
 
             if (app.options.get('ccp4_cloud_upload_url') && this.model.get('FILETYPE') == 'Result') {
                 this.$el.append('<a class="vapupload button" href="#"><i class="fa fa-cloud-upload"></i> CCP4 Cloud</a>')
@@ -55,9 +64,7 @@ define(['marionette',
 
             return this
         },
-
-        doesFilepathContainPersistentStorageSegment: (filePath) => persistentStorageSegment ? filePath.includes(persistentStorageSegment) :  false,
-
+        
         showCloudUpload: function(e) {
             e.preventDefault()
             app.dialog.show(new CloudUploadView({ model: this.model, collection: this.model.collection }))
@@ -125,6 +132,7 @@ define(['marionette',
             persistentStorageSegment = app.options.get('visit_persist_storage_dir_segment');
 
             var proposalID = app.prop;
+            var isIndustryProposal = this.hasIndustryPrefix(proposalID) // ! FIXME: Naive check.
             var iCatProposalRootURL = this.getICatProposalRootUrl(proposalID);
 
             var columns = [
@@ -136,8 +144,9 @@ define(['marionette',
                     editable: false, 
                     urlRoot: this.getOption('urlRoot'), 
                     idParam: this.getOption('idParam'), 
-                    dcPurgedProcessedData: options.dcPurgedProcessedData, 
-                    iCatUrl: iCatProposalRootURL
+                    dcPurgedProcessedData: options.dcPurgedProcessedData,
+                    isIndustryProposal: isIndustryProposal,
+                    iCatUrl: iCatProposalRootURL,
                 },
             ]
                         
@@ -152,21 +161,24 @@ define(['marionette',
         },
 
         /**
+         * Naieve check wether this proposalID starts with ["in"].
+         * @param {string} proposalID 
+         * @returns {boolean}
+         */
+        hasIndustryPrefix: (proposalID) => ["in"].includes(proposalID.slice(0,2)),
+
+        /**
          * @summary Use the icat_base_url to create a link to the proposal Root.
          * @see config.php & index.php
          * We're just passing in the iCat project Root URL for each but this could be further extended within each OptionsCell if we want to target a specifc visit etc.
          * @returns {URL | undefined} undefined if baseUrl not set OR if proposal begins with "in" | "sw".
          */
         getICatProposalRootUrl: function(proposalID) {
-            // define prefixes that should skip the iCat link creation. Use Uppercase form.
-            var denyIcatPrefixes = ["IN"];
-
-            var proposalIdUppercase = proposalID.toUpperCase();
-            var propsalPrefix = proposalIdUppercase.slice(0,2)
             var iCatBaseURl = app.options.get("icat_base_url");
-            
-            return proposalIdUppercase && iCatBaseURl && !denyIcatPrefixes.includes(propsalPrefix)
-                ? new URL("browse/proposal/" + proposalIdUppercase + "/investigation" , iCatBaseURl)
+            if (!iCatBaseURl) console.warn("'icat_base_url' has not been configured for purged attachments. @see config.php")
+
+            return iCatBaseURl
+                ? new URL("browse/proposal/" + proposalID.toUpperCase() + "/investigation" , iCatBaseURl)
                 : undefined;
         },
 
