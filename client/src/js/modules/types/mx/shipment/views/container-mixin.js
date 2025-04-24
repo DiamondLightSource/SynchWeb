@@ -194,7 +194,10 @@ export default {
       this.imagingScreensCollection = new ImagingScreens(null, { state: { pageSize: 9999 } })
 
       const result = await this.$store.dispatch('getCollection', this.imagingScreensCollection)
-      this.imagingScreens = [{ NAME: '-', SCREENID: '' }, ... result.toJSON()]
+      const originalData = result.toJSON()
+      const resultCopy = JSON.parse(JSON.stringify(originalData))
+      const top15 = resultCopy.sort((a, b) => Number(b.CNT) - Number(a.CNT)).slice(0, 15)
+      this.imagingScreens = [{ NAME: '---', SCREENID: '' }, ...top15, { NAME: '---', SCREENID: '' }, ...originalData]
     },
     async getImagingScheduleComponentsCollection() {
       this.imagingScheduleComponentsCollection = new ImagingScheduleComponents(null, { state: { pageSize: 9999 } })
