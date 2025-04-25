@@ -42,6 +42,12 @@ define(['marionette',
                 if (this.model.get('FILETYPE') == 'Graph') {
                     this.$el.append('<a class="vapplot button" href="#"><i class="fa fa-line-chart"></i> View</a>')
                 }
+
+                
+                if (app.options.get('ccp4_cloud_upload_url') && this.model.get('FILETYPE') == 'Result') {
+                    this.$el.append('<a class="vapupload button" href="#"><i class="fa fa-cloud-upload"></i> CCP4 Cloud</a>')
+                }
+
             }
             else {
                 if (isPurgedSession == true) {
@@ -56,10 +62,6 @@ define(['marionette',
                 }
                 
                 // non purged session. This should be caught in the main if block!
-            }
-
-            if (app.options.get('ccp4_cloud_upload_url') && this.model.get('FILETYPE') == 'Result') {
-                this.$el.append('<a class="vapupload button" href="#"><i class="fa fa-cloud-upload"></i> CCP4 Cloud</a>')
             }
 
             return this
