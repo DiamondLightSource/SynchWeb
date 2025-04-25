@@ -46,7 +46,7 @@ define(['marionette',
             else {
                 if (isSessionPurged == true) {
                     // Append "Removed" for ANY assets of purged industrial proposals
-                    if (isIndustry == true) { this.$el.html('<div>Removed</div>') }
+                    if (isIndustry == true) { this.$el.html('<div>Deleted</div>') }
                     else {
                         // if !industrial Proposal && iCatURL is present in config, this file has been removed from store but may be available in iCat/Archive.
                         iCatBaseUrl !== ""
