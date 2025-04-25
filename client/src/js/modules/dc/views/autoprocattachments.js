@@ -26,12 +26,12 @@ define(['marionette',
             // Passed into the column from the layout.
             var iCatBaseUrl = this.column.escape('iCatUrl');
             var isIndustry = this.column.escape('isIndustryProposal').toLowerCase() === 'true';
-            var isSessionPurged = this.column.escape('dcPurgedProcessedData') !== "0";
+            var isPurgedSession = this.column.escape('isPurgedSession').toLowerCase() === 'true';
 
             // Files with "visit_persist_storage_dir_segment" (config.php) in their path are assumed to exist permanently and ignore the BLSESSION purged value
             var isPersistentFile = persistentStorageSegment ? this.model.get('FILEPATH').includes(persistentStorageSegment) :  false;
             
-            if (isPersistentFile == true | isSessionPurged == false) {
+            if (isPersistentFile == true | isPurgedSession == false) {
                 // Default behaviour
                 this.$el.html('<a href="'+app.apiurl+'/download/'+this.column.escape('urlRoot')+'/attachments/'+this.model.escape(this.column.get('idParam'))+'/dl/2" class="button dl"><i class="fa fa-download"></i> Download</a>')
 
@@ -44,7 +44,7 @@ define(['marionette',
                 }
             }
             else {
-                if (isSessionPurged == true) {
+                if (isPurgedSession == true) {
                     // Append "Removed" for ANY assets of purged industrial proposals
                     if (isIndustry == true) { this.$el.html('<div>Deleted</div>') }
                     else {
@@ -141,8 +141,9 @@ define(['marionette',
             persistentStorageSegment = app.options.get('visit_persist_storage_dir_segment');
 
             var proposalID = app.prop;
-            this.isIndustry = this.hasIndustryPrefix(proposalID); // ! FIXME: Naive check.
             var iCatProposalRootURL = this.getICatProposalRootUrl(proposalID);
+
+            this.isIndustry = this.hasIndustryPrefix(proposalID); // ! FIXME: Naive check.
             this.isPurgedSession = options.dcPurgedProcessedData !== "0";
 
             var columns = [
@@ -154,7 +155,7 @@ define(['marionette',
                     editable: false, 
                     urlRoot: this.getOption('urlRoot'), 
                     idParam: this.getOption('idParam'), 
-                    dcPurgedProcessedData: options.dcPurgedProcessedData,
+                    isPurgedSession: this.isPurgedSession,
                     isIndustryProposal: this.isIndustry,
                     iCatUrl: iCatProposalRootURL,
                 },
