@@ -123,17 +123,27 @@ define(['marionette',
 
     return Marionette.LayoutView.extend({
         className: 'content',
-        template: '<div><h1>Attachments</h1><p class="help">This page lists all attachments for the selected autoprocessing</p><p style="padding: 0.2rem"><b>Note: Removed Attachments (non-industrial) may be reached via the iCat Link.</b></p><div class="wrapper"></div></div>',
+        template: '<div><h1>Attachments</h1><p class="help">This page lists all attachments for the selected autoprocessing</p><div class="wrapper"></div></div>',
         regions: { wrap: '.wrapper' },
         urlRoot: 'ap',
         idParam: 'AUTOPROCPROGRAMATTACHMENTID',
+
+        getTemplate: function(){
+            // override the template, only show purgeMessage for purged, non-industrial proposals.
+            var purgeMessage = (this.isPurgedSession == true && this.isIndustry == false) 
+                ? `<p style="padding: 0.2rem"><b>Archived attachments can be retrieved from iCat.</b></p>`
+                : "";
+
+            return `<div><h1>Attachments</h1><p class="help">This page lists all attachments for the selected autoprocessing</p>${purgeMessage}<div class="wrapper"/></div>`;
+        },
 
         initialize: function(options) {
             persistentStorageSegment = app.options.get('visit_persist_storage_dir_segment');
 
             var proposalID = app.prop;
-            var isIndustryProposal = this.hasIndustryPrefix(proposalID) // ! FIXME: Naive check.
+            this.isIndustry = this.hasIndustryPrefix(proposalID); // ! FIXME: Naive check.
             var iCatProposalRootURL = this.getICatProposalRootUrl(proposalID);
+            this.isPurgedSession = options.dcPurgedProcessedData !== "0";
 
             var columns = [
                 { name: 'FILENAME', label: 'File', cell: 'string', editable: false },
@@ -145,7 +155,7 @@ define(['marionette',
                     urlRoot: this.getOption('urlRoot'), 
                     idParam: this.getOption('idParam'), 
                     dcPurgedProcessedData: options.dcPurgedProcessedData,
-                    isIndustryProposal: isIndustryProposal,
+                    isIndustryProposal: this.isIndustry,
                     iCatUrl: iCatProposalRootURL,
                 },
             ]
