@@ -32,26 +32,36 @@ define(['marionette',
             var isPersistentFile = persistentStorageSegment ? this.model.get('FILEPATH').includes(persistentStorageSegment) :  false;
             
             if (isPersistentFile == true | isPurgedSession == false) {
-                // Default behaviour
-                this.$el.html('<a href="'+app.apiurl+'/download/'+this.column.escape('urlRoot')+'/attachments/'+this.model.escape(this.column.get('idParam'))+'/dl/2" class="button dl"><i class="fa fa-download"></i> Download</a>')
 
-                if (this.model.get('FILETYPE') == 'Log' || this.model.get('FILETYPE') == 'Logfile') {
-                    this.$el.append('<a class="vaplog button" href="'+app.apiurl+'/download/'+this.column.escape('urlRoot')+'/attachments/'+this.model.escape(this.column.get('idParam'))+'/dl/1"><i class="fa fa-search"></i> View</a>')
-                }
-
-                if (this.model.get('FILETYPE') == 'Graph') {
-                    this.$el.append('<a class="vapplot button" href="#"><i class="fa fa-line-chart"></i> View</a>')
-                }
-
+                var baseDownloadUrl = `${app.apiurl}/download/${this.column.escape('urlRoot')}/attachments/${this.model.escape(this.column.get('idParam'))}`
                 
-                if (app.options.get('ccp4_cloud_upload_url') && this.model.get('FILETYPE') == 'Result') {
-                    this.$el.append('<a class="vapupload button" href="#"><i class="fa fa-cloud-upload"></i> CCP4 Cloud</a>')
-                }
+                // Default behaviour for download btn
+                this.$el.html(`<a href="${baseDownloadUrl}/dl/2" class="button dl"><i class="fa fa-download"/> Download</a>`)
 
+                // Additional btns per filetype
+                switch (this.model.get('FILETYPE')) {
+                    case 'Log':
+                    case 'Logfile':
+                        this.$el.append(`<a class="vaplog button" href="${baseDownloadUrl}/dl/1"> <i class="fa fa-search"/> View </a>`);
+                        break;
+
+                    case 'Graph':
+                        this.$el.append('<a class="vapplot button" href="#"><i class="fa fa-line-chart"/> View</a>');
+                        break;
+
+                    case 'Result':
+                        if (app.options.get('ccp4_cloud_upload_url')) {
+                            this.$el.append('<a class="vapupload button" href="#"><i class="fa fa-cloud-upload"/> CCP4 Cloud</a>');
+                        }
+                        break;
+                
+                    default:
+                        break;
+                }
             }
             else {
                 if (isPurgedSession == true) {
-                    // Append "Removed" for ANY assets of purged industrial proposals
+                    // Append for ANY assets of purged industrial proposals
                     if (isIndustry == true) { this.$el.html('<div>Deleted</div>') }
                     else {
                         // if !industrial Proposal && iCatURL is present in config, this file has been removed from store but may be available in iCat/Archive.
