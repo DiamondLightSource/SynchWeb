@@ -50,7 +50,7 @@ define(['marionette',
                     else {
                         // if !industrial Proposal && iCatURL is present in config, this file has been removed from store but may be available in iCat/Archive.
                         iCatBaseUrl !== ""
-                            ? this.$el.html('<a class="button" href=' + iCatBaseUrl +' target="_blank">iCat link</a>') 
+                            ? this.$el.html('<a class="button" href=' + iCatBaseUrl +' target="_blank"><i class="fa fa-external-link"/> iCat</a>') 
                             : this.$el.html('<div>iCatURL missing</div>')
                     }
                 }
