@@ -89,8 +89,8 @@ steps_x | int | Number of steps in x in the grid scan
 steps_y | int | Number of steps in y in the grid scan
 snapshot_offsetxpixel | int | Number of pixels from top left of the snapshot image in x to where the top left of the grid starts
 snapshot_offsetypixel | int | Number of pixels from top left of the snapshot image in y to where the top left of the grid starts
-pixelspermicronx | float | Confusingly, microns per pixel. Physical size of the pixel in x in microns
-pixelspermicrony | float | Confusingly, microns per pixel. Physical size of the pixel in y in microns
+micronsperpixelx | float | Physical size of the pixel in x in microns
+micronsperpixely | float | Physical size of the pixel in y in microns
 
 This allows the snapshot to be cropped to the correct location and the grid to be navigatable by click to show an resulting diffraction image. The results from Per Image Analysis are then merged on top as a heatmap.
 
