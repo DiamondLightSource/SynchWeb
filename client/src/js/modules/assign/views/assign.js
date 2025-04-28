@@ -103,9 +103,6 @@ define(['marionette', 'backbone', 'views/pages',
             if (options.bl in app.config.onlyStaffCanAssign) {
                 staffOnly = app.config.onlyStaffCanAssign[options.bl]
             }
-            console.log(staffOnly)
-            console.log(app.staff)
-            console.log(options)
             if (staffOnly && !app.staff) {
                 app.alert({ message: 'Only staff are able to unassign containers on '+options.bl })
             } else {
