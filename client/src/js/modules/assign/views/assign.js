@@ -56,8 +56,9 @@ define(['marionette', 'backbone', 'views/pages',
         assignContainer: function(e, options) {
             console.log('confirm container on to', options.id, this.model)
             staffOnly = false
-            if (options.bl in app.config.onlyStaffCanAssign) {
-                staffOnly = app.config.onlyStaffCanAssign[options.bl]
+            const onlyStaffCanAssign = app.options.get('only_staff_can_assign')
+            if (options.bl in onlyStaffCanAssign) {
+                staffOnly = onlyStaffCanAssign[options.bl]
             }
             if (staffOnly && !app.staff) {
                 app.alert({ message: 'Only staff are able to assign containers on '+options.bl })
@@ -84,7 +85,12 @@ define(['marionette', 'backbone', 'views/pages',
                 data: { visit: options.visit, cid: this.model.get('CONTAINERID'), pos: options.id },
                 success: this.assignUpdateGUI.bind(this, options),
                 error: function(xhr, message, options) {
-                    app.alert({ message: 'Something went wrong assigning this container:' })
+                    try {
+                        json = JSON.parse(xhr.responseText)
+                        app.alert({ message: json.message })
+                    } catch {
+                        app.alert({ message: 'Something went wrong assigning this container.' })
+                    }
                 },
             })
         },
@@ -100,8 +106,9 @@ define(['marionette', 'backbone', 'views/pages',
         unassignContainer: function(e, options) {
             console.log('unassign container', this.model)
             staffOnly = false
-            if (options.bl in app.config.onlyStaffCanAssign) {
-                staffOnly = app.config.onlyStaffCanAssign[options.bl]
+            const onlyStaffCanAssign = app.options.get('only_staff_can_assign')
+            if (options.bl in onlyStaffCanAssign) {
+                staffOnly = onlyStaffCanAssign[options.bl]
             }
             if (staffOnly && !app.staff) {
                 app.alert({ message: 'Only staff are able to unassign containers on '+options.bl })
@@ -121,8 +128,12 @@ define(['marionette', 'backbone', 'views/pages',
                 data: { visit: options.visit, cid: this.model.get('CONTAINERID') },
                 success: this.unassignUpdateGUI.bind(this, options),
                 error: function(xhr, message, options) {
-                    app.alert({ message: 'Something went wrong unassigning this container:' })
-                    
+                    try {
+                        json = JSON.parse(xhr.responseText)
+                        app.alert({ message: json.message })
+                    } catch {
+                        app.alert({ message: 'Something went wrong unassigning this container.' })
+                    }
                 },
             })
         },
