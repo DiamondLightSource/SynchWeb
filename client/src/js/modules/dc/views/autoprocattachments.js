@@ -67,11 +67,9 @@ define(['marionette',
                         // if !industrial Proposal && iCatURL is present in config, this file has been removed from store but may be available in iCat/Archive.
                         iCatBaseUrl !== ""
                             ? this.$el.html('<a class="button" href=' + iCatBaseUrl +' target="_blank"><i class="fa fa-external-link"/> iCat</a>') 
-                            : this.$el.html('<div>iCatURL missing</div>')
+                            : this.$el.html('')
                     }
                 }
-                
-                // non purged session. This should be caught in the main if block!
             }
 
             return this
@@ -197,11 +195,11 @@ define(['marionette',
          * @returns {URL | undefined} undefined if baseUrl not set OR if proposal begins with "in" | "sw".
          */
         getICatProposalRootUrl: function(proposalID) {
-            var iCatBaseURl = app.options.get("icat_base_url");
-            if (!iCatBaseURl) console.warn("'icat_base_url' has not been configured for purged attachments. @see config.php")
+            var iCatBaseUrl = app.options.get("icat_base_url");
+            if (!iCatBaseUrl) console.warn("'icat_base_url' has not been configured for purged attachments. @see config.php")
 
-            return iCatBaseURl
-                ? new URL("browse/proposal/" + proposalID.toUpperCase() + "/investigation" , iCatBaseURl)
+            return iCatBaseUrl
+                ? new URL(`browse/proposal/${proposalID.toUpperCase()}/investigation`, iCatBaseUrl)
                 : undefined;
         },
 
