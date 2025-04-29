@@ -56,7 +56,7 @@ define(['marionette', 'backbone', 'views/pages',
         assignContainer: function(e, options) {
             console.log('confirm container on to', options.id, this.model)
             staffOnly = false
-            const onlyStaffCanAssign = app.options.get('only_staff_can_assign')
+            const onlyStaffCanAssign = app.options.get('only_staff_can_assign') || {}
             if (options.bl in onlyStaffCanAssign) {
                 staffOnly = onlyStaffCanAssign[options.bl]
             }
@@ -106,7 +106,7 @@ define(['marionette', 'backbone', 'views/pages',
         unassignContainer: function(e, options) {
             console.log('unassign container', this.model)
             staffOnly = false
-            const onlyStaffCanAssign = app.options.get('only_staff_can_assign')
+            const onlyStaffCanAssign = app.options.get('only_staff_can_assign') || {}
             if (options.bl in onlyStaffCanAssign) {
                 staffOnly = onlyStaffCanAssign[options.bl]
             }
