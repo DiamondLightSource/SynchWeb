@@ -6,6 +6,8 @@
     <% if (DHL_ENABLE) { %>
         <% if (DELIVERYAGENT_HAS_LABEL == '1') { %>
             <p class="message notify">You can print your Air Waybill by clicking &quot;Print Air Waybill&quot; below</p>
+        <% } else if (SAFETYLEVEL == "Red") { %>
+            <p class="message alert">Shipping of <%- SAFETYLEVEL.toLowerCase() %> samples is not available through this application.
         <% } else if (COUNTRY && FACILITY_COURIER_COUNTRIES_NDE.includes(COUNTRY) ) { %>
             <p class="message alert">International shipping is not available through this application. If you're arranging your own shipping (e.g. industrial users), enter your tracking numbers below after booking and include printed return labels in the dewar case. European academic users, please see <a href="<%-FACILITY_COURIER_COUNTRIES_LINK%>">here</a>.</p>
         <% } else if (COUNTRY && !FACILITY_COURIER_COUNTRIES.includes(COUNTRY) ) { %>
@@ -28,7 +30,7 @@
             <% if (!DELIVERYAGENT_PICKUPCONFIRMATION) { %>
                 <a class="button awb" href="/shipments/pickup/sid/<%-SHIPPINGID%>"><i class="fa fa-truck"></i> Rebook Pickup</a>
             <% } %>
-        <% } else if (COUNTRY && COUNTRY !="United Kingdom" ) { %>
+        <% } else if ((COUNTRY && !FACILITY_COURIER_COUNTRIES.includes(COUNTRY)) || SAFETYLEVEL == "Red") { %>
             <a class="button" href="#"><i class="fa fa-credit-card"></i> Create Air Waybill - Disabled</a>
         <% } else if (EXTERNALSHIPPINGIDTOSYNCHROTRON && app.options.get("shipping_service_app_url_incoming")) { %>
             <% const link = `${app.options.get('shipping_service_app_url_incoming')}/shipment-requests/${EXTERNALSHIPPINGIDTOSYNCHROTRON}/incoming` %>
