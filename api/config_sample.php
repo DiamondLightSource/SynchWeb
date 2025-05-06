@@ -379,6 +379,11 @@
         'i03' => "BL03I-MO-ROBOT-01:PUCK_%02d_NAME"
     );
 
+    $only_staff_can_assign = array(
+        'i03' => False,
+        'i04' => False,
+    );
+
     # Dials server values
     $dials_rest_url = "";
     $dials_rest_jwt = "";
