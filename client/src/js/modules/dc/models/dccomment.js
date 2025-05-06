@@ -22,7 +22,7 @@ define(['backbone', 'markdown'], function(Backbone, markdown) {
 
 
     initialize: function(attrs, options) {
-      this.on('change', this.addDate, this)
+      this.listenTo(this, 'change:CREATETIME change:MODTIME change:COMMENTS', this.addDate)
       this.addDate()
     },
       
