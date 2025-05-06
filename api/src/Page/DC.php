@@ -1466,7 +1466,7 @@ class DC extends Page
     # Grid Scan Info
     function _grid_info()
     {
-        $info = $this->db->pq("SELECT dc.datacollectiongroupid, dc.datacollectionid, dc.axisstart, p.posx as x, p.posy as y, p.posz as z, g.dx_mm, g.dy_mm, g.steps_x, g.steps_y, g2.steps_y as steps_z, IFNULL(g.micronsperpixelx,g.pixelspermicronx) as micronsperpixelx, IFNULL(g.micronsperpixely,g.pixelspermicrony) as micronsperpixely, g.snapshot_offsetxpixel, g.snapshot_offsetypixel, g.orientation, g.snaked, DATE_FORMAT(dc.starttime, '%Y%m%d') as startdate, xrc.status as xrcstatus, xrcr.xraycentringresultid
+        $info = $this->db->pq("SELECT dc.datacollectiongroupid, dc.datacollectionid, dc.axisstart, p.posx as x, p.posy as y, p.posz as z, g.dx_mm, g.dy_mm, g.steps_x, g.steps_y, g2.steps_y as steps_z, g.micronsperpixelx, g.micronsperpixely, g.snapshot_offsetxpixel, g.snapshot_offsetypixel, g.orientation, g.snaked, DATE_FORMAT(dc.starttime, '%Y%m%d') as startdate, xrc.status as xrcstatus, xrcr.xraycentringresultid
                 FROM gridinfo g
                 INNER JOIN datacollection dc on (dc.datacollectionid = g.datacollectionid) or (dc.datacollectiongroupid = g.datacollectiongroupid)
                 LEFT OUTER JOIN position p ON dc.positionid = p.positionid
