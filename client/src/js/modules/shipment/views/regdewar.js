@@ -5,7 +5,6 @@ define(['marionette',
     'modules/shipment/collections/dewarreports',
     'modules/shipment/collections/dewarproposals',
     'collections/dewars',
-    'collections/labcontacts',
 
     'views/table',
     'utils/table',
@@ -21,7 +20,6 @@ define(['marionette',
     DewarReports,
     DewarProposals,
     Dewars,
-    LabContacts,
 
     TableView,
     table,
@@ -169,7 +167,10 @@ define(['marionette',
             // Is there an existing history for this dewar code?
             var dewar = this.dewars.at(0)
             if (dewar) {
-                this.history.queryParams.did = dewar.get('DEWARID')
+                this.history.queryParams.FACILITYCODE = this.model.get('FACILITYCODE')
+                if (app.staff) {
+                    this.history.queryParams.all = 1
+                }
                 this.history.fetch()
             } else {
                 console.log("No dewar history for this registered dewar")
@@ -182,12 +183,6 @@ define(['marionette',
             var edit = new Editable({ model: this.model, el: this.$el })
             edit.create('PURCHASEDATE', 'date')
             edit.create('MANUFACTURERSERIALNUMBER', 'text')
-
-            var self = this
-            this.contacts = new LabContacts(null, { state: { pageSize: 9999 } })
-            this.contacts.fetch().done(function() {
-                edit.create('LABCONTACTID', 'select', { data: self.contacts.kv() })
-            })
 
             this.hist.show(this.histtable)
             this.dew.show(this.dewtable)

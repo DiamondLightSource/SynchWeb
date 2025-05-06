@@ -41,6 +41,7 @@ define(['marionette',
       warningli: '.warning-li',
 
       holder: '.holder h1',
+      gridsize: '.gridsize',
     },
 
     toggleZoom: function(e) {
@@ -120,6 +121,9 @@ define(['marionette',
         if (this.ui.bx.text) this.ui.by.text((gi.get('DY_MM')*1000).toFixed(0))
 
         if (gi.get('STEPS_Y') > 10 && this.ui.zoom.show) this.ui.zoom.show()
+        var gridsize = gi.get('STEPS_X') + ' x ' + gi.get('STEPS_Y')
+        if (gi.get('STEPS_Z')) { gridsize += ' x ' + gi.get('STEPS_Z') }
+        this.ui.gridsize.html(gridsize)
     },
 
     checkXRC: function() {
@@ -144,7 +148,7 @@ define(['marionette',
         var xrcs = this.xrc.get('data')
         var t = ''
         for (var i = 0; i < xrcs.length; i++) {
-            t += ' - Crystal '+(i+1)+': X Pos '+xrcs[i]['X']+' Y Pos '+xrcs[i]['Y']+' Z Pos '+xrcs[i]['Z']
+            t += ' - Crystal '+(i+1)+': X Pos '+xrcs[i]['X']+' Y Pos '+xrcs[i]['Y']+' Z Pos '+xrcs[i]['Z']+' Strength '+xrcs[i]['TOTALCOUNT']
         }
         if (xrcs.length > 0) {
             this.ui.holder.prepend('Method: '+xrcs[0]['METHOD']+t)
