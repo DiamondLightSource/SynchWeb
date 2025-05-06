@@ -79,8 +79,8 @@ define(['backbone', 'marionette',
             if (this.getOption('links')) {
                 var links = [
                     '<a class="view button" href="/dc/map/id/'+this.getOption('DCID')+'/aid/'+this.model.get('AID')+'"><i class="fa fa-search"></i> Map / Model Viewer</a>',
-                    '<a class="dll button" href="'+app.apiurl+'/download/ap/archive/'+this.model.get('AID')+'"><i class="fa fa-archive"></i> Archive</a>',
-                    '<a class="pattach button" href="#"><i class="fa fa-files-o"></i> Logs &amp; Files</a>'
+                    '<a class="pattach button" href="#"><i class="fa fa-files-o"></i> Logs &amp; Files</a>',
+                    '<a class="dll button" href="'+app.apiurl+'/download/ap/archive/'+this.model.get('AID')+'"><i class="fa fa-cloud-download"></i> Download Zip</a>',
                 ]
 
                 if (!this.getOption('mapLink')) {
