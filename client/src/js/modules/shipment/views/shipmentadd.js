@@ -77,6 +77,7 @@ define(['marionette', 'views/form',
             responsive: '#responsive',
             imaging: '#imaging',
             existing: '#existingsession',
+            nosessions: '#nosessions',
             other: '#other',
             safetylevel: 'select[name=SAFETYLEVEL]',
             longwavelengthsel: 'select[name=LONGWAVELENGTH]',
@@ -122,11 +123,17 @@ define(['marionette', 'views/form',
                 this.ui.other.prop('checked', false)
                 this.updateDynamicSchedule()
             }
+            this.visits.fetch().done(this.updateFirstExp.bind(this))
         },
 
         updateFirstExp: function() {
             if (this.visits.length === 0) {
                 this.ui.existing.prop('disabled', true)
+                this.ui.existing.prop('checked', false)
+                this.ui.nosessions.html('(no suitable sessions found)')
+            } else {
+                this.ui.existing.prop('disabled', false)
+                this.ui.nosessions.html('')
             }
             if (this.ui.existing.is(':checked')) {
                 this.ui.first.show()
@@ -182,6 +189,11 @@ define(['marionette', 'views/form',
             }
         },
 
+        getRiskRating: function() {
+            if (this.ui.safetylevel.val() === 'Yellow') return 'medium'
+            if (this.ui.safetylevel.val() === 'Red') return 'high'
+        },
+
         onRender: function() {
             var self = this
 
@@ -194,6 +206,7 @@ define(['marionette', 'views/form',
             this.refreshContacts()
             
             this.visits = new Visits(null, { queryParams: { next: 1 }, state: { pageSize: 9999 } })
+            this.visits.queryParams.RISKRATING = this.getRiskRating.bind(this)
             this.visits.fetch().done(this.updateFirstExp.bind(this))
             
             this.date('input[name=DELIVERYAGENT_SHIPPINGDATE], input[name=DELIVERYAGENT_DELIVERYDATE]')
