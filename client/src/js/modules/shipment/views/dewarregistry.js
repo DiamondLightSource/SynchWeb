@@ -45,7 +45,7 @@ define(['marionette', 'backgrid',
         },
         
         success: function() {
-            app.alert({message: 'New dewar registered ' + this.model.get('FACILITYCODE'), notify: true})
+            app.message({message: 'New dewar registered ' + this.model.get('FACILITYCODE'), notify: true})
             this.ui.fc.val('')
             this.ui.date.val('')
             this.ui.serial.val('')
