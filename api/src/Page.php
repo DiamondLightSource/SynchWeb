@@ -758,7 +758,7 @@ class Page
      */
     function _get_name($fedid)
     {
-        $src = $this->_ldap_search('uid=' . $fedid);
+        $src = $this->_ldap_search($ldap_id_field . '=' . $fedid);
         return array_key_exists($fedid, $src) ? $src[$fedid] : '';
     }
 
@@ -770,7 +770,7 @@ class Page
      */
     function _get_email($fedid)
     {
-        $src = $this->_ldap_search('uid=' . $fedid, True);
+        $src = $this->_ldap_search($ldap_id_field . '=' . $fedid, True);
         return array_key_exists($fedid, $src) ? $src[$fedid] : $fedid;
     }
 
@@ -853,7 +853,7 @@ class Page
      * Search LDAP for name or email
      *
      * @param boolean $email Search for an email adddress if true, search for name if false
-     * @param string $search ldap query, typically uid=fedid or name search
+     * @param string $search ldap query, typically cn=fedid or name search
      * @return array Returns array of results, either fedid=>emailAddresses or fedid=>"givenname sn" from ldap records
      */
     function _ldap_search($search, $email = False)
@@ -881,7 +881,7 @@ class Page
             {
                 // Strictly speaking we could set anything as the key here, since only the first record is used in e.g. _get_email_fn
                 // But as the logic maps fedid=>email, use similar keys here
-                $fedid = $info[$i]['uid'][0];
+                $fedid = $info[$i][$ldap_id_field][0];
                 if ($email)
                 {
                     $ret[$fedid] = array_key_exists('mail', $info[$i]) ? $info[$i]['mail'][0] : '';
