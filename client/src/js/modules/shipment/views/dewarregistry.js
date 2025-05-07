@@ -161,6 +161,7 @@ define(['marionette', 'backgrid',
 
             if (app.staff) {
                 this.listenTo(this.collection, 'backgrid:selected', this.selectModel, this)
+                this.collection.each(this.bindModelEvents, this)
 
                 this.proposals = new Proposals()
                 this.listenTo(this.proposals, 'backgrid:selected', this.selectModel, this)
@@ -189,7 +190,11 @@ define(['marionette', 'backgrid',
                 })
             }
         },
-                                          
+
+        bindModelEvents: function(model) {
+            this.listenTo(model, 'backgrid:selected', this.selectModel)
+        },
+
         addToCollection: function(m) {
             this.collection.add(m)
             this.addProposalsToModel(m)
@@ -207,7 +212,16 @@ define(['marionette', 'backgrid',
                         m.set('PROPOSALS', props.join(','))
                         if (!m.get('PROP')) m.set('PROP', p.get('PROPOSAL'))
                         // This will be called multiple times for many proposals. Might be a cleaner method..?
-                        app.message({message: 'Added registered dewar ' + m.get('FACILITYCODE') + ' to proposal(s) ' + props, notify: true})
+                        app.message({message: 'Added registered dewar ' + m.get('FACILITYCODE') + ' to proposal ' + p.get('PROPOSAL'), notify: true})
+                    },
+                    error: function(model, response, options) {
+                        var errorMsg
+                        try {
+                            errorMsg = response.responseJSON.message
+                        } catch (e) {
+                            errorMsg = 'An unknown error occurred.'
+                        }
+                        app.alert({message: 'Failed to add ' + m.get('FACILITYCODE') + ' to proposal ' + p.get('PROPOSAL') + ': ' + errorMsg, notify: true})
                     }
                 })
             }, this)
