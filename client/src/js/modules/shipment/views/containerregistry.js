@@ -111,6 +111,7 @@ define(['marionette',
 
             if (app.staff) {
                 this.listenTo(this.collection, 'backgrid:selected', this.selectModel, this)
+                this.collection.each(this.bindModelEvents, this)
 
                 this.proposals = new Proposals()
                 this.listenTo(this.proposals, 'backgrid:selected', this.selectModel, this)
@@ -138,7 +139,11 @@ define(['marionette',
                 })
             }
         },
-                                          
+
+        bindModelEvents: function(model) {
+            this.listenTo(model, 'backgrid:selected', this.selectModel)
+        },
+
         addToCollection: function(m) {
             this.collection.add(m)
             this.addProposalsToModel(m)
