@@ -101,6 +101,7 @@ export default {
         if (!this.mview) {
           const newViewContainers = {
             mx: 'mx-container-view',
+            sm: 'mx-container-view',
           }
 
           this.componentType = newViewContainers[this.proposalType]

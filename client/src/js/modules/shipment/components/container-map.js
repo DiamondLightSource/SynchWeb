@@ -16,6 +16,7 @@ export const ContainerListMap = {
 // We assign null to the view property because we want to use new components
 export const ContainerViewMap = {
   mx:     { title: 'Container', view: null },
+  sm:     { title: 'Container', view: null },
   xpdf:   { title: 'Container', view: XpdfContainerView },
   default:{ title: 'Container', view: ContainerView }
 }
@@ -29,6 +30,8 @@ export const ContainerPlateViewMap = {
 export const ContainerAddMap = {
     xpdf:   { title: 'Container', view: XpdfContainerAddView },
     default:{ title: 'Container', view: ContainerAddView },
+    sm: { title: 'Container', view: null },
     mx: { title: 'Container', view: null }
+
 }
 
