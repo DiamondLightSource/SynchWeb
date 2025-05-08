@@ -758,6 +758,8 @@ class Page
      */
     function _get_name($fedid)
     {
+        global $ldap_id_field;
+
         $src = $this->_ldap_search($ldap_id_field . '=' . $fedid);
         return array_key_exists($fedid, $src) ? $src[$fedid] : '';
     }
@@ -770,6 +772,8 @@ class Page
      */
     function _get_email($fedid)
     {
+        global $ldap_id_field;
+
         $src = $this->_ldap_search($ldap_id_field . '=' . $fedid, True);
         return array_key_exists($fedid, $src) ? $src[$fedid] : $fedid;
     }
@@ -858,7 +862,7 @@ class Page
      */
     function _ldap_search($search, $email = False)
     {
-        global $ldap_server, $ldap_search;
+        global $ldap_server, $ldap_search, $ldap_id_field;
 
         $ret = array();
         if (is_null($ldap_server)) {
