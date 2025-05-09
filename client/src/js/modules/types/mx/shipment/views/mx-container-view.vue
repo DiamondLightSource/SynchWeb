@@ -322,7 +322,7 @@ export default {
             cancel: 'closeModal',
             confirm: 'unQueueContainer'
           },
-          message: `<p>Are you sure you want to remove this container from the queue? You will loose your current place</p>`
+          message: `<p>Are you sure you want to remove this container from the queue? You will lose your current place</p>`
         }
       },
       currentModal: 'queueContainer',
