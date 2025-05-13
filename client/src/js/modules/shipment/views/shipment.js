@@ -57,7 +57,8 @@ define(['marionette',
             longwavelength: '.longwavelength',
             sent: '.sent',
             booking: '.booking',
-            dhlmessage: '.dhlmessage'
+            dhlmessage: '.dhlmessage',
+            buttons: '.buttons',
         },
 
 
@@ -174,7 +175,7 @@ define(['marionette',
 
         updateGUI: function() {
             this.updateCountryFromLabContact()
-            this.showSentButton()
+            this.showButtons()
             this.showBooking()
             this.showDhlMessage()
             this.updateDynamic()
@@ -187,7 +188,12 @@ define(['marionette',
             if (contact) this.model.set('COUNTRY', contact.get('COUNTRY'))
         },
 
-        showSentButton: function() {
+        showButtons: function() {
+            if (this.model.get('LCOUT') && this.model.get('SAFETYLEVEL')) {
+                this.ui.buttons.show()
+            } else {
+                this.ui.buttons.hide()
+            }
             const status = this.model.get('SHIPPINGSTATUS')
             const proc = this.model.get('PROCESSING')
             if ((status === 'opened' || status === 'awb created' || status === 'pickup booked') && proc == 0) {
@@ -231,13 +237,16 @@ define(['marionette',
                 const safetylevel = this.model.get('SAFETYLEVEL')
                 const country = this.model.get('COUNTRY')
                 const courier = this.model.get('DELIVERYAGENT_AGENTNAME')
+                const lcout = this.model.get('LCOUT')
                 const fac_country_nde = app.options.get('facility_courier_countries_nde')
                 const fac_country_link = app.options.get('facility_courier_countries_link')
                 const fac_country = app.options.get('facility_courier_countries')
-                if (label == '1') {
+                if (!lcout || !safetylevel) {
+                    this.ui.dhlmessage.html('<p class="message notify">Set an Outgoing Lab Contact and Safety Level in order to manage shipping.</p>')
+                } else if (label == '1') {
                     this.ui.dhlmessage.html('<p class="message notify">You can print your Air Waybill by clicking &quot;Print Air Waybill&quot; below.</p>')
                 } else if (safetylevel && safetylevel == "Red") {
-                    this.ui.dhlmessage.html('<p class="message alert">Shipping of red samples is not available through this application.')
+                    this.ui.dhlmessage.html('<p class="message alert">Shipping of red samples is not available through this application.</p>')
                 } else if (country && fac_country_nde.includes(country) ) {
                     this.ui.dhlmessage.html('<p class="message alert">International shipping is not available through this application. If you&apos;re arranging your own shipping (e.g. industrial users), enter your tracking numbers below after booking and include printed return labels in the dewar case. European academic users, please see <a href="'+fac_country_link+'">here</a>.</p>')
                 } else if (country && !fac_country.includes(country) ) {
