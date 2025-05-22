@@ -38,7 +38,7 @@ class Shipment extends Page
 
         // Dewar Fields
         'CODE' => '([\w\-])+',
-        'FACILITYCODE' => '([\w\-])+',
+        'FACILITYCODE' => '([\w\-])*',
         'NEWFACILITYCODE' => '([\w\-])+',
         'TRACKINGNUMBERTOSYNCHROTRON' => '\w*',
         'TRACKINGNUMBERFROMSYNCHROTRON' => '\w*',
@@ -1721,7 +1721,7 @@ class Shipment extends Page
             CONCAT(p.proposalcode, p.proposalnumber, '-', se2.visit_number) as udcfirstexperiment,
             r.labcontactid, se.beamlineoperator as localcontact, se.beamlinename,
             TO_CHAR(se.startdate, 'HH24:MI DD-MM-YYYY') as firstexperimentst, d.firstexperimentid,
-            s.shippingid, s.shippingname, d.facilitycode, count(c.containerid) as ccount,
+            s.shippingid, s.shippingname, IFNULL(r.facilitycode, d.facilitycode) as facilitycode, count(c.containerid) as ccount,
             (case when se.visit_number > 0 then (CONCAT(p.proposalcode, p.proposalnumber, '-', se.visit_number)) else '' end) as exp,
             d.code, d.barcode, d.storagelocation, d.dewarstatus, d.dewarid,
             d.trackingnumbertosynchrotron, d.trackingnumberfromsynchrotron, d.externalShippingIdFromSynchrotron,
@@ -1733,11 +1733,11 @@ class Shipment extends Page
               INNER JOIN proposal p ON p.proposalid = s.proposalid
               LEFT OUTER JOIN blsession se ON d.firstexperimentid = se.sessionid
               LEFT OUTER JOIN blsession se2 ON c.sessionid = se2.sessionid
-              LEFT OUTER JOIN dewarregistry r ON r.facilitycode = d.facilitycode
+              LEFT OUTER JOIN dewarregistry r ON r.dewarregistryid = d.dewarregistryid
               LEFT OUTER JOIN labcontact lc ON s.sendinglabcontactid = lc.labcontactid
               LEFT OUTER JOIN person pe ON lc.personid = pe.personid
               WHERE $where 
-              GROUP BY CONCAT(p.proposalcode, p.proposalnumber, '-', se.visit_number), r.labcontactid, se.beamlineoperator, TO_CHAR(se.startdate, 'HH24:MI DD-MM-YYYY'), (case when se.visit_number > 0 then (CONCAT(p.proposalcode, p.proposalnumber, '-', se.visit_number)) else '' end),s.shippingid, s.shippingname, d.code, d.barcode, d.storagelocation, d.dewarstatus, d.dewarid,  d.trackingnumbertosynchrotron, d.trackingnumberfromsynchrotron, d.facilitycode, d.firstexperimentid
+              GROUP BY CONCAT(p.proposalcode, p.proposalnumber, '-', se.visit_number), r.labcontactid, se.beamlineoperator, TO_CHAR(se.startdate, 'HH24:MI DD-MM-YYYY'), (case when se.visit_number > 0 then (CONCAT(p.proposalcode, p.proposalnumber, '-', se.visit_number)) else '' end),s.shippingid, s.shippingname, d.code, d.barcode, d.storagelocation, d.dewarstatus, d.dewarid,  d.trackingnumbertosynchrotron, d.trackingnumberfromsynchrotron, facilitycode, d.firstexperimentid
               ORDER BY $order", $args);
 
         if ($this->has_arg('did')) {
@@ -1771,6 +1771,7 @@ class Shipment extends Page
         $to = $this->has_arg('TRACKINGNUMBERTOSYNCHROTRON') ? $this->arg('TRACKINGNUMBERTOSYNCHROTRON') : '';
         $from = $this->has_arg('TRACKINGNUMBERFROMSYNCHROTRON') ? $this->arg('TRACKINGNUMBERFROMSYNCHROTRON') : '';
         $fc = $this->has_arg('FACILITYCODE') ? $this->arg('FACILITYCODE') : '';
+        $drid = $this->_get_dewarregistryid($fc);
         $wg = $this->has_arg('WEIGHT') ? $this->arg('WEIGHT') : $dewar_weight;
         $exp = null;
         $source = $this->has_arg('SOURCE') ? $this->arg('SOURCE') : null;
@@ -1781,9 +1782,9 @@ class Shipment extends Page
         }
 
         $this->db->pq(
-            "INSERT INTO dewar (dewarid,code,trackingnumbertosynchrotron,trackingnumberfromsynchrotron,shippingid,bltimestamp,dewarstatus,firstexperimentid,facilitycode,weight,source)
-              VALUES (s_dewar.nextval,:1,:2,:3,:4,CURRENT_TIMESTAMP,'opened',:5,:6,:7,IFNULL(:8,CURRENT_USER)) RETURNING dewarid INTO :id",
-            array($this->arg('CODE'), $to, $from, $this->arg('SHIPPINGID'), $exp, $fc, $wg, $source)
+            "INSERT INTO dewar (dewarid,code,trackingnumbertosynchrotron,trackingnumberfromsynchrotron,shippingid,bltimestamp,dewarstatus,firstexperimentid,facilitycode,dewarregistryid,weight,source)
+              VALUES (s_dewar.nextval,:1,:2,:3,:4,CURRENT_TIMESTAMP,'opened',:5,:6,:7,:8,IFNULL(:9,CURRENT_USER)) RETURNING dewarid INTO :id",
+            array($this->arg('CODE'), $to, $from, $this->arg('SHIPPINGID'), $exp, $fc, $drid, $wg, $source)
         );
 
         $id = $this->db->id();
@@ -1929,6 +1930,9 @@ class Shipment extends Page
                     } else {
                         $this->_output(1);
                     }
+                } else if ($f === 'FACILITYCODE') {
+                    $drid = $this->_get_dewarregistryid($this->arg($f));
+                    $this->db->pq("UPDATE dewar SET $f=:1, dewarregistryid=:2 WHERE dewarid=:3", array($this->arg($f), $drid, $this->arg('did')));
                 } else {
                     $this->db->pq("UPDATE dewar SET $f=:1 WHERE dewarid=:2", array($this->arg($f), $this->arg('did')));
                     $this->_output(array($f => $this->arg($f)));
@@ -3122,11 +3126,12 @@ class Shipment extends Page
                 for ($i = 0; $i < $this->arg('DEWARS'); $i++) {
                     $fc = $i < sizeof($this->arg('FCODES')) ? $fcs[$i] : '';
                     $n = $fc ? $fc : ('Dewar' . ($i + 1));
+                    $drid = $this->_get_dewarregistryid($fc);
 
                     $this->db->pq(
-                        "INSERT INTO dewar (dewarid,code,shippingid,bltimestamp,dewarstatus,firstexperimentid,facilitycode,weight,source)
-                          VALUES (s_dewar.nextval,:1,:2,CURRENT_TIMESTAMP,'opened',:3,:4,:5,IFNULL(:6,CURRENT_USER)) RETURNING dewarid INTO :id",
-                        array($n, $sid, $exp, $fc, $dewar_weight, $source)
+                        "INSERT INTO dewar (dewarid,code,shippingid,bltimestamp,dewarstatus,firstexperimentid,facilitycode,dewarregistryid,weight,source)
+                          VALUES (s_dewar.nextval,:1,:2,CURRENT_TIMESTAMP,'opened',:3,:4,:5,:6,IFNULL(:7,CURRENT_USER)) RETURNING dewarid INTO :id",
+                        array($n, $sid, $exp, $fc, $drid, $dewar_weight, $source)
                     );
 
                     $id = $this->db->id();
@@ -3144,6 +3149,17 @@ class Shipment extends Page
         }
 
         $this->_output(array('SHIPPINGID' => $sid));
+    }
+
+    function _get_dewarregistryid($fc)
+    {
+        $drid = null;
+        if ($fc) {
+            $dr = $this->db->pq("SELECT dewarregistryid FROM dewarregistry where facilitycode=:1", array($fc));
+            if (sizeof($dr))
+                $drid = $dr[0]['DEWARREGISTRYID'];
+        }
+        return $drid;
     }
 
     function _get_default_dewar()
