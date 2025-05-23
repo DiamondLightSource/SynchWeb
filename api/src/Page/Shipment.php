@@ -952,7 +952,7 @@ class Shipment extends Page
         // Remove sessionId from containers and unqueue any pucks, so it doesnt look like a finished UDC dewar
         $this->db->pq("UPDATE container set sessionid=NULL WHERE dewarid=:1", array($this->arg('DEWARID')));
         $this->db->pq("DELETE cq from containerqueue cq
-                        inner join container c ON c.containerid = cq.containerid
+                        INNER JOIN container c ON c.containerid = cq.containerid
                         WHERE dewarid=:1", array($this->arg('DEWARID')));
 
         if ($this->has_arg('NEXTVISIT')) {
