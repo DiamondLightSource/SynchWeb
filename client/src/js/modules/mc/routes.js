@@ -18,6 +18,7 @@ const routes = [
                         visit: route.params.visit, 
                         s: route.params.search, 
                         t: 'fc',
+                        expandgroups: 1,
                     },
                     state: { currentPage: route.params.page ? parseInt(route.params.page) : 1}
                 }),
