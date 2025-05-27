@@ -31,12 +31,17 @@ class AssignController extends Page
 
     function assignContainer()
     {
+        global $only_staff_can_assign;
         $cs = $this->assignData->getContainer($this->arg('visit'), $this->arg('cid'));
-
         if (sizeof($cs) > 0)
         {
-            $this->assignData->assignContainer($cs[0], $this->arg('pos'));
-            $this->_output(1);
+            $bl = $cs[0]['BEAMLINENAME'];
+            if (is_array($only_staff_can_assign) && array_key_exists($bl, $only_staff_can_assign) && $only_staff_can_assign[$bl] == true && !$this->staff) {
+                $this->_error("Only staff can assign containers on this beamline");
+            } else {
+                $this->assignData->assignContainer($cs[0], $this->arg('pos'));
+                $this->_output(1);
+            }
         }
         else
         {
@@ -46,12 +51,18 @@ class AssignController extends Page
 
     function unassignContainer()
     {
+        global $only_staff_can_assign;
         $cs = $this->assignData->getContainer($this->arg('visit'), $this->arg('cid'));
 
         if (sizeof($cs) > 0)
         {
-            $this->assignData->unassignContainer($cs[0]);
-            $this->_output(1);
+            $bl = $cs[0]['BEAMLINENAME'];
+            if (is_array($only_staff_can_assign) && array_key_exists($bl, $only_staff_can_assign) && $only_staff_can_assign[$bl] == true && !$this->staff) {
+                $this->_error("Only staff can unassign containers on this beamline");
+            } else {
+                $this->assignData->unassignContainer($cs[0]);
+                $this->_output(1);
+            }
         }
         else
         {

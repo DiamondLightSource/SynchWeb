@@ -12,6 +12,7 @@ define(['backbone', 'marionette',
         className: 'downstream-item',
         links: true,
         mapLink: true,
+        dcPurgedProcessedData: "0",
         template: _.template('<div class="dpmessages"></div><% if(PARENT) { %><div class="r dplinks"></div><h2><%-PARENT%></h2><% } else { %><div class="ra dplinks"></div><% } %><div class="dpwrapper"></div>'),
         regions: {
             messages: '.dpmessages',
@@ -39,7 +40,11 @@ define(['backbone', 'marionette',
 
             app.dialog.show(new DialogView({ 
                 title: 'Attachments: '+this.model.escape('TYPE'),
-                view: new AutoProcAttachmentsView({ collection: this.attachments, idParam: 'AUTOPROCPROGRAMATTACHMENTID' }), 
+                view: new AutoProcAttachmentsView({ 
+                    collection: this.attachments,
+                    idParam: 'AUTOPROCPROGRAMATTACHMENTID',
+                    dcPurgedProcessedData: this.dcPurgedProcessedData 
+                }), 
                 autosize: true 
             }))
         },
@@ -74,8 +79,8 @@ define(['backbone', 'marionette',
             if (this.getOption('links')) {
                 var links = [
                     '<a class="view button" href="/dc/map/id/'+this.getOption('DCID')+'/aid/'+this.model.get('AID')+'"><i class="fa fa-search"></i> Map / Model Viewer</a>',
-                    '<a class="dll button" href="'+app.apiurl+'/download/ap/archive/'+this.model.get('AID')+'"><i class="fa fa-archive"></i> Archive</a>',
-                    '<a class="pattach button" href="#"><i class="fa fa-files-o"></i> Logs &amp; Files</a>'
+                    '<a class="pattach button" href="#"><i class="fa fa-files-o"></i> Logs &amp; Files</a>',
+                    '<a class="dll button" href="'+app.apiurl+'/download/ap/archive/'+this.model.get('AID')+'"><i class="fa fa-cloud-download"></i> Download Zip</a>',
                 ]
 
                 if (!this.getOption('mapLink')) {

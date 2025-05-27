@@ -142,6 +142,8 @@
 
     # Visit directory on disk
     $visit_directory = '/dls/<%=BEAMLINENAME%>/data/<%=YEAR%>/<%=VISIT%>';
+    # If found ANYWHERE in a visit filePath the system will assume that any files there exist indefinitely
+    $visit_persist_storage_dir_segment = 'persistent/dir/name';
 
     # Diffraction image snapshots
     $jpeg_location = '<%=VISITDIR%>/jpegs/<%=IMDIRECTORY%>/<%=IMFILE%>.jpeg';
@@ -220,6 +222,8 @@
     $facility_contact = "A person";
     $facility_phone = "01234 567890";
     $facility_email = "stores@facility.co.uk";
+    # Append to find logs/files etc once they have been moved to cold storage
+    $icat_base_url = "https://icat.yourFacility.ac.uk";
 
     // List of domestic free countries
     $facility_courier_countries = array('United Kingdom');
@@ -373,6 +377,11 @@
     # Map of beamlinename to puck name pv
     $bl_puck_names = array(
         'i03' => "BL03I-MO-ROBOT-01:PUCK_%02d_NAME"
+    );
+
+    $only_staff_can_assign = array(
+        'i03' => False,
+        'i04' => False,
     );
 
     # Dials server values

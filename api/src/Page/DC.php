@@ -474,6 +474,7 @@ class DC extends Page
                     d.numberofpixelsx as detectornumberofpixelsx,
                     d.numberofpixelsy as detectornumberofpixelsy,
                     ses.archived,
+                    ses.purgedProcessedData,
                     IFNULL(dc.rotationaxis, 'Omega') as rotationaxis,
                     dc.detector2theta";
             $groupby = 'GROUP BY smp.name,
@@ -611,6 +612,7 @@ class DC extends Page
                     max(d.numberofpixelsx) as detectornumberofpixelsx,
                     max(d.numberofpixelsy) as detectornumberofpixelsy,
                     max(ses.archived) as archived,
+                    max(ses.purgedProcessedData) as purgedProcessedData,
                     IFNULL(max(dc.rotationaxis), 'Omega') as rotationaxis,
                     dc.detector2theta";
             $groupby = "GROUP BY dc.datacollectiongroupid";
@@ -771,6 +773,7 @@ class DC extends Page
                     '',
                     '',
                     ses.archived,
+                    ses.purgedProcessedData,
                     '',
                     ''
                 FROM energyscan es
@@ -867,6 +870,7 @@ class DC extends Page
                 '',
                 '',
                 ses.archived,
+                ses.purgedProcessedData,
                 '',
                 ''
             FROM xfefluorescencespectrum xrf
@@ -963,6 +967,7 @@ class DC extends Page
                 '',
                 '',
                 ses.archived,
+                ses.purgedProcessedData,
                 '',
                 ''
             FROM robotaction r
@@ -1461,7 +1466,7 @@ class DC extends Page
     # Grid Scan Info
     function _grid_info()
     {
-        $info = $this->db->pq("SELECT dc.datacollectiongroupid, dc.datacollectionid, dc.axisstart, p.posx as x, p.posy as y, p.posz as z, g.dx_mm, g.dy_mm, g.steps_x, g.steps_y, g2.steps_y as steps_z, IFNULL(g.micronsperpixelx,g.pixelspermicronx) as micronsperpixelx, IFNULL(g.micronsperpixely,g.pixelspermicrony) as micronsperpixely, g.snapshot_offsetxpixel, g.snapshot_offsetypixel, g.orientation, g.snaked, DATE_FORMAT(dc.starttime, '%Y%m%d') as startdate, xrc.status as xrcstatus, xrcr.xraycentringresultid
+        $info = $this->db->pq("SELECT dc.datacollectiongroupid, dc.datacollectionid, dc.axisstart, p.posx as x, p.posy as y, p.posz as z, g.dx_mm, g.dy_mm, g.steps_x, g.steps_y, g2.steps_y as steps_z, g.micronsperpixelx, g.micronsperpixely, g.snapshot_offsetxpixel, g.snapshot_offsetypixel, g.orientation, g.snaked, DATE_FORMAT(dc.starttime, '%Y%m%d') as startdate, xrc.status as xrcstatus, xrcr.xraycentringresultid
                 FROM gridinfo g
                 INNER JOIN datacollection dc on (dc.datacollectionid = g.datacollectionid) or (dc.datacollectiongroupid = g.datacollectiongroupid)
                 LEFT OUTER JOIN position p ON dc.positionid = p.positionid
