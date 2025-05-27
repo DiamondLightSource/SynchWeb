@@ -218,7 +218,7 @@ class Shipment extends Page
         // TODO: Need to have a separate method for handling queueing and unqueueing of containers
         array('/containers/queue(/:cid)', 'patch', '_queue_container'),
         array('/containers/queue(/:cid)', 'get', '_queue_container'),
-        array('/containers/barcode/:BARCODE', 'get', '_check_container'),
+        array('/containers/barcode/(:BARCODE)', 'get', '_check_container'),
 
 
         array('/containers/registry(/:CONTAINERREGISTRYID)', 'get', '_container_registry'),
@@ -2068,16 +2068,20 @@ class Shipment extends Page
     # Check if a barcode exists
     function _check_container()
     {
-        $cont = $this->db->pq("SELECT CONCAT(p.proposalcode, p.proposalnumber) as prop, c.barcode 
-              FROM container c
-              INNER JOIN dewar d ON d.dewarid = c.dewarid
-              INNER JOIN shipping s ON s.shippingid = d.shippingid
-              INNER JOIN proposal p ON p.proposalid = s.proposalid
-              WHERE c.barcode=:1", array($this->arg('BARCODE')));
+        if ($this->has_arg('BARCODE')) {
+            $cont = $this->db->pq("SELECT CONCAT(p.proposalcode, p.proposalnumber) as prop, c.barcode
+                  FROM container c
+                  INNER JOIN dewar d ON d.dewarid = c.dewarid
+                  INNER JOIN shipping s ON s.shippingid = d.shippingid
+                  INNER JOIN proposal p ON p.proposalid = s.proposalid
+                  WHERE c.barcode=:1", array($this->arg('BARCODE')));
 
-        if (!sizeof($cont))
-            $this->_error('Barcode not used');
-        $this->_output($cont[0]);
+            if (!sizeof($cont)) {
+                $this->_output('Barcode not used');
+            } else {
+                $this->_output($cont[0]);
+            }
+        }
     }
 
     function _get_all_containers()
