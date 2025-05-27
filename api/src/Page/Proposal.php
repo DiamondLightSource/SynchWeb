@@ -58,6 +58,7 @@ class Proposal extends Page
         'BEAMLINESETUPID' => '\d+',
         'BEAMCALENDARID' => '\d+',
         'VISITNUMBER' => '\d+',
+        'RISKRATING' => '\w+',
 
         // visit has person
         'SHPKEY' => '\d+\-\d+',
@@ -404,6 +405,16 @@ class Proposal extends Page
 
         if ($this->has_arg('scheduled')) {
             $where .= " AND s.scheduled=1";
+        }
+
+        if ($this->has_arg('RISKRATING')) {
+            if ($this->arg('RISKRATING') == 'high') {
+                $where .= " AND s.riskrating = 'high'";
+            } else if ($this->arg('RISKRATING') == 'medium') {
+                $where .= " AND s.riskrating in ('high', 'medium')";
+            } else if ($this->arg('RISKRATING') == 'low') {
+                $where .= " AND s.riskrating in ('high', 'medium', 'low')";
+            }
         }
 
         if ($visit) {
