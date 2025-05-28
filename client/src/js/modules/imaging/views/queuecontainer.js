@@ -477,7 +477,7 @@ define(['marionette',
 
     var SnapshotCell = Backgrid.Cell.extend({
         image: null,
-        className: 'cleafix',
+        className: 'clearfix',
 
         selectImage: function() {
             this.image = this.column.get('inspectionimages').findWhere({ BLSAMPLEID: this.model.get('BLSAMPLEID') })
@@ -545,6 +545,8 @@ define(['marionette',
             queuebutton: '.queuebutton',
             unqueuebutton: '.unqueuebutton',
             queuelength: '.queuelength',
+            unqueuesamples: '.unqueuesamples',
+            applyall: '.applyall',
         },
 
 
@@ -594,12 +596,14 @@ define(['marionette',
                 success: function(resp) {
                     _.each(resp, function (r) {
                         var ss = self.subsamples.fullCollection.findWhere({ BLSUBSAMPLEID: r.BLSUBSAMPLEID })
-                        ss.set({ READYFORQUEUE: '1' })
+                        ss.set({ READYFORQUEUE: '1' }, { silent: true })
                     })
                 },
                 complete: function(resp, status) {
                     self.$el.removeClass('loading')
+                    self.subsamples.trigger('reset')
                     self.refreshQSubSamples(self)
+                    self.updateQueueLength()
                 }
             })            
         },
@@ -645,12 +649,14 @@ define(['marionette',
                 success: function(resp) {
                     _.each(resp, function (r) {
                         let ss = self.typeselector.shadowCollection.findWhere({ BLSUBSAMPLEID: r.BLSUBSAMPLEID })
-                        ss.set({ READYFORQUEUE: '0' })
+                        ss.set({ READYFORQUEUE: '0' }, { silent: true })
                     })
                 },
                 complete: function(resp, status) {
                     self.$el.removeClass('loading')
+                    self.subsamples.trigger('reset')
                     self.refreshQSubSamples(self)
+                    self.updateQueueLength()
                 }
             })
         },
@@ -695,8 +701,21 @@ define(['marionette',
         applyPresetAll:function(e) {
             e.preventDefault()
 
+            var self = this
+
             var p = this.plans.findWhere({ DIFFRACTIONPLANID: this.ui.preset.val() })
-            if (p) this.applyModel(p, false)
+            if (p) {
+                self.ui.applyall.html('Applying...').prop('disabled', true)
+                var promises = this.applyModel(p, false)
+
+                if (promises && promises.length > 0) {
+                    $.when.apply($, promises).always(function() {
+                        self.ui.applyall.html('<i class="fa fa-file-text-o"></i> Apply to All').prop('disabled', false)
+                    });
+                } else {
+                     self.ui.applyall.html('<i class="fa fa-file-text-o"></i> Apply to All').prop('disabled', false)
+                }
+            }
         },
 
         applyModel: function(modelParameter, isLimitedToSelected) {
@@ -706,15 +725,21 @@ define(['marionette',
             } else {
                 models = this.qsubsamples.fullCollection.toArray()
             }
+
+            var promises = []
+
             _.each(models, function(model) {
                 if (modelParameter.get('EXPERIMENTKIND') !== model.get('EXPERIMENTKIND')) return
-                    
+
                 _.each(['REQUIREDRESOLUTION', 'PREFERREDBEAMSIZEX', 'PREFERREDBEAMSIZEY', 'EXPOSURETIME', 'BOXSIZEX', 'BOXSIZEY', 'AXISSTART', 'AXISRANGE', 'NUMBEROFIMAGES', 'TRANSMISSION', 'ENERGY', 'MONOCHROMATOR'], function(k) {
-                    if (modelParameter.get(k) !== null) model.set(k, modelParameter.get(k))
+                    if (modelParameter.get(k) !== null) model.set(k, modelParameter.get(k), { silent: true })
                 }, this)
-                model.save()
+
+                promises.push(model.save())
                 model.trigger('refresh')
             }, this)
+
+            return promises
         },
 
         cloneModel: function(m) {
@@ -859,9 +884,22 @@ define(['marionette',
             this.getInspectionImages()
             this.refreshQSubSamples()
             this.listenTo(this.subsamples, 'change:isSelected', this.selectSubSample, this)
-            this.listenTo(this.unfilteredSubsamples, 'sync add remove change:READYFORQUEUE', this.refreshQSubSamples, this)
+
+            this.listenTo(this.unfilteredSubsamples, 'sync add remove', this.refreshQSubSamples, this)
+            this.listenTo(this.unfilteredSubsamples, 'change:READYFORQUEUE', this.handleQueueUnqueue, this)
+
             this.listenTo(this.unfilteredSubsamples, 'change', this.updateQueueLength)
             this.listenTo(this.model, 'change:CONTAINERQUEUEID', this.onContainerQueueIdChange)
+        },
+
+        handleQueueUnqueue: function(model) {
+            if (model.get('READYFORQUEUE') === '1') {
+                console.log('Adding '+model.get('BLSUBSAMPLEID')+' to queue')
+                this.qsubsamples.fullCollection.add(model, { merge: true })
+            } else {
+                console.log('Removing '+model.get('BLSUBSAMPLEID')+' from queue')
+                this.qsubsamples.fullCollection.remove(model)
+            }
         },
 
         updateQueueLength: function() {
@@ -976,12 +1014,14 @@ define(['marionette',
             if (this.model.get('CONTAINERQUEUEID')) {
                 this.ui.rpreset.hide()
                 this.ui.queuebutton.hide()
+                this.ui.unqueuesamples.hide()
                 this.ui.unqueuebutton.show()
                 queuedSubSamples.push({ label: '', cell: table.StatusCell, editable: false })
                 queuedSubSamples.push({ label: '', cell: table.TemplateCell, editable: false, template: '<a href="/samples/sid/<%-BLSAMPLEID%>" class="button"><i class="fa fa-search"></i></a>' })
             } else {
                 this.ui.rpreset.show()
                 this.ui.queuebutton.show()
+                this.ui.unqueuesamples.show()
                 this.ui.unqueuebutton.hide()
                 queuedSubSamples.push({ label: '', cell: ActionsCell, editable: false, plans: this.plans })
             }
