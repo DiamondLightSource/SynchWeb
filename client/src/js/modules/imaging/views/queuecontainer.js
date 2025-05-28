@@ -885,21 +885,10 @@ define(['marionette',
             this.refreshQSubSamples()
             this.listenTo(this.subsamples, 'change:isSelected', this.selectSubSample, this)
 
-            this.listenTo(this.unfilteredSubsamples, 'sync add remove', this.refreshQSubSamples, this)
-            this.listenTo(this.unfilteredSubsamples, 'change:READYFORQUEUE', this.handleQueueUnqueue, this)
+            this.listenTo(this.unfilteredSubsamples, 'sync add remove change:READYFORQUEUE', this.refreshQSubSamples, this)
 
             this.listenTo(this.unfilteredSubsamples, 'change', this.updateQueueLength)
             this.listenTo(this.model, 'change:CONTAINERQUEUEID', this.onContainerQueueIdChange)
-        },
-
-        handleQueueUnqueue: function(model) {
-            if (model.get('READYFORQUEUE') === '1') {
-                console.log('Adding '+model.get('BLSUBSAMPLEID')+' to queue')
-                this.qsubsamples.fullCollection.add(model, { merge: true })
-            } else {
-                console.log('Removing '+model.get('BLSUBSAMPLEID')+' from queue')
-                this.qsubsamples.fullCollection.remove(model)
-            }
         },
 
         updateQueueLength: function() {
