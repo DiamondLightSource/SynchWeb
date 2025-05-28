@@ -700,7 +700,6 @@ define(['marionette',
 
         applyPresetAll:function(e) {
             e.preventDefault()
-
             var self = this
 
             var p = this.plans.findWhere({ DIFFRACTIONPLANID: this.ui.preset.val() })
@@ -727,14 +726,12 @@ define(['marionette',
             }
 
             var promises = []
-
             _.each(models, function(model) {
                 if (modelParameter.get('EXPERIMENTKIND') !== model.get('EXPERIMENTKIND')) return
 
                 _.each(['REQUIREDRESOLUTION', 'PREFERREDBEAMSIZEX', 'PREFERREDBEAMSIZEY', 'EXPOSURETIME', 'BOXSIZEX', 'BOXSIZEY', 'AXISSTART', 'AXISRANGE', 'NUMBEROFIMAGES', 'TRANSMISSION', 'ENERGY', 'MONOCHROMATOR'], function(k) {
                     if (modelParameter.get(k) !== null) model.set(k, modelParameter.get(k), { silent: true })
                 }, this)
-
                 promises.push(model.save())
                 model.trigger('refresh')
             }, this)
@@ -884,9 +881,7 @@ define(['marionette',
             this.getInspectionImages()
             this.refreshQSubSamples()
             this.listenTo(this.subsamples, 'change:isSelected', this.selectSubSample, this)
-
             this.listenTo(this.unfilteredSubsamples, 'sync add remove change:READYFORQUEUE', this.refreshQSubSamples, this)
-
             this.listenTo(this.unfilteredSubsamples, 'change', this.updateQueueLength)
             this.listenTo(this.model, 'change:CONTAINERQUEUEID', this.onContainerQueueIdChange)
         },
