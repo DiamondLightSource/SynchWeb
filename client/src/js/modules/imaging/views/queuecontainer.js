@@ -698,14 +698,14 @@ define(['marionette',
             if (p) this.applyModel(p, true)
         },
 
-        applyPresetAll:function(e) {
+        applyPresetAll: async function(e) {
             e.preventDefault()
             var self = this
 
             var p = this.plans.findWhere({ DIFFRACTIONPLANID: this.ui.preset.val() })
             if (p) {
                 self.ui.applyall.html('Applying...').prop('disabled', true)
-                var promises = this.applyModel(p, false)
+                var promises = await this.applyModel(p, false)
 
                 if (promises && promises.length > 0) {
                     $.when.apply($, promises).always(function() {
@@ -717,7 +717,19 @@ define(['marionette',
             }
         },
 
-        applyModel: function(modelParameter, isLimitedToSelected) {
+        chunkArray: function(array, chunkSize) {
+            const result = [];
+            for (let i = 0; i < array.length; i += chunkSize) {
+                result.push(array.slice(i, i + chunkSize));
+            }
+            return result;
+        },
+
+        delay: function(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        },
+
+        applyModel: async function(modelParameter, isLimitedToSelected) {
             var models = null
             if (isLimitedToSelected) {
                 models = this.qsubsamples.where({ isGridSelected: true })
@@ -726,17 +738,23 @@ define(['marionette',
             }
 
             var promises = []
-            _.each(models, function(model) {
-                if (modelParameter.get('EXPERIMENTKIND') !== model.get('EXPERIMENTKIND')) return
+            const modelChunks = this.chunkArray(models, 500);
 
-                _.each(['REQUIREDRESOLUTION', 'PREFERREDBEAMSIZEX', 'PREFERREDBEAMSIZEY', 'EXPOSURETIME', 'BOXSIZEX', 'BOXSIZEY', 'AXISSTART', 'AXISRANGE', 'NUMBEROFIMAGES', 'TRANSMISSION', 'ENERGY', 'MONOCHROMATOR'], function(k) {
-                    if (modelParameter.get(k) !== null) model.set(k, modelParameter.get(k), { silent: true })
+            for (const chunk of modelChunks) {
+                chunk.forEach(function(model) {
+                    if (modelParameter.get('EXPERIMENTKIND') !== model.get('EXPERIMENTKIND')) return;
+
+                    ['REQUIREDRESOLUTION', 'PREFERREDBEAMSIZEX', 'PREFERREDBEAMSIZEY', 'EXPOSURETIME', 'BOXSIZEX', 'BOXSIZEY', 'AXISSTART', 'AXISRANGE', 'NUMBEROFIMAGES', 'TRANSMISSION', 'ENERGY', 'MONOCHROMATOR'].forEach(function(k) {
+                        if (modelParameter.get(k) !== null) model.set(k, modelParameter.get(k), { silent: true })
+                    }, this)
+                    promises.push(model.save())
+                    model.trigger('refresh')
                 }, this)
-                promises.push(model.save())
-                model.trigger('refresh')
-            }, this)
 
-            return promises
+                await this.delay(100)
+            }
+
+            return Promise.all(promises)
         },
 
         cloneModel: function(m) {
