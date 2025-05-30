@@ -707,12 +707,19 @@ define(['marionette',
                 self.ui.applyall.html('Applying...').prop('disabled', true)
                 var promises = await this.applyModel(p, false)
 
+                const updateButtonAfterProcessing = () => {
+                    self.ui.applyall.html('<i class="fa fa-file-text-o"></i> Apply to All').prop('disabled', false)
+                }
+
                 if (promises && promises.length > 0) {
-                    $.when.apply($, promises).always(function() {
-                        self.ui.applyall.html('<i class="fa fa-file-text-o"></i> Apply to All').prop('disabled', false)
-                    });
+                    Promise.allSettled(promises)
+                    .then(updateButtonAfterProcessing)
+                    .catch(error => {
+                        console.error("Error after promises settled: ", error);
+                        updateButtonAfterProcessing()
+                    })
                 } else {
-                     self.ui.applyall.html('<i class="fa fa-file-text-o"></i> Apply to All').prop('disabled', false)
+                     updateButtonAfterProcessing()
                 }
             }
         },
