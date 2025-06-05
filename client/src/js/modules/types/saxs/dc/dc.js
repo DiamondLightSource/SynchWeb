@@ -26,7 +26,7 @@ define([
 
         loadAP: function(e) {
             if (!this.ap) {
-              this.ap = new DCDownstreamView({ id: this.model.get('ID'), el: this.$el.find('div.downstream') })
+              this.ap = new DCDownstreamView({ id: this.model.get('ID'), el: this.$el.find('div.downstream'), dcPurgedProcessedData: this.model.get('PURGEDPROCESSEDDATA') })
             } else this.ap.$el.slideToggle()
         },
         
