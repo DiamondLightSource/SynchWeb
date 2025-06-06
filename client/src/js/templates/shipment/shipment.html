@@ -129,26 +129,6 @@
             </li>
             <% } %>
             <%
-                switch(DYNAMIC) {
-                    case 'No':
-                        DYNAMIC = 'I have a session already scheduled';
-                        break;
-                    case 'UDC':
-                        DYNAMIC = 'I am sending pucks for Unattended Data Collection';
-                        break;
-                    case 'Imaging':
-                        DYNAMIC = 'I am sending plates for imaging';
-                        break;
-                    case 'Yes':
-                        DYNAMIC = 'I would like a session to be scheduled';
-                        break;
-                    case 'Other':
-                        DYNAMIC = 'Something else';
-                        break;
-                    default:
-                        DYNAMIC = '';
-                        break;
-                };
                 REMOTEORMAILIN=(typeof REMOTEORMAILIN !== 'undefined')? REMOTEORMAILIN : null;
                 SESSIONLENGTH=(typeof SESSIONLENGTH !== 'undefined')? SESSIONLENGTH : null;
                 ENERGY=(typeof ENERGY !== 'undefined')? ENERGY : null;
@@ -174,7 +154,8 @@
 
             <li>
                 <span class="label">Scheduling</span>
-                <span class="DYNAMIC"><%-DYNAMIC %></span>
+                <span class="DYNAMIC"></span>
+                <a href="#" class="button ready"><i class="fa fa-check-square-o"></i> Shipment is ready for scheduling</a>
             </li>
 
                 <li class="longwavelength">
@@ -195,6 +176,7 @@
                 <li class="remoteform">
                     <span class="label">Energy/wavelength requirements</span>
                     <span class="ENERGY"><%-ENERGY %></span>
+
                 </li>
 
                 <li class="remoteform">
