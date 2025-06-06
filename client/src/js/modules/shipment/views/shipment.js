@@ -180,7 +180,10 @@ define(['marionette',
             e.preventDefault()
             utils.confirm({
                 title: 'Ready for Scheduling',
-                content: 'Are you sure you want to mark the shipment as ready for scheduling?<br /><br />We ask users to define all samples prior to shipping any dewar to us. We can schedule dewars before they arrive, once we have confirmation that the dewar is ready to be loaded onto a beamline.<br /><br />Once you confirm that the shipment is finalised, you will not be able to add dewars or pucks.',
+                content: 'Are you sure you want to mark the shipment as ready for scheduling?<br /><br />'+
+                         'We ask users to define all samples prior to shipping any dewar to us. We can schedule dewars before they arrive, once we have confirmation that the dewar is ready to be loaded onto a beamline.<br /><br />'+
+                         '<b>Once you confirm that the shipment is finalised, you will not be able to add dewars or pucks.</b><br /><br />'+
+                         'If you have any questions, please email your local contact.',
                 callback: this.doMarkAsReady.bind(this)
             })
         },
