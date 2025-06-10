@@ -218,7 +218,7 @@ class Shipment extends Page
         // TODO: Need to have a separate method for handling queueing and unqueueing of containers
         array('/containers/queue(/:cid)', 'patch', '_queue_container'),
         array('/containers/queue(/:cid)', 'get', '_queue_container'),
-        array('/containers/barcode/:BARCODE', 'get', '_check_container'),
+        array('/containers/barcode/(:BARCODE)', 'get', '_check_container'),
 
 
         array('/containers/registry(/:CONTAINERREGISTRYID)', 'get', '_container_registry'),
@@ -649,7 +649,15 @@ class Shipment extends Page
 
         if ($this->has_arg('s')) {
             $st = sizeof($args) + 1;
-            $where .= " AND (lower(r.facilitycode) LIKE lower(CONCAT(CONCAT('%', :" . ($st) . "), '%')) OR lower(CONCAT(p.proposalcode,p.proposalnumber)) LIKE lower(CONCAT(CONCAT('%',:" . ($st + 1) . "), '%')))";
+            $where .= " AND (r.dewarregistryid IN (
+                            SELECT DISTINCT r2.dewarregistryid
+                            FROM dewarregistry r2
+                            LEFT JOIN dewarregistry_has_proposal rhp2 ON rhp2.dewarregistryid = r2.dewarregistryid
+                            LEFT JOIN Proposal p2 ON p2.proposalid = rhp2.proposalid
+                            WHERE r2.facilitycode LIKE CONCAT('%',:" . $st . ",'%')
+                               OR CONCAT(p2.proposalcode, p2.proposalnumber) LIKE CONCAT('%',:" . ($st + 1) . ",'%')
+                            )
+                        )";
             array_push($args, $this->arg('s'), $this->arg('s'));
         }
 
@@ -2060,16 +2068,20 @@ class Shipment extends Page
     # Check if a barcode exists
     function _check_container()
     {
-        $cont = $this->db->pq("SELECT CONCAT(p.proposalcode, p.proposalnumber) as prop, c.barcode 
-              FROM container c
-              INNER JOIN dewar d ON d.dewarid = c.dewarid
-              INNER JOIN shipping s ON s.shippingid = d.shippingid
-              INNER JOIN proposal p ON p.proposalid = s.proposalid
-              WHERE c.barcode=:1", array($this->arg('BARCODE')));
+        if ($this->has_arg('BARCODE')) {
+            $cont = $this->db->pq("SELECT CONCAT(p.proposalcode, p.proposalnumber) as prop, c.barcode
+                  FROM container c
+                  INNER JOIN dewar d ON d.dewarid = c.dewarid
+                  INNER JOIN shipping s ON s.shippingid = d.shippingid
+                  INNER JOIN proposal p ON p.proposalid = s.proposalid
+                  WHERE c.barcode=:1", array($this->arg('BARCODE')));
 
-        if (!sizeof($cont))
-            $this->_error('Barcode not used');
-        $this->_output($cont[0]);
+            if (!sizeof($cont)) {
+                $this->_output('Barcode not used');
+            } else {
+                $this->_output($cont[0]);
+            }
+        }
     }
 
     function _get_all_containers()
@@ -2731,10 +2743,17 @@ class Shipment extends Page
 
         if ($this->has_arg('s')) {
             $st = sizeof($args) + 1;
-            $where .= " AND (lower(r.barcode) LIKE lower(CONCAT(CONCAT('%',:" . $st . "), '%')) OR lower(r.comments) LIKE lower(CONCAT(CONCAT('%',:" . ($st + 1) . "), '%')) OR lower(CONCAT(p.proposalcode,p.proposalnumber)) LIKE lower(CONCAT(CONCAT('%',:" . ($st + 2) . "), '%')))";
-            array_push($args, $this->arg('s'));
-            array_push($args, $this->arg('s'));
-            array_push($args, $this->arg('s'));
+            $where .= " AND (r.containerregistryid IN (
+                            SELECT DISTINCT r2.containerregistryid
+                            FROM containerregistry r2
+                            LEFT JOIN containerregistry_has_proposal rhp2 ON rhp2.containerregistryid = r2.containerregistryid
+                            LEFT JOIN proposal p2 ON p2.proposalid = rhp2.proposalid
+                            WHERE r2.barcode LIKE CONCAT('%',:" . $st . ",'%')
+                               OR r2.comments LIKE CONCAT('%',:" . ($st + 1) . ",'%')
+                               OR CONCAT(p2.proposalcode, p2.proposalnumber) LIKE CONCAT('%',:" . ($st + 2) . ",'%')
+                            )
+                        )";
+            array_push($args, $this->arg('s'), $this->arg('s'), $this->arg('s'));
         }
 
         if ($this->has_arg('t')) {
@@ -2743,7 +2762,7 @@ class Shipment extends Page
         }
 
 
-        $tot = $this->db->pq("SELECT count(r.containerregistryid) as tot 
+        $tot = $this->db->pq("SELECT count(DISTINCT r.containerregistryid) as tot
               FROM containerregistry r 
               LEFT OUTER JOIN containerregistry_has_proposal rhp on rhp.containerregistryid = r.containerregistryid
               LEFT OUTER JOIN proposal p ON p.proposalid = rhp.proposalid 
