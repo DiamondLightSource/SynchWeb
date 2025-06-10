@@ -957,6 +957,11 @@ class Shipment extends Page
 
         // Update dewar status to transfer-requested to keep consistent with history
         $this->db->pq("UPDATE dewar set dewarstatus='transfer-requested' WHERE dewarid=:1", array($this->arg('DEWARID')));
+        // Remove sessionId from containers and unqueue any pucks, so it doesnt look like a finished UDC dewar
+        $this->db->pq("UPDATE container set sessionid=NULL WHERE dewarid=:1", array($this->arg('DEWARID')));
+        $this->db->pq("DELETE cq from containerqueue cq
+                        INNER JOIN container c ON c.containerid = cq.containerid
+                        WHERE dewarid=:1", array($this->arg('DEWARID')));
 
         if ($this->has_arg('NEXTVISIT')) {
             $sessions = $this->db->pq(
