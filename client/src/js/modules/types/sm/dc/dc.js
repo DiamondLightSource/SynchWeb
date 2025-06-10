@@ -10,7 +10,7 @@ define([
 
         loadAP: function(e) {
             if (!this.ap) {
-              this.ap = new DCAutoIntegrationView({ id: this.model.get('ID'), el: this.$el.find('div.autoproc') })
+              this.ap = new DCAutoIntegrationView({ id: this.model.get('ID'), dcPurgedProcessedData: this.model.get('PURGEDPROCESSEDDATA'), el: this.$el.find('div.autoproc') })
             } else this.ap.$el.slideToggle()
         },
     })

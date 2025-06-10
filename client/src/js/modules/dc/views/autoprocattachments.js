@@ -154,7 +154,7 @@ define(['marionette',
             var iCatProposalRootURL = this.getICatProposalRootUrl(proposalID);
 
             this.isIndustry = this.hasIndustryPrefix(proposalID); // ! FIXME: Naive check.
-            this.isPurgedSession = options.dcPurgedProcessedData !== "0";
+            this.isPurgedSession = (options && options.dcPurgedProcessedData) ? (options.dcPurgedProcessedData !== "0") : false;
 
             var columns = [
                 { name: 'FILENAME', label: 'File', cell: 'string', editable: false },
