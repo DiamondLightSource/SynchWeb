@@ -65,17 +65,12 @@ define(['backbone', 'marionette',
             this.messages.show(new APMessagesView({
                 messages: new Backbone.Collection(this.model.get('MESSAGES')), embed: true 
             }))
-            this.wrappedView = new (this.getOption('childView'))({ 
-                model: this.model,
-                templateHelpers: this.getOption('templateHelpers'),
-                holderWidth: this.getOption('holderWidth'),
-            })
-            this.wrapper.show(this.wrappedView)
 
             if (!this.model.get('AUTOMATIC')) {
                 this.ui.links.html('<i class="fa fa-refresh" title="Reprocessed"></i> ')
             }
 
+            var mapButton = null
             if (this.getOption('links')) {
                 var links = [
                     '<a class="view button" href="/dc/map/id/'+this.getOption('DCID')+'/aid/'+this.model.get('AID')+'"><i class="fa fa-search"></i> Map / Model Viewer</a>',
@@ -88,7 +83,17 @@ define(['backbone', 'marionette',
                 }
 
                 this.ui.links.append(links.join(' '))
+                mapButton = this.ui.links.find('a.view')
             }
+
+            this.wrappedView = new (this.getOption('childView'))({
+                model: this.model,
+                templateHelpers: this.getOption('templateHelpers'),
+                holderWidth: this.getOption('holderWidth'),
+                mapButton: mapButton,
+            })
+            this.wrapper.show(this.wrappedView)
+
         },
 
         onDomRefresh: function() {

@@ -1,0 +1,27 @@
+<div>
+    <div class="map image">
+        <a class="mapdl" href="<%=APIURL%>/download/ap/attachments/<%-MODEL_APPAID%>/dl/2" title="Click to view model">
+            <img alt="Click to view model" />
+        </a>
+    </div>
+
+    <table class="rstats">
+        <% if (SOLUTIONS.length) { %>
+            <% _.each(SOLUTIONS, function(r, i) { %>
+            <tr>
+                <% _.each(r, function(j) { %>
+                <td><%-j%></td>
+                <% }) %>
+            </tr>
+            <% }) %>
+        <% } else { %>
+            <tr>
+                <td>Solutions</td>
+            </tr>
+            <tr>
+                <td>No Solutions Found</td>
+            </tr>
+        <% } %>
+    </table>
+    
+</div>

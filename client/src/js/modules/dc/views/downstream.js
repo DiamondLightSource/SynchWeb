@@ -8,11 +8,12 @@ define(['backbone', 'marionette',
     'modules/dc/views/mrbump',
     'modules/dc/views/bigep',
     'modules/dc/views/shelxt',
+    'modules/dc/views/ligandfit',
     'templates/dc/downstreamerror.html'
 
     ], function(Backbone, Marionette, TabView, DownStreams, DownstreamWrapper, 
         TableView, 
-        FastEP, DIMPLE, MrBUMP, BigEP, Shelxt, downstreamerror) {
+        FastEP, DIMPLE, MrBUMP, BigEP, Shelxt, LigandFit, downstreamerror) {
 
     var dcPurgedProcessedData = "0"; // dataCollection.PURGEDPROCESSEDDATA via options from DC.js
 
@@ -65,6 +66,7 @@ define(['backbone', 'marionette',
                 'Crank2': BigEP,
                 'AutoSHARP': BigEP,
                 'Shelxt': Shelxt,
+                'LigandFit': LigandFit,
             }
             
             if (model.get('PROCESS').PROCESSINGSTATUS != 1) {
@@ -125,6 +127,7 @@ define(['backbone', 'marionette',
                 holderWidth: this.getOption('holderWidth'),
                 downstreams: this.getOption('downstreams'),
                 DCID: this.getOption('id'),
+                mapButton: this.getOption('mapButton'),
             }
         },
 
