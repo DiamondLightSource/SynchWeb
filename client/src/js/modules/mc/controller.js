@@ -11,7 +11,7 @@ define(['marionette',
         dcs:  function(visit, page, search) {
             app.loading()
             app.cookie(visit.split('-')[0])
-            var dcs = new DCs(null, { queryParams: { visit: visit, s: search, t: 'fc' } })
+            var dcs = new DCs(null, { queryParams: { visit: visit, s: search, t: 'fc', expandgroups: 1 } })
             dcs.setPageSize(app.mobile() ? 5 : 16)
 
             page = page ? parseInt(page) : 1
