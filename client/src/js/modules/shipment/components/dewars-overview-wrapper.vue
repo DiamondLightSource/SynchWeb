@@ -54,7 +54,7 @@ export default {
             }
         },
         proposalType : function() {
-            return this.$store.state.proposal.proposalType
+            return 'overview'
         }
     },
     created: function() {
