@@ -201,7 +201,9 @@ define(['marionette',
                 this.ui.dynamic.html('I would like a session to be scheduled - my shipment is ready for scheduling')
             } else if (dynamicSelectedValues.includes(dynamic)) {
                 this.ui.dynamic.html(this.dynamicOptions['Yes'])
-                this.ui.ready.show()
+                if (!this.industrial_visit) {
+                    this.ui.ready.show()
+                }
             } else {
                 this.ui.dynamic.html(this.dynamicOptions[dynamic])
             }
@@ -210,9 +212,7 @@ define(['marionette',
                 this.$el.find(".remoteform").hide()
                 this.ui.longwavelength.hide()
             } else {
-                industrial_codes = ['in', 'sw']
-                industrial_visit = industrial_codes.includes(app.prop.slice(0,2))
-                if (industrial_visit) {
+                if (this.industrial_visit) {
                     this.$el.find(".remoteormailin").show()
                 }
                 this.ui.longwavelength.show()
@@ -272,9 +272,9 @@ define(['marionette',
             if (app.staff || this.model.get('DYNAMIC') != 'Ready') {
                 this.edit.create('DYNAMIC', 'select', { data: this.dynamicOptions})
             }
-            industrial_codes = ['in', 'sw']
-            industrial_visit = industrial_codes.includes(app.prop.slice(0,2))
-            if (!industrial_visit) {
+            industrial_codes = app.options.get('industrial_prop_codes')
+            this.industrial_visit = industrial_codes.includes(app.prop.slice(0,2))
+            if (!this.industrial_visit) {
                 this.$el.find(".remoteormailin").hide()
             } else {
                 this.edit.create("REMOTEORMAILIN", 'select', { data: {'Remote': 'Remote', 'Mail-in': 'Mail-in', 'Other': 'Other'}})
