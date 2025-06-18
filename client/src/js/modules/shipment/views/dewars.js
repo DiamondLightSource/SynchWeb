@@ -41,6 +41,7 @@ define(['marionette', 'backbone',
             dispatch: '.dispatch',
             transfer: '.transfer',
             ssd: '.ssdispatch',
+            addcont: '.add-container-small',
         },
 
         className: function() {
@@ -126,6 +127,7 @@ define(['marionette', 'backbone',
 
             this.ui.fc.html(this.getOption('regdewars').opts({ empty: true }))
             this.showHideButtons()
+            this.listenTo(this.model, 'change', this.showHideButtons)
         },
 
         showHideButtons: function() {
@@ -147,6 +149,11 @@ define(['marionette', 'backbone',
                 this.ui.ssd.attr('href', link)
             } else {
                 this.ui.ssd.hide()
+            }
+            if (this.model.get('DYNAMIC') === 'Ready') {
+                this.ui.addcont.hide()
+            } else {
+                this.ui.addcont.show()
             }
         },
 
