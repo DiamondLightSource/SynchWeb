@@ -75,6 +75,7 @@ class MySQL extends DatabaseParent {
         'DewarReport',
         'CourierTermsAccepted',
 
+        'BLSamplePosition',
         'BLSubSample',
         'PDB',
         'Protein_has_PDB',
