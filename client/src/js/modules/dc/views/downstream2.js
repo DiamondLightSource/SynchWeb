@@ -152,39 +152,16 @@ define(['backbone', 'marionette', 'views/dialog',
                         PARAMETERVALUE: self.scalingid,
                     }))
 
-                    if (['Dimple', 'Fast EP', 'MrBUMP'].includes(pn)) {
-                        var att = self.attachments.at(0)
-                        var mtz = att.get('FILEPATH') + '/' + att.get('FILENAME')
-                        if (mtz) reprocessingparams.add(new ReprocessingParameter({ 
-                            PROCESSINGJOBID: reprocessing.get('PROCESSINGJOBID'),
-                            PARAMETERKEY: pn === 'MrBUMP' ? 'hklin' : 'data', 
-                            PARAMETERVALUE: mtz,
-                        }))
-                    }
-
-                    if (['MrBUMP'].includes(pn)) {
-                        reprocessingparams.add(new ReprocessingParameter({ 
-                            PROCESSINGJOBID: reprocessing.get('PROCESSINGJOBID'),
-                            PARAMETERKEY: 'dophmmer', 
-                            PARAMETERVALUE: 'False',
-                        }))
-                        reprocessingparams.add(new ReprocessingParameter({ 
-                            PROCESSINGJOBID: reprocessing.get('PROCESSINGJOBID'),
-                            PARAMETERKEY: 'mdlunmod', 
-                            PARAMETERVALUE: 'True',
-                        }))
-                    }
-
                     if (reprocessingparams.length) reqs.push(reprocessingparams.save())
 
                     $.when.apply($, reqs).done(function() {
-                        app.message({ message: 'Downstream processing job successfully submitted'})
                         self._enqueue({ PROCESSINGJOBID: reprocessing.get('PROCESSINGJOBID') })
+                        app.message({ message: 'Downstream processing job successfully submitted'})
                     })
                 },
 
                 error: function() {
-                    app.alert({ message: 'Something went wrong starting that downstream processing run' })
+                    app.alert({ message: 'Something went wrong starting that downstream processing job' })
                 }
             }))
         },
