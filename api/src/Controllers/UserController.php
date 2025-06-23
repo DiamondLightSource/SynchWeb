@@ -16,7 +16,6 @@ class UserController extends Page
         'pjid' => '\d+',
         'peid' => '\d+',
         'uid' => '\d+',
-        'sid' => '\d+',
         'visit' => '\w+\d+-\d+',
         'location' => '(\w|-|\/)+',
         'all' => '\d',
@@ -184,7 +183,6 @@ class UserController extends Page
             $this->user->hasPermission('manage_users'),
             $this->user->personId,
             $this->argOrEmptyString('gid'),
-            $this->argOrEmptyString('sid'),
             $this->argOrEmptyString('pjid'),
             $this->argOrEmptyString('visit'),
             $this->def_arg('per_page', 15),
@@ -214,7 +212,6 @@ class UserController extends Page
                 $this->user->hasPermission('manage_users'),
                 $this->user->personId,
                 $this->argOrEmptyString('gid'),
-                $this->argOrEmptyString('sid'),
                 $this->argOrEmptyString('pjid'),
                 $this->argOrEmptyString('visit'),
                 $this->def_arg('per_page', 15),
@@ -275,13 +272,8 @@ class UserController extends Page
         $person = $this->userData->getUser($this->user->personId, $this->proposalid, $this->arg('PERSONID'));
         $person = $person[0];
         $this->_output((array) $person);
-        $laboratory = null;
-        if ($person['LABORATORYID'])
-        {
-            $laboratory = $this->userData->getLaboratory($person['LABORATORYID'])[0];
-        }
 
-        $this->userData->updateLaboratory(
+        $laboratoryId = $this->userData->updateLaboratory(
             $this->arg('PERSONID'),
             $this->argOrNull('LABNAME'),
             $this->argOrNull('ADDRESS'),
@@ -290,7 +282,7 @@ class UserController extends Page
             $this->argOrNull('COUNTRY'),
             $person['LABORATORYID']
         );
-        $laboratory = $this->userData->getLaboratory($person['LABORATORYID']);
+        $laboratory = $this->userData->getLaboratory($laboratoryId);
         $this->_output((array) $laboratory[0]);
     }
 

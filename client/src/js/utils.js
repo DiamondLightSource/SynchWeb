@@ -2,7 +2,7 @@ define(['backbone',
         'marionette',
         'views/dialog',
         'jquery',
-        'jquery.color',
+        'jquery-color',
         'jquery-ui/ui/effect',
         'jquery-ui/ui/effects/effect-highlight'
     ], function(Backbone, Marionette, DialogView, $) {

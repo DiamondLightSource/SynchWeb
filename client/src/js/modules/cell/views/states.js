@@ -1,7 +1,7 @@
 define(['marionette', 'utils',
         'jquery',
         'jquery.flot',
-        'jquery.flot.pie',
+        'flot-pie',
 ], function(Marionette, utils, $) {
        
 

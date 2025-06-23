@@ -1,6 +1,13 @@
 <template>
   <div class="content">
-    <h1 data-testid="container-header">Container {{container.NAME}}</h1>
+    <!-- <h1 data-testid="container-header">Container {{container.NAME}}</h1> -->
+    <page-title-header
+      prevNextPathPrefix="/containers/cid/"
+      :prevNextTargets="this.prevNextTargetLinks"
+      :currentValue="this.containerId"
+    >
+      Container {{container.NAME }}
+    </page-title-header>
 
     <p class="help">
       This page shows the contents of the selected container. Samples can be added and edited by clicking the pencil icon, and removed by clicking the x
@@ -105,6 +112,9 @@
                   class="tw-cursor-pointer button unqueue"
                   @click="onUnQueueContainer"
                 ><i class="fa fa-times" /> Unqueue</a>
+              </span>
+              <span v-else-if="shippingSafetyLevel === null">
+                Cannot queue container until shipment safety level is set
               </span>
               <span v-else-if="shippingSafetyLevel != 'Green'">
                 Cannot queue containers in {{ shippingSafetyLevel }} shipments
@@ -246,6 +256,8 @@ import Shipments from 'collections/shipments'
 import Containers from 'collections/containers'
 import Dewars from 'collections/dewars'
 
+import PrevNextBtngroup from 'app/components/prev-next-btngroup.vue'
+import PageTitleHeader from 'app/components/page-title-header.vue'
 import BaseInputSelect from 'app/components/base-input-select.vue'
 import BaseInputText from 'app/components/base-input-text.vue'
 import BaseInputTextArea from 'app/components/base-input-textarea.vue'
@@ -260,6 +272,8 @@ import ValidContainerGraphic from 'modules/types/mx/samples/valid-container-grap
 export default {
   name: 'MxContainerView',
   components: {
+    'prev-next-btngroup': PrevNextBtngroup,
+    'page-title-header': PageTitleHeader,
     'base-input-text': BaseInputText,
     'base-input-textarea': BaseInputTextArea,
     'base-input-select': BaseInputSelect,
@@ -270,7 +284,7 @@ export default {
     'single-sample-plate': SingleSample,
     'mx-puck-samples-table': MxPuckSamplesTable,
     'validation-observer': ValidationObserver,
-    'validation-provider': ValidationProvider
+    'validation-provider': ValidationProvider,
   },
   mixins: [ContainerMixin],
   props: {
@@ -283,6 +297,7 @@ export default {
     return {
       container: {},
       containerId: 0,
+      siblingContainers: {}, // All containers using this Dewar and shippingID
       samplesCollection: null,
 
       containerHistory: [],
@@ -307,7 +322,7 @@ export default {
             cancel: 'closeModal',
             confirm: 'unQueueContainer'
           },
-          message: `<p>Are you sure you want to remove this container from the queue? You will loose your current place</p>`
+          message: `<p>Are you sure you want to remove this container from the queue? You will lose your current place</p>`
         }
       },
       currentModal: 'queueContainer',
@@ -333,6 +348,12 @@ export default {
     containersSamplesGroupData() {
       return this.$store.getters['samples/getContainerSamplesGroupData']
     },
+    prevNextTargetLinks() {
+      return _.chain(this.siblingContainers)
+      .map(sib => ({ value: sib.CONTAINERID, text: sib.NAME }))
+      .sortBy((c) => c.text)
+      .value();
+    },
   },
   created: function() {
     // Get samples for this container id
@@ -351,6 +372,10 @@ export default {
     this.getImagingCollections()
     this.getImagingScheduleCollections()
     this.getImagingScreensCollections()
+
+  },
+  beforeMount: function(){
+    this.fetchSiblingContainers();
   },
   methods: {
     loadContainerData() {
@@ -514,6 +539,30 @@ export default {
         // TODO: Toggle loading state off
       }
     },
+
+    /**
+     * Fetch any other containers sharing the same Dewar & shipment, sorted by NAME.
+     * Also tracks the index of the current Container
+     */
+    async fetchSiblingContainers() {
+      var result;
+
+      if (this.containersCollection?.length>0) {
+        // ! if ContainersCollection exists then filter it instead rather than re-fetching.
+        // !! WARNING -  THis assumes that containersCollection has ALL containers of the dewar
+        result = _.filter(this.containersCollection,  (c) => 
+          c.DEWARID === this.container.DEWARID
+        );
+
+      } else {
+        result = new Containers();
+        result.dewarID = this.container.DEWARID;
+        await result.fetch();
+      }
+
+      this.siblingContainers = result.toJSON();
+    },
+    
     async fetchContainers() {
       this.containersCollection = new Containers(null, { state: { pageSize: 9999 } })
       this.containersCollection.queryParams.did = this.containersSamplesGroupData.dewarId

@@ -127,9 +127,5 @@ allOf:
         type: string
         description: Time the last queue was completed
         example: 12:23 23-10-2019
-      LASTQUEUEDWELL:
-        type: string
-        description: Time container has been in queue in minutes
-        example: 54
 
   - $ref: container-new.yaml

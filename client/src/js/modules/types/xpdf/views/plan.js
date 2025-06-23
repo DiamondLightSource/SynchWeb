@@ -558,7 +558,7 @@ define(['marionette',
             this.asmps.show(this.table)
 
 
-            var columns = [
+            var columns2 = [
                 { label: '', cell: CollapseExpandCell, editable: false, template: '<a class="button collapsar" href="#"><i class="expcol fa fa-chevron-right"></i></a>' },
                 { label: '#', cell: table.TemplateCell, editable: false, template: '<%-parseInt(PLANORDER)+1%>' },
                 { label: 'Instance', cell: table.TemplateCell, editable: false, template: '<%-SAMPLE%>' },
@@ -570,7 +570,7 @@ define(['marionette',
 
             this.table2 = new SortableTableView({ 
                 collection: this.datacollectionplans, 
-                columns: columns, 
+                columns: columns2,
                 tableClass: 'subsamples', 
                 loading: true,
                 // Below overrides the SortableRow in the SortableTableView which breaks drag and drop events

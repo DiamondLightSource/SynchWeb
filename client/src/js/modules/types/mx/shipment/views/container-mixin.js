@@ -1,7 +1,6 @@
 import Users from 'collections/users'
 import ProcessingPipelines from 'collections/processingpipelines'
 import SpaceGroups from 'collections/spacegroups.js'
-import CentringMethodList from 'utils/centringmethods.js'
 import AnomalousList from 'utils/anoms.js'
 import ExperimentKindsList from 'utils/experimentkinds.js'
 import DistinctProteins from 'modules/shipment/collections/distinctproteins'
@@ -35,7 +34,6 @@ export default {
     return {
       anomalousList: AnomalousList.list,
 
-      centringMethods: CentringMethodList.list,
       containerType: {},
       containerTypes: [],
       containerTypesCollection: new ContainerTypes(),
@@ -541,7 +539,6 @@ export default {
   provide() {
     return {
       $spaceGroups: () => this.spaceGroups,
-      $centringMethods: () => this.centringMethods,
       $anomalousList: () => this.anomalousList,
       $experimentKindList: () => this.experimentKindList,
       $sampleLocation: () => this.sampleLocation,

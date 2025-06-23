@@ -62,6 +62,8 @@ class DC extends Page
         array('/dat/:id', 'get', '_plot'),
     );
 
+    const EVTOA = 12398.4198;
+
     # ------------------------------------------------------------------------
     # Data Collection AJAX Requests
     #   This is pretty crazy, it will return unioned data collections, energy
@@ -121,11 +123,11 @@ class DC extends Page
 
                 $where = '';
                 if ($this->arg('t') == 'sc')
-                    $where = ' AND (dc.overlap != 0 OR ifnull(et.name, dcg.experimenttype) = "Screening")';
+                    $where = ' AND (dc.overlap != 0 OR ifnull(et.name, dcg.experimenttype) in ("Screening", "Characterization"))';
                 else if ($this->arg('t') == 'gr')
                     $where = ' AND dc.axisrange = 0';
                 else if ($this->arg('t') == 'fc')
-                    $where = ' AND dc.overlap = 0 AND dc.axisrange > 0 AND dc.numberOfImages > 1 AND ifnull(et.name, dcg.experimenttype) != "Screening"';
+                    $where = ' AND dc.overlap = 0 AND dc.axisrange > 0 AND dc.numberOfImages > 1 AND ifnull(et.name, dcg.experimenttype) not in ("Screening", "Characterization")';
             } else if ($this->arg('t') == 'edge') {
                 $where2 = '';
             } else if ($this->arg('t') == 'mca') {
@@ -139,11 +141,11 @@ class DC extends Page
                 $where2 = " AND es.comments LIKE '%_FLAG_%'";
                 $where4 = " AND xrf.comments LIKE '%_FLAG_%'";
             } else if ($this->arg('t') == 'ap') {
-                $where = ' AND app.processingstatus = 1';
+                $where = " AND ifnull(et.name, dcg.experimenttype) not in ('Screening', 'Characterization') AND app.processingstatus = 1";
                 $extj[0] .= "INNER JOIN autoprocintegration ap ON dc.datacollectionid = ap.datacollectionid
                         INNER JOIN autoprocprogram app ON app.autoprocprogramid = ap.autoprocprogramid";
             } else if ($this->arg('t') == 'ph') {
-                $where = " AND app.processingstatus = 1 AND app.processingprograms in ('big_ep', 'fast_ep')";
+                $where = " AND ifnull(et.name, dcg.experimenttype) not in ('Screening', 'Characterization') AND app.processingstatus = 1 AND app.processingprograms in ('big_ep', 'fast_ep')";
                 $extj[0] .= "INNER JOIN processingjob pj ON dc.datacollectionid = pj.datacollectionid
                         INNER JOIN autoprocprogram app ON app.processingjobid = pj.processingjobid";
             } else if ($this->arg('t') == 'err') {
@@ -422,9 +424,12 @@ class DC extends Page
                     dc.transmission,
                     dc.axisrange,
                     dc.wavelength,
+                    ".self::EVTOA."/dc.wavelength as energy,
                     dc.comments,
                     1 as epk,
                     1 as ein,
+                    1 as wpk,
+                    1 as win,
                     dc.xtalsnapshotfullpath1 as x1,
                     dc.xtalsnapshotfullpath2 as x2,
                     dc.xtalsnapshotfullpath3 as x3,
@@ -469,6 +474,7 @@ class DC extends Page
                     d.numberofpixelsx as detectornumberofpixelsx,
                     d.numberofpixelsy as detectornumberofpixelsy,
                     ses.archived,
+                    ses.purgedProcessedData,
                     IFNULL(dc.rotationaxis, 'Omega') as rotationaxis,
                     dc.detector2theta";
             $groupby = 'GROUP BY smp.name,
@@ -556,9 +562,12 @@ class DC extends Page
                     min(dc.transmission) as transmission,
                     min(dc.axisrange) as axisrange,
                     min(dc.wavelength) as wavelength,
-                    min(dc.comments) as comments,
+                    ".self::EVTOA."/min(dc.wavelength) as energy,
+                    ifnull(dcg.comments, (select mindc.comments from datacollection mindc where mindc.datacollectionid=min(dc.datacollectionid))) as comments,
                     1 as epk,
                     1 as ein,
+                    1 as wpk,
+                    1 as win,
                     min(dc.xtalsnapshotfullpath1) as x1,
                     min(dc.xtalsnapshotfullpath2) as x2,
                     min(dc.xtalsnapshotfullpath3) as x3,
@@ -603,6 +612,7 @@ class DC extends Page
                     max(d.numberofpixelsx) as detectornumberofpixelsx,
                     max(d.numberofpixelsy) as detectornumberofpixelsy,
                     max(ses.archived) as archived,
+                    max(ses.purgedProcessedData) as purgedProcessedData,
                     IFNULL(max(dc.rotationaxis), 'Omega') as rotationaxis,
                     dc.detector2theta";
             $groupby = "GROUP BY dc.datacollectiongroupid";
@@ -705,17 +715,20 @@ class DC extends Page
                     es.energyscanid,
                     1,
                     es.element,
-                    es.peakfprime,
+                    es.peakfprime as resolution,
                     es.exposuretime,
                     es.axisposition,
-                    es.peakfdoubleprime,
+                    es.peakfdoubleprime as numimg,
                     es.starttime as st,
                     es.transmissionfactor,
-                    es.inflectionfprime,
-                    es.inflectionfdoubleprime,
+                    es.inflectionfprime as axisrange,
+                    es.inflectionfdoubleprime as wavelength,
+                    1 as energy,
                     es.comments,
                     es.peakenergy,
                     es.inflectionenergy,
+                    ".self::EVTOA."/es.peakenergy as wpk,
+                    ".self::EVTOA."/es.inflectionenergy as win,
                     'A',
                     'A',
                     'A',
@@ -760,6 +773,7 @@ class DC extends Page
                     '',
                     '',
                     ses.archived,
+                    ses.purgedProcessedData,
                     '',
                     ''
                 FROM energyscan es
@@ -805,10 +819,13 @@ class DC extends Page
                 TO_CHAR(xrf.starttime, 'DD-MM-YYYY HH24:MI:SS') as st,
                 xrf.beamtransmission,
                 1,
-                xrf.energy,
+                ".self::EVTOA."/xrf.energy as wavelength,
+                xrf.energy as energy,
                 xrf.comments,
                 1,
                 1,
+                1 as wpk,
+                1 as win,
                 'A',
                 'A',
                 'A',
@@ -853,6 +870,7 @@ class DC extends Page
                 '',
                 '',
                 ses.archived,
+                ses.purgedProcessedData,
                 '',
                 ''
             FROM xfefluorescencespectrum xrf
@@ -899,9 +917,12 @@ class DC extends Page
                 1,
                 1,
                 1,
+                1 as energy,
                 'A',
                 1,
                 1,
+                1 as wpk,
+                1 as win,
                 r.xtalsnapshotbefore,
                 r.xtalsnapshotafter,
                 'A',
@@ -946,6 +967,7 @@ class DC extends Page
                 '',
                 '',
                 ses.archived,
+                ses.purgedProcessedData,
                 '',
                 ''
             FROM robotaction r
@@ -974,7 +996,7 @@ class DC extends Page
 
             // Data collections
             if ($dc['TYPE'] == 'data') {
-                $nf = array(1 => array('AXISSTART', 'CHISTART', 'PHI', 'OVERLAP'), 2 => array('RESOLUTION', 'TRANSMISSION', 'AXISRANGE', 'TOTALDOSE'), 4 => array('WAVELENGTH', 'EXPOSURETIME'));
+                $nf = array(0 => array('ENERGY'), 1 => array('AXISSTART', 'CHISTART', 'PHI', 'OVERLAP'), 2 => array('RESOLUTION', 'TRANSMISSION', 'AXISRANGE', 'TOTALDOSE'), 4 => array('WAVELENGTH', 'EXPOSURETIME'));
 
                 $dc['DIRFULL'] = $dc['DIR'];
                 $dc['DIR'] = preg_replace('/.*\/' . $this->arg('prop') . '-' . $dc['VN'] . '\//', '', $dc['DIR']);
@@ -993,9 +1015,10 @@ class DC extends Page
                         $dc['DCT'] = 'Data Collection';
                 }
 
-                if ($dc['DCT'] == 'Mesh')
+                if ($dc['DCT'] == 'Mesh' || $dc['DCT'] == 'Mesh3D' ||
+                    ($dc['DCT'] != 'Serial Fixed' && $dc['DCT'] != 'Serial Jet' && $dc['AXISRANGE'] == 0 && $dc['NI'] > 1)
+                ) {
                     $dc['DCT'] = 'Grid Scan';
-                if ($dc['DCT'] != 'Serial Fixed' && $dc['DCT'] != 'Serial Jet' && $dc['AXISRANGE'] == 0 && $dc['NI'] > 1) {
                     $dc['TYPE'] = 'grid';
                 }
                 //$this->profile('dc');
@@ -1010,12 +1033,12 @@ class DC extends Page
 
                 $dc['FILETEMPLATE'] = preg_replace('/.*\/' . $this->arg('prop') . '-' . $dc['VN'] . '\//', '', $dc['FILETEMPLATE']);
 
-                $nf = array(2 => array('EXPOSURETIME', 'AXISSTART', 'RESOLUTION', 'TRANSMISSION'));
+                $nf = array(1 => array('EPK', 'EIN'), 2 => array('AXISRANGE', 'WAVELENGTH', 'EXPOSURETIME', 'AXISSTART', 'RESOLUTION', 'TRANSMISSION', 'NUMIMG'), 5 => array('WPK', 'WIN'));
                 $this->profile('edge');
 
                 // MCA Scans
             } else if ($dc['TYPE'] == 'mca') {
-                $nf = array(2 => array('EXPOSURETIME', 'WAVELENGTH', 'TRANSMISSION'));
+                $nf = array(0 => array('ENERGY'), 2 => array('EXPOSURETIME', 'TRANSMISSION'), 4 => array('WAVELENGTH'));
                 $dc['DIRFULL'] = $dc['DIR'];
                 $dc['DIR'] = preg_replace('/.*\/\d\d\d\d\/\w\w\d+-\d+\//', '', $dc['DIR']);
 
@@ -1443,12 +1466,14 @@ class DC extends Page
     # Grid Scan Info
     function _grid_info()
     {
-        $info = $this->db->pq("SELECT dc.datacollectiongroupid, dc.datacollectionid, dc.axisstart, p.posx as x, p.posy as y, p.posz as z, g.dx_mm, g.dy_mm, g.steps_x, g.steps_y, IFNULL(g.micronsperpixelx,g.pixelspermicronx) as micronsperpixelx, IFNULL(g.micronsperpixely,g.pixelspermicrony) as micronsperpixely, g.snapshot_offsetxpixel, g.snapshot_offsetypixel, g.orientation, g.snaked, DATE_FORMAT(dc.starttime, '%Y%m%d') as startdate, xrc.status as xrcstatus, xrcr.xraycentringresultid
+        $info = $this->db->pq("SELECT dc.datacollectiongroupid, dc.datacollectionid, dc.axisstart, p.posx as x, p.posy as y, p.posz as z, g.dx_mm, g.dy_mm, g.steps_x, g.steps_y, g2.steps_y as steps_z, g.micronsperpixelx, g.micronsperpixely, g.snapshot_offsetxpixel, g.snapshot_offsetypixel, g.orientation, g.snaked, DATE_FORMAT(dc.starttime, '%Y%m%d') as startdate, xrc.status as xrcstatus, xrcr.xraycentringresultid
                 FROM gridinfo g
                 INNER JOIN datacollection dc on (dc.datacollectionid = g.datacollectionid) or (dc.datacollectiongroupid = g.datacollectiongroupid)
                 LEFT OUTER JOIN position p ON dc.positionid = p.positionid
                 LEFT OUTER JOIN xraycentring xrc ON dc.datacollectiongroupid = xrc.datacollectiongroupid
                 LEFT OUTER JOIN xraycentringresult xrcr ON xrc.xraycentringid = xrcr.xraycentringid
+                LEFT OUTER JOIN datacollection d2 ON (dc.datacollectiongroupid = d2.datacollectiongroupid AND dc.datacollectionid != d2.datacollectionid)
+                LEFT OUTER JOIN gridinfo g2 ON (d2.datacollectionid = g2.datacollectionid)
                 WHERE dc.datacollectionid = :1 ", array($this->arg('id')));
 
         if (!sizeof($info))
@@ -1482,7 +1507,8 @@ class DC extends Page
     {
         $info = $this->db->pq("SELECT dc.datacollectiongroupid, dc.datacollectionid,
                 xrc.xraycentringtype as method, xrcr.xraycentringresultid,
-                xrcr.centreofmassx as x, xrcr.centreofmassy as y, xrcr.centreofmassz as z
+                xrcr.centreofmassx as x, xrcr.centreofmassy as y, xrcr.centreofmassz as z,
+                xrcr.totalcount
                 FROM datacollection dc
                 INNER JOIN xraycentring xrc ON xrc.datacollectiongroupid = dc.datacollectiongroupid
                 INNER JOIN xraycentringresult xrcr ON xrcr.xraycentringid = xrc.xraycentringid
