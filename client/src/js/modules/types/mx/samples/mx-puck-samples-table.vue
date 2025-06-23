@@ -290,19 +290,19 @@ export default {
           componentType: 'base-input-text',
           data: '',
           inputType: 'number'
-        }
+        },
+        {
+          key: 'SMILES',
+          title: 'SMILES Code',
+          className: 'tw-w-3/12',
+          componentType: 'base-input-text',
+          data: '',
+          inputType: 'text'
+        },
       ]
     },
     udcColumns() {
       return [
-        {
-          key: 'CENTRINGMETHOD',
-          title: 'Centring Method',
-          className: 'tw-w-24',
-          componentType: 'base-input-select',
-          data: this.centringMethodList,
-          inputType: 'select'
-        },
         {
           key: 'EXPERIMENTKIND',
           title: 'Experiment Kind',

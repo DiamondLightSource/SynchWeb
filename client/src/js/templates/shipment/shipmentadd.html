@@ -36,7 +36,7 @@
 
             <li>
                 <label>Safety Level
-                    <span class="small">The safety level of the shipment</span>
+                    <span class="small">Please add all containers and samples to the shipment before sending</span>
                 </label>
                 <select class="tw-h-6" name="SAFETYLEVEL" data-testid="add-shipment-safety-level" required>
                     <option value="Green">Green</option>
@@ -46,21 +46,36 @@
             </li>
 
             <li>
-                <!-- Small tweaks to the styling here using tailwind flexbox -->
-                <label>First Experiment / Scheduling
-                    <span class="small">Select first experiment or if it's for an automated or responsive session</span>
+                <label>Scheduling
+                    <span class="small">Select which best describes your shipment.<br />If you need more than one, please use separate dewars and separate shipments.</span>
                 </label>
-                <div class="tw-flex">
-                    <select class="tw-h-6 tw-mr-2" name="FIRSTEXPERIMENTID" data-testid="add-shipment-experiment"></select>
-                    <span class="udcresponsive">
-                      <label class="secondary tw-mr-2">
-                          <input type="checkbox" name="noexp" data-testid="add-shipment-automated"> UDC / Automated / Imager
-                      </label>
-                      <label class="secondary tw-mr-2">
-                          <input type="checkbox" name="DYNAMIC" data-testid="add-shipment-dynamic"> Responsive / Mail-in
-                      </label>
-                    </span>
+                <div>
+                    <label class="secondary tw-mr-2">
+                        <input type="radio" name="DYNAMIC" value="No" id="existingsession" data-testid="add-shipment-existing-session">
+                        I have a session already scheduled<span id="nosessions"></span>
+                    </label>
+                    <select class="tw-h-6 tw-mr-2" name="FIRSTEXPERIMENTID" data-testid="add-shipment-experiment"></select><br />
+                    <label class="secondary tw-mr-2">
+                        <input type="radio" name="DYNAMIC" value="UDC" id="udc" data-testid="add-shipment-automated"> I am sending pucks for Unattended Data Collection
+                    </label><br />
+                    <label class="secondary tw-mr-2">
+                        <input type="radio" name="DYNAMIC" value="Imaging" id="imaging" data-testid="add-shipment-imaging"> I am sending plates for in situ imaging
+                    </label><br />
+                    <label class="secondary tw-mr-2">
+                        <input type="radio" name="DYNAMIC" value="Yes" id="responsive" data-testid="add-shipment-responsive"> I would like a session to be scheduled
+                    </label><br />
+                    <label class="secondary tw-mr-2">
+                        <input type="radio" name="DYNAMIC" value="Other" id="other" data-testid="add-shipment-other"> Something else (please describe in comments)
+                    </label>
                 </div>
+            </li>
+
+            <li class="longwavelength">
+                <label>Do you require a long wavelength beamline (>2.5&#8491;)</label>
+                <select name="LONGWAVELENGTH" data-testid="add-shipment-longwavelength">
+                    <option value="No">No</option>
+                    <option value="Yes">Yes</option>
+                </select>
             </li>
 
             <li class="remoteormailin">
@@ -84,7 +99,7 @@
 
             <li class="remoteform">
                 <label>Energy/Wavelength
-                    <span class="small">Specify any energy/Wavelength requirements [eV/&#8491]</span>
+                    <span class="small">Specify any energy/wavelength requirements [eV/&#8491;]</span>
                 </label>
                 <input type="text" name="ENERGY" data-testid="add-shipment-energy"/>
             </li>
@@ -93,7 +108,10 @@
                 <label>Microfocus beam
                     <span class="small">Microfocus beam is required for this shipment (provide further information in additional comments)</span>
                 </label>
-                <input type="checkbox" name="MICROFOCUSBEAM" data-testid="add-shipment-microfocus">
+                <select name="MICROFOCUSBEAM" data-testid="add-shipment-microfocus">
+                    <option value="0">No</option>
+                    <option value="1">Yes</option>
+                </select>
             </li>
 
             <li class="remoteform">
@@ -107,7 +125,10 @@
                 <label>Short-notice beam time
                     <span class="small">Would you like to be considered for short-notice beamtime, generally with only 1-3 days notice?</span>
                 </label>
-                <input type="checkbox" name="LASTMINUTEBEAMTIME" data-testid="add-shipment-last-minute">
+                <select name="LASTMINUTEBEAMTIME" data-testid="add-shipment-last-minute">
+                    <option value="0">No</option>
+                    <option value="1">Yes</option>
+                </select>
             </li>
 
             <li class="remoteform">
@@ -132,21 +153,30 @@
                 <label>Multi-axis goniometry
                     <span class="small">Do you need multi-axis goniometry?:</span>
                 </label>
-                <input type="checkbox" name="MULTIAXISGONIOMETRY" data-testid="add-shipment-multiaxis">
+                <select name="MULTIAXISGONIOMETRY" data-testid="add-shipment-multiaxis">
+                    <option value="0">No</option>
+                    <option value="1">Yes</option>
+                </select>
             </li>
 
             <li>
                 <label>Hard drive enclosed
                     <span class="small">A hard drive is included with this shipment</span>
                 </label>
-                <input type="checkbox" name="ENCLOSEDHARDDRIVE" data-testid="add-shipment-hdd">
+                <select name="ENCLOSEDHARDDRIVE" data-testid="add-shipment-hdd">
+                    <option value="0">No</option>
+                    <option value="1">Yes</option>
+                </select>
             </li>
 
             <li>
                 <label>Tools enclosed
                     <span class="small">Tools are included within this shipment</span>
                 </label>
-                <input type="checkbox" name="ENCLOSEDTOOLS" data-testid="add-shipment-tools">
+                <select name="ENCLOSEDTOOLS" data-testid="add-shipment-tools">
+                    <option value="0">No</option>
+                    <option value="1">Yes</option>
+                </select>
             </li>
 
             <li>

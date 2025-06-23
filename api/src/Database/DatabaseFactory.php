@@ -10,7 +10,6 @@ class DatabaseFactory
     // Key is lower case representation of class name.
     public $database_types = array(
         'mysql' => ["dbClassName" =>'MySQL', "dataConnectionName" => 'MySQL'],
-        'summary' => ["dbClassName" =>'PureMySQL', "dataConnectionName" => 'PureMySQL']
     );
 
     function __construct($databaseConnectionFactory)

@@ -14,7 +14,7 @@ define(['backbone', 'markdown', 'models/wfile'], function(Backbone, markdown, Fi
         },
         
         refreshOptions: function() {
-            if (this.get('REPORT')) this.attributes.REPORTMD = markdown.toHTML(this.get('REPORT'))
+            if (this.get('REPORT')) this.set('REPORTMD', markdown.toHTML(this.get('REPORT')))
         },
 
         validation: {

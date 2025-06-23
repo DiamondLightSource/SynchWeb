@@ -12,6 +12,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\HttpFoundation\Response;
 use ZipStream\Option\Archive;
 use ZipStream\ZipStream;
+use SynchWeb\Utils;
 
 ini_set('max_execution_time', 0); // To allow large file downloads
 
@@ -66,7 +67,7 @@ class Download extends Page
     {
         if (!$this->has_arg('validity'))
             $this->_error('No validity specified');
-        $token = md5(uniqid());
+        $token = Utils::generateRandomMd5();
 
         $this->db->pq("INSERT INTO SW_onceToken (token, validity, proposalid, personid) VALUES (:1, :2, :3, :4)", array($token, $this->arg('validity'), $this->proposalid, $this->user->personId));
         $this->_output(array('token' => $token));
@@ -92,9 +93,7 @@ class Download extends Page
             $this->_error('There doesnt seem to be a data archive available for this visit');
     }
 
-    # ------------------------------------------------------------------------
-    # Download mtz/log file for Fast DP / XIA2
-    #   TODO: Delete me
+
     # This method either returns a list of plots from MX auto processing tools (n_obs, n_uniq, completeness etc.)
     # Or returns a specific plot based on auto processing attachment id (aid).
     # Individual plotly format Graphs can be returned via an aid, but will not be included in the list of plots (as their format is different)
@@ -468,14 +467,14 @@ class Download extends Page
 
         $aps = $this->db->union(
             array(
-                "SELECT app.autoprocprogramid, app.processingprograms, app.processingstatus
+                "SELECT app.autoprocprogramid, app.processingprograms, app.processingstatus, dc.imageprefix, dc.datacollectionnumber
                     FROM autoprocintegration api 
                     INNER JOIN autoprocprogram app ON api.autoprocprogramid = app.autoprocprogramid 
                     INNER JOIN datacollection dc ON dc.datacollectionid = api.datacollectionid
                     INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
                     INNER JOIN blsession s ON s.sessionid = dcg.sessionid
                     WHERE s.proposalid=:1 AND app.autoprocprogramid=:2",
-                "SELECT app.autoprocprogramid, app.processingprograms, app.processingstatus
+                "SELECT app.autoprocprogramid, app.processingprograms, app.processingstatus, dc.imageprefix, dc.datacollectionnumber
                     FROM autoprocprogram app
                     INNER JOIN processingjob pj on pj.processingjobid = app.processingjobid
                     INNER JOIN datacollection dc ON dc.datacollectionid = pj.datacollectionid
@@ -497,7 +496,7 @@ class Download extends Page
         }
 
         $clean_program = preg_replace('/[^A-Za-z0-9\-]/', '', $ap['PROCESSINGPROGRAMS']);
-        $zipName = $this->arg('AUTOPROCPROGRAMID')  . '_' . $clean_program;
+        $zipName = $this->arg('AUTOPROCPROGRAMID') . '_' . $ap['IMAGEPREFIX'] . '_' . $ap['DATACOLLECTIONNUMBER'] . '_' . $clean_program;
         $this->_streamZipFile($files, $zipName);
     }
 

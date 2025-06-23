@@ -381,6 +381,30 @@
         </template>
       </custom-dialog-box>
     </portal>
+
+    <portal to="dialog">
+      <custom-dialog-box
+        v-if="displayConfirmationModal"
+        @perform-modal-action="addContainer"
+        @close-modal-action="closeModalAction"
+      >
+        <template>
+          <div class="tw-bg-modal-header-background tw-py-1 tw-pl-4 tw-pr-2 tw-rounded-sm tw-flex tw-w-full tw-justify-between tw-items-center tw-relative">
+            <p>Create Container?</p>
+            <button
+              class="tw-flex tw-items-center tw-border tw-rounded-sm tw-border-content-border tw-bg-white tw-text-content-page-color tw-p-1"
+              @click="closeModalAction"
+            >
+              <i class="fa fa-times" />
+            </button>
+          </div>
+          <div class="tw-py-3 tw-px-4">
+            Are you sure? You have only defined {{ sampleCount }} sample(s).
+          </div>
+        </template>
+      </custom-dialog-box>
+    </portal>
+
   </div>
 </template>
 
@@ -477,7 +501,9 @@ export default {
       proteinSelection: null,
       selectedSample: null,
       sampleLocation: 0,
+      sampleCount: 0,
       displayImagerScheduleModal: false,
+      displayConfirmationModal: false,
       selectedSchedule: null,
       selectedScreen: null,
       schedulingComponentHeader: [
@@ -610,9 +636,16 @@ export default {
 
       if (!validated) return
 
-      this.addContainer()
+      this.sampleCount = this.samples.filter(s => +s.PROTEINID > 0 && s.NAME !== '').length;
+
+      if (this.plateType === 'plate' && this.sampleCount < this.containerType.CAPACITY) {
+        this.displayConfirmationModal = true
+      } else {
+        this.addContainer()
+      }
     },
     addContainer() {
+      this.displayConfirmationModal = false
       let containerAttributes = {
         NAME: this.NAME,
         DEWARID: this.DEWARID,
@@ -696,10 +729,6 @@ export default {
       let samples
       if (newVal) {
         samples = this.samples.map(sample => {
-          if (!sample.CENTRINGMETHOD) {
-            sample.CENTRINGMETHOD = 'diffraction'
-          }
-
           if (!sample.EXPERIMENTKIND) {
             sample.EXPERIMENTKIND = 'Ligand binding'
           }
@@ -757,18 +786,19 @@ export default {
     },
     closeModalAction() {
       this.displayImagerScheduleModal = false
+      this.displayConfirmationModal = false
     },
     async checkContainerBarcode() {
-      try {
-        const response = await this.$store.dispatch('fetchDataFromApi', {
-          url: `/shipment/containers/barcode/${this.BARCODE}`,
-          requestType: 'fetching barcode status'
-        })
+      const response = await this.$store.dispatch('fetchDataFromApi', {
+        url: `/shipment/containers/barcode/${this.BARCODE}`,
+        requestType: 'fetching barcode status'
+      })
 
+      if (response.PROP) {
         const { PROP } = response
         this.BARCODECHECK = 0
         this.barcodeMessage = `This barcode is already registered to ${PROP}`
-      } catch (error) {
+      } else {
         this.BARCODECHECK = 1
         this.barcodeMessage = ''
       }

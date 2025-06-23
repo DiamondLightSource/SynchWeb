@@ -46,8 +46,7 @@ define(['marionette',
 
     'templates/shipment/containerplate.html',
     'templates/shipment/containerplateimage.html',
-    'jquery-ui/ui/widgets/progressbar',
-    'jquery.touchswipe'], function(Marionette,
+    'jquery-ui/ui/widgets/progressbar'], function(Marionette,
     Backbone,
     Backgrid,
     DistinctProteins,
@@ -266,11 +265,15 @@ define(['marionette',
 
             sampleStatusAuto: 'input[id=sample_status_auto]',
             schema: 'select[name=schema]',
+            schemaspan: '.schemaspan',
             class: 'select[name=class]',
+            heatmap: '.heatmap-canvas',
         },
 
         events: {
             // 'click @ui.ext': 'toggleExtra',
+            'touchstart @ui.heatmap': 'swipeStart',
+            'touchend @ui.heatmap': 'swipeEnd',
             'change @ui.ins': 'selectInspection',
             'click @ui.ads': 'setAddSubsamplePoint',
             'click @ui.adr': 'setAddSubsampleRegion',
@@ -572,31 +575,7 @@ define(['marionette',
 
         inspectionLoaded: function() {
             this.selectSample()
-            this.preCache(1)
         },
-
-        preCache: function(n) {
-            clearTimeout(this.cachethread)
-
-            var self = this
-            var i = this.inspectionimages.at(n)
-            if (this.caching && i) {
-                var xhr =  new XHRImage()
-                //console.log('caching', i.urlFor('hd'))
-                xhr.load(i.urlFor('full'), function() {
-                    self.plateView.drawPlate()
-
-                    if (n+1 === self.inspectionimages.length) self.ui.status.html('')
-                    else self.ui.status.html('Loaded '+(n+1)+' out of '+self.inspectionimages.length+' images')
-
-                    self.cachethread = setTimeout(function() {
-                        self.preCache(++n)
-                    }, 200)
-                })
-            }
-
-        },
-
 
         playInspection: function(e) {
             e.preventDefault()
@@ -640,9 +619,7 @@ define(['marionette',
 
         initialize: function(options) {
             this.isPlaying = false
-            this.cachethread = null
             this.playthread = null
-            this.caching = !app.mobile()
 
             this.samples = new Samples(null, { state: {pageSize: 9999} })
             this.samples.queryParams.cid = options.model.get('CONTAINERID')
@@ -695,10 +672,21 @@ define(['marionette',
             // Assumption all plates are for vmxi, so login => users only
             this.users.queryParams.login = 1
 
+            this.touchstartX = 0;
+            this.touchstartY = 0;
+
             Backbone.Validation.bind(this)
         },
 
         updateSchemas: function() {
+            if (this.autoscoreschemas.length === 1) {
+                this.ui.schemaspan.html(this.autoscoreschemas.at(0).get('SCHEMANAME'))
+                this.ui.schemaspan.show()
+                this.ui.schema.hide()
+            } else {
+                this.ui.schemaspan.hide()
+                this.ui.schema.show()
+            }
             this.ui.schema.html(this.autoscoreschemas.opts())
             this.selectSchema()
         },
@@ -878,6 +866,33 @@ define(['marionette',
             $.when.apply($, this._ready).then(this.doOnShow.bind(this))
         },
 
+        swipeStart: function(e) {
+            e.preventDefault()
+            let t = e.originalEvent.touches[0];
+            this.touchstartX = t.clientX
+            this.touchstartY = t.clientY
+        },
+
+        swipeEnd: function(e) {
+            e.preventDefault()
+            let t = e.originalEvent.changedTouches[0];
+            let pageWidth = window.innerWidth || document.body.clientWidth;
+            let threshold = Math.max(1, Math.floor(0.01 * (pageWidth)));
+            let x = t.clientX - this.touchstartX;
+            let y = t.clientY - this.touchstartY;
+            let yx = Math.abs(y / x);
+            const limit = Math.tan(45 * 1.5 / 180 * Math.PI);
+            let s = null
+            if (Math.abs(x) > threshold && yx <= limit) {
+                if (x < 0) {
+                    s = this.getNext()
+                } else {
+                    s = this.getNext({ prev: true })
+                }
+            }
+            if (s) s.set({ isSelected: true })
+        },
+
         doOnShow: function() {
             this.ui.ins.html(this.inspections.opts())
 
@@ -945,42 +960,16 @@ define(['marionette',
                 this.img.show(this.image)
                 this.sten.show(new ImageHistoryView({ historyimages: this.startendimages, embed: true }))
 
-                // Enable swiping for mobile
-                if (app.mobile()) {
-                    const self = this
-                    console.log('enable swipe')
-                    this.img.$el.find('canvas').swipe({
-                        swipe: function(e, direction) {
-                            e.preventDefault()
-
-                            let s = null
-                            if (direction === 'left') {
-                                s = self.getNext()
-                            }
-                            else if (direction === 'right') {
-                                s = self.getNext({ prev: true })
-                            }
-
-                            if (s) s.set({ isSelected: true })
-                        },
-
-                        threshold: 0
-                    })
-                }
             }
 
             if (this.getOption('params').sid) {
-                const s = this.samples.findWhere({ BLSAMPLEID: this.getOption('params').sid })
+                const s = this.samples.findWhere({ BLSAMPLEID: this.getOption('params').sid.toString() })
                 if (s) s.set({ isSelected: true })
             } else this.samples.at(0).set({isSelected: true})
             this.sample.show(this.singlesample)
 
         },
 
-        onDestroy: function() {
-            clearTimeout(this.cachethread)
-            this.caching = false
-        },
     })
 
 })

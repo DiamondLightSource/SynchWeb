@@ -165,10 +165,6 @@ They can be overriden by specific classes below
             }
             
             tr {
-                .deactivate {
-                    display: none;
-                }
-                
                 &.inactive td {
                     background: $content-inactive !important;
                 }
@@ -179,10 +175,6 @@ They can be overriden by specific classes below
                 
                 &.active td, &.active:nth-child(odd) td {
                     background: $content-active;
-                    
-                    .deactivate {
-                        display: inline;
-                    }
                 }
             }
             

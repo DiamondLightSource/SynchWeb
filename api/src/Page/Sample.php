@@ -195,6 +195,7 @@ class Sample extends Page
         array('/pdbs(/pid/:pid)', 'get', '_get_pdbs'),
         array('/pdbs', 'post', '_add_pdb'),
         array('/pdbs(/:pdbid)', 'delete', '_remove_pdb'),
+        array('/pdbs/download/:pdbid', 'get', '_download_pdb'),
 
         array('/concentrationtypes', 'get', '_concentration_types'),
         array('/componenttypes', 'get', '_component_types'),
@@ -595,7 +596,7 @@ class Sample extends Page
             $this->_error('No containerid specified');
         }
 
-        $args = array($this->proposalid, $this->arg('cid'), $this->arg('cid'), $this->arg('cid'));
+        $args = array($this->proposalid, $this->arg('cid'));
         $where = ' AND c.containerid=:2 AND cq2.completedtimestamp IS NULL';
 
         if ($this->has_arg('filter')) {
@@ -608,8 +609,14 @@ class Sample extends Page
             $where .= $filters[$this->arg('filter')];
         }
 
-        $first_inner_select_where = ' AND s.containerid=:3';
-        $second_inner_select_where = ' AND s.containerid=:4';
+        if ($this->has_arg('LOCATION')) {
+            $where .= ' AND s.location=:' . (sizeof($args) + 1);
+            array_push($args, $this->arg('LOCATION'));
+        }
+
+        $first_inner_select_where = ' AND s.containerid=:' . (sizeof($args) + 1);
+        $second_inner_select_where = ' AND s.containerid=:' . (sizeof($args) + 2);
+        array_push($args, $this->arg('cid'), $this->arg('cid'));
 
         $this->db->wait_rep_sync(true);
         $ss_query_string = $this->get_sub_samples_query($where, $first_inner_select_where, $second_inner_select_where);
@@ -1313,8 +1320,8 @@ class Sample extends Page
         $blSampleId = $samp['BLSAMPLEID'];
 
         $this->db->pq(
-            "UPDATE blsample set name=:1,comments=:2,code=:3,volume=:4,packingfraction=:5,dimension1=:6,dimension2=:7,dimension3=:8,shape=:9,looptype=:10 WHERE blsampleid=:11",
-            array($a['NAME'], $a['COMMENTS'], $a['CODE'], $a['VOLUME'], $a['PACKINGFRACTION'], $a['DIMENSION1'], $a['DIMENSION2'], $a['DIMENSION3'], $a['SHAPE'], $a['LOOPTYPE'], $blSampleId)
+            "UPDATE blsample set name=:1,comments=:2,code=:3,volume=:4,packingfraction=:5,dimension1=:6,dimension2=:7,dimension3=:8,shape=:9,looptype=:10,smiles=:11 WHERE blsampleid=:12",
+            array($a['NAME'], $a['COMMENTS'], $a['CODE'], $a['VOLUME'], $a['PACKINGFRACTION'], $a['DIMENSION1'], $a['DIMENSION2'], $a['DIMENSION3'], $a['SHAPE'], $a['LOOPTYPE'], $a['SMILES'], $blSampleId)
         );
 
         if (array_key_exists('PROTEINID', $a)) {
@@ -1482,6 +1489,7 @@ class Sample extends Page
             'LOOPTYPE',
             'ENERGY',
             'USERPATH',
+            'SMILES',
             'SCREENINGMETHOD',
             'SCREENINGCOLLECTVALUE',
             'SAMPLEGROUP',
@@ -1539,8 +1547,8 @@ class Sample extends Page
         }
 
         $this->db->pq(
-            "INSERT INTO blsample (blsampleid,crystalid,diffractionplanid,containerid,location,comments,name,code,blsubsampleid,screencomponentgroupid,volume,packingfraction,dimension1,dimension2,dimension3,shape,looptype,source) VALUES (s_blsample.nextval,:1,:2,:3,:4,:5,:6,:7,:8,:9,:10,:11,:12,:13,:14,:15,:16,IFNULL(:17,CURRENT_USER)) RETURNING blsampleid INTO :id",
-            array($crysid, $did, $a['CONTAINERID'], $a['LOCATION'], $a['COMMENTS'], $a['NAME'], $a['CODE'], $a['BLSUBSAMPLEID'], $a['SCREENCOMPONENTGROUPID'], $a['VOLUME'], $a['PACKINGFRACTION'], $a['DIMENSION1'], $a['DIMENSION2'], $a['DIMENSION3'], $a['SHAPE'], $a['LOOPTYPE'], $a['SOURCE'])
+            "INSERT INTO blsample (blsampleid,crystalid,diffractionplanid,containerid,location,comments,name,code,blsubsampleid,screencomponentgroupid,volume,packingfraction,dimension1,dimension2,dimension3,shape,looptype,smiles,source) VALUES (s_blsample.nextval,:1,:2,:3,:4,:5,:6,:7,:8,:9,:10,:11,:12,:13,:14,:15,:16,:17,IFNULL(:18,CURRENT_USER)) RETURNING blsampleid INTO :id",
+            array($crysid, $did, $a['CONTAINERID'], $a['LOCATION'], $a['COMMENTS'], $a['NAME'], $a['CODE'], $a['BLSUBSAMPLEID'], $a['SCREENCOMPONENTGROUPID'], $a['VOLUME'], $a['PACKINGFRACTION'], $a['DIMENSION1'], $a['DIMENSION2'], $a['DIMENSION3'], $a['SHAPE'], $a['LOOPTYPE'], $a['SMILES'], $a['SOURCE'])
         );
         $sid = $this->db->id();
 
@@ -2092,6 +2100,21 @@ class Sample extends Page
         $rows = $this->db->pq("SELECT distinct hp.proteinhaspdbid, p.pdbid,pr.proteinid, p.name,p.code FROM pdb p INNER JOIN protein_has_pdb hp ON p.pdbid = hp.pdbid INNER JOIN protein pr ON pr.proteinid = hp.proteinid WHERE $where ORDER BY p.pdbid DESC", $args);
 
         $this->_output($rows);
+    }
+
+    # ------------------------------------------------------------------------
+    # Download a pdb file
+    function _download_pdb()
+    {
+        if (!$this->has_arg('pdbid'))
+            $this->_error('No PDB id specified');
+
+        $pdb = $this->db->pq("SELECT name, contents FROM pdb WHERE pdbid = :1", array($this->arg('pdbid')));
+        $pdb = $pdb[0];
+
+        header('Content-Type:text/plain');
+        header('Content-Disposition:attachment;filename='.$pdb['NAME']);
+        print $pdb['CONTENTS'];
     }
 
     # ------------------------------------------------------------------------
@@ -2713,23 +2736,22 @@ class Sample extends Page
         if (!$this->has_arg('prop'))
             $this->_error('No proposal specified');
 
-        $sgid = $this->_create_sample_group();
+        $name = $this->has_arg('NAME') ? $this->arg('NAME') : NULL;
 
-        $this->_output($sgid);
+        $sg = $this->db->pq("SELECT blsg.blsamplegroupid
+            FROM blsamplegroup blsg
+            WHERE blsg.name=:1 and blsg.proposalid=:2", array($name, $this->proposalid));
+        if (sizeof($sg)) $this->_error('The specified sample group name already exists');
+
+        $this->db->pq("INSERT INTO blsamplegroup (blsamplegroupid, name, proposalid, ownerid) VALUES(NULL, :1, :2, :3)",
+            array($name, $this->proposalid, $this->user->personId));
+        $sgid = $this->db->id();
 
         $this->_output(array(
             'BLSAMPLEGROUPID' => $sgid,
-            'NAME' => $this->has_arg('NAME') ? $this->arg('NAME') : NULL,
+            'NAME' => $name,
             'SAMPLEGROUPSAMPLES' => 0
         ));
-    }
-
-    function _create_sample_group()
-    {
-        $name = $this->has_arg('NAME') ? $this->arg('NAME') : NULL;
-        $this->db->pq("INSERT INTO blsamplegroup (blsamplegroupid, name, proposalid, ownerid) VALUES(NULL, :1, :2, :3)",
-            array($name, $this->proposalid, $this->user->personId));
-        return $this->db->id();
     }
 
     function _get_sample_groups_by_sample()
@@ -2737,14 +2759,11 @@ class Sample extends Page
         if (!$this->has_arg('prop'))
             $this->_error('No proposal specified');
 
-        $where = 'bsg.proposalid = :1';
-        $args = array($this->proposalid);
-
         if (!$this->has_arg('BLSAMPLEID'))
             $this->_error('No sample specified');
 
-        $where .= ' AND b.blsampleid = :2';
-        array_push($args, $this->arg('BLSAMPLEID'));
+        $where = 'bsg.proposalid = :1 AND b.blsampleid = :2';
+        $args = array($this->proposalid, $this->arg('BLSAMPLEID'));
 
         $tot = $this->db->pq("SELECT count(*) as total
                 FROM blsamplegroup bsg

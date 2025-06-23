@@ -266,26 +266,18 @@
           </extended-validation-provider>
         </div>
       </div>
-    </div>
 
-    <div
-      v-show="currentTab === 'unattended'"
-      class="tw-w-full tw-flex tw-items-center"
-    >
       <extended-validation-provider
-        :ref="`sample_${sampleIndex}_centring_method`"
-        class-names="tw-px-2 tw-w-24"
-        :name="`Sample ${sampleIndex + 1} Centring Method`"
-        :rules="sample['PROTEINID'] > -1 && queueForUDC ? 'required' : ''"
-        :vid="`sample ${sampleIndex + 1} centring method`"
+        :ref="`sample_${sampleIndex}_smiles`"
+        class-names="tw-px-2 tw-w-3/12"
+        :name="`Sample ${sampleIndex + 1} SMILES Code`"
+        :rules="sample['PROTEINID'] > -1 ? { regex: /^[A-Za-z0-9.:%=#$@+\-\[\]\(\)\/\\\\]+$/ } : ''"
+        :vid="`sample ${sampleIndex + 1} smiles`"
       >
         <template #default="{errors, inputChanged }">
-          <base-input-select
-            v-model="CENTRINGMETHOD"
-            :is-disabled="!canEditRow(sample['LOCATION'], currentEditingRow)"
-            :options="centringMethodList"
-            option-value-key="value"
-            option-text-key="text"
+          <base-input-text
+            v-model="SMILES"
+            :disabled="!canEditRow(sample['LOCATION'], currentEditingRow)"
             input-class="tw-w-full tw-h-8"
             :quiet="true"
             :error-message="errors[0]"
@@ -295,6 +287,12 @@
         </template>
       </extended-validation-provider>
 
+    </div>
+
+    <div
+      v-show="currentTab === 'unattended'"
+      class="tw-w-full tw-flex tw-items-center"
+    >
       <extended-validation-provider
         :ref="`sample_${sampleIndex}_experiment_kind`"
         class-names="tw-px-2 tw-w-32"
@@ -322,7 +320,7 @@
         :ref="`sample_${sampleIndex}_energy`"
         class-names="tw-px-2 tw-w-20"
         :name="`Sample ${sampleIndex + 1} Energy`"
-        :rules="sample['PROTEINID'] > -1 ? `required_if:sample ${sampleIndex + 1} experiment kind,SAD|non_zero_numeric` : ''"
+        :rules="sample['PROTEINID'] > -1 ? `required_if:sample ${sampleIndex + 1} experiment kind,SAD|min_value:1501` : ''"
         :vid="`sample ${sampleIndex + 1} energy`"
       >
         <template #default="{errors, inputChanged }">

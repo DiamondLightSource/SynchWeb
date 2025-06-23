@@ -5947,14 +5947,14 @@
           "description": "Number of steps in x",
           "example": 10
         },
-        "PIXELSPERMICRONX": {
+        "MICRONSPERPIXELX": {
           "type": "string",
-          "description": "Pixels per micron in x for snapshot",
+          "description": "Microns per pixel in x for snapshot",
           "example": 1.2200000286102
         },
-        "PIXELSPERMICRONY": {
+        "MICRONSPERPIXELY": {
           "type": "string",
-          "description": "Pixels per micron in y for snapshot",
+          "description": "Microns per pixel in y for snapshot",
           "example": 1.1900000572205
         },
         "SNAPSHOT_OFFSETXPIXEL": {

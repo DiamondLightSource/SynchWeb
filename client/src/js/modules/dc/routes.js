@@ -16,6 +16,7 @@ const QueueBuilder = import(/* webpackChunkName: "dc" */ 'modules/dc/views/queue
 
 // import DataCollection from 'models/datacollection'
 import DCCol from 'collections/datacollections'
+import DCVisit from 'collections/datacollectionsforvisit'
 import Visit from 'models/visit'
 import RoutesUtil from 'utils/routes'
 // import store from 'app/store/store'
@@ -57,8 +58,7 @@ application.addInitializer(function() {
 // },
 
 function lookupVisit(visit) {
-  // router guard takes care of setting proposal from route path
-  //application.cookie(visit.split('-')[0])
+  application.cookie(visit.split('-')[0])
 
   return new Promise((resolve, reject) => {
       visitModel = new Visit({ VISIT: visit })
@@ -119,8 +119,8 @@ let routes = [
         visit: route.params.visit || '',
         options: {
           model: visitModel,
-          collection: new DCCol(null, {
-            queryParams: { visit: route.params.visit, t: 'fc', pp: app.mobile() ? 5 : 15 }, running: false
+          collection: new DCVisit(null, {
+            queryParams: { visit: route.params.visit }
           })
         }
     }),

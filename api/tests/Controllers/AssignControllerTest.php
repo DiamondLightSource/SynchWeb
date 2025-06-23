@@ -45,15 +45,14 @@ final class AssignControllerTest extends TestCase
         $this->assignController->shouldReceive('_setup_routes')->times(1)->andReturn(Mockery::self());
         $this->assignController->__construct($this->slimStub, $this->dbStub, $this->user, $this->dataLayerStub);
 
-        global $ip2bl;
-        $ip2bl = array(103 => 'i03');
-
         global $bl_puck_names;
         $bl_puck_names = array(
             'i03' => "BL03I-MO-ROBOT-01:PUCK_%'02d_NAME",
         );
         global $bl_pv_env;
         $bl_pv_env = 'EPICS_CA_ADDR_LIST_TEST=666.45.678.9';
+        global $only_staff_can_assign;
+        $only_staff_can_assign = array();
     }
 
     protected function tearDown(): void
@@ -144,53 +143,6 @@ final class AssignControllerTest extends TestCase
 
         $this->assignController->deactivateDewar();
         $this->assertEquals(1, $response->getBody());
-    }
-
-    public function testGetBeamlineVisitsWithInvalidNoConfigReturnsNothing(): void
-    {
-        $response = $this->setUpCommonResponse();
-        $_SERVER['REMOTE_ADDR'] = '';
-
-        $this->assignController->getBeamlineVisits();
-        $this->assertEquals('[]', $response->getBody());
-    }
-
-    public function testGetBeamlineVisitsWithValidConfigReturnsNothing(): void
-    {
-        $response = $this->setUpCommonResponse();
-        $_SERVER['REMOTE_ADDR'] = 'www.diamond.103.com';
-        $this->dbStub->expects($this->exactly(1))->method('pq')->with("SELECT CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) as visit, TO_CHAR(s.startdate, 'DD-MM-YYYY HH24:MI') as st, TO_CHAR(s.enddate, 'DD-MM-YYYY HH24:MI') as en,s.beamlinename as bl FROM blsession s INNER JOIN proposal p ON (p.proposalid = s.proposalid) WHERE TIMESTAMPDIFF('DAY', s.startdate, CURRENT_TIMESTAMP) < 1 AND TIMESTAMPDIFF('DAY', CURRENT_TIMESTAMP, s.enddate) < 2 AND s.beamlinename LIKE :1 ORDER BY s.startdate", array('i03'))->willReturn(array());
-        $this->dbStub->expects($this->exactly(1))->method('paginate')->with("SELECT CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) as visit, TO_CHAR(s.startdate, 'DD-MM-YYYY HH24:MI') as st, TO_CHAR(s.enddate, 'DD-MM-YYYY HH24:MI') as en,s.beamlinename as bl FROM blsession s INNER JOIN proposal p ON (p.proposalid = s.proposalid) WHERE p.proposalcode LIKE 'cm' AND s.beamlinename LIKE :1 AND s.enddate <= CURRENT_TIMESTAMP ORDER BY s.startdate DESC", array('i03', 0, 1))->willReturn(array());
-
-        $this->assignController->getBeamlineVisits();
-        $this->assertEquals('[]', $response->getBody());
-    }
-
-    public function testGetBeamlineVisitsWithValidConfigAndVisitReturnsData(): void
-    {
-        $visitId = 123;
-        $response = $this->setUpCommonResponse();
-        $_SERVER['REMOTE_ADDR'] = 'www.diamond.103.com';
-        $result = ['VISIT' => $visitId, 'BL' => 'test03'];
-        $this->dbStub->expects($this->exactly(1))->method('pq')->with("SELECT CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) as visit, TO_CHAR(s.startdate, 'DD-MM-YYYY HH24:MI') as st, TO_CHAR(s.enddate, 'DD-MM-YYYY HH24:MI') as en,s.beamlinename as bl FROM blsession s INNER JOIN proposal p ON (p.proposalid = s.proposalid) WHERE TIMESTAMPDIFF('DAY', s.startdate, CURRENT_TIMESTAMP) < 1 AND TIMESTAMPDIFF('DAY', CURRENT_TIMESTAMP, s.enddate) < 2 AND s.beamlinename LIKE :1 ORDER BY s.startdate", array('i03'))->willReturn(array($result));
-        $this->dbStub->expects($this->exactly(1))->method('paginate')->with("SELECT CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) as visit, TO_CHAR(s.startdate, 'DD-MM-YYYY HH24:MI') as st, TO_CHAR(s.enddate, 'DD-MM-YYYY HH24:MI') as en,s.beamlinename as bl FROM blsession s INNER JOIN proposal p ON (p.proposalid = s.proposalid) WHERE p.proposalcode LIKE 'cm' AND s.beamlinename LIKE :1 AND s.enddate <= CURRENT_TIMESTAMP ORDER BY s.startdate DESC", array('i03', 0, 1))->willReturn(array());
-
-        $this->assignController->getBeamlineVisits($visitId);
-        $this->assertEquals('{"VISIT":123,"BL":"test03"}', $response->getBody());
-    }
-
-    public function testGetBeamlineVisitsWithValidConfigAndInvalidVisitReturnsError(): void
-    {
-        $visitId = 123;
-        $_SERVER['REMOTE_ADDR'] = 'www.diamond.103.com';
-        $result = ['VISIT' => 1230, 'BL' => 'test03'];
-        $this->dbStub->expects($this->exactly(1))->method('pq')->with("SELECT CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) as visit, TO_CHAR(s.startdate, 'DD-MM-YYYY HH24:MI') as st, TO_CHAR(s.enddate, 'DD-MM-YYYY HH24:MI') as en,s.beamlinename as bl FROM blsession s INNER JOIN proposal p ON (p.proposalid = s.proposalid) WHERE TIMESTAMPDIFF('DAY', s.startdate, CURRENT_TIMESTAMP) < 1 AND TIMESTAMPDIFF('DAY', CURRENT_TIMESTAMP, s.enddate) < 2 AND s.beamlinename LIKE :1 ORDER BY s.startdate", array('i03'))->willReturn(array($result));
-        $this->dbStub->expects($this->exactly(1))->method('paginate')->with("SELECT CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) as visit, TO_CHAR(s.startdate, 'DD-MM-YYYY HH24:MI') as st, TO_CHAR(s.enddate, 'DD-MM-YYYY HH24:MI') as en,s.beamlinename as bl FROM blsession s INNER JOIN proposal p ON (p.proposalid = s.proposalid) WHERE p.proposalcode LIKE 'cm' AND s.beamlinename LIKE :1 AND s.enddate <= CURRENT_TIMESTAMP ORDER BY s.startdate DESC", array('i03', 0, 1))->willReturn(array());
-
-        $this->slimStub->shouldReceive('halt')->times(1)->with(400, '{"status":400,"message":"No such visit"}')->andThrow(new \Exception);
-        $this->expectException(\Exception::class);
-
-        $this->assignController->getBeamlineVisits($visitId);
     }
 
     public function testGetPuckNamesWithoutPropThrowsError(): void
