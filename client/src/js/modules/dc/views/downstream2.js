@@ -101,8 +101,6 @@ define(['backbone', 'marionette', 'views/dialog',
         },
 
         updatePipeline: function() {
-            console.log('this.model')
-            console.log(this.model)
             this.model.set('PIPELINE', this.ui.pipeline.val())
             this.model.set('PIPELINENAME', this.ui.pipeline.find('option:selected').text())
             var btns = this.buttons
@@ -119,11 +117,11 @@ define(['backbone', 'marionette', 'views/dialog',
                 warning = ' Cannot run Fast EP as no anomalous scatterer defined'
                 btns = this.disabledButtons
             }
-            if (this.model.get('PIPELINENAME').startsWith('Big EP') && this.model.get('HASSEQ') === 'No') {
+            if (this.model.get('PIPELINENAME') === 'Big EP' && this.model.get('HASSEQ') === 'No') {
                 warning = ' Cannot run Big EP as no sequence defined'
                 btns = this.disabledButtons
             }
-            if (this.model.get('PIPELINENAME').startsWith('Big EP') && (!this.model.get('ANOMALOUSSCATTERER'))) {
+            if (this.model.get('PIPELINENAME') === 'Big EP' && (!this.model.get('ANOMALOUSSCATTERER'))) {
                 warning = ' Cannot run Big EP as no anomalous scatterer defined'
                 btns = this.disabledButtons
             }
@@ -177,18 +175,6 @@ define(['backbone', 'marionette', 'views/dialog',
                         }))
                     }
 
-/*
-                    // hopefully dont need this
-                    var pdbs = ['6O17', '/dls/i03/data/2024/cm37235-4/tmp/pdb/8152683618cbd806720c22fd099229b5fe296f79/ranked_0.pdb']
-                    _.each(pdbs, function(pdb) {
-                        reprocessingparams.add(new ReprocessingParameter({ 
-                            PROCESSINGJOBID: reprocessing.get('PROCESSINGJOBID'),
-                            PARAMETERKEY: 'pdb', 
-                            PARAMETERVALUE: pdb
-                        }))
-                    })
-*/
-
                     if (reprocessingparams.length) reqs.push(reprocessingparams.save())
 
                     $.when.apply($, reqs).done(function() {
@@ -220,7 +206,7 @@ define(['backbone', 'marionette', 'views/dialog',
             this._ready = this.proteins.fetch()
             this._ready.done(this.doOnReady.bind(this))
             this.scalingid = options.scalingid
-            console.log('scalingid: '+this.scalingid)
+            this.type = options.type
             this.attachments = new AutoProcAttachments()
             this.attachments.queryParams = {
                 AUTOPROCPROGRAMID: options.autoprocprogramid,
@@ -231,14 +217,18 @@ define(['backbone', 'marionette', 'views/dialog',
 
         onRender: function() {
 
-            this.pipelines = new Pipelines([
-                { NAME: 'Dimple', VALUE: 'postprocessing-dimple' },
-                { NAME: 'MrBUMP', VALUE: 'postprocessing-mrbump-cloud' },
-                { NAME: 'Fast EP', VALUE: 'postprocessing-fast-ep-cloud' },
-                { NAME: 'Big EP autoBuild', VALUE: 'postprocessing-big-ep-launcher-cloud' },
-                { NAME: 'Big EP autoSHARP', VALUE: 'postprocessing-big-ep-launcher-cloud-blah' },
-                { NAME: 'Big EP Crank2', VALUE: 'postprocessing-big-ep-launcher-cloud-blah-blah' },
-            ])
+            var pls = [
+                { NAME: 'Big EP', VALUE: 'reprocessing-bigep' },
+                // fast ep not currently supported but hopefully added soon
+                //{ NAME: 'Fast EP', VALUE: 'reprocessing-fastep' },
+            ]
+
+            // autoPROC not supported for dimple / MrBump
+            if (!this.type.startsWith('autoPROC')) {
+                pls.push({ NAME: 'Dimple', VALUE: 'reprocessing-dimple' })
+                pls.push({ NAME: 'MrBUMP', VALUE: 'reprocessing-mrbump' })
+            }
+            this.pipelines = new Pipelines(pls)
 
             this.ui.pipeline.html(this.pipelines.opts())           
         },

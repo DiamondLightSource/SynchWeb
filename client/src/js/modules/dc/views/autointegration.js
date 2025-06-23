@@ -59,7 +59,7 @@ define(['marionette',
 
         downstream: function(e) {
             e.preventDefault()
-            app.dialog.show(new DownstreamView({ model: this.getOption('templateHelpers').PARENT, scalingid: this.model.get('SCALINGID'), autoprocprogramid: this.model.get('AID')}))
+            app.dialog.show(new DownstreamView({ model: this.getOption('templateHelpers').PARENT, scalingid: this.model.get('SCALINGID'), autoprocprogramid: this.model.get('AID'), type: this.model.get('TYPE')}))
         },
 
         showLog: function(e) {
