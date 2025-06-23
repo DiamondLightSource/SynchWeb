@@ -1903,7 +1903,7 @@ class Sample extends Page
               INNER JOIN crystal cr ON cr.crystalid = b.crystalid 
               INNER JOIN protein pr ON pr.proteinid = cr.proteinid 
               LEFT OUTER JOIN diffractionplan dp on dp.diffractionplanid = b.diffractionplanid 
-              LEFT OUTER JOIN blsampleposition bsp ON bsp.blsampleid = b.blsampleid
+              LEFT OUTER JOIN blsampleposition bsp ON bsp.blsampleid = b.blsampleid AND bsp.positiontype='dispensing'
               WHERE pr.proposalid = :1 AND b.blsampleid = :2", array($this->proposalid, $this->arg('sid')));
 
         if (!sizeof($samp))
@@ -1990,8 +1990,8 @@ class Sample extends Page
             } else {
                 if (empty($pid)) {
                     $this->db->pq(
-                        "INSERT INTO blsampleposition (blsampleid, posx, posy, posz, recordtimestamp)
-                        VALUES (:1, :2, :3, :4, CURRENT_TIMESTAMP) RETURNING blsamplepositionid INTO :id",
+                        "INSERT INTO blsampleposition (blsampleid, posx, posy, posz, positiontype, recordtimestamp)
+                        VALUES (:1, :2, :3, :4, 'dispensing', CURRENT_TIMESTAMP) RETURNING blsamplepositionid INTO :id",
                         array($this->arg('sid'), $this->arg('X'), $this->arg('Y'), $z)
                     );
                     $pid = $this->db->id();
