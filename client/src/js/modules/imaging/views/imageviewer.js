@@ -604,9 +604,11 @@ define(['marionette',
         },
         
         calcZoom: function() {
-            var min = this.ui.canvas.width() < this.ui.canvas.height() ? this.ui.canvas.width()/this.width : this.ui.canvas.height()/this.height
-            this.ui.zoom.slider('option', 'min', 100*min)
-            this.onZoomChange()
+            if (this.ui.zoom.hasClass('ui-slider')) {
+                var min = this.ui.canvas.width() < this.ui.canvas.height() ? this.ui.canvas.width()/this.width : this.ui.canvas.height()/this.height
+                this.ui.zoom.slider('option', 'min', 100*min)
+                this.onZoomChange()
+            }
         },
         
         clampOffsets: function() {

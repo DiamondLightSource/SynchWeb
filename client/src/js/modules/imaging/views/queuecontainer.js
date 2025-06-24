@@ -477,7 +477,7 @@ define(['marionette',
 
     var SnapshotCell = Backgrid.Cell.extend({
         image: null,
-        className: 'cleafix',
+        className: 'clearfix',
 
         selectImage: function() {
             this.image = this.column.get('inspectionimages').findWhere({ BLSAMPLEID: this.model.get('BLSAMPLEID') })
@@ -545,6 +545,8 @@ define(['marionette',
             queuebutton: '.queuebutton',
             unqueuebutton: '.unqueuebutton',
             queuelength: '.queuelength',
+            unqueuesamples: '.unqueuesamples',
+            applyall: '.applyall',
         },
 
 
@@ -594,12 +596,14 @@ define(['marionette',
                 success: function(resp) {
                     _.each(resp, function (r) {
                         var ss = self.subsamples.fullCollection.findWhere({ BLSUBSAMPLEID: r.BLSUBSAMPLEID })
-                        ss.set({ READYFORQUEUE: '1' })
+                        ss.set({ READYFORQUEUE: '1' }, { silent: true })
                     })
                 },
                 complete: function(resp, status) {
                     self.$el.removeClass('loading')
+                    self.subsamples.trigger('reset')
                     self.refreshQSubSamples(self)
+                    self.updateQueueLength()
                 }
             })            
         },
@@ -645,12 +649,14 @@ define(['marionette',
                 success: function(resp) {
                     _.each(resp, function (r) {
                         let ss = self.typeselector.shadowCollection.findWhere({ BLSUBSAMPLEID: r.BLSUBSAMPLEID })
-                        ss.set({ READYFORQUEUE: '0' })
+                        ss.set({ READYFORQUEUE: '0' }, { silent: true })
                     })
                 },
                 complete: function(resp, status) {
                     self.$el.removeClass('loading')
+                    self.subsamples.trigger('reset')
                     self.refreshQSubSamples(self)
+                    self.updateQueueLength()
                 }
             })
         },
@@ -692,29 +698,70 @@ define(['marionette',
             if (p) this.applyModel(p, true)
         },
 
-        applyPresetAll:function(e) {
+        applyPresetAll: async function(e) {
             e.preventDefault()
+            var self = this
 
             var p = this.plans.findWhere({ DIFFRACTIONPLANID: this.ui.preset.val() })
-            if (p) this.applyModel(p, false)
+            if (p) {
+                self.ui.applyall.html('Applying...').prop('disabled', true)
+                var promises = await this.applyModel(p, false)
+
+                const updateButtonAfterProcessing = () => {
+                    self.ui.applyall.html('<i class="fa fa-file-text-o"></i> Apply to All').prop('disabled', false)
+                }
+
+                if (promises && promises.length > 0) {
+                    Promise.allSettled(promises)
+                    .then(updateButtonAfterProcessing)
+                    .catch(error => {
+                        console.error("Error after promises settled: ", error);
+                        updateButtonAfterProcessing()
+                    })
+                } else {
+                     updateButtonAfterProcessing()
+                }
+            }
         },
 
-        applyModel: function(modelParameter, isLimitedToSelected) {
+        chunkArray: function(array, chunkSize) {
+            const result = [];
+            for (let i = 0; i < array.length; i += chunkSize) {
+                result.push(array.slice(i, i + chunkSize));
+            }
+            return result;
+        },
+
+        delay: function(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        },
+
+        applyModel: async function(modelParameter, isLimitedToSelected) {
             var models = null
             if (isLimitedToSelected) {
                 models = this.qsubsamples.where({ isGridSelected: true })
             } else {
                 models = this.qsubsamples.fullCollection.toArray()
             }
-            _.each(models, function(model) {
-                if (modelParameter.get('EXPERIMENTKIND') !== model.get('EXPERIMENTKIND')) return
-                    
-                _.each(['REQUIREDRESOLUTION', 'PREFERREDBEAMSIZEX', 'PREFERREDBEAMSIZEY', 'EXPOSURETIME', 'BOXSIZEX', 'BOXSIZEY', 'AXISSTART', 'AXISRANGE', 'NUMBEROFIMAGES', 'TRANSMISSION', 'ENERGY', 'MONOCHROMATOR'], function(k) {
-                    if (modelParameter.get(k) !== null) model.set(k, modelParameter.get(k))
+
+            var promises = []
+            const modelChunks = this.chunkArray(models, 500);
+
+            for (const chunk of modelChunks) {
+                chunk.forEach(function(model) {
+                    if (modelParameter.get('EXPERIMENTKIND') !== model.get('EXPERIMENTKIND')) return;
+
+                    ['REQUIREDRESOLUTION', 'PREFERREDBEAMSIZEX', 'PREFERREDBEAMSIZEY', 'EXPOSURETIME', 'BOXSIZEX', 'BOXSIZEY', 'AXISSTART', 'AXISRANGE', 'NUMBEROFIMAGES', 'TRANSMISSION', 'ENERGY', 'MONOCHROMATOR'].forEach(function(k) {
+                        if (modelParameter.get(k) !== null) model.set(k, modelParameter.get(k), { silent: true })
+                    }, this)
+                    promises.push(model.save())
+                    model.trigger('refresh')
                 }, this)
-                model.save()
-                model.trigger('refresh')
-            }, this)
+
+                await this.delay(100)
+            }
+
+            return Promise.all(promises)
         },
 
         cloneModel: function(m) {
@@ -976,12 +1023,14 @@ define(['marionette',
             if (this.model.get('CONTAINERQUEUEID')) {
                 this.ui.rpreset.hide()
                 this.ui.queuebutton.hide()
+                this.ui.unqueuesamples.hide()
                 this.ui.unqueuebutton.show()
                 queuedSubSamples.push({ label: '', cell: table.StatusCell, editable: false })
                 queuedSubSamples.push({ label: '', cell: table.TemplateCell, editable: false, template: '<a href="/samples/sid/<%-BLSAMPLEID%>" class="button"><i class="fa fa-search"></i></a>' })
             } else {
                 this.ui.rpreset.show()
                 this.ui.queuebutton.show()
+                this.ui.unqueuesamples.show()
                 this.ui.unqueuebutton.hide()
                 queuedSubSamples.push({ label: '', cell: ActionsCell, editable: false, plans: this.plans })
             }

@@ -1508,20 +1508,25 @@ class DC extends Page
         $info = $this->db->pq("SELECT dc.datacollectiongroupid, dc.datacollectionid,
                 xrc.xraycentringtype as method, xrcr.xraycentringresultid,
                 xrcr.centreofmassx as x, xrcr.centreofmassy as y, xrcr.centreofmassz as z,
-                xrcr.totalcount
+                xrcr.totalcount,
+                xrcr.boundingboxmaxx-xrcr.boundingboxminx as sizex,
+                xrcr.boundingboxmaxy-xrcr.boundingboxminy as sizey,
+                xrcr.boundingboxmaxz-xrcr.boundingboxminz as sizez,
+                s.blsampleid, s.name
                 FROM datacollection dc
                 INNER JOIN xraycentring xrc ON xrc.datacollectiongroupid = dc.datacollectiongroupid
                 INNER JOIN xraycentringresult xrcr ON xrcr.xraycentringid = xrc.xraycentringid
-                WHERE dc.datacollectionid = :1 ", array($this->arg('id')));
+                LEFT JOIN blsample s ON xrcr.blsampleid = s.blsampleid
+                WHERE dc.datacollectionid = :1
+                ORDER BY xrcr.totalcount desc", array($this->arg('id')));
 
         if (!sizeof($info))
             $this->_output(array('total' => 0, 'data' => array()));
         else {
             foreach ($info as &$i) {
                 foreach ($i as $k => &$v) {
-                    if ($k == 'METHOD')
-                        continue;
-                    $v = round(floatval($v), 2);
+                    if ($k == 'X' || $k == 'Y' || $k == 'Z')
+                        $v = number_format($v, 1);
                 }
             }
             $this->_output(array('total' => sizeof($info), 'data' => $info));

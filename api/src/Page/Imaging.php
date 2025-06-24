@@ -866,11 +866,12 @@ class Imaging extends Page
             array_push($args, $this->arg('scid'));
         }
 
-        $screens = $this->db->pq("SELECT ct.name as containertypeid, IFNULL(ct.capacity, 96) as capacity, CONCAT(p.proposalcode, p.proposalnumber) as prop, s.global, s.name, s.screenid, s.proposalid, count(distinct sg.screencomponentgroupid) as groups, count(distinct sc.screencomponentid) as components
+        $screens = $this->db->pq("SELECT ct.name as containertypeid, IFNULL(ct.capacity, 96) as capacity, CONCAT(p.proposalcode, p.proposalnumber) as prop, s.global, s.name, s.screenid, s.proposalid, count(distinct sg.screencomponentgroupid) as groups, count(distinct sc.screencomponentid) as components, COUNT(DISTINCT c.containerid) AS cnt
               FROM screen s
               LEFT OUTER JOIN screencomponentgroup sg ON sg.screenid = s.screenid
               LEFT OUTER JOIN screencomponent sc ON sc.screencomponentgroupid = sg.screencomponentgroupid
               LEFT OUTER JOIN containertype ct ON ct.containertypeid = s.containertypeid
+              LEFT OUTER JOIN container c ON c.screenId = s.screenid
               INNER JOIN proposal p ON p.proposalid = s.proposalid
               WHERE $where
               GROUP BY CONCAT(p.proposalcode, p.proposalnumber), s.global, s.name, s.screenid, s.proposalid", $args);
