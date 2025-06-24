@@ -487,11 +487,13 @@ define(['marionette',
                 this.ui.ads.removeClass('button-highlight')
                 this.image.setAddSubsample(false)
                 this.ui.ads.find('span').text('Mark Point')
+                this.ui.ads.find('i').removeClass('fa-times').addClass('fa-plus')
 
             } else {
                 this.ui.ads.addClass('button-highlight')
                 this.image.setAddSubsample(true)
                 this.ui.ads.find('span').text('Finish')
+                this.ui.ads.find('i').removeClass('fa-plus').addClass('fa-times')
             }
 
             this.ui.adr.removeClass('button-highlight')
@@ -499,7 +501,9 @@ define(['marionette',
             this.image.setAddSubsampleRegion(false)
             this.image.setAddDispensing(false)
             this.ui.adr.find('span').text('Mark Region')
+            this.ui.adr.find('i').removeClass('fa-times').addClass('fa-plus')
             this.ui.addis.find('span').text('Mark Dispensing')
+            this.ui.addis.find('i').removeClass('fa-times').addClass('fa-plus')
             this.ui.deldis.hide()
         },
 
@@ -511,11 +515,13 @@ define(['marionette',
                 this.ui.adr.removeClass('button-highlight')
                 this.image.setAddSubsampleRegion(false)
                 this.ui.adr.find('span').text('Mark Region')
+                this.ui.adr.find('i').removeClass('fa-times').addClass('fa-plus')
 
             } else {
                 this.ui.adr.addClass('button-highlight')
                 this.image.setAddSubsampleRegion(true)
                 this.ui.adr.find('span').text('Finish')
+                this.ui.adr.find('i').removeClass('fa-plus').addClass('fa-times')
             }
 
             this.ui.ads.removeClass('button-highlight')
@@ -523,7 +529,9 @@ define(['marionette',
             this.image.setAddSubsample(false)
             this.image.setAddDispensing(false)
             this.ui.ads.find('span').text('Mark Point')
+            this.ui.ads.find('i').removeClass('fa-times').addClass('fa-plus')
             this.ui.addis.find('span').text('Mark Dispensing')
+            this.ui.addis.find('i').removeClass('fa-times').addClass('fa-plus')
             this.ui.deldis.hide()
         },
 
@@ -534,12 +542,14 @@ define(['marionette',
                 this.ui.addis.removeClass('button-highlight')
                 this.image.setAddDispensing(false)
                 this.ui.addis.find('span').text('Mark Dispensing')
+                this.ui.addis.find('i').removeClass('fa-times').addClass('fa-plus')
                 this.ui.deldis.hide()
 
             } else {
                 this.ui.addis.addClass('button-highlight')
                 this.image.setAddDispensing(true)
                 this.ui.addis.find('span').text('Cancel')
+                this.ui.addis.find('i').removeClass('fa-plus').addClass('fa-times')
                 if (this.subsamples.length && this.subsamples.findWhere({ BLSAMPLEID: this.getSample() }).get('DISPENSEX')) {
                     this.ui.deldis.show()
                 }
@@ -550,7 +560,9 @@ define(['marionette',
             this.image.setAddSubsample(false)
             this.image.setAddSubsampleRegion(false)
             this.ui.ads.find('span').text('Mark Point')
+            this.ui.ads.find('i').removeClass('fa-times').addClass('fa-plus')
             this.ui.adr.find('span').text('Mark Region')
+            this.ui.adr.find('i').removeClass('fa-times').addClass('fa-plus')
         },
 
         deleteDispensing: function(e) {
