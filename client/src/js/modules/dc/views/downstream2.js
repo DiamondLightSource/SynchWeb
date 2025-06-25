@@ -105,6 +105,14 @@ define(['backbone', 'marionette', 'views/dialog',
             this.model.set('PIPELINENAME', this.ui.pipeline.find('option:selected').text())
             var btns = this.buttons
             var warning = ''
+            if (['MrBUMP', 'Dimple'].includes(this.model.get('PIPELINENAME')) && this.type.includes('autoPROC')) {
+                warning = ' Cannot rerun ' + this.model.get('PIPELINENAME') + ' on ' + this.type + ' results'
+                btns = this.disabledButtons
+            }
+            if (['MrBUMP', 'Big EP'].includes(this.model.get('PIPELINENAME')) && this.type.includes('fast_dp')) {
+                warning = ' Cannot rerun ' + this.model.get('PIPELINENAME') + ' on ' + this.type + ' results'
+                btns = this.disabledButtons
+            }
             if (this.model.get('PIPELINENAME') === 'Dimple' && this.pdbs.length === 0) {
                 warning = ' Cannot run Dimple as no PDBs defined'
                 btns = this.disabledButtons
@@ -195,16 +203,11 @@ define(['backbone', 'marionette', 'views/dialog',
         onRender: function() {
 
             var pls = [
+                { NAME: 'Dimple', VALUE: 'reprocessing-dimple' },
+                { NAME: 'Fast EP', VALUE: 'reprocessing-fastep' },
                 { NAME: 'Big EP', VALUE: 'reprocessing-bigep' },
-                // fast ep not currently supported but hopefully added soon
-                //{ NAME: 'Fast EP', VALUE: 'reprocessing-fastep' },
+                { NAME: 'MrBUMP', VALUE: 'reprocessing-mrbump' },
             ]
-
-            // autoPROC not supported for dimple / MrBump
-            if (!this.type.startsWith('autoPROC')) {
-                pls.push({ NAME: 'Dimple', VALUE: 'reprocessing-dimple' })
-                pls.push({ NAME: 'MrBUMP', VALUE: 'reprocessing-mrbump' })
-            }
             this.pipelines = new Pipelines(pls)
 
             this.ui.pipeline.html(this.pipelines.opts())           
