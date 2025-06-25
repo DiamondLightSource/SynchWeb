@@ -44,9 +44,10 @@ define(['backbone', 'marionette', 'views/dialog',
             st: 'input[name=start]',
             en: 'input[name=end]',
             ind: 'div.ind',
-            method: 'select[name=method]',
+            pipeline: 'select[name=pipeline]',
             res: 'input[name=res]',
-            sg: 'select[name=SG]'
+            lowres: 'input[name=lowres]',
+            sg: 'input[name=SG]'
         },
 
         events: {
@@ -69,8 +70,9 @@ define(['backbone', 'marionette', 'views/dialog',
             'change @ui.ga': 'updateCell',
             'change @ui.sg': 'updateSG',
 
-            'change @ui.method': 'updateMethod',
+            'change @ui.pipeline': 'updatePipeline',
             'change @ui.res': 'updateRes',
+            'change @ui.lowres': 'updateLowRes',
         },
 
 
@@ -78,8 +80,12 @@ define(['backbone', 'marionette', 'views/dialog',
             this.model.set('RES', this.ui.res.val())
         },
 
-        updateMethod: function() {
-            this.model.set('METHOD', this.ui.method.val())
+        updateLowRes: function() {
+            this.model.set('LOWRES', this.ui.lowres.val())
+        },
+
+        updatePipeline: function() {
+            this.model.set('PIPELINE', this.ui.pipeline.val())
         },
 
         updateSG: function() {
@@ -110,13 +116,19 @@ define(['backbone', 'marionette', 'views/dialog',
             var si = parseInt(this.model.get('SI'))
             var ni = parseInt(this.model.get('NUMIMG'))
 
-            if (this.ui.st.val() > (si+ni-1)) this.ui.st.val(si+ni-1)
-            if (this.ui.st.val() < si) this.ui.st.val(si)
+            if (this.ui.st.val()) {
+                if (this.ui.st.val() > (si+ni-1)) this.ui.st.val(si+ni-1)
+                if (this.ui.st.val() < si) this.ui.st.val(si)
+            }
 
-            if (this.ui.en.val() > (si+ni-1)) this.ui.en.val(si+ni-1)
-            if (this.ui.en.val() < si) this.ui.en.val(si)
+            if (this.ui.en.val()) {
+                if (this.ui.en.val() > (si+ni-1)) this.ui.en.val(si+ni-1)
+                if (this.ui.en.val() < si) this.ui.en.val(si)
+            }
 
-            this.plotview.setSelection(parseInt(this.ui.st.val()), parseInt(this.ui.en.val()))
+            if (this.ui.st.val() && this.ui.en.val()) {
+                this.plotview.setSelection(parseInt(this.ui.st.val()), parseInt(this.ui.en.val()))
+            }
         },
 
         initialize: function(options) {
@@ -133,8 +145,9 @@ define(['backbone', 'marionette', 'views/dialog',
             this.ui.ind.hide()
             this.$el.find('ul').addClass('half')
             this.$el.find('li input[type="text"]').css('width', '25%')
-            this.ui.method.html(this.getOption('pipelines').opts())
-            this.model.set('METHOD', this.ui.method.val())
+            this.$el.find('div input[type="text"]').css('width', '50px')
+            this.ui.pipeline.html(this.getOption('pipelines').opts())
+            this.model.set('PIPELINE', this.ui.pipeline.val())
         },
 
         toggleSG: function(e) {
@@ -156,8 +169,8 @@ define(['backbone', 'marionette', 'views/dialog',
             if (e) e.preventDefault()
 
             if (this.aps.length) {
-                var e = this.aps.at(0)
-                var c = e.get('CELL')
+                const a = this.aps.at(0)
+                const c = a.get('CELL')
 
                 this.ui.a.val(c['CELL_A']).trigger('change')
                 this.ui.b.val(c['CELL_B']).trigger('change')
@@ -166,7 +179,7 @@ define(['backbone', 'marionette', 'views/dialog',
                 this.ui.be.val(c['CELL_BE']).trigger('change')
                 this.ui.ga.val(c['CELL_GA']).trigger('change')
 
-                this.ui.sg.val(e['SG']).trigger('change')
+                this.ui.sg.val(a.get('SG')).trigger('change')
             }
         },
 
@@ -201,6 +214,18 @@ define(['backbone', 'marionette', 'views/dialog',
     }, KVCollection))
 
 
+    var IndexingMethods = Backbone.Collection.extend(_.extend({
+        keyAttribute: 'NAME',
+        valueAttribute: 'VALUE',
+    }, KVCollection))
+
+
+    var AbsorptionLevels = Backbone.Collection.extend(_.extend({
+        keyAttribute: 'NAME',
+        valueAttribute: 'VALUE',
+    }, KVCollection))
+
+
     return ReprocessView = DialogView.extend({
         template: template,
         dialog: true,
@@ -211,15 +236,17 @@ define(['backbone', 'marionette', 'views/dialog',
             dcr: '.dcs',
         },
 
-
         ui: {
             cell: 'div.cell',
             opts: 'div.options',
             ind: 'input[name=individual]',
             mul: 'span.multi',
-            met: 'select[name=method]',
+            pipeline: 'select[name=pipeline]',
             com: 'input[type=comments]',
-            sg: 'select[name=sg]'        
+            sg: 'select[name=sg]',
+            sm: 'input[name=sm]',
+            indexingMethod: 'select[name=method]',
+            absorptionLevel: 'select[name=absorption_level]',
         },
 
         buttons: {
@@ -230,12 +257,22 @@ define(['backbone', 'marionette', 'views/dialog',
         events: {
             'click a.sgm': 'toggleCell',
             'click a.opt': 'toggleOpts',
-            'click @ui.ind': 'toggleIndividual'
+            'click @ui.ind': 'toggleIndividual',
+            'change @ui.pipeline': 'updatePipeline',
+            'click a.multicrystal': 'closeDialog',
         },
 
         templateHelpers: function() {
             return {
                 VISIT: this.getOption('visit')
+            }
+        },
+
+        updatePipeline: function() {
+            const isXia2 = this.ui.pipeline.val().startsWith("xia2")
+            this.ui.sm.prop('disabled', !isXia2)
+            for (param of this.xia2params()) {
+                this.$el.find('input[name='+param+'], select[name='+param+']').prop('disabled', !isXia2)
             }
         },
 
@@ -255,12 +292,16 @@ define(['backbone', 'marionette', 'views/dialog',
         showSpaceGroups: async function() {
             this.spacegroups = new Spacegroups(null, { state: { pageSize: 9999 } })   
             await this.spacegroups.fetch();
-            this.ui.sg.html(this.spacegroups.opts())
+            this.ui.sg.html('<option value=""> - </option>'+this.spacegroups.opts())
         },
 
         toggleOpts: function(e) {
             e.preventDefault()
             this.ui.opts.slideToggle()
+        },
+
+        xia2params: function() {
+            return ['cc_half', 'isigma', 'misigma', 'sigma_strong', 'method', 'absorption_level']
         },
 
         integrate: function(e) {
@@ -273,19 +314,19 @@ define(['backbone', 'marionette', 'views/dialog',
             }
 
             var self = this
+            var reqs = []
             // Integrate individually
             if (this.ui.ind.is(':checked')) {
                 var jobs = 0
 
-                var reqs = []
                 var rps = []
                 _.each(s, function(sw) {
-                    var p = this.pipelines.findWhere({ VALUE: sw.get('METHOD') })
+                    var p = this.pipelines.findWhere({ VALUE: sw.get('PIPELINE') })
 
                     var reprocessing = new Reprocessing({
                         DATACOLLECTIONID: sw.get('ID'),
                         DISPLAYNAME: p.get('NAME'),
-                        RECIPE: sw.get('METHOD'),
+                        RECIPE: sw.get('PIPELINE'),
                     })
 
                     rps.push(reprocessing)
@@ -298,6 +339,12 @@ define(['backbone', 'marionette', 'views/dialog',
                                 PROCESSINGJOBID: reprocessing.get('PROCESSINGJOBID'),
                                 PARAMETERKEY: 'd_min', 
                                 PARAMETERVALUE: sw.get('RES')
+                            }))
+
+                            if (sw.get('LOWRES')) reprocessingparams.add(new ReprocessingParameter({
+                                PROCESSINGJOBID: reprocessing.get('PROCESSINGJOBID'),
+                                PARAMETERKEY: 'd_max',
+                                PARAMETERVALUE: sw.get('LOWRES')
                             }))
 
                             var hascell = true
@@ -327,8 +374,16 @@ define(['backbone', 'marionette', 'views/dialog',
                                 PARAMETERVALUE: 'true'
                             }))
 
-                            if (reprocessingparams.length) reqs.push(reprocessingparams.save())
+                            for (param of self.xia2params()) {
+                                var val = self.$el.find('input[name='+param+'], select[name='+param+']').val().replace(/\s/g, '')
+                                if (val) reprocessingparams.add(new ReprocessingParameter({
+                                    PROCESSINGJOBID: reprocessing.get('PROCESSINGJOBID'),
+                                    PARAMETERKEY: param,
+                                    PARAMETERVALUE: val
+                                }))
+                            }
 
+                            if (reprocessingparams.length) reqs.push(reprocessingparams.save())
 
                             var reprocessingsweep = new ReprocessingImageSweep({
                                 PROCESSINGJOBID: reprocessing.get('PROCESSINGJOBID'),
@@ -348,7 +403,7 @@ define(['backbone', 'marionette', 'views/dialog',
                 }, this)
 
                 $.when.apply($, reqs).done(function() {
-                    app.alert({ message: jobs+' reprocessing job(s) successfully submitted'})
+                    app.message({ message: jobs+' reprocessing job(s) successfully submitted'})
                     _.each(rps, function(rp) {
                         self._enqueue({ PROCESSINGJOBID: rp.get('PROCESSINGJOBID') })
                     })
@@ -357,20 +412,19 @@ define(['backbone', 'marionette', 'views/dialog',
 
             // Integrate sets togther
             } else {
-                var p = this.pipelines.findWhere({ VALUE: self.ui.met.val() })
+                var p = this.pipelines.findWhere({ VALUE: self.ui.pipeline.val() })
                 var reprocessing = new Reprocessing({
                     DATACOLLECTIONID: s[0].get('ID'),
                     COMMENTS: this.ui.com.val(),
                     DISPLAYNAME: p.get('NAME'),
-                    RECIPE: self.ui.met.val(),
+                    RECIPE: self.ui.pipeline.val(),
                 })
 
-                if (s.length > 1 && self.ui.met.val() == 'fast_dp') {
+                if (s.length > 1 && self.ui.pipeline.val() == 'fast_dp') {
                     app.alert({ message: 'Fast DP can only integrate a single sweep' })
                     return
                 }
 
-                var reqs = []
                 reqs.push(reprocessing.save({}, {
                     success: function() {
                         var reprocessingparams = new ReprocessingParameters()
@@ -380,6 +434,13 @@ define(['backbone', 'marionette', 'views/dialog',
                             PROCESSINGJOBID: reprocessing.get('PROCESSINGJOBID'),
                             PARAMETERKEY: 'd_min', 
                             PARAMETERVALUE: res
+                        }))
+
+                        var lowres = self.$el.find('input[name=lowres]').val()
+                        if (lowres) reprocessingparams.add(new ReprocessingParameter({
+                            PROCESSINGJOBID: reprocessing.get('PROCESSINGJOBID'),
+                            PARAMETERKEY: 'd_max',
+                            PARAMETERVALUE: lowres
                         }))
 
                         var hascell = true
@@ -410,8 +471,16 @@ define(['backbone', 'marionette', 'views/dialog',
                             PARAMETERVALUE: 'true'
                         }))
 
-                        if (reprocessingparams.length) reqs.push(reprocessingparams.save())
+                        for (param of self.xia2params()) {
+                            var val = self.$el.find('input[name='+param+'], select[name='+param+']').val().replace(/\s/g, '')
+                            if (val) reprocessingparams.add(new ReprocessingParameter({
+                                PROCESSINGJOBID: reprocessing.get('PROCESSINGJOBID'),
+                                PARAMETERKEY: param,
+                                PARAMETERVALUE: val
+                            }))
+                        }
 
+                        if (reprocessingparams.length) reqs.push(reprocessingparams.save())
 
                         var sweeps = []
                         _.each(s, function(sw) {
@@ -426,7 +495,7 @@ define(['backbone', 'marionette', 'views/dialog',
                         reqs.push(reprocessingsweeps.save())
 
                         $.when.apply($, reqs).done(function() {
-                            app.alert({ message: '1 reprocessing job successfully submitted'})
+                            app.message({ message: '1 reprocessing job successfully submitted'})
                             self._enqueue({ PROCESSINGJOBID: reprocessing.get('PROCESSINGJOBID') })
                         })
                     },
@@ -463,6 +532,7 @@ define(['backbone', 'marionette', 'views/dialog',
         onRender: function() {
             this.ui.opts.hide()
             this.ui.cell.hide()
+            this.$el.find('span input[type="text"]').css('width', '50px')
 
             this.pipelines = new Pipelines([
                 { NAME: 'Xia2 DIALS', VALUE: 'xia2-dials' },
@@ -471,7 +541,25 @@ define(['backbone', 'marionette', 'views/dialog',
                 { NAME: 'autoPROC', VALUE: 'autoPROC' },
             ])
 
-            this.ui.met.html(this.pipelines.opts())
+            this.ui.pipeline.html(this.pipelines.opts())
+
+            this.indexingMethods = new IndexingMethods([
+                { NAME: '-', VALUE: '' },
+                { NAME: 'fft3d', VALUE: 'fft3d' },
+                { NAME: 'fft1d', VALUE: 'fft1d' },
+                { NAME: 'Real space grid search', VALUE: 'real_space_grid_search' },
+            ])
+
+            this.ui.indexingMethod.html(this.indexingMethods.opts())
+
+            this.absorptionLevels = new AbsorptionLevels([
+                { NAME: '-', VALUE: '' },
+                { NAME: 'Low', VALUE: 'low' },
+                { NAME: 'Medium', VALUE: 'medium' },
+                { NAME: 'High', VALUE: 'high' },
+            ])
+
+            this.ui.absorptionLevel.html(this.absorptionLevels.opts())
 
             // asynchronously load space groups into the select menu
             this.showSpaceGroups()

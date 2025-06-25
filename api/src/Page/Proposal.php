@@ -58,6 +58,7 @@ class Proposal extends Page
         'BEAMLINESETUPID' => '\d+',
         'BEAMCALENDARID' => '\d+',
         'VISITNUMBER' => '\d+',
+        'RISKRATING' => '\w+',
 
         // visit has person
         'SHPKEY' => '\d+\-\d+',
@@ -206,7 +207,7 @@ class Proposal extends Page
         $order = 'p.proposalid DESC';
 
         if ($this->has_arg('sort_by')) {
-            $cols = array('ST' => 'p.bltimestamp', 'PROPOSALCODE' => 'p.proposalcode', 'PROPOSALNUMBER' => 'p.proposalnumber', 'VCOUNT' => 'vcount', 'TITLE' => 'lower(p.title)');
+            $cols = array('ST' => 'p.bltimestamp', 'PROPOSALCODE' => 'p.proposalcode', 'PROPOSALNUMBER' => 'p.proposalnumber', 'VCOUNT' => 'vcount', 'TITLE' => 'lower(p.title)', 'STATE' => 'p.state');
             $dir = $this->has_arg('order') ? ($this->arg('order') == 'asc' ? 'ASC' : 'DESC') : 'ASC';
             if (array_key_exists($this->arg('sort_by'), $cols))
                 $order = $cols[$this->arg('sort_by')] . ' ' . $dir;
@@ -328,10 +329,11 @@ class Proposal extends Page
 
         if ($this->has_arg('all')) {
             $args = array();
-            $where = 'WHERE 1=1';
             // 'All' is used for the main summary view (Next, Last, Commissioning)
             // Ignore session zero for this summary view - they should be included if a proposal is selected
-            $where .= " AND s.visit_number > 0";
+            $where = "WHERE s.visit_number > 0";
+            $select = '';
+            $join = '';
         } else {
             if (!$this->has_arg('prop'))
                 $this->_error('No proposal specified');
@@ -343,6 +345,9 @@ class Proposal extends Page
 
             $args = array($p);
             $where = 'WHERE s.proposalid = :1';
+            $select = 'COUNT(distinct dc.datacollectionid) AS dccount,';
+            $join = 'LEFT OUTER JOIN datacollectiongroup dcg ON dcg.sessionid = s.sessionid
+                     LEFT OUTER JOIN datacollection dc ON dcg.datacollectiongroupid = dc.datacollectiongroupid';
         }
 
         if ($this->has_arg('notnull')) {
@@ -393,12 +398,23 @@ class Proposal extends Page
         }
 
         if ($this->has_arg('s')) {
-            $where .= " AND s.visit_number LIKE :" . (sizeof($args) + 1);
+            $where .= " AND (s.visit_number LIKE :" . (sizeof($args) + 1) . " OR s.beamlinename LIKE :" . (sizeof($args) + 2) . ")";
+            array_push($args, $this->arg('s'));
             array_push($args, $this->arg('s'));
         }
 
         if ($this->has_arg('scheduled')) {
             $where .= " AND s.scheduled=1";
+        }
+
+        if ($this->has_arg('RISKRATING')) {
+            if ($this->arg('RISKRATING') == 'high') {
+                $where .= " AND s.riskrating = 'high'";
+            } else if ($this->arg('RISKRATING') == 'medium') {
+                $where .= " AND s.riskrating in ('high', 'medium')";
+            } else if ($this->arg('RISKRATING') == 'low') {
+                $where .= " AND s.riskrating in ('high', 'medium', 'low')";
+            }
         }
 
         if ($visit) {
@@ -435,7 +451,9 @@ class Proposal extends Page
         $order = 's.startdate DESC';
 
         if ($this->has_arg('sort_by')) {
-            $cols = array('ST' => 's.startdate', 'EN' => 's.enddate', 'VIS' => 's.visit_number', 'BL' => 's.beamlinename', 'LC' => 's.beamlineoperator', 'COMMENT' => 's.comments');
+            $cols = array('ST' => 's.startdate', 'EN' => 's.enddate', 'VIS' => 's.visit_number', 'BL' => 's.beamlinename',
+                          'LC' => 's.beamlineoperator', 'COMMENT' => 's.comments', 'ERA' => 's.riskrating',
+                          'SESSIONTYPE' => 'sessiontype', 'DCCOUNT' => 'dccount');
             $dir = $this->has_arg('order') ? ($this->arg('order') == 'asc' ? 'ASC' : 'DESC') : 'ASC';
             if (array_key_exists($this->arg('sort_by'), $cols))
                 $order = $cols[$this->arg('sort_by')] . ' ' . $dir;
@@ -456,6 +474,7 @@ class Proposal extends Page
                     s.beamlineoperator                                            AS lc,
                     s.comments,
                     s.scheduled,
+                    s.riskrating,
                     st.typename                                                   AS sessiontype,
                     DATE_FORMAT(s.startdate, '%d-%m-%Y %H:%i')                    AS startdate,
                     DATE_FORMAT(s.enddate, '%d-%m-%Y %H:%i')                      AS enddate,
@@ -468,6 +487,7 @@ class Proposal extends Page
                     s.beamcalendarid,
                     CONCAT(p.proposalcode, p.proposalnumber)                      AS proposal,
                     COUNT(shp.personid)                                           AS persons,
+                    $select
                     s.proposalid
                 FROM BLSession s
                     INNER JOIN proposal p ON p.proposalid = s.proposalid
@@ -475,35 +495,13 @@ class Proposal extends Page
                     LEFT OUTER JOIN session_has_person shp ON shp.sessionid = s.sessionid
                     LEFT OUTER JOIN beamlinesetup bls on bls.beamlinesetupid = s.beamlinesetupid
                     LEFT OUTER JOIN beamcalendar bc ON bc.beamcalendarid = s.beamcalendarid
+                    $join
                 $where
                 GROUP BY s.sessionid
                 ORDER BY $order", $args);
 
-        $ids = array();
-        $wcs = array();
-        foreach ($rows as $r) {
-            array_push($ids, $r['SESSIONID']);
-            array_push($wcs, 'dcg.sessionid=:' . sizeof($ids));
-        }
-
-        $dcs = array();
-        if (sizeof($ids)) {
-            $where = implode(' OR ', $wcs);
-            $tdcs = $this->db->pq("SELECT count(dc.datacollectionid) as c, dcg.sessionid 
-                    FROM datacollection dc
-                    INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
-                    WHERE $where GROUP BY dcg.sessionid", $ids);
-            foreach ($tdcs as $t)
-                $dcs[$t['SESSIONID']] = $t['C'];
-        }
-
         foreach ($rows as &$r) {
-            $dc = array_key_exists($r['SESSIONID'], $dcs) ? $dcs[$r['SESSIONID']] : 0;
-            $r['COMMENT'] = $r['COMMENTS'];
-            $r['DCCOUNT'] = $dc;
-
             $bl_type = $this->_get_type_from_beamline($r['BL']);
-
             $r['TYPE'] = $bl_type ? $bl_type : 'gen';
         }
 
@@ -1204,8 +1202,8 @@ class Proposal extends Page
             $uas = new UAS($auto_user, $auto_pass);
             $code = $uas->update_session($uasSessionId, $data);
 
-            if ($code == 200) {
-                // Update ISPyB records
+            if ($code == 200 || $code == 404) {
+                // Update ISPyB records, even if UAS says session not found
                 $this->db->pq("UPDATE container SET sessionid=:1 WHERE containerid=:2", array($sessionId, $containerId));
                 // For debugging - actually just want to return Success!
                 $result = array(
@@ -1215,13 +1213,11 @@ class Proposal extends Page
                 );
             } else if ($code == 403) {
                 $this->_error('UAS Error - samples and/or investigators not valid. ISPyB/UAS Session ID: ' . $sessionId . ' / ' . $uasSessionId);
-            } else if ($code == 404) {
-                $this->_error('UAS Error - session not found in UAS, Session ID: ' . $sessionId . ' UAS Session ID: ' . $uasSessionId);
             } else {
-                $this->_error('UAS Error - something wrong creating a session for that container ' . $containerId . ', response code was: ' . $code);
+                $this->_error('UAS Error - something went wrong updating a session for that container ' . $containerId . ', response code was: ' . $code);
             }
         } else {
-            error_log("Something wrong - an Auto Collect session exists but with no containers " . $sessionId);
+            error_log("Something went wrong - an Auto Collect session exists but with no containers " . $sessionId);
 
             $this->_error('No valid containers on the existing Auto Collect Session id:', $sessionId);
         }

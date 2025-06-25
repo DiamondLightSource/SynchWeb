@@ -90,9 +90,16 @@
               <div class="tw-mb-2 tw-py-2">
                 <label>Queue For UDC</label>
                 <base-input-checkbox
+                  v-if="shippingSafetyLevel === 'Green'"
                   v-model="QUEUEFORUDC"
                   name="Queue For UDC"
                 />
+                <span v-else-if="shippingSafetyLevel === null">
+                  Cannot queue container until shipment safety level is set
+                </span>
+                <span v-else>
+                  Cannot queue containers in {{ shippingSafetyLevel }} shipments
+                </span>
               </div>
             </div>
 
@@ -374,6 +381,30 @@
         </template>
       </custom-dialog-box>
     </portal>
+
+    <portal to="dialog">
+      <custom-dialog-box
+        v-if="displayConfirmationModal"
+        @perform-modal-action="addContainer"
+        @close-modal-action="closeModalAction"
+      >
+        <template>
+          <div class="tw-bg-modal-header-background tw-py-1 tw-pl-4 tw-pr-2 tw-rounded-sm tw-flex tw-w-full tw-justify-between tw-items-center tw-relative">
+            <p>Create Container?</p>
+            <button
+              class="tw-flex tw-items-center tw-border tw-rounded-sm tw-border-content-border tw-bg-white tw-text-content-page-color tw-p-1"
+              @click="closeModalAction"
+            >
+              <i class="fa fa-times" />
+            </button>
+          </div>
+          <div class="tw-py-3 tw-px-4">
+            Are you sure? You have only defined {{ sampleCount }} sample(s).
+          </div>
+        </template>
+      </custom-dialog-box>
+    </portal>
+
   </div>
 </template>
 
@@ -461,6 +492,7 @@ export default {
 
       // The dewar that this container will belong to
       dewar: null,
+      shippingSafetyLevel: null,
 
       processingPipeline: '',
       processingPipelines: [],
@@ -469,7 +501,9 @@ export default {
       proteinSelection: null,
       selectedSample: null,
       sampleLocation: 0,
+      sampleCount: 0,
       displayImagerScheduleModal: false,
+      displayConfirmationModal: false,
       selectedSchedule: null,
       selectedScreen: null,
       schedulingComponentHeader: [
@@ -542,23 +576,6 @@ export default {
         }
       }
     },
-    AUTOMATED: {
-      immediate: true,
-      handler: function(newVal) {
-        const proteinsCollection = new DistinctProteins()
-        // If now on, add safety level to query
-        // Automated collections limited to GREEN Low risk samples
-        if (newVal) {
-          proteinsCollection.queryParams.SAFETYLEVEL = 'GREEN';
-        } else {
-          proteinsCollection.queryParams.SAFETYLEVEL = 'ALL';
-        }
-        this.$store.dispatch('getCollection', proteinsCollection).then( (result) => {
-          this.proteins = result.toJSON()
-        })
-        app.trigger('samples:automated', newVal)
-      }
-    },
     CONTAINERREGISTRYID: {
       immediate: true,
       handler: function(newVal) {
@@ -593,6 +610,7 @@ export default {
   created: function() {
     this.containerType = INITIAL_CONTAINER_TYPE
     this.dewar = this.options.dewar.toJSON()
+    this.shippingSafetyLevel = this.dewar.SHIPPINGSAFETYLEVEL
     this.DEWARID = this.dewar.DEWARID
 
     this.resetSamples(this.containerType.CAPACITY)
@@ -618,9 +636,16 @@ export default {
 
       if (!validated) return
 
-      this.addContainer()
+      this.sampleCount = this.samples.filter(s => +s.PROTEINID > 0 && s.NAME !== '').length;
+
+      if (this.plateType === 'plate' && this.sampleCount < this.containerType.CAPACITY) {
+        this.displayConfirmationModal = true
+      } else {
+        this.addContainer()
+      }
     },
     addContainer() {
+      this.displayConfirmationModal = false
       let containerAttributes = {
         NAME: this.NAME,
         DEWARID: this.DEWARID,
@@ -674,7 +699,7 @@ export default {
 
         await this.$store.dispatch('samples/save', containerId)
         this.$store.commit('notifications/addNotification', {
-          message: `New Container created, click <a href=/containers/cid/${containerId}>here</a> to view it`,
+          message: `New Container created, click <a href=/containers/cid/${containerId}>here</a> to view it. Remember to add sequences and PDBs if needed.`,
           level: 'info',
           persist: true
         })
@@ -704,10 +729,6 @@ export default {
       let samples
       if (newVal) {
         samples = this.samples.map(sample => {
-          if (!sample.CENTRINGMETHOD) {
-            sample.CENTRINGMETHOD = 'diffraction'
-          }
-
           if (!sample.EXPERIMENTKIND) {
             sample.EXPERIMENTKIND = 'Ligand binding'
           }
@@ -765,18 +786,19 @@ export default {
     },
     closeModalAction() {
       this.displayImagerScheduleModal = false
+      this.displayConfirmationModal = false
     },
     async checkContainerBarcode() {
-      try {
-        const response = await this.$store.dispatch('fetchDataFromApi', {
-          url: `/shipment/containers/barcode/${this.BARCODE}`,
-          requestType: 'fetching barcode status'
-        })
+      const response = await this.$store.dispatch('fetchDataFromApi', {
+        url: `/shipment/containers/barcode/${this.BARCODE}`,
+        requestType: 'fetching barcode status'
+      })
 
+      if (response.PROP) {
         const { PROP } = response
         this.BARCODECHECK = 0
         this.barcodeMessage = `This barcode is already registered to ${PROP}`
-      } catch (error) {
+      } else {
         this.BARCODECHECK = 1
         this.barcodeMessage = ''
       }

@@ -133,27 +133,13 @@ const auth = {
         })
     },
 
-    logout({commit, rootState}){
-      return new Promise((resolve, reject) => {
-        // If sso need to call the logout URL
-        Backbone.ajax({
-          url: rootState.apiUrl+'/authenticate/logout',
-          type: 'GET',
-          success: function() {
-            console.log("Logout successful")
-            commit('logout')
-            commit('proposal/setProposal', null, {root: true})
-            commit('user/updateUser', {}, {root: true})
-            resolve()
-          },
-          error: function() {
-            // Even if an error we can set our local properties to logged out
-            console.log("Error returned from logout URL")
-            commit('logout')
-            commit('proposal/setProposal', null, {root: true})
-            commit('user/updateUser', {}, {root: true})
-            reject()
-        }})
+    logout({commit}){
+      return new Promise((resolve) => {
+        console.log("Logout successful")
+        commit('logout')
+        commit('proposal/setProposal', null, {root: true})
+        commit('user/updateUser', {}, {root: true})
+        resolve()
       })
     },
   },

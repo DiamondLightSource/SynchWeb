@@ -13,11 +13,6 @@
     $isb  = array('user' => 'user', 'pass' => 'pass', 'db' => 'localhost/ispyb');
     $dbtype = 'mysql';
 
-    # Summary Database credentials 
-    ######### DELETE if not using connection. 
-    $summarydbconfig = array('user' => 'user', 'pass' => 'pass', 'db' => 'localhost/ispyb');
-    $ifsummary = true;
-
     # Encoded JWT key, used to sign and check validaty of jwt tokens
     # - Create one of these using /api/authenticate/key
     #   This can be changed to invalidate all currently active tokens
@@ -32,7 +27,9 @@
 
     # Follow CAS SSO
     $cas_sso = true;
-    $sso_url = "sso.server.ac.uk";
+    $sso_url = "https://sso.server.ac.uk";
+    # Profile field to use to identify user
+    $sso_user_key = "fedid";
 
     # OIDC (or OAuth2) client ID and secret. Only useful if authentication_type is set to OIDC
     $oidc_client_id = "oidcClientId";
@@ -43,6 +40,8 @@
     # CAS CA Cert (for SSO)
     $cacert = '/etc/certs/ca-bundle.crt';
 
+    # Field to get user ID from in LDAP
+    $ldap_id_field = "cn";
     # ldap server, used for lookup and authentication (if using, set to null if not)
     # Update the ldap(s) prefix, hostname and search settings as required
     $ldap_server = 'ldaps://ldap.example.com';
@@ -126,12 +125,12 @@
     $enabled_container_types = array();
 
     # Zocalo message broker credentials - Set to empty string to disable
-    $zocalo_server = 'tcp://activemq.server.ac.uk';
-    $zocalo_username = 'foo';
-    $zocalo_password = 'bar';
-
-    # Primary Zocalo entry point for recipe submission
-    $zocalo_mx_reprocess_queue = '/queue/zocolo.name';
+    $rabbitmq_zocalo_host = 'rabbitmq.server.ac.uk';
+    $rabbitmq_zocalo_port = 5672;
+    $rabbitmq_zocalo_username = 'foo';
+    $rabbitmq_zocalo_password = 'bar';
+    $rabbitmq_zocalo_vhost = 'zocalo';
+    $rabbitmq_zocalo_routing_key = 'processing_recipe';
 
     # This is used to trigger Zocalo recipes on adding new Protein sequences
     # Set to empty string to disable
@@ -145,6 +144,8 @@
 
     # Visit directory on disk
     $visit_directory = '/dls/<%=BEAMLINENAME%>/data/<%=YEAR%>/<%=VISIT%>';
+    # If found ANYWHERE in a visit filePath the system will assume that any files there exist indefinitely
+    $visit_persist_storage_dir_segment = 'persistent/dir/name';
 
     # Diffraction image snapshots
     $jpeg_location = '<%=VISITDIR%>/jpegs/<%=IMDIRECTORY%>/<%=IMFILE%>.jpeg';
@@ -152,6 +153,9 @@
 
     # Server log location
     $server_log = '/dls_sw/<%=BEAMLINENAME%>/logs/gda-server.log';
+
+    # Path to ccp4 location
+    $ccp4_location = '/dls_sw/apps/ccp4/latest/ccp4-9';
 
     # Email addresses, comma separate for multiple recepients
     # - Email templates in assets/emails in plain and html/ format
@@ -188,18 +192,6 @@
     $in_contacts = array('Ind Contact' => 'in@server.ac.uk'
                         );
 
-
-    # Beamline Sample Registration Machines
-    # - Used for touchscreen application (unauthenticated)
-    $blsr = array('1.2.3.4', # my touchscreen computer
-                  );
-
-    # Beamline Sample Registration IP -> Beamline mapping
-    # - Third part of ip is used to identify beamline
-    #   x.x.103.x => i03
-    $ip2bl = array(103 => 'i03',
-                   );
-
     # Barcode readers
     # - These clients use the android app (unauthenticated)
     $bcr = array('1.2.3.4', # my android device
@@ -232,11 +224,15 @@
     $facility_contact = "A person";
     $facility_phone = "01234 567890";
     $facility_email = "stores@facility.co.uk";
+    # Append to find logs/files etc once they have been moved to cold storage
+    $icat_base_url = "https://icat.yourFacility.ac.uk";
 
     // List of domestic free countries
     $facility_courier_countries = array('United Kingdom');
     // List of non dom eu free countries
     $facility_courier_countries_nde = array('France', 'Italy', 'Spain');
+    // Link to help with international shipments
+    $facility_courier_countries_link = '';
     $package_description = 'Dry shipper containing frozen crystals';
     $dewar_weight = 18;
 
@@ -307,6 +303,8 @@
     # Beamlines on which to scale the gridplot to 1024
     $scale_grid = array('i24');
 
+    # URL for instructions for closed proposals
+    $closed_proposal_link = '';
 
     # These map proposal types to their proposalcode
     # - If these are not defined for a proposal type, the api then uses bl_types below
@@ -383,7 +381,16 @@
         'i03' => "BL03I-MO-ROBOT-01:PUCK_%02d_NAME"
     );
 
+    $only_staff_can_assign = array(
+        'i03' => False,
+        'i04' => False,
+    );
+
     # Dials server values
     $dials_rest_url = "";
     $dials_rest_jwt = "";
+    $dials_rest_url_rings = false;
+
+    # Add a button to upload file to CCP4 cloud
+    #$ccp4_cloud_upload_url = 'https://data.cloud.ccp4.ac.uk/api/data/<%=USERNAME%>/<%=FACILITYNAME%>/<%=IMAGEPREFIX%>_<%=DATACOLLECTIONNUMBER%>/upload';
 ?>

@@ -162,11 +162,11 @@ define(['marionette', 'utils/canvas', 'utils',
             // Draw Grid
             this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
             //this.ctx.drawImage(this.numbers, 0, 0, this.canvas.width, this.canvas.height)
-            for (var j = 0; j < this.sc; j++) {
+            for (var n = 0; n < this.sc; n++) {
                 this.ctx.fillStyle = '#000'
                 this.ctx.font = "11px Arial"
                 this.ctx.lineWidth = 1
-                this.ctx.fillText(j+1,10,this.sh*j+this.tpad+4);
+                this.ctx.fillText(n+1,10,this.sh*n+this.tpad+4);
             }
       
             for (var i = 0; i < this.positions; i++) {

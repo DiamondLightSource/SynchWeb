@@ -12,6 +12,7 @@ define(['marionette',
 
     'modules/imaging/models/plan',
     'modules/imaging/collections/plans',
+    'modules/shipment/views/plate',
 
     'collections/beamlinesetups',
     
@@ -27,6 +28,7 @@ define(['marionette',
         SubSamples,
         TableView, table, FilterView, utils,
         DiffractionPlan, DiffractionPlans,
+        PlateView,
         BeamlineSetups,
         template, pointemplate, gridtemplate, xfetemplate,
         VMXiPoint, VMXiGrid, VMXiXFE,
@@ -99,7 +101,7 @@ define(['marionette',
             var self = this
             p.save({}, {
                 success: function() {
-                    app.alert({ message: 'Preset successfully saved' })
+                    app.message({ message: 'Preset successfully saved' })
                     self.column.get('plans').add(p)
                 },
                 error: function() {
@@ -128,8 +130,7 @@ define(['marionette',
         render: function() {
             this.$el.empty()
 
-            if (!this.model.get('CONTAINERQUEUEID'))
-                this.$el.html('<a href="#" class="button clone" title="Clone these parameters to the selected samples"><i class="fa fa-files-o"></i></a>\
+            this.$el.html('<a href="#" class="button clone" title="Clone these parameters to the selected samples"><i class="fa fa-files-o"></i></a>\
                 <a href="#" class="button save" title="Save these parameters as a preset"><i class="fa fa-save"></i></a>\
                 <a href="#" class="button rem" title="Remove from Queue"><i class="fa fa-minus"></i></a>')
 
@@ -366,6 +367,7 @@ define(['marionette',
 
             this.filterablecollection = options.collection.fullCollection// || options.collection
             this.shadowCollection = this.filterablecollection.clone()
+            this.selectedPos = null
 
             this.listenTo(this.filterablecollection, 'add', function (model, collection, options) {
                 this.shadowCollection.add(model, options)
@@ -388,19 +390,19 @@ define(['marionette',
         _filter: function() {
             var id = this.selected()
             this.trigger('selected:change', id, this.selectedName())
-            if (id) {
+            if (id || this.selectedPos) {
+                var self = this
                 this.filterablecollection.reset(this.shadowCollection.filter(function(m) {
                     if (id === 'region') {
-                        return m.get('X2') && m.get('Y2')
-
+                        return m.get('X2') && m.get('Y2') && (self.selectedPos == null || m.get('LOCATION') == self.selectedPos)
                     } else if (id === 'point') {
-                        return m.get('X') && m.get('Y') && !m.get('X2')
-                    }
-                    else if (id === 'auto') {
-                        return m.get('SOURCE') == 'auto'
-
+                        return m.get('X') && m.get('Y') && !m.get('X2') && (self.selectedPos == null || m.get('LOCATION') == self.selectedPos)
+                    } else if (id === 'auto') {
+                        return m.get('SOURCE') == 'auto' && (self.selectedPos == null || m.get('LOCATION') == self.selectedPos)
                     } else if (id === 'manual') {
-                        return m.get('SOURCE') == 'manual'
+                        return m.get('SOURCE') == 'manual' && (self.selectedPos == null || m.get('LOCATION') == self.selectedPos)
+                    } else if (!isNaN(self.selectedPos)) {
+                        return m.get('LOCATION') == self.selectedPos
                     }
                 }), {reindex: false})
             } else {
@@ -475,7 +477,7 @@ define(['marionette',
 
     var SnapshotCell = Backgrid.Cell.extend({
         image: null,
-        className: 'cleafix',
+        className: 'clearfix',
 
         selectImage: function() {
             this.image = this.column.get('inspectionimages').findWhere({ BLSAMPLEID: this.model.get('BLSAMPLEID') })
@@ -518,6 +520,7 @@ define(['marionette',
             qfilt: '.qfilt',
             afilt: '.afilt',
             rimg: '.image',
+            plate: '.plate',
         },
         
         events: {
@@ -539,6 +542,11 @@ define(['marionette',
             xtal: '.xtalpreview',
             nodata: 'input[name=nodata]',
             notcompleted: 'input[name=notcompleted]',
+            queuebutton: '.queuebutton',
+            unqueuebutton: '.unqueuebutton',
+            queuelength: '.queuelength',
+            unqueuesamples: '.unqueuesamples',
+            applyall: '.applyall',
         },
 
 
@@ -575,6 +583,10 @@ define(['marionette',
                 data.filter = current.attr('id')
             }
 
+            if (this.avtypeselector.selectedPos) {
+                data.LOCATION = this.avtypeselector.selectedPos
+            }
+
             var self = this
             this.$el.addClass('loading');
             Backbone.ajax({
@@ -584,12 +596,14 @@ define(['marionette',
                 success: function(resp) {
                     _.each(resp, function (r) {
                         var ss = self.subsamples.fullCollection.findWhere({ BLSUBSAMPLEID: r.BLSUBSAMPLEID })
-                        ss.set({ READYFORQUEUE: '1' })
+                        ss.set({ READYFORQUEUE: '1' }, { silent: true })
                     })
                 },
                 complete: function(resp, status) {
                     self.$el.removeClass('loading')
+                    self.subsamples.trigger('reset')
                     self.refreshQSubSamples(self)
+                    self.updateQueueLength()
                 }
             })            
         },
@@ -634,13 +648,15 @@ define(['marionette',
                 },
                 success: function(resp) {
                     _.each(resp, function (r) {
-                        let ss = self.qsubsamples.fullCollection.findWhere({ BLSUBSAMPLEID: r.BLSUBSAMPLEID })
-                        ss.set({ READYFORQUEUE: '0' })
+                        let ss = self.typeselector.shadowCollection.findWhere({ BLSUBSAMPLEID: r.BLSUBSAMPLEID })
+                        ss.set({ READYFORQUEUE: '0' }, { silent: true })
                     })
                 },
                 complete: function(resp, status) {
                     self.$el.removeClass('loading')
+                    self.subsamples.trigger('reset')
                     self.refreshQSubSamples(self)
+                    self.updateQueueLength()
                 }
             })
         },
@@ -650,12 +666,13 @@ define(['marionette',
             e.preventDefault()
             utils.confirm({
                 title: 'Unqueue Container?',
-                content: 'Are you sure you want to remove this container from the queue? You will loose your current place',
+                content: 'Are you sure you want to remove this container from the queue? You will lose your current place',
                 callback: this.doUnqueueContainer.bind(this)
             })
         },
 
         doUnqueueContainer: function() {
+            var self = this
             Backbone.ajax({
                 url: app.apiurl+'/shipment/containers/queue',
                 data: {
@@ -663,7 +680,10 @@ define(['marionette',
                     UNQUEUE: 1,
                 },
                 success: function() {
-                    app.alert({ message: 'Container Successfully Unqueued' })
+                    app.message({ message: 'Container Successfully Unqueued' })
+                    self.ui.unqueuebutton.hide()
+                    self.ui.queuebutton.show()
+                    self.model.set('CONTAINERQUEUEID', null)
                 },
                 error: function() {
                     app.alert({ message: 'Something went wrong unqueuing this container' })
@@ -678,28 +698,70 @@ define(['marionette',
             if (p) this.applyModel(p, true)
         },
 
-        applyPresetAll:function(e) {
+        applyPresetAll: async function(e) {
             e.preventDefault()
+            var self = this
 
             var p = this.plans.findWhere({ DIFFRACTIONPLANID: this.ui.preset.val() })
-            if (p) this.applyModel(p, false)
+            if (p) {
+                self.ui.applyall.html('Applying...').prop('disabled', true)
+                var promises = await this.applyModel(p, false)
+
+                const updateButtonAfterProcessing = () => {
+                    self.ui.applyall.html('<i class="fa fa-file-text-o"></i> Apply to All').prop('disabled', false)
+                }
+
+                if (promises && promises.length > 0) {
+                    Promise.allSettled(promises)
+                    .then(updateButtonAfterProcessing)
+                    .catch(error => {
+                        console.error("Error after promises settled: ", error);
+                        updateButtonAfterProcessing()
+                    })
+                } else {
+                     updateButtonAfterProcessing()
+                }
+            }
         },
 
-        applyModel: function(modelParameter, isLimitedToSelected) {
-            if (isLimitedToSelected) {
-                var models = this.qsubsamples.where({ isGridSelected: true })
-            } else {
-                var models = this.qsubsamples.fullCollection.toArray()
+        chunkArray: function(array, chunkSize) {
+            const result = [];
+            for (let i = 0; i < array.length; i += chunkSize) {
+                result.push(array.slice(i, i + chunkSize));
             }
-            _.each(models, function(model) {
-                if (modelParameter.get('EXPERIMENTKIND') !== model.get('EXPERIMENTKIND')) return
-                    
-                _.each(['REQUIREDRESOLUTION', 'PREFERREDBEAMSIZEX', 'PREFERREDBEAMSIZEY', 'EXPOSURETIME', 'BOXSIZEX', 'BOXSIZEY', 'AXISSTART', 'AXISRANGE', 'NUMBEROFIMAGES', 'TRANSMISSION', 'ENERGY', 'MONOCHROMATOR'], function(k) {
-                    if (modelParameter.get(k) !== null) model.set(k, modelParameter.get(k))
+            return result;
+        },
+
+        delay: function(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        },
+
+        applyModel: async function(modelParameter, isLimitedToSelected) {
+            var models = null
+            if (isLimitedToSelected) {
+                models = this.qsubsamples.where({ isGridSelected: true })
+            } else {
+                models = this.qsubsamples.fullCollection.toArray()
+            }
+
+            var promises = []
+            const modelChunks = this.chunkArray(models, 500);
+
+            for (const chunk of modelChunks) {
+                chunk.forEach(function(model) {
+                    if (modelParameter.get('EXPERIMENTKIND') !== model.get('EXPERIMENTKIND')) return;
+
+                    ['REQUIREDRESOLUTION', 'PREFERREDBEAMSIZEX', 'PREFERREDBEAMSIZEY', 'EXPOSURETIME', 'BOXSIZEX', 'BOXSIZEY', 'AXISSTART', 'AXISRANGE', 'NUMBEROFIMAGES', 'TRANSMISSION', 'ENERGY', 'MONOCHROMATOR'].forEach(function(k) {
+                        if (modelParameter.get(k) !== null) model.set(k, modelParameter.get(k), { silent: true })
+                    }, this)
+                    promises.push(model.save())
+                    model.trigger('refresh')
                 }, this)
-                model.save()
-                model.trigger('refresh')
-            }, this)
+
+                await this.delay(100)
+            }
+
+            return Promise.all(promises)
         },
 
         cloneModel: function(m) {
@@ -710,12 +772,12 @@ define(['marionette',
         queueContainer: function(e) {
             e.preventDefault()
 
-            if (!this.qsubsamples.fullCollection.length) {
+            if (!this.typeselector.shadowCollection.length) {
                 app.alert({ message: 'Please add some samples before queuing this container' })
                 return
             }
 
-            // need to validate all models here again incase they havnt been rendered
+            // need to validate all models here again in case they haven't been rendered
             this.qsubsamples.fullCollection.each(function(qs) {
                 if (qs.get('_valid') !== undefined) return
 
@@ -724,7 +786,7 @@ define(['marionette',
                 console.log({ experimentCell: val })
             }, this)
 
-            var invalid = this.qsubsamples.fullCollection.where({ '_valid': false })
+            var invalid = this.typeselector.shadowCollection.where({ '_valid': false })
             console.log('queue', invalid, invalid.length > 0)
             if (invalid.length > 0) {
                 app.alert({ message: 'There are '+invalid.length+' sub samples with invalid experimental plans, please either correct or remove these from the queue' })
@@ -732,13 +794,17 @@ define(['marionette',
                 if (inv) inv.set({ isSelected: true })
 
             } else {
+                var self = this
                 Backbone.ajax({
                     url: app.apiurl+'/shipment/containers/queue',
                     data: {
                         CONTAINERID: this.model.get('CONTAINERID')
                     },
-                    success: function() {
-                        app.alert({ message: 'Container Successfully Queued' })
+                    success: function(json) {
+                        app.message({ message: 'Container Successfully Queued' })
+                        self.ui.unqueuebutton.show()
+                        self.ui.queuebutton.hide()
+                        self.model.set('CONTAINERQUEUEID', json.CONTAINERQUEUEID)
                     },
                     error: function() {
                         app.alert({ message: 'Something went wrong queuing this container' })
@@ -763,26 +829,29 @@ define(['marionette',
         },
 
         refreshSubSamples: function() {
-            this.subsamples.fetch()
+            this.subsamples.fetch().done(this.onSubsamplesReady.bind(this))
         },
         
         initialize: function() {
-            this._lastSample = null
+            this._subsamples_ready = []
 
             this.platetypes = new PlateTypes()
             this.type = this.platetypes.findWhere({ name: this.model.get('CONTAINERTYPE') })
 
+            this.unfilteredSubsamples = null
             this.subsamples = new SubSamples()
             this.subsamples.queryParams.cid = this.model.get('CONTAINERID')
             this.subsamples.state.pageSize = 10
-            this.listenTo(this.subsamples, 'change:isSelected', this.selectSubSample, this)
-            this.listenTo(this.subsamples, 'sync add remove change:READYFORQUEUE', this.refreshQSubSamples, this)
-            this.subsamples.fetch()
+
+            this._subsamples_ready.push(this.subsamples.fetch())
 
             this.inspections = new ContainerInspections()
             this.inspections.queryParams.cid = this.model.get('CONTAINERID')
             this.inspections.setSorting('BLTIMESTAMP', 1)
-            this.inspections.fetch().done(this.getInspectionImages.bind(this))
+
+            this._subsamples_ready.push(this.inspections.fetch())
+
+            $.when.apply($, this._subsamples_ready).done(this.onSubsamplesReady.bind(this))
 
             this.inspectionimages = new InspectionImages()
 
@@ -832,25 +901,50 @@ define(['marionette',
             this.ui.preset.html(this.plans.opts())
         },
 
+        onSubsamplesReady: function() {
+            this.unfilteredSubsamples = this.subsamples.fullCollection.clone()
+            this.getInspectionImages()
+            this.refreshQSubSamples()
+            this.listenTo(this.subsamples, 'change:isSelected', this.selectSubSample, this)
+            this.listenTo(this.unfilteredSubsamples, 'sync add remove change:READYFORQUEUE', this.refreshQSubSamples, this)
+            this.listenTo(this.unfilteredSubsamples, 'change', this.updateQueueLength)
+            this.listenTo(this.model, 'change:CONTAINERQUEUEID', this.onContainerQueueIdChange)
+        },
+
+        updateQueueLength: function() {
+            var n = this.typeselector.shadowCollection.length
+            this.ui.queuelength.html(`(${n} data collection${n===1 ? '' : 's'})`)
+        },
+
+        onContainerQueueIdChange: function() {
+            if (!this.model.get('CONTAINERQUEUEID')) {
+                var models = this.unfilteredSubsamples.filter(function(m) { return m.get('CONTAINERQUEUEID') })
+                _.each(models, function(model) {
+                    model.set('READYFORQUEUE', '1')
+                }, this)
+            }
+            this.doOnRender()
+        },
+
         getInspectionImages: function() {
             this.inspectionimages.queryParams.iid = this.inspections.at(0).get('CONTAINERINSPECTIONID')
             this.inspectionimages.fetch().done(this.selectSample.bind(this))
         },
 
         selectSample: function() {
-            this.subsamples.at(0).set({ isSelected: true })
+            if (this.subsamples.length) this.subsamples.at(0).set({ isSelected: true })
         },
 
         refreshQSubSamples: function() {
             if (this.model.get('CONTAINERQUEUEID')) {
-                this.qsubsamples.fullCollection.reset(this.subsamples.fullCollection.where({ CONTAINERQUEUEID: this.model.get('CONTAINERQUEUEID') }))
-            } else this.qsubsamples.fullCollection.reset(this.subsamples.fullCollection.where({ READYFORQUEUE: '1' }))
+                this.qsubsamples.fullCollection.reset(this.unfilteredSubsamples.where({ CONTAINERQUEUEID: this.model.get('CONTAINERQUEUEID') }))
+            } else this.qsubsamples.fullCollection.reset(this.unfilteredSubsamples.where({ READYFORQUEUE: '1' }))
         },
 
         selectSubSample: function() {
             var ss = this.subsamples.findWhere({ isSelected: true })
-            var s = ss.get('BLSAMPLEID')
-            if (s !== this._lastSample) {
+            if (ss) {
+                var s = ss.get('BLSAMPLEID')
                 this.imagess.reset(this.subsamples.fullCollection.where({ BLSAMPLEID: s }))
                 var i = this.inspectionimages.findWhere({ BLSAMPLEID: s })
                 this.image.setModel(i)
@@ -859,6 +953,7 @@ define(['marionette',
         
         
         onRender: function() {
+            this.ui.unqueuebutton.hide()
             this.subsamples.queryParams.nodata = this.getNoData.bind(this)
             this.subsamples.queryParams.notcompleted = this.getNotCompleted.bind(this)
             this._ready.done(this.doOnRender.bind(this))
@@ -904,7 +999,6 @@ define(['marionette',
                 { name: '_valid', label: 'Valid', cell: table.TemplateCell, editable: false, test: '_valid', template: '<i class="button fa fa-check active"></i>' },
                 { name: '', cell: table.StatusCell, editable: false },
                 { label: '', cell: SnapshotCell, editable: false, inspectionimages: this.inspectionimages },
-                { label: '', cell: ActionsCell, editable: false, plans: this.plans },
             ]
 
             if (app.mobile()) {
@@ -928,8 +1022,17 @@ define(['marionette',
 
             if (this.model.get('CONTAINERQUEUEID')) {
                 this.ui.rpreset.hide()
+                this.ui.queuebutton.hide()
+                this.ui.unqueuesamples.hide()
+                this.ui.unqueuebutton.show()
                 queuedSubSamples.push({ label: '', cell: table.StatusCell, editable: false })
                 queuedSubSamples.push({ label: '', cell: table.TemplateCell, editable: false, template: '<a href="/samples/sid/<%-BLSAMPLEID%>" class="button"><i class="fa fa-search"></i></a>' })
+            } else {
+                this.ui.rpreset.show()
+                this.ui.queuebutton.show()
+                this.ui.unqueuesamples.show()
+                this.ui.unqueuebutton.hide()
+                queuedSubSamples.push({ label: '', cell: ActionsCell, editable: false, plans: this.plans })
             }
 
             this.table2 = new TableView({ 
@@ -945,12 +1048,31 @@ define(['marionette',
             })
 
             this.qsmps.show(this.table2)
+
+            this.plateView = new PlateView({ collection: this.subsamples.fullCollection, type: this.type, inspectionimages: this.inspectionimages })
+            this.listenTo(this.plateView, 'dropClicked', this.filterByLocation, this)
+            this.plate.show(this.plateView)
         },
 
         onShow: function() {
             this.rimg.show(this.image)
         },
         
+        filterByLocation: function(pos) {
+            let newPos = this.avtypeselector.selectedPos != pos
+            this.avtypeselector.selectedPos = null
+            this.avtypeselector._filter()
+            this.subsamples.fullCollection.where({ isSelected: true }).map((ss) => {
+                ss.set({ isSelected: false })
+            })
+            if (newPos) {
+                this.avtypeselector.selectedPos = pos
+                this.avtypeselector._filter()
+            }
+            this.selectSample()
+
+        },
+
     })
         
 })

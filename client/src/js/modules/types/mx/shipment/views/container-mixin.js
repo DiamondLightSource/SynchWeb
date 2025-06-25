@@ -1,7 +1,6 @@
 import Users from 'collections/users'
 import ProcessingPipelines from 'collections/processingpipelines'
 import SpaceGroups from 'collections/spacegroups.js'
-import CentringMethodList from 'utils/centringmethods.js'
 import AnomalousList from 'utils/anoms.js'
 import ExperimentKindsList from 'utils/experimentkinds.js'
 import DistinctProteins from 'modules/shipment/collections/distinctproteins'
@@ -35,7 +34,6 @@ export default {
     return {
       anomalousList: AnomalousList.list,
 
-      centringMethods: CentringMethodList.list,
       containerType: {},
       containerTypes: [],
       containerTypesCollection: new ContainerTypes(),
@@ -128,7 +126,7 @@ export default {
         proteinsCollection.queryParams.external = 1
       }
 
-      proteinsCollection.queryParams.SAFETYLEVEL = 'ALL'
+      proteinsCollection.queryParams.SAFETYLEVEL = this.shippingSafetyLevel
 
       const result = await this.$store.dispatch('getCollection', proteinsCollection)
       this.proteins = result.toJSON()
@@ -196,7 +194,10 @@ export default {
       this.imagingScreensCollection = new ImagingScreens(null, { state: { pageSize: 9999 } })
 
       const result = await this.$store.dispatch('getCollection', this.imagingScreensCollection)
-      this.imagingScreens = [{ NAME: '-', SCREENID: '' }, ... result.toJSON()]
+      const originalData = result.toJSON()
+      const resultCopy = JSON.parse(JSON.stringify(originalData))
+      const top15 = resultCopy.sort((a, b) => Number(b.CNT) - Number(a.CNT)).slice(0, 15)
+      this.imagingScreens = [{ NAME: '---', SCREENID: '' }, ...top15, { NAME: '---', SCREENID: '' }, ...originalData]
     },
     async getImagingScheduleComponentsCollection() {
       this.imagingScheduleComponentsCollection = new ImagingScheduleComponents(null, { state: { pageSize: 9999 } })
@@ -541,7 +542,6 @@ export default {
   provide() {
     return {
       $spaceGroups: () => this.spaceGroups,
-      $centringMethods: () => this.centringMethods,
       $anomalousList: () => this.anomalousList,
       $experimentKindList: () => this.experimentKindList,
       $sampleLocation: () => this.sampleLocation,

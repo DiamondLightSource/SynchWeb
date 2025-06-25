@@ -1,10 +1,9 @@
 <h1>Data Collections for <%-VISIT%></h1>
 
-    <p class="help">Use this page to reintegrate multiple data collections together</p>
-    <p class="help">Select data sets to integrate by dragging accross the per-image analysis plot below. This selects which images of the data set to integrate</p>
+    <p class="help">Use this page to reintegrate multiple data collections together.</p>
+    <p class="help">Select data sets to integrate by dragging across the per-image analysis plot below. This selects which images of the data set to integrate.</p>
 
     <div class="filter filter-nohide">
-    	<div class="srch"></div>
         <ul class="clearfix">
             <li><span class="wait">-</span> job(s) waiting</li>
             <li><span class="jobs">-</span> job(s) running</li>
@@ -13,13 +12,15 @@
 
     <div class="rps"></div>
 
+    <div class="srch"></div>
+
     <div class="cell data_collection">
         <div class="autoproc">
             <label>Auto Processed <select name="cells"></select></label>
         </div>
 
-        <lable>Pipeline <select name="method"></select></lable>
-        <label>Spacegroup: <input type="text" name="sg" /></label>
+        <label>Pipeline <select name="pipeline"></select></label>
+        <label>Spacegroup: <select name="sg"></select></label>
 
         <label>a <input type="text" name="a" /></label>
         <label>b <input type="text" name="b" /></label>
@@ -28,13 +29,21 @@
         <label>&beta; <input type="text" name="beta" /></label>
         <label>&gamma; <input type="text" name="gamma" /></label>
 
-        <label>High Resolution <input type="text" name="res" /></label>
+        <label>High Res <input type="text" name="res" /> &#197;</label>
+        <label>Low Res <input type="text" name="lowres" /> &#197;</label>
 
         <a href="#" class="button integrate" title="Integrate the selected data collections"><i class="fa fa-cog"></i> Integrate</a>
+        <a href="#" class="button opt">Xia2 Options</a>
     </div>
 
     <div class="options data_collection">
-        <label><input type="checkbox" name="sm" value="1" /> Small Molecule</label>
+        <label>Small Molecule<input type="checkbox" name="sm" value="1" /></label>
+        <label>CC Half :<input type="text" name="cc_half" /></label>
+        <label>Unmerged &lt;I/sigI&gt; :<input type="text" name="isigma" /></label>
+        <label>Merged &lt;I/sigI&gt; :<input type="text" name="misigma" /></label>
+        <label>Spot Finding Threshold :<input type="text" name="sigma_strong" /></label>
+        <label>Indexing Method: <select name="method"></select></label>
+        <label>Absorption Level: <select name="absorption_level"></select></label>
     </div>
 
     <div class="dcs"></div>

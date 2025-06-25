@@ -122,5 +122,10 @@ class CAS extends AuthenticationParent implements AuthenticationInterface
 
         return rtrim($resp);
     }
+
+    function logout()
+    {
+        return false;
+    }
 }
 

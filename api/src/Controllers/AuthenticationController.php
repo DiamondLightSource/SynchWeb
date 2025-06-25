@@ -89,7 +89,7 @@ class AuthenticationController
 
     private function checkAuthRequiredForSpecificSituations($parts): bool
     {
-        global $blsr, $bcr, $img, $auto;
+        global $bcr, $img, $auto;
 
         $need_auth = true;
         # Work around to allow beamline sample registration without CAS authentication
@@ -102,10 +102,6 @@ class AuthenticationController
                 # Allow formulatrix machines unauthorised access to inspections, certain IPs only
             ($parts[0] == 'imaging' && $parts[1] == 'inspection' && in_array($_SERVER["REMOTE_ADDR"], $img)) ||
 
-                # For use on the touchscreen computers in the hutch.
-                # Handles api calls: /assign/visits/<vist> e.g./assign/visits/mx1234-1
-            ($parts[0] == 'assign' && $parts[1] == 'visits' && in_array($_SERVER["REMOTE_ADDR"], $blsr)) ||
-
                 # Allow barcode reader ips unauthorised access to add history
             ($parts[0] == 'shipment' && $parts[1] == 'dewars' && $parts[2] == 'history' && in_array($_SERVER["REMOTE_ADDR"], $bcr)) ||
 
@@ -116,7 +112,10 @@ class AuthenticationController
             ($parts[0] == 'shipment' && $parts[1] == 'containers' && $parts[2] == 'notify' && in_array($_SERVER["REMOTE_ADDR"], $auto)) ||
 
                 # Allow barcode reader ips unauthorised access to add container history
-            ($parts[0] == 'shipment' && $parts[1] == 'containers' && $parts[2] == 'history' && in_array($_SERVER["REMOTE_ADDR"], $bcr))
+            ($parts[0] == 'shipment' && $parts[1] == 'containers' && $parts[2] == 'history' && in_array($_SERVER["REMOTE_ADDR"], $bcr)) ||
+
+                # Allow shipping service to update dewar status
+            ($parts[0] == 'shipment' && $parts[1] == 'dewars' && ($parts[2] == 'confirmdispatch' || $parts[2] == 'confirmpickup'))
             )
             {
                 $need_auth = false;
@@ -126,11 +125,6 @@ class AuthenticationController
         else if (sizeof($parts) >= 2)
         {
             if (
-                # For use on the touchscreen computers in the hutch
-                # Handles api calls: /assign/assign, /assign/unassign, /assign/deact, /assign/visits
-            (($parts[0] == 'assign') && in_array($_SERVER["REMOTE_ADDR"], $blsr)) ||
-            (($parts[0] == 'shipment' && $parts[1] == 'containers') && in_array($_SERVER["REMOTE_ADDR"], $blsr)) ||
-
                 # Allow barcode reader unauthorised access, same as above, certain IPs only
             ($parts[0] == 'shipment' && $parts[1] == 'dewars' && in_array($_SERVER["REMOTE_ADDR"], $bcr)) ||
 
@@ -391,17 +385,24 @@ class AuthenticationController
     // Logout
     function logout()
     {
-        global $cookie_key;
-        if (isset($_COOKIE[$cookie_key])) {
-            $cookieOpts = array (
-                'expires' => time() - 3600,
-                'path' => '/',
-                'secure' => true,
-                'httponly' => true,
-                'samesite' => 'Strict'
-            );
+        global $cookie_key, $cas_sso;
+        if($cas_sso) {
+            if (isset($_COOKIE[$cookie_key])) {
+                $cookieOpts = array (
+                    'expires' => time() - 3600,
+                    'path' => '/',
+                    'secure' => true,
+                    'httponly' => true,
+                    'samesite' => 'Strict'
+                );
 
-            setcookie($cookie_key, null, $cookieOpts);
+                setcookie($cookie_key, null, $cookieOpts);
+            }
+
+            header('Location: ' . $this->authenticateByType()->logout());
+            $this->returnResponse(302, array('status' => "Redirecting to SSO provider"));
+        } else {
+            $this->returnError(501, "SSO not configured");
         }
     }
 

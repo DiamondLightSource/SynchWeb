@@ -16,7 +16,7 @@ class OIDC extends AuthenticationParent implements AuthenticationInterface
         if (is_null($this->providerConfigCache)) {            
 
             $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL, 'https://' . $sso_url . '/.well-known/openid-configuration');
+            curl_setopt($ch, CURLOPT_URL, $sso_url);
             curl_setopt($ch, CURLOPT_HEADER, 0);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
             $response = curl_exec($ch);
@@ -41,6 +41,8 @@ class OIDC extends AuthenticationParent implements AuthenticationInterface
 
     private function getUser($token)
     {        
+        global $sso_user_key;
+        
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $this->getProviderConfig()->userinfo_endpoint);
         curl_setopt($ch, CURLOPT_HEADER, 0);
@@ -49,12 +51,12 @@ class OIDC extends AuthenticationParent implements AuthenticationInterface
         $response = curl_exec($ch);
         curl_close($ch);
         
-        $response_json = json_decode($response);
-        if (!$response_json || !isset($response_json->id)) {
+        $response_json = json_decode($response, true);
+        if (!$response_json || !isset($response_json[$sso_user_key])) {
             return false;
         }
 
-        return $response_json->id;
+        return $response_json[$sso_user_key];
     }
 
     function authenticate($login, $password) 
@@ -80,7 +82,8 @@ class OIDC extends AuthenticationParent implements AuthenticationInterface
 
         return ( $this->getProviderConfig()->authorization_endpoint . 
             '?response_type=code&client_id=' . $oidc_client_id . 
-            '&redirect_uri=' . $redirect_url
+            '&redirect_uri=' . urlencode($redirect_url) .
+            '&scope=openid'
         );
     }
 
@@ -89,16 +92,22 @@ class OIDC extends AuthenticationParent implements AuthenticationInterface
         global $cacert, $oidc_client_secret, $oidc_client_id, $cookie_key;
 
         $redirect_url = Utils::filterParamFromUrl($_SERVER["HTTP_REFERER"], "code");
-        
+        $redirect_url = Utils::filterParamFromUrl($redirect_url, "iss");
+        $redirect_url = Utils::filterParamFromUrl($redirect_url, "session_state");
+
         $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $this->getProviderConfig()->token_endpoint . 
-            '?grant_type=authorization_code&redirect_uri=' . 
-            $redirect_url . 
-            "&code=" . $code
-        );
-        curl_setopt($ch, CURLOPT_HEADER, 0);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Authorization: Basic ' . $this->getProviderConfig()->b64ClientCreds));
+        curl_setopt_array ( $ch, array (
+            CURLOPT_URL => $this->getProviderConfig()->token_endpoint,
+            CURLOPT_RETURNTRANSFER => 1,
+            CURLOPT_HEADER => 0,
+            CURLOPT_POST => 1,
+            CURLOPT_POSTFIELDS => array (
+                'grant_type' => 'authorization_code',
+                'code' => $code,
+                'redirect_uri' => $redirect_url
+            ),
+            CURLOPT_HTTPHEADER => array('Authorization: Basic ' . $this->getProviderConfig()->b64ClientCreds)
+        ) );
         $response = curl_exec($ch);
         curl_close($ch);
    
@@ -125,5 +134,10 @@ class OIDC extends AuthenticationParent implements AuthenticationInterface
 
         setcookie($cookie_key, $token, $cookieOpts);
         return $this->getUser($token);
+    }
+
+    function logout()
+    {
+        return $this->getProviderConfig()->end_session_endpoint;
     }
 }

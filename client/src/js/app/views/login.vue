@@ -3,7 +3,7 @@
     <hero-title v-show="!skipHome" />
 
     <h1>Login</h1>
-    <p v-if="sso && !authError" class="tw-text-center tw-text-lg">Redirecting to CAS single sign on...</p>
+    <p v-if="sso && !authError" class="tw-text-center tw-text-lg">Redirecting to single sign on...</p>
     <p v-if="authError === 'not-recognised'" class="tw-text-center tw-text-lg">
       <b>User not recognised</b>. If you have logged in with your email address,
       <a :href="logoutUrl" target="_blank">log out of the SSO provider</a> and <a href="/login">log in</a> again with
@@ -127,7 +127,7 @@ export default {
       return this.$store.getters.apiUrl;
     },
     logoutUrl: function () {
-      return `https://${this.$store.getters.sso_url}/logout`;
+      return `${this.$store.getters.apiUrl}/authenticate/logout`;
     },
   },
 

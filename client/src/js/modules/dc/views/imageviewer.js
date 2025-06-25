@@ -79,10 +79,10 @@ define(['jquery', 'marionette',
             'slidechange @ui.zoom': 'slideChangeZoom',
             'keypress @ui.num': 'keyPressNum',
         
-            'click @ui.res': '_dra',
-            'click @ui.ice': '_dra',
+            'click @ui.res': 'doIceOrRes',
+            'click @ui.ice': 'doIceOrRes',
             'click @ui.invert': 'doInvert',
-            'click @ui.threshold': 'doThreshold',
+            'click @ui.threshold': 'reloadImage',
         
             'click button[name=next]': 'next',
             'click button[name=prev]': 'prev',
@@ -124,7 +124,6 @@ define(['jquery', 'marionette',
             
             this.moved = false
             this.blocks = 0
-            this.invert_change = false
 
             this.ps = parseFloat(this.model.get('DETECTORPIXELSIZEHORIZONTAL'))/1000 || 0.172
             this.diwidth = parseInt(this.model.get('DETECTORNUMBEROFPIXELSX')) || 2527
@@ -285,7 +284,7 @@ define(['jquery', 'marionette',
             this.n = n
             this.showProgressBar()
             this.img.onerror = this._onerror.bind(this,n)
-            this.img.load(app.apiurl+'/image/'+(this.low ? 'diff' : 'di')+'/id/'+this.model.get('ID')+(this.low ? '/f/1' : '')+(this.ui.threshold.is(':checked') ? '/thresh/1' : '')+('/n/'+n))
+            this.img.load(app.apiurl+'/image/'+(this.low ? 'diff' : 'di')+'/id/'+this.model.get('ID')+(this.low ? '/f/1' : '')+(this.ui.threshold.is(':checked') ? '/thresh/1' : '')+(this.ui.res.is(':checked') ? '/res/1' : '')+(this.ui.ice.is(':checked') ? '/ice/1' : '')+('/n/'+n))
         },
 
         onImageProgress: function(pc) {
@@ -354,6 +353,7 @@ define(['jquery', 'marionette',
             var self = this
             this.ui.canvas.fadeOut(100,function() {
               self.load(n)
+              self.ui.invert.prop('checked', false)
             })
         },
         
@@ -366,6 +366,7 @@ define(['jquery', 'marionette',
               val--
               this.change(val)
               this.ui.num.val(val)
+              this.ui.invert.prop('checked', false)
             }
         },
           
@@ -375,6 +376,7 @@ define(['jquery', 'marionette',
               val++
               this.change(val)
               this.ui.num.val(val)
+              this.ui.invert.prop('checked', false)
             }
         },
         
@@ -407,9 +409,11 @@ define(['jquery', 'marionette',
             this.ctx.setTransform(this.scalef,0,0,this.scalef,this.offsetx,this.offsety)
             var r = this.detectVerticalSquash(this.img)
             this.ctx.drawImage(this.img, 0, 0, this.width, this.height/r)
-          
-            if (this.ui.res.is(':checked')) this._draw_res_rings()
-            if (this.ui.ice.is(':checked')) this._draw_ice_rings()
+
+            if (!app.options.get("dials_rest_url_rings")) {
+                if (this.ui.res.is(':checked')) this._draw_res_rings()
+                if (this.ui.ice.is(':checked')) this._draw_ice_rings()
+            }
         },
                
                 
@@ -443,14 +447,13 @@ define(['jquery', 'marionette',
         
         // Apply image adjustments
         adjust: function() {
-            if (this.brightness == 0 && this.contrast == 0 && !(this.invert_change || this.ui.invert.is(':checked'))) return
-          
+            if (this.brightness == 0 && this.contrast == 0 && !(this.ui.invert.is(':checked'))) return
+
             this.c.revert()
             if (this.ui.invert.is(':checked')) {
               this.c.invert()
               //_plot_profiles(lastx, lasty)
             }
-            this.invert_change = false
 
             var self = this
             this.c.brightness(this.brightness).contrast(this.contrast).render(function() {
@@ -472,13 +475,13 @@ define(['jquery', 'marionette',
             this.c.reloadCanvasData()
             this.c.resetOriginalPixelData()
         },
-    
-                
-                
+
+
+
         // Draw ice rings
         _draw_ice_rings: function() {
             var rings = [3.897, 3.669,3.441,2.671,2.249,2.07,1.95,1.92,1.88,1.72]
-          
+
             this.ctx.strokeStyle='blue';
             for (var i = 0; i < rings.length; i++) {
               this.ctx.beginPath();
@@ -487,12 +490,12 @@ define(['jquery', 'marionette',
               this.ctx.stroke();
             }
         },
-          
+
         // Draw resolution rings
         _draw_res_rings: function() {
             this.ctx.strokeStyle = 'black';
             this.ctx.font = this.imscale < 1 ? '10px Arial' : '30px Arial';
-          
+
             for (var i = 0; i < 5; i++) {
               var rad = (((this.height-10)/2)/5)*(i+1)
               this.ctx.beginPath();
@@ -501,8 +504,8 @@ define(['jquery', 'marionette',
               this.ctx.fillText(this._dist_to_res(rad*this.ps/this.imscale).toFixed(2) + 'A',this.model.get('XBEAM')/this.ps*this.imscale-(this.low ? 10 : 40 ),this.model.get('YBEAM')/this.ps*this.imscale-rad+(this.low ? 10 : 40));
             }
         },
-        
-                
+
+
         // Plot spot profile
         _plot_profiles: function(xp, yp) {
             if (xp < 20) xp = 20
@@ -676,9 +679,6 @@ define(['jquery', 'marionette',
             //return false
         },
             
-                
-          
-          
         // Clamp zoom box
         _clamp_z_box: function(c) {
             if (c[0]+20 > this.ui.canvas.width()) c[0] = this.ui.canvas.width()-20
@@ -695,13 +695,6 @@ define(['jquery', 'marionette',
             if (this.offsetx > 0) this.offsetx = 0
             if (this.offsetx < this.ui.canvas.width() - this.scalef*this.width) this.offsetx = this.ui.canvas.width() - this.scalef*this.width
         },
-                
-                
-                
-                
-                
-                
-                
                 
         // Convert distance from centre to resolution and back
         _dist_to_res: function(dist) {
@@ -740,11 +733,8 @@ define(['jquery', 'marionette',
     
             this.ui.resc.text(res.toFixed(2))
         },
-                
-                
-                
-        
-                
+
+
         // Bind load image on return
         keyPressNum: function(e) {
             var n = parseInt(this.ui.num.val())
@@ -788,12 +778,19 @@ define(['jquery', 'marionette',
         },
             
         doInvert: function() {
-            this.invert_change = true
             this._dra()
         },
 
+        doIceOrRes: function() {
+            if (app.options.get("dials_rest_url_rings")) {
+                this.reloadImage()
+            } else {
+                this._dra()
+            }
+        },
 
-        doThreshold: function() {
+        reloadImage: function() {
+            this.ui.invert.prop('checked', false)
             this.load(this.n)
         }
 

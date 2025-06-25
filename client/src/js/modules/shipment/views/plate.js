@@ -33,7 +33,9 @@ define(['marionette', 'backbone', 'utils', 'backbone-validation'], function(Mari
                 
                 this.trigger('plate:select')
                 if (drop) drop.set('isSelected', true)
+                this.trigger('dropClicked', pos)
                 this.drawPlate()
+                this.lastClickedWell = this.lastClickedWell === pos ? null : pos
             }
         },
         
@@ -46,6 +48,7 @@ define(['marionette', 'backbone', 'utils', 'backbone-validation'], function(Mari
             this.showImageStatus = this.getOption('showImageStatus')
             this.showSampleStatus = this.getOption('showSampleStatus')
             this.showMaxScore = false
+            this.lastClickedWell = null
             
             Backbone.Validation.bind(this, {
                 collection: this.collection
@@ -187,18 +190,18 @@ define(['marionette', 'backbone', 'utils', 'backbone-validation'], function(Mari
                         var did = (k*this.pt.get('drop_per_well_x'))+j
                         if (this.pt.get('well_drop') > -1) {
                             if (did == this.pt.get('well_drop')) continue
-                                if (did > this.pt.get('well_drop')) did--;
+                            if (did > this.pt.get('well_drop')) did--;
                         }
         
                         var sampleid = i*this.pt.dropTotal()+did+1
                         var sample = this.collection.findWhere({ LOCATION: sampleid.toString() })
+                        var im = null
 
-                        if (sample && (this.showImageStatus || this.showMaxScore) && this.inspectionimages) var im = this.inspectionimages.findWhere({ BLSAMPLEID: sample.get('BLSAMPLEID') })
-                        else var im = null
+                        if (sample && (this.showImageStatus || this.showMaxScore) && this.inspectionimages) im = this.inspectionimages.findWhere({ BLSAMPLEID: sample.get('BLSAMPLEID') })
                         
                         this.ctx.beginPath()
                         this.ctx.lineWidth = 1;
-                        if (sample && sample.get('isSelected')) {
+                        if ((sample && sample.get('isSelected')) || sampleid === this.lastClickedWell) {
                             this.ctx.strokeStyle = 'cyan'
                             
                         } else if (sample && sample.get('PROTEINID') > -1) {
@@ -250,7 +253,7 @@ define(['marionette', 'backbone', 'utils', 'backbone-validation'], function(Mari
                             
                                 this.ctx.fillStyle = sample.get(this.rankOption.value)
                                     ? utils.rainbow(val/4) 
-                                    : (sample.get(this.rankOption.check) > 0 ? 'yellow' : '#dfdfdf')
+                                    : '#dfdfdf'
                                 this.ctx.fill()
 
                             } else {
@@ -273,10 +276,12 @@ define(['marionette', 'backbone', 'utils', 'backbone-validation'], function(Mari
                             }
                         }
 
+                        var isc = null
+
                         // Show image score
                         if (sample && this.showImageStatus) {
                             if (im) {
-                                var isc = im.get('SCORECOLOUR')
+                                isc = im.get('SCORECOLOUR')
                                 if (isc){
                                     this.ctx.fillStyle = isc
                                     this.ctx.fill()  
@@ -287,7 +292,7 @@ define(['marionette', 'backbone', 'utils', 'backbone-validation'], function(Mari
                         // Show max image score
                         if (sample && this.showMaxScore) {
                             if (im) {
-                                var isc = im.get('MAXSCORECOLOUR')
+                                isc = im.get('MAXSCORECOLOUR')
                                 if (isc){
                                     this.ctx.fillStyle = isc
                                     this.ctx.fill()

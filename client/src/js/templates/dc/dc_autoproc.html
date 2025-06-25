@@ -4,8 +4,8 @@
     <% if (PROCESSINGSTATUS == 0) { %>
 
     <p class="r downloads">
-        <a class="view button dll" href="<%-APIURL%>/download/id/<%-DCID%>/aid/<%-AID%>/archive/1"><i class="fa fa-archive"></i> Archive</a>
         <a class="apattach button" href="#"><i class="fa fa-files-o"></i> Logs &amp; Files</a>
+        <a class="view button dll" href="<%-APIURL%>/download/ap/archive/<%-AID%>"><i class="fa fa-cloud-download"></i> Download Zip</a>
     </p>
 
     <p>This processing job failed: <%-PROCESSINGMESSAGE%></p>
@@ -22,9 +22,10 @@
         </a>
         <% } %>
 
+        <a class="mainlog button dll" href="<%-APIURL%>/download/ap/log/<%-AID%>"><i class="fa fa-file"></i> Processing Log</a>
         <a class="plot button" href="#"><i class="fa fa-line-chart"></i> Plots</a>
-        <a class="view button dll" href="<%-APIURL%>/download/ap/archive/<%-AID%>"><i class="fa fa-archive"></i> Archive</a>
         <a class="apattach button" href="#"><i class="fa fa-files-o"></i> Logs &amp; Files</a>
+        <a class="view button dll" href="<%-APIURL%>/download/ap/archive/<%-AID%>"><i class="fa fa-cloud-download"></i> Download Zip</a>
     
         <% if (TYPE == 'fast_dp') { %>
         <a href="#" class="button view rd"><i class="fa fa-search"></i> Radiation Damage</a>

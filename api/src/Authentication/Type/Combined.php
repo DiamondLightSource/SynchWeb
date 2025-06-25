@@ -36,4 +36,9 @@ class Combined extends AuthenticationParent implements AuthenticationInterface
     public function authenticateByCode($code){
         return $this->OIDCAuth->authenticateByCode($code);
     }
+
+    public function logout()
+    {
+        return $this->OIDCAuth->logout();
+    }
 }

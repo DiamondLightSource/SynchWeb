@@ -1,6 +1,13 @@
 <template>
   <div class="content">
-    <h1 data-testid="container-header">Container {{container.NAME}}</h1>
+    <!-- <h1 data-testid="container-header">Container {{container.NAME}}</h1> -->
+    <page-title-header
+      prevNextPathPrefix="/containers/cid/"
+      :prevNextTargets="this.prevNextTargetLinks"
+      :currentValue="this.containerId"
+    >
+      Container {{container.NAME }}
+    </page-title-header>
 
     <p class="help">
       This page shows the contents of the selected container. Samples can be added and edited by clicking the pencil icon, and removed by clicking the x
@@ -106,24 +113,28 @@
                   @click="onUnQueueContainer"
                 ><i class="fa fa-times" /> Unqueue</a>
               </span>
+              <span v-else-if="shippingSafetyLevel === null">
+                Cannot queue container until shipment safety level is set
+              </span>
+              <span v-else-if="shippingSafetyLevel != 'Green'">
+                Cannot queue containers in {{ shippingSafetyLevel }} shipments
+              </span>
+              <span v-else-if="containerQueueError">
+                There was an error submitting the container to the queue. Please fix any errors in the samples table.
+                <a
+                  class="tw-cursor-pointer button tryagainqueue"
+                  @click="onTryAgainQueueContainer"
+                ><i class="fa fa-check" /> Try again</a>
+                <a
+                  class="tw-cursor-pointer button cancelqueue"
+                  @click="onCancelQueueContainer"
+                ><i class="fa fa-times" /> Cancel</a>
+              </span>
               <span v-else>
-                <span v-if="containerQueueError">
-                  There was an error submitting the container to the queue. Please fix any errors in the samples table.
-                  <a 
-                    class="tw-cursor-pointer button tryagainqueue" 
-                    @click="onTryAgainQueueContainer" 
-                  ><i class="fa fa-check" /> Try again</a>
-                  <a 
-                    class="tw-cursor-pointer button cancelqueue"
-                    @click="onCancelQueueContainer" 
-                  ><i class="fa fa-times" /> Cancel</a>
-                </span>
-                <span v-else>
-                  <a 
-                    class="tw-cursor-pointer button queue"
-                    @click="onQueueContainer" 
-                  ><i class="fa fa-plus" /> Queue</a> this container for Auto Collect
-                </span>
+                <a
+                  class="tw-cursor-pointer button queue"
+                  @click="onQueueContainer"
+                ><i class="fa fa-plus" /> Queue</a> this container for Auto Collect
               </span>
             </li>
 
@@ -172,6 +183,7 @@
           :container-id="containerId"
           :invalid="invalid"
           :currentlyEditingRow="editingSampleLocation"
+          :disableUpdateSamples="disableUpdateSamples"
           @update-editing-row="updateEditingSampleLocation"
           @save-sample="onSaveSample"
           @clone-sample="onCloneSample"
@@ -181,6 +193,7 @@
           @clone-container-column="onCloneColumn"
           @clone-container-row="onCloneRow"
           @bulk-update-samples="onUpdateSamples"
+          @disable-update-samples="disableUpdateSamples"
           @update-samples-with-sample-group="handleSampleFieldChangeWithSampleGroups"
           @save-sample-move="saveSampleMove"
         />
@@ -243,6 +256,8 @@ import Shipments from 'collections/shipments'
 import Containers from 'collections/containers'
 import Dewars from 'collections/dewars'
 
+import PrevNextBtngroup from 'app/components/prev-next-btngroup.vue'
+import PageTitleHeader from 'app/components/page-title-header.vue'
 import BaseInputSelect from 'app/components/base-input-select.vue'
 import BaseInputText from 'app/components/base-input-text.vue'
 import BaseInputTextArea from 'app/components/base-input-textarea.vue'
@@ -257,6 +272,8 @@ import ValidContainerGraphic from 'modules/types/mx/samples/valid-container-grap
 export default {
   name: 'MxContainerView',
   components: {
+    'prev-next-btngroup': PrevNextBtngroup,
+    'page-title-header': PageTitleHeader,
     'base-input-text': BaseInputText,
     'base-input-textarea': BaseInputTextArea,
     'base-input-select': BaseInputSelect,
@@ -267,7 +284,7 @@ export default {
     'single-sample-plate': SingleSample,
     'mx-puck-samples-table': MxPuckSamplesTable,
     'validation-observer': ValidationObserver,
-    'validation-provider': ValidationProvider
+    'validation-provider': ValidationProvider,
   },
   mixins: [ContainerMixin],
   props: {
@@ -280,6 +297,7 @@ export default {
     return {
       container: {},
       containerId: 0,
+      siblingContainers: {}, // All containers using this Dewar and shippingID
       samplesCollection: null,
 
       containerHistory: [],
@@ -304,7 +322,7 @@ export default {
             cancel: 'closeModal',
             confirm: 'unQueueContainer'
           },
-          message: `<p>Are you sure you want to remove this container from the queue? You will loose your current place</p>`
+          message: `<p>Are you sure you want to remove this container from the queue? You will lose your current place</p>`
         }
       },
       currentModal: 'queueContainer',
@@ -322,12 +340,19 @@ export default {
       dewarsCollection: null,
       selectedDewarId: null,
       selectedShipmentId: null,
+      shippingSafetyLevel: null,
       editingSampleLocation: null
     }
   },
   computed: {
     containersSamplesGroupData() {
       return this.$store.getters['samples/getContainerSamplesGroupData']
+    },
+    prevNextTargetLinks() {
+      return _.chain(this.siblingContainers)
+      .map(sib => ({ value: sib.CONTAINERID, text: sib.NAME }))
+      .sortBy((c) => c.text)
+      .value();
     },
   },
   created: function() {
@@ -347,11 +372,16 @@ export default {
     this.getImagingCollections()
     this.getImagingScheduleCollections()
     this.getImagingScreensCollections()
+
+  },
+  beforeMount: function(){
+    this.fetchSiblingContainers();
   },
   methods: {
     loadContainerData() {
       this.container = Object.assign({}, this.containerModel.toJSON())
       this.containerId = this.containerModel.get('CONTAINERID')
+      this.shippingSafetyLevel = this.containerModel.get('SHIPPINGSAFETYLEVEL')
       this.containerQueueId = this.containerModel.get('CONTAINERQUEUEID')
       if (this.containerQueueId) this.QUEUEFORUDC = true
     },
@@ -475,6 +505,7 @@ export default {
         })
         this.$nextTick(() => {
           this.loadContainerData()
+          this.getProteins()
           // TODO: Toggle Auto in the samples table
         })
       } catch (error) {
@@ -495,6 +526,7 @@ export default {
         this.$emit('update-container-state', { CONTAINERQUEUEID: null })
         this.$nextTick(() => {
           this.loadContainerData()
+          this.getProteins()
           // TODO: Toggle Auto in the samples table
         })
       } catch (error) {
@@ -507,6 +539,30 @@ export default {
         // TODO: Toggle loading state off
       }
     },
+
+    /**
+     * Fetch any other containers sharing the same Dewar & shipment, sorted by NAME.
+     * Also tracks the index of the current Container
+     */
+    async fetchSiblingContainers() {
+      var result;
+
+      if (this.containersCollection?.length>0) {
+        // ! if ContainersCollection exists then filter it instead rather than re-fetching.
+        // !! WARNING -  THis assumes that containersCollection has ALL containers of the dewar
+        result = _.filter(this.containersCollection,  (c) => 
+          c.DEWARID === this.container.DEWARID
+        );
+
+      } else {
+        result = new Containers();
+        result.dewarID = this.container.DEWARID;
+        await result.fetch();
+      }
+
+      this.siblingContainers = result.toJSON();
+    },
+    
     async fetchContainers() {
       this.containersCollection = new Containers(null, { state: { pageSize: 9999 } })
       this.containersCollection.queryParams.did = this.containersSamplesGroupData.dewarId
@@ -546,6 +602,7 @@ export default {
       }
     },
     async onUpdateSamples() {
+      this.disableUpdateSamples = true
       const containerId = this.containerId
       this.containerId = null
       await this.$nextTick()
@@ -558,11 +615,18 @@ export default {
         await this.loadSampleGroupInformation()
         await this.$store.commit('notifications/addNotification', {
           title: 'Samples Updated',
-          message: 'Sample has been successfully updated',
+          message: 'Sample(s) have been successfully updated',
           level: 'success'
         })
         this.$refs.containerForm.reset()
+      } else {
+        await this.$store.commit('notifications/addNotification', {
+          title: 'Error:',
+          message: 'Sample(s) have not been updated, please see the errors at the bottom of the page.',
+          level: 'error'
+        })
       }
+      this.disableUpdateSamples = false
     },
     updateEditingSampleLocation(value) {
       this.editingSampleLocation = value

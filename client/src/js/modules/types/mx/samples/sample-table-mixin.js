@@ -52,18 +52,18 @@ export default {
           SAFETYLEVEL: item.SAFETYLEVEL
         }));
     },
+    greenProteinsList() {
+      return this.$proteins()
+        .filter(item =>
+          item.SAFETYLEVEL === "GREEN"
+        )
+        .map(item => ({
+          value: item.PROTEINID,
+          text: item.ACRONYM,
+        }));
+    },
     experimentKindList() {
       return this.$experimentKindList();
-    },
-    centringMethodList() {
-      return this.$centringMethods().filter(method => method).reduce(
-        (acc, curr) => {
-          if (curr) acc.push({ value: curr, text: curr });
-
-          return acc;
-        },
-        []
-      ).sort(this.sortSelectField);
     },
     spaceGroupList() {
       const spaceGroups = this.$spaceGroups().reduce((acc, item) => {
@@ -149,6 +149,7 @@ export default {
       'SCREENINGMETHOD',
       'SCREENINGCOLLECTVALUE',
       'SHAPE',
+      'SMILES',
       'SPACEGROUP',
       'SYMBOL',
       'THEORETICALDENSITY',
@@ -282,7 +283,17 @@ export default {
     async createNewSampleGroup(value) {
       this.$emit('update-sample-group-input-disabled', true)
       const sampleGroupModel = new SampleGroup({ NAME: value })
-      await this.$store.dispatch('saveModel', { model: sampleGroupModel })
+      let result;
+      try {
+        result = await this.$store.dispatch('saveModel', { model: sampleGroupModel })
+      } catch (err) {
+        this.$store.commit('notifications/addNotification', { title: 'Error', message: err.message, level: 'error' })
+      }
+      if (result) {
+        const { NAME } = result.toJSON()
+        const message = 'Created sample group ' + NAME
+        this.$store.commit('notifications/addNotification', { title: 'Success', message: message, level: 'success' })
+      }
       this.$emit('update-sample-group-list')
     },
     canEditRow(location, editingRow) {
@@ -301,7 +312,6 @@ export default {
   },
   inject: [
     "$spaceGroups",
-    "$centringMethods",
     "$anomalousList",
     "$experimentKindList",
     "$sampleLocation",

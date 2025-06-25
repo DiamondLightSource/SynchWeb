@@ -10,7 +10,7 @@ define(['marionette',
     'modules/dc/views/dccomments', 
     'modules/dc/views/attachments',
     'modules/dc/views/apstatusitem',
-    'modules/dc/models/gridxrc',
+    'modules/dc/views/gridxrc',
     'templates/dc/grid.html', 'backbone-validation'], 
     function(Marionette, DCBase, TabView, AddToProjectView, Editable, Backbone, ImageViewer, GridPlot, 
       DialogView, DCCommentsView, AttachmentsView, APStatusItem, GridXRC,
@@ -22,6 +22,7 @@ define(['marionette',
     apStatusItem: APStatusItem,
 
     events: {
+      'click .holder h1.xrc': 'loadXRC',
       'click @ui.zoom': 'toggleZoom'
     },
 
@@ -41,6 +42,7 @@ define(['marionette',
       warningli: '.warning-li',
 
       holder: '.holder h1',
+      gridsize: '.gridsize',
     },
 
     toggleZoom: function(e) {
@@ -120,6 +122,9 @@ define(['marionette',
         if (this.ui.bx.text) this.ui.by.text((gi.get('DY_MM')*1000).toFixed(0))
 
         if (gi.get('STEPS_Y') > 10 && this.ui.zoom.show) this.ui.zoom.show()
+        var gridsize = gi.get('STEPS_X') + ' x ' + gi.get('STEPS_Y')
+        if (gi.get('STEPS_Z')) { gridsize += ' x ' + gi.get('STEPS_Z') }
+        this.ui.gridsize.html(gridsize)
     },
 
     checkXRC: function() {
@@ -132,24 +137,16 @@ define(['marionette',
             }
 
             if (state >= 2) {
-                this.xrc = new GridXRC({ id: this.model.get('ID') })
-                this.xrc.fetch({
-                    success: this.showXRC.bind(this)
-                })
+                this.xrc = new GridXRC({ id: this.model.get('ID'), el: this.$el.find('div.xrc') })
             }
         }
     },
 
-    showXRC: function() {
-        var xrcs = this.xrc.get('data')
-        var t = ''
-        for (var i = 0; i < xrcs.length; i++) {
-            t += ' - Crystal '+(i+1)+': X Pos '+xrcs[i]['X']+' Y Pos '+xrcs[i]['Y']+' Z Pos '+xrcs[i]['Z']
-        }
-        if (xrcs.length > 0) {
-            this.ui.holder.prepend('Method: '+xrcs[0]['METHOD']+t)
+    loadXRC: function(e) {
+        if (!this.xrc) {
+            this.xrc = new GridXRC({ id: this.model.get('ID'), el: this.$el.find('div.xrc') })
         } else {
-            this.ui.holder.prepend('Found no diffraction')
+            this.xrc.$el.slideToggle()
         }
     },
                                       
