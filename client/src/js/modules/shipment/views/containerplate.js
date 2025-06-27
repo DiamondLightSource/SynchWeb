@@ -648,7 +648,7 @@ define(['marionette',
         },
 
         updatePipelines: function() {
-            this.ui.pipeline.html(this.processing_pipelines.opts({ empty: true }))
+            this.ui.pipeline.html('<option value="">All pipelines</option>'+this.processing_pipelines.opts())
         },
 
         updateSchemas: function() {
