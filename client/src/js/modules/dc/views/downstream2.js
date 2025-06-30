@@ -4,17 +4,12 @@ define(['backbone', 'marionette', 'views/dialog',
     'collections/autoprocattachments',
     'models/datacollection',
     'modules/mc/views/dcdistl_downstream',
-    'models/reprocessing',
-    'models/reprocessingparameter',
-    'collections/reprocessingparameters',
     'modules/samples/collections/pdbs',
     'utils/kvcollection',
     'templates/dc/downstream.html', 'templates/dc/downstream_dc.html'
 ], function(Backbone, Marionette, DialogView,
         DataCollections, Proteins, AutoProcAttachments,
         DataCollection, DCDistlView,
-        Reprocessing,
-        ReprocessingParameter, ReprocessingParameters,
         PDBs,
         KVCollection, 
         template, dctemplate
@@ -140,47 +135,20 @@ define(['backbone', 'marionette', 'views/dialog',
         submit: function(e) {
             e.preventDefault()
             
-            const pn = this.model.get('PIPELINENAME')
-
-            var reprocessing = new Reprocessing({
-                DATACOLLECTIONID: this.model.get('ID'),
-                DISPLAYNAME: pn,
-                RECIPE: this.model.get('PIPELINE'),
-            })
+            this._enqueue({ RECIPE: this.model.get('PIPELINE'), DATACOLLECTIONID: this.model.get('ID'), SCALINGID: this.scalingid })
+            app.message({ message: 'Downstream processing job successfully submitted'})
             
-            var self = this
-            var reqs = []
-            reqs.push(reprocessing.save({}, {
-                success: function() {
-                    var reprocessingparams = new ReprocessingParameters()
-
-                    if (self.scalingid) reprocessingparams.add(new ReprocessingParameter({ 
-                        PROCESSINGJOBID: reprocessing.get('PROCESSINGJOBID'),
-                        PARAMETERKEY: 'scaling_id', 
-                        PARAMETERVALUE: self.scalingid,
-                    }))
-
-                    if (reprocessingparams.length) reqs.push(reprocessingparams.save())
-
-                    $.when.apply($, reqs).done(function() {
-                        self._enqueue({ PROCESSINGJOBID: reprocessing.get('PROCESSINGJOBID') })
-                        app.message({ message: 'Downstream processing job successfully submitted'})
-                    })
-                },
-
-                error: function() {
-                    app.alert({ message: 'Something went wrong starting that downstream processing job' })
-                }
-            }))
         },
 
 
         _enqueue: function(options) {
             Backbone.ajax({
-                url: app.apiurl+'/process/enqueue',
+                url: app.apiurl+'/process/enqueue/downstream',
                 method: 'POST',
                 data: {
-                    PROCESSINGJOBID: options.PROCESSINGJOBID
+                    DATACOLLECTIONID: options.DATACOLLECTIONID,
+                    SCALINGID: options.SCALINGID,
+                    RECIPE: options.RECIPE
                 },
             })
         },
@@ -203,10 +171,10 @@ define(['backbone', 'marionette', 'views/dialog',
         onRender: function() {
 
             var pls = [
-                { NAME: 'Dimple', VALUE: 'reprocessing-dimple' },
-                { NAME: 'Fast EP', VALUE: 'reprocessing-fastep' },
-                { NAME: 'Big EP', VALUE: 'reprocessing-bigep' },
-                { NAME: 'MrBUMP', VALUE: 'reprocessing-mrbump' },
+                { NAME: 'Dimple', VALUE: 'ispyb-reprocessing-dimple' },
+                { NAME: 'Fast EP', VALUE: 'ispyb-reprocessing-fastep' },
+                { NAME: 'Big EP', VALUE: 'ispyb-reprocessing-bigep' },
+                { NAME: 'MrBUMP', VALUE: 'ispyb-reprocessing-mrbump' },
             ]
             this.pipelines = new Pipelines(pls)
 
