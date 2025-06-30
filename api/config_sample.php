@@ -310,6 +310,9 @@
     # - If these are not defined for a proposal type, the api then uses bl_types below
     $prop_types = array('mx');
 
+    # Industrial proposals are not allowed to use the facility shipping account
+    $industrial_prop_codes = array('sw', 'in', 'ic');
+
     # This maps beamlinename in blsession to a proposal type
     # - Internal maps a beamline to an api "type", there are currently:
     #     mx, gen, em
