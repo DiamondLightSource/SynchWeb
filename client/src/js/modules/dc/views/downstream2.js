@@ -170,13 +170,12 @@ define(['backbone', 'marionette', 'views/dialog',
 
         onRender: function() {
 
-            var pls = [
-                { NAME: 'Dimple', VALUE: 'ispyb-reprocessing-dimple' },
-                { NAME: 'Fast EP', VALUE: 'ispyb-reprocessing-fastep' },
-                { NAME: 'Big EP', VALUE: 'ispyb-reprocessing-bigep' },
-                { NAME: 'MrBUMP', VALUE: 'ispyb-reprocessing-mrbump' },
-            ]
-            this.pipelines = new Pipelines(pls)
+            this.pipelines = new Pipelines([
+                { NAME: 'Dimple', VALUE: 'trigger-dimple' },
+                { NAME: 'Fast EP', VALUE: 'trigger-fastep' },
+                { NAME: 'Big EP', VALUE: 'trigger-bigep' },
+                { NAME: 'MrBUMP', VALUE: 'trigger-mrbump' },
+            ])
 
             this.ui.pipeline.html(this.pipelines.opts())           
         },
