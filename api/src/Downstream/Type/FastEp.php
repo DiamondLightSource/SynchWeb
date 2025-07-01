@@ -10,7 +10,11 @@ class FastEp extends DownstreamPlugin {
     var $has_mapmodel = array(1, 1);
 
     function results() {
-        $dat = array();
+        $dat = array(
+            'FOM' => 'sad.lst file not found',
+            'CC' => 'sad.lst file not found',
+            'ATOMS' => array(array('sad_fa.pdb file not found'))
+        );
 
         $ats = array();
         $pdb = $this->_get_attachments("sad_fa.pdb");
