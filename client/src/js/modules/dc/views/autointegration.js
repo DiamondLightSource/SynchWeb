@@ -8,7 +8,7 @@ define(['marionette',
     'modules/dc/views/aiplots',
     'modules/dc/views/autoprocattachments',
     'modules/dc/views/apmessages',
-    'modules/dc/views/downstream2',
+    'modules/dc/views/downstreamreprocess',
 
     'views/log',
     'views/table',
