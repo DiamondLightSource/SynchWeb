@@ -6,6 +6,7 @@ define(['marionette',
     'models/sample',
     'collections/samples',
     'collections/subsamples',
+    'collections/ligands',
 
     'modules/shipment/collections/containerhistory',
 
@@ -53,6 +54,7 @@ define(['marionette',
     Sample,
     Samples,
     Subsamples,
+    Ligands,
 
     ContainerHistory,
 
@@ -598,6 +600,7 @@ define(['marionette',
             this.ctypes = new PlateTypes()
 
             this.gproteins = new DistinctProteins()
+            this.ligands = new Ligands()
 
             this.inspections = new ContainerInspections()
             this.inspections.queryParams.cid = this.model.get('CONTAINERID')
@@ -857,7 +860,7 @@ define(['marionette',
             this.plateView = new PlateView({ collection: this.samples, type: this.type, showImageStatus: this.model.get('INSPECTIONS') > 0 })
             this.listenTo(this.plateView, 'plate:select', this.resetZoom, this)
             this.plate.show(this.plateView)
-            this.singlesample = new SingleSample({ proteins: this.proteins, existingContainer: true, gproteins: this.gproteins })
+            this.singlesample = new SingleSample({ proteins: this.proteins, existingContainer: true, gproteins: this.gproteins, ligands: this.ligands })
 
             var total = _.map(_.range(1, parseInt(this.model.get('CAPACITY'))+1), function(e) { return e.toString() })
             var diff = _.difference(total, this.samples.pluck('LOCATION'))

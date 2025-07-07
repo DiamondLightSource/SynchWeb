@@ -136,7 +136,7 @@ define(['marionette',
 
             console.log('sample', this.model)
             this.comps.show(new ComponentsView({ showEmpty: true, collection: this.model.get('components'), viewLink: true, editinline: true, CRYSTALID: this.model.get('CRYSTALID') }))
-            this.ligs.show(new LigandsView({ showEmpty: true, collection: this.model.get('ligands'), BLSAMPLEID: this.model.get('BLSAMPLEID') }))
+            this.ligs.show(new LigandsView({ showEmpty: true, collection: this.model.get('ligands'), showOutline: true, BLSAMPLEID: this.model.get('BLSAMPLEID') }))
             if (this.model.get('INSPECTIONS') > 0) this.imh.show(new ImageHistoryView({ historyimages: this.inspectionimages, embed: true }))
 
 

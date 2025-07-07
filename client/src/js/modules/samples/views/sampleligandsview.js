@@ -60,7 +60,9 @@ define(['marionette', 'backbone'], function(Marionette, Backbone) {
     return LigandsView = Marionette.CollectionView.extend({
         tagName: 'ul',
         childView: LigandView,
-        className: 'visits',
+        className: function() {
+            if (this.getOption('showOutline')) return 'visits'
+        },
 
         getEmptyView: function() {
             return this.getOption('showEmpty') ? EmptyView : null

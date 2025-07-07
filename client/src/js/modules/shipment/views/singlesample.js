@@ -8,6 +8,7 @@ define(['backbone',
     'utils/anoms',
 
     'modules/samples/views/componentsview',
+    'modules/samples/views/sampleligandsview',
         
     'utils/safetylevel',
 
@@ -15,7 +16,7 @@ define(['backbone',
     'templates/shipment/singlesamplee.html',
     ], function(Backbone, utils,
         FormView, SpaceGroups, Editable, Protein, Anom,
-        ComponentsView,
+        ComponentsView, LigandsView,
         safetyLevel,
         templatenew, template) {
 
@@ -37,7 +38,9 @@ define(['backbone',
             cc: 'a.clone-col',
             cr: 'a.clone-row',
             comps: '.components',
+            ligs: '.ligands',
             comp: 'input[name=COMPONENTID]',
+            lig: 'input[name=LIGANDID]',
             abun: 'input[name=ABUNDANCE]',
             sym: 'span.SYMBOL',
             cella: 'input[name=CELL_A]',
@@ -222,6 +225,7 @@ define(['backbone',
             this.ready = []
             this.extra = false
             this.gproteins = options.gproteins
+            this.ligands = options.ligands
             if (options && options.spacegroups) this.spacegroups = options.spacegroups
             else {
                 this.spacegroups = new SpaceGroups(null, { state: { pageSize: 9999 } })
@@ -300,6 +304,14 @@ define(['backbone',
                     source: this.getGlobalProteins.bind(this),
                     select: this.selectGlobalProtein.bind(this)
                 })
+                // prevent autocomplete from being created multiple times
+                if (this.ui.lig.data('ui-autocomplete')) {
+                    this.ui.lig.autocomplete('destroy');
+                }
+                this.ui.lig.autocomplete({
+                    source: this.getLigands.bind(this),
+                    select: this.selectLigand.bind(this)
+                })
 
                 console.log('render single', this.model)
                 this.compview = new ComponentsView({
@@ -310,6 +322,12 @@ define(['backbone',
                     editinline: this.getOption('existingContainer')
                 })
                 this.ui.comps.append(this.compview.render().$el)
+                this.ligview = new LigandsView({
+                    showEmpty: true,
+                    BLSAMPLEID: this.model.get('BLSAMPLEID'),
+                    collection: this.model.get('ligands'),
+                })
+                this.ui.ligs.append(this.ligview.render().$el)
 
                 if (this.extra) this.$el.find('.extra').addClass('show')
             }
@@ -347,7 +365,37 @@ define(['backbone',
             })
         },
 
-        
+        selectLigand: function(e, ui) {
+            e.preventDefault()
+            var lig = this.ligands.findWhere({ LIGANDID: ui.item.value })
+            if (lig) {
+                console.log('add lig', lig)
+                var clone = lig.clone()
+                var ligs = this.model.get('ligands')
+                clone.collection = ligs
+                clone.set('new', true)
+                ligs.add(clone)
+            }
+            this.ui.lig.val('')
+        },
+
+        getLigands: function(req, resp) {
+            var self = this
+            this.ligands.fetch({
+                data: {
+                    s: req.term,
+                },
+                success: function(data) {
+                    resp(self.ligands.map(function(m) {
+                        return {
+                            label: m.get('NAME'),
+                            value: m.get('LIGANDID'),
+                        }
+                    }))
+                }
+            })
+        },
+
         addProtein: function(ui, val) {
             var validOnly = app.options.get('valid_components')
             if (!(((validOnly && app.staff) || !validOnly)
