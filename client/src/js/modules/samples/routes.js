@@ -10,6 +10,10 @@ const ProteinListWrapper = () => import(/* webpackChunkName: "samples" */ 'modul
 const ProteinAddWrapper = () => import(/* webpackChunkName: "samples" */ 'modules/samples/components/protein-add-wrapper.vue')
 const ProteinViewWrapper = () => import(/* webpackChunkName: "samples" */ 'modules/samples/components/protein-view-wrapper.vue')
 
+const LigandListWrapper = () => import(/* webpackChunkName: "samples" */ 'modules/samples/components/ligand-list-wrapper.vue')
+const LigandAddWrapper = () => import(/* webpackChunkName: "samples" */ 'modules/samples/components/ligand-add-wrapper.vue')
+const LigandViewWrapper = () => import(/* webpackChunkName: "samples" */ 'modules/samples/components/ligand-view-wrapper.vue')
+
 const SampleListWrapper = () => import(/* webpackChunkName: "samples" */ 'modules/samples/components/sample-list-wrapper.vue')
 const SampleViewWrapper = () => import(/* webpackChunkName: "samples" */ 'modules/samples/components/sample-view-wrapper.vue')
 const XpdfSimpleSampleAddWrapper = () => import(/* webpackChunkName: "samples" */ 'modules/samples/components/XpdfSimpleSampleAddWrapper.vue')
@@ -48,6 +52,10 @@ app.addInitializer(function() {
 
   app.on('proteins:view', function(pid) {
     app.navigate('/proteins/pid/'+pid)
+  })
+
+  app.on('ligands:view', function(lid) {
+    app.navigate('/ligands/lid/'+lid)
   })
 
   app.on('phases:view', function(pid) {
@@ -128,6 +136,29 @@ const routes = [
     path: '/proteins/add',
     name: 'protein-add',
     component: ProteinAddWrapper,
+  },
+  // Ligands
+  {
+    path: '/ligands(/s/)?:s([a-zA-Z0-9_-]+)?(/page/)?:page([0-9]+)?',
+    name: 'ligand-list',
+    component: LigandListWrapper,
+    props: route => ({
+      search: route.params.s,
+      page: +route.params.page || 1,
+    })
+  },
+  {
+    path: '/ligands/lid/:lid',
+    name: 'ligand-view',
+    component: LigandViewWrapper,
+    props: route => ({
+      lid: +route.params.lid
+    })
+  },
+  {
+    path: '/ligands/add',
+    name: 'ligand-add',
+    component: LigandAddWrapper,
   },
   // Phases - these were added for xpdf.
   // Reuse protein components and views

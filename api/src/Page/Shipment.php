@@ -21,6 +21,7 @@ class Shipment extends Page
         'sid' => '\d+',
         'lcid' => '\d+',
         'pid' => '\d+',
+        'lid' => '\d+',
         'iid' => '\d+',
 
 
@@ -2251,6 +2252,14 @@ class Shipment extends Page
             $totalQuery->joinClause("LEFT OUTER JOIN crystal cr ON cr.crystalid = s.crystalid");
             $totalQuery->joinClause("LEFT OUTER JOIN protein pr ON pr.proteinid = cr.proteinid");
             array_push($args, $this->arg('pid'));
+        }
+
+        if ($this->has_arg('lid')) {
+            $join .= ' LEFT OUTER JOIN blsample_has_ligand bhl ON bhl.blsampleid = s.blsampleid';
+            $where .= ' AND bhl.ligandid=:' . (sizeof($args) + 1);
+            $totalQuery->joinClause("LEFT OUTER JOIN blsample s ON s.containerid = c.containerid");
+            $totalQuery->joinClause("LEFT OUTER JOIN blsample_has_ligand bhl ON bhl.blsampleid = s.blsampleid");
+            array_push($args, $this->arg('lid'));
         }
 
         if ($this->has_arg('assigned')) {

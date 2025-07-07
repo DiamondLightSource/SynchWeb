@@ -24,6 +24,7 @@ define(['backbone', 'models/wfile'], function(Backbone, File) {
         
         initialize: function(options) {
             this.pid = options.pid
+            this.lid = options.lid
         },
         
     }, File))

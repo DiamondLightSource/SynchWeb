@@ -15,6 +15,8 @@ define(['marionette',
     'modules/dc/views/getdcview',
 
     'modules/samples/views/componentsview',
+    'modules/samples/views/sampleligandsview',
+    'collections/ligands',
 
     'modules/imaging/collections/inspectionimages',
     'modules/imaging/views/imagehistory',
@@ -22,7 +24,7 @@ define(['marionette',
     'templates/samples/sample.html',
     'backbone', 'backbone-validation'
     ], function(Marionette, Backgrid, DistinctProteins, SpaceGroups, Anom, CM, EXP, RS, Editable, TableView, table, SubSamples, DCCol, GetDCView, 
-        ComponentsView,
+        ComponentsView, LigandsView, Ligands,
         InspectionImages, ImageHistoryView,
         template, Backbone) {
     
@@ -48,10 +50,12 @@ define(['marionette',
             history: '.history',
             imh: '.im_history',
             comps: '.components',
+            ligs: '.ligands',
         },
 
         ui: {
             comp: 'input[name=COMPONENTID]',
+            lig: 'input[name=LIGANDID]',
         },
         
         initialize: function(options) {
@@ -67,6 +71,7 @@ define(['marionette',
             }
 
             this.gproteins = new DistinctProteins()
+            this.ligands = new Ligands()
 
             this.subsamples = new SubSamples()
             this.subsamples.queryParams.sid = this.model.get('BLSAMPLEID')
@@ -131,12 +136,18 @@ define(['marionette',
 
             console.log('sample', this.model)
             this.comps.show(new ComponentsView({ showEmpty: true, collection: this.model.get('components'), viewLink: true, editinline: true, CRYSTALID: this.model.get('CRYSTALID') }))
+            this.ligs.show(new LigandsView({ showEmpty: true, collection: this.model.get('ligands'), BLSAMPLEID: this.model.get('BLSAMPLEID') }))
             if (this.model.get('INSPECTIONS') > 0) this.imh.show(new ImageHistoryView({ historyimages: this.inspectionimages, embed: true }))
 
 
             this.ui.comp.autocomplete({ 
                 source: this.getGlobalProteins.bind(this),
                 select: this.selectGlobalProtein.bind(this)
+            })
+
+            this.ui.lig.autocomplete({
+                source: this.getLigands.bind(this),
+                select: this.selectLigand.bind(this)
             })
 
 
@@ -189,6 +200,37 @@ define(['marionette',
                         return {
                             label: m.get('ACRONYM'),
                             value: m.get('PROTEINID'),
+                        }
+                    }))
+                }
+            })
+        },
+
+        selectLigand: function(e, ui) {
+            e.preventDefault()
+            var lig = this.ligands.findWhere({ LIGANDID: ui.item.value })
+            if (lig) {
+                console.log('add lig', lig)
+                var clone = lig.clone()
+                var ligs = this.model.get('ligands')
+                clone.collection = ligs
+                clone.set('new', true)
+                ligs.add(clone)
+            }
+            this.ui.lig.val('')
+        },
+
+        getLigands: function(req, resp) {
+            var self = this
+            this.ligands.fetch({
+                data: {
+                    s: req.term,
+                },
+                success: function(data) {
+                    resp(self.ligands.map(function(m) {
+                        return {
+                            label: m.get('NAME'),
+                            value: m.get('LIGANDID'),
                         }
                     }))
                 }

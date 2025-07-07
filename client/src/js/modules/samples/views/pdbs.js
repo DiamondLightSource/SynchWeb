@@ -1,4 +1,4 @@
-define(['marionette', 'utils'], function(Marionette, utils) {
+define(['marionette', 'backbone', 'utils'], function(Marionette, Backbone, utils) {
 
 
     var UserItem = Marionette.ItemView.extend({
@@ -9,7 +9,7 @@ define(['marionette', 'utils'], function(Marionette, utils) {
             'click a.delete': 'deletePDB',
             'click a.download': utils.signHandler,
         },
-        
+
         render: function() {
             UserItem.__super__.render.call(this)
             const linkButton = '<a class="button button-notext" href="https://www.ebi.ac.uk/pdbe/entry/pdb/'+this.model.get('CODE')+'"><i class="fa fa-link"></i> <span>EBI</span></a>'
@@ -23,7 +23,19 @@ define(['marionette', 'utils'], function(Marionette, utils) {
         },
 
         deletePDB: function(e) {
-            this.model.destroy()
+            if (this.options.isLigand) {
+                var self = this
+                Backbone.ajax({
+                    url: app.apiurl+'/sample/pdbs/'+this.model.get('PDBID')+'/lid/'+this.model.get('LIGANDID'),
+                    type: 'DELETE',
+                    dataType: 'json',
+                    success: function(response) {
+                        self.model.collection.remove(self.model)
+                    }
+                })
+            } else {
+                this.model.destroy()
+            }
         },
     })
     
@@ -40,6 +52,9 @@ define(['marionette', 'utils'], function(Marionette, utils) {
         attributes: { 'data-testid': 'protein-pdb-list' },
         childView: UserItem,
         emptyView: EmptyUserItem,
+        childViewOptions: function(model) {
+            return this.options
+        }
     })
     
 

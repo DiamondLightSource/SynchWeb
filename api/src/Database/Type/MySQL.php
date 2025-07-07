@@ -134,6 +134,10 @@ class MySQL extends DatabaseParent {
         'BLSampleImageAutoScoreClass',
         'BLSampleImage_has_AutoScoreClass',
 
+        'Ligand',
+        'BLSample_has_Ligand',
+        'Ligand_has_PDB',
+
         // Queuing
         'ContainerQueueSample',
         'ContainerQueue',

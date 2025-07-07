@@ -92,6 +92,11 @@ class Sample extends Page
         'BLSAMPLETYPEID' => '\d+',
         'scid' => '\d+-\d+',
 
+        'LIBRARYNAME' => '^[a-zA-Z0-9\-_\.]+$',
+        'LIBRARYBATCHNUMBER' => '^[a-zA-Z0-9\-_\.]+$',
+        'PLATEBARCODE' => '^[a-zA-Z0-9\-_\.]+$',
+        'SOURCEWELL' => '^[a-zA-Z0-9\-_\.]+$',
+
         'BLSAMPLEID' => '\d+',
         'X' => '\d+(.\d+)?',
         'Y' => '\d+(.\d+)?',
@@ -188,13 +193,19 @@ class Sample extends Page
         array('/proteins/lattice', 'post', '_add_protein_lattice'),
         array('/proteins/lattice/:lid', 'patch', '_update_protein_lattice'),
 
+        array('/ligands(/:lid)', 'get', '_ligands'),
+        array('/ligands', 'post', '_add_ligand'),
+        array('/ligands/:lid', 'patch', '_update_ligand'),
+        array('/ligands/add', 'post', '_add_sample_ligand'),
+        array('/ligands/:sid/lid/:lid', 'delete', '_remove_sample_ligand'),
+
         array('/crystals(/:CRYSTALID)', 'get', '_crystals'),
         array('/crystals', 'post', '_add_crystal'),
         array('/crystals/:CRYSTALID', 'patch', '_update_crystal'),
 
-        array('/pdbs(/pid/:pid)', 'get', '_get_pdbs'),
+        array('/pdbs(/pid/:pid)(/lid/:lid)', 'get', '_get_pdbs'),
         array('/pdbs', 'post', '_add_pdb'),
-        array('/pdbs(/:pdbid)', 'delete', '_remove_pdb'),
+        array('/pdbs(/:pdbid)(/lid/:lid)', 'delete', '_remove_pdb'),
         array('/pdbs/download/:pdbid', 'get', '_download_pdb'),
 
         array('/concentrationtypes', 'get', '_concentration_types'),
@@ -1095,6 +1106,12 @@ class Sample extends Page
             array_push($args, $this->arg('lt'));
         }
 
+        # For a ligand
+        if ($this->has_arg('lid')) {
+            $where .= ' AND bhl.ligandid LIKE :' . (sizeof($args) + 1);
+            array_push($args, $this->arg('lid'));
+        }
+
 
         # For a visit
         if ($this->has_arg('visit')) {
@@ -1171,6 +1188,7 @@ class Sample extends Page
               INNER JOIN dewar d ON d.dewarid = c.dewarid 
               LEFT OUTER JOIN datacollection dc ON b.blsampleid = dc.blsampleid
               LEFT OUTER JOIN robotaction r ON r.blsampleid = b.blsampleid AND r.actiontype = 'LOAD'
+              LEFT OUTER JOIN blsample_has_ligand bhl ON bhl.blsampleid=b.blsampleid
               $join WHERE $where", $args);
         $tot = intval($tot[0]['TOT']);
 
@@ -1195,7 +1213,7 @@ class Sample extends Page
 
 
         if ($this->has_arg('sort_by')) {
-            $cols = array('SAMPLEID' => 'b.blsampleid', 'NAME' => 'b.name', 'ACRONYM' => 'pr.acronym', 'SPACEGROUP' => 'cr.spacegroup', 'COMMENTS' => 'b.comments', 'SHIPMENT' => 'shipment', 'DEWAR' => 'dewar', 'CONTAINER' => 'container', 'b.blsampleid', 'SC' => 'sc', 'SCRESOLUTION' => 'scresolution', 'DC' => 'ap', 'DCRESOLUTION' => 'dcresolution', 'POSITION' => 'TO_NUMBER(b.location)', 'RECORDTIMESTAMP' => 'b.recordtimestamp');
+            $cols = array('SAMPLEID' => 'b.blsampleid', 'NAME' => 'b.name', 'ACRONYM' => 'pr.acronym', 'SPACEGROUP' => 'cr.spacegroup', 'COMMENTS' => 'b.comments', 'SHIPMENT' => 'shipment', 'DEWAR' => 'dewar', 'CONTAINER' => 'container', 'b.blsampleid', 'SC' => 'sc', 'SCRESOLUTION' => 'scresolution', 'DC' => 'dc', 'DCRESOLUTION' => 'dcresolution', 'POSITION' => 'TO_NUMBER(b.location)', 'RECORDTIMESTAMP' => 'b.recordtimestamp');
             $dir = $this->has_arg('order') ? ($this->arg('order') == 'asc' ? 'ASC' : 'DESC') : 'ASC';
             if (array_key_exists($this->arg('sort_by'), $cols))
                 $order = $cols[$this->arg('sort_by')] . ' ' . $dir;
@@ -1206,6 +1224,7 @@ class Sample extends Page
                                   , round(min(apss.resolutionlimithigh),2) as dcresolution, round(max(apss.completeness),1) as dccompleteness, dp.anomalousscatterer, dp.requiredresolution, cr.cell_a, cr.cell_b, cr.cell_c, cr.cell_alpha, cr.cell_beta, cr.cell_gamma, b.packingfraction, b.dimension1, b.dimension2, b.dimension3, b.shape, cr.color, cr.theoreticaldensity, cr.name as crystal, pr.name as protein, b.looptype, dp.centringmethod, dp.experimentkind, cq.containerqueueid
                                   , TO_CHAR(cq.createdtimestamp, 'DD-MM-YYYY HH24:MI') as queuedtimestamp, b.smiles
                                   , $cseq $sseq string_agg(cpr.name) as componentnames, string_agg(cpr.density) as componentdensities
+                                  , string_agg(distinct l.name) as ligandnames, string_agg(distinct l.ligandid) as ligandids
                                   , string_agg(cpr.proteinid) as componentids, string_agg(cpr.acronym) as componentacronyms, string_agg(cpr.global) as componentglobals, string_agg(chc.abundance) as componentamounts, string_agg(ct.symbol) as componenttypesymbols, b.volume, pct.symbol,ROUND(cr.abundance,3) as abundance, TO_CHAR(b.recordtimestamp, 'DD-MM-YYYY') as recordtimestamp, dp.radiationsensitivity, dp.energy, dp.userpath, dp.strategyoption, dp.minimalresolution as minimumresolution
                                   , count(distinct dc.dataCollectionId) as dcc            
                                   
@@ -1218,6 +1237,9 @@ class Sample extends Page
                                   LEFT OUTER JOIN blsampletype_has_component chc ON b.crystalid = chc.blsampletypeid
                                   LEFT OUTER JOIN protein cpr ON cpr.proteinid = chc.componentid
                                   LEFT OUTER JOIN concentrationtype ct ON cpr.concentrationtypeid = ct.concentrationtypeid
+
+                                  LEFT OUTER JOIN blsample_has_ligand bhl ON bhl.blsampleid = b.blsampleid
+                                  LEFT OUTER JOIN ligand l ON l.ligandid = bhl.ligandid
 
                                   INNER JOIN container c ON b.containerid = c.containerid
                                   INNER JOIN dewar d ON d.dewarid = c.dewarid
@@ -1258,7 +1280,7 @@ class Sample extends Page
                                   ORDER BY $order", $args);
 
         foreach ($rows as &$r) {
-            foreach (array('COMPONENTIDS', 'COMPONENTAMOUNTS', 'COMPONENTACRONYMS', 'COMPONENTTYPESYMBOLS', 'COMPONENTGLOBALS', 'COMPONENTNAMES', 'COMPONENTDENSITIES', 'COMPONENTSEQUENCES') as $k) {
+            foreach (array('COMPONENTIDS', 'COMPONENTAMOUNTS', 'COMPONENTACRONYMS', 'COMPONENTTYPESYMBOLS', 'COMPONENTGLOBALS', 'COMPONENTNAMES', 'COMPONENTDENSITIES', 'COMPONENTSEQUENCES', 'LIGANDNAMES', 'LIGANDIDS') as $k) {
                 if (array_key_exists($k, $r)) {
                     if ($r[$k])
                         $r[$k] = explode(',', $r[$k]);
@@ -1896,6 +1918,190 @@ class Sample extends Page
 
 
     # ------------------------------------------------------------------------
+    # List of ligands for a proposal
+    function _ligands()
+    {
+        if (!$this->has_arg('prop'))
+            $this->_error('No proposal specified');
+
+        $args = array($this->proposalid);
+        $where = 'l.proposalid=:1';
+
+        if ($this->has_arg('lid')) {
+            $where .= ' AND l.ligandid=:' . (sizeof($args) + 1);
+            array_push($args, $this->arg('lid'));
+        }
+
+        $tot = $this->db->pq("SELECT count(distinct l.ligandid) as tot FROM ligand l INNER JOIN proposal p ON p.proposalid = l.proposalid WHERE $where", $args);
+        $tot = intval($tot[0]['TOT']);
+
+        if ($this->has_arg('s')) {
+            $st = sizeof($args) + 1;
+            $where .= " AND l.name LIKE CONCAT('%',:" . $st . ", '%')";
+            array_push($args, $this->arg('s'));
+        }
+
+
+        $start = 0;
+        $pp = $this->has_arg('per_page') ? $this->arg('per_page') : 15;
+        $end = $pp;
+
+        if ($this->has_arg('page')) {
+            $pg = $this->arg('page') - 1;
+            $start = $pg * $pp;
+            $end = $pg * $pp + $pp;
+        }
+
+        array_push($args, $start);
+        array_push($args, $end);
+
+        $order = 'l.ligandid DESC';
+
+        $group = 'l.ligandid';
+
+        if ($this->has_arg('sort_by')) {
+            $cols = array(
+                'NAME' => 'l.name',
+            );
+            $dir = $this->has_arg('order') ? ($this->arg('order') == 'asc' ? 'ASC' : 'DESC') : 'ASC';
+            if (array_key_exists($this->arg('sort_by'), $cols))
+                $order = $cols[$this->arg('sort_by')] . ' ' . $dir;
+        }
+
+        $rows = $this->db->paginate("SELECT l.ligandid, l.name, l.smiles, l.libraryname, l.librarybatchnumber, l.platebarcode, l.sourcewell,
+                                COUNT(DISTINCT dc.datacollectionid) AS dcount,
+                                COUNT(DISTINCT b.blsampleid) AS scount
+                                FROM ligand l
+                                INNER JOIN proposal p ON p.proposalid = l.proposalid
+                                LEFT OUTER JOIN ligand_has_pdb lhp ON lhp.ligandid = l.ligandid
+                                LEFT OUTER JOIN blsample_has_ligand bhl ON bhl.ligandid = l.ligandid
+                                LEFT OUTER JOIN blsample b ON b.blsampleid = bhl.blsampleid
+                                LEFT OUTER JOIN datacollection dc ON b.blsampleid = dc.blsampleid
+                                WHERE $where
+                                GROUP BY $group
+                                ORDER BY $order", $args);
+
+        if ($this->has_arg('lid')) {
+            if (sizeof($rows))
+                $this->_output($rows[0]);
+            else
+                $this->_error('No such ligand');
+        } else
+            $this->_output(array(
+                'total' => $tot,
+                'data' => $rows,
+            ));
+    }
+
+
+    function _add_sample_ligand()
+    {
+        if (!$this->has_arg('prop'))
+            $this->_error('No proposal specified');
+        if (!$this->has_arg('lid'))
+            $this->_error('No ligand id specified');
+        if (!$this->has_arg('sid'))
+            $this->_error('No sample id specified');
+
+        $chk = $this->db->pq("SELECT blsampleid, ligandid FROM blsample_has_ligand
+              WHERE blsampleid=:1 AND ligandid=:2", array($this->arg('sid'), $this->arg('lid')));
+        if (sizeof($chk))
+            $this->_error('That sample already has that ligand');
+
+        $this->db->pq(
+            'INSERT INTO blsample_has_ligand (blsampleid,ligandid) VALUES (:1,:2)',
+            array($this->arg('sid'), $this->arg('lid'))
+        );
+
+        $this->_output(array('LIGANDID' => $this->arg('lid')));
+    }
+
+
+    function _remove_sample_ligand()
+    {
+        if (!$this->has_arg('prop'))
+            $this->_error('No proposal specified');
+
+        if (!$this->has_arg('sid'))
+            $this->_error('No blsampleid specified');
+
+        if (!$this->has_arg('lid'))
+            $this->_error('No ligandid specified');
+
+        $chk = $this->db->pq("SELECT bhl.blsampleid, bhl.ligandid
+              FROM blsample_has_ligand bhl
+              INNER JOIN ligand l ON l.ligandid = bhl.ligandid
+              WHERE l.proposalid=:1 AND bhl.blsampleid=:2 AND l.ligandid=:3", array($this->proposalid, $this->arg('sid'), $this->arg('lid')));
+
+        if (!sizeof($chk))
+            $this->_error('No such ligand or sample');
+
+        # Remove association
+        $this->db->pq("DELETE FROM blsample_has_ligand WHERE blsampleid=:1 and ligandid=:2", array($this->arg('sid'), $this->arg('lid')));
+
+        $this->_output(1);
+    }
+
+
+    function _add_ligand()
+    {
+        if (!$this->has_arg('prop'))
+            $this->_error('No proposal specified');
+        if (!$this->has_arg('NAME'))
+            $this->_error('No ligand name');
+
+        $smiles = $this->has_arg('SMILES') ? $this->arg('SMILES') : '';
+        $libname = $this->has_arg('LIBRARYNAME') ? $this->arg('LIBRARYNAME') : null;
+        $libbatch = $this->has_arg('LIBRARYBATCHNUMBER') ? $this->arg('LIBRARYBATCHNUMBER') : null;
+        $barcode = $this->has_arg('PLATEBARCODE') ? $this->arg('PLATEBARCODE') : null;
+        $well = $this->has_arg('SOURCEWELL') ? $this->arg('SOURCEWELL') : null;
+
+        $chk = $this->db->pq("SELECT name FROM ligand
+              WHERE proposalid=:1 AND name=:2", array($this->proposalid, $this->arg('NAME')));
+        if (sizeof($chk))
+            $this->_error('That ligand name already exists in this proposal');
+
+        $this->db->pq(
+            'INSERT INTO ligand (proposalid,name,smiles,libraryname,librarybatchnumber,platebarcode,sourcewell)
+              VALUES (:1,:2,:3,:4,:5,:6,:7) RETURNING ligandid INTO :id',
+            array($this->proposalid, $this->arg('NAME'), $smiles, $libname, $libbatch, $barcode, $well)
+        );
+
+        $lid = $this->db->id();
+
+        $this->_output(array('LIGANDID' => $lid));
+    }
+
+    # ------------------------------------------------------------------------
+    # Update a particular field for a ligand
+    function _update_ligand()
+    {
+        if (!$this->has_arg('lid'))
+            $this->_error('No ligandid specified');
+
+        $lig = $this->db->pq("SELECT l.ligandid FROM ligand l
+              WHERE l.proposalid = :1 AND l.ligandid = :2", array($this->proposalid, $this->arg('lid')));
+
+        if (!sizeof($lig))
+            $this->_error('No such ligand');
+
+        if ($this->has_arg('NAME')) {
+            $chk = $this->db->pq("SELECT l.ligandid FROM ligand l
+                WHERE l.proposalid = :1 AND l.name = :2", array($this->proposalid, $this->arg('NAME')));
+            if (sizeof($chk)) $this->_error('That ligand name already exists in this proposal');
+        }
+
+        foreach (array('NAME', 'SMILES', 'LIBRARYNAME', 'LIBRARYBATCHNUMBER', 'PLATEBARCODE', 'SOURCEWELL') as $f) {
+            if ($this->has_arg($f)) {
+                $this->db->pq('UPDATE ligand SET ' . $f . '=:1 WHERE ligandid=:2', array($this->arg($f), $this->arg('lid')));
+                $this->_output(array($f => $this->arg($f)));
+            }
+        }
+    }
+
+
+
+    # ------------------------------------------------------------------------
     # Update a particular field for a sample
     function _update_sample()
     {
@@ -2057,15 +2263,20 @@ class Sample extends Page
         if (!$this->has_arg('prop'))
             $this->_error('No proposal specified');
 
-        $where = 'pr.proposalid=:1';
-        $args = array($this->proposalid);
+        $where = '(pr.proposalid=:1 or l.proposalid=:2)';
+        $args = array($this->proposalid, $this->proposalid);
+        $join = 'LEFT OUTER JOIN protein_has_pdb hp ON p.pdbid = hp.pdbid LEFT OUTER JOIN protein pr ON pr.proteinid = hp.proteinid
+                 LEFT OUTER JOIN ligand_has_pdb lhp ON p.pdbid = lhp.pdbid LEFT OUTER JOIN ligand l ON l.ligandid = lhp.ligandid';
 
         if ($this->has_arg('pid')) {
-            $where .= ' AND pr.proteinid=:2';
+            $where .= ' AND pr.proteinid=:3';
             array_push($args, $this->arg('pid'));
+        } else if ($this->has_arg('lid')) {
+            $where .= ' AND l.ligandid=:3';
+            array_push($args, $this->arg('lid'));
         }
 
-        $rows = $this->db->pq("SELECT distinct hp.proteinhaspdbid, p.pdbid,pr.proteinid, p.name,p.code FROM pdb p INNER JOIN protein_has_pdb hp ON p.pdbid = hp.pdbid INNER JOIN protein pr ON pr.proteinid = hp.proteinid WHERE $where ORDER BY p.pdbid DESC", $args);
+        $rows = $this->db->pq("SELECT distinct hp.proteinhaspdbid, p.pdbid, pr.proteinid, p.name, p.code, l.ligandid FROM pdb p $join WHERE $where ORDER BY p.pdbid DESC", $args);
 
         $this->_output($rows);
     }
@@ -2089,15 +2300,27 @@ class Sample extends Page
     # Add a new pdb
     function _add_pdb()
     {
-        if (!$this->has_arg('PROTEINID'))
-            $this->_error('No protein id specified');
+        $proteinid = $this->has_arg('PROTEINID') ? $this->arg('PROTEINID') : null;
+        $ligandid = $this->has_arg('lid') ? $this->arg('lid') : null;
+        if ($proteinid) {
+            $prot = $this->db->pq("SELECT pr.proteinid
+                  FROM protein pr
+                  WHERE pr.proposalid = :1 AND pr.proteinid = :2", array($this->proposalid, $proteinid));
 
-        $prot = $this->db->pq("SELECT pr.proteinid 
-              FROM protein pr 
-              WHERE pr.proposalid = :1 AND pr.proteinid = :2", array($this->proposalid, $this->arg('PROTEINID')));
+            if (!sizeof($prot))
+                $this->_error('No such protein');
 
-        if (!sizeof($prot))
-            $this->_error('No such protein');
+        } else if ($ligandid) {
+            $lig = $this->db->pq("SELECT l.ligandid
+                  FROM ligand l
+                  WHERE l.proposalid = :1 AND l.ligandid = :2", array($this->proposalid, $ligandid));
+
+            if (!sizeof($lig))
+                $this->_error('No such ligand');
+
+        } else {
+            $this->_error('No protein id or ligand id specified');
+        }
 
         if (array_key_exists('pdb_file', $_FILES)) {
             if ($_FILES['pdb_file']['name']) {
@@ -2105,34 +2328,47 @@ class Sample extends Page
 
                 if ($info['extension'] == 'pdb' || $info['extension'] == 'cif') {
                     $file = file_get_contents($_FILES['pdb_file']['tmp_name']);
-                    $this->_associate_pdb($info['basename'], $file, '', $this->arg('PROTEINID'));
+                    $this->_associate_pdb($info['basename'], $file, '', $proteinid, $ligandid);
                 }
             }
         }
 
         if ($this->has_arg('pdb_code')) {
-            $this->_associate_pdb($this->arg('pdb_code'), '', $this->arg('pdb_code'), $this->arg('PROTEINID'));
+            $this->_associate_pdb($this->arg('pdb_code'), '', $this->arg('pdb_code'), $proteinid, $ligandid);
         }
 
         if ($this->has_arg('existing_pdb')) {
-            $rows = $this->db->pq("SELECT p.pdbid FROM pdb p INNER JOIN protein_has_pdb hp ON p.pdbid = hp.pdbid INNER JOIN protein pr ON pr.proteinid = hp.proteinid WHERE pr.proposalid=:1 AND p.pdbid=:2", array($this->proposalid, $this->arg('existing_pdb')));
+            $rows = $this->db->pq("SELECT p.pdbid FROM pdb p
+                                    LEFT OUTER JOIN protein_has_pdb hp ON p.pdbid = hp.pdbid
+                                    LEFT OUTER JOIN protein pr ON pr.proteinid = hp.proteinid
+                                    LEFT OUTER JOIN ligand_has_pdb lhp ON p.pdbid = lhp.pdbid
+                                    LEFT OUTER JOIN ligand l ON l.ligandid = lhp.ligandid
+                                    WHERE (pr.proposalid=:1 OR l.proposalid=:2) AND p.pdbid=:3", array($this->proposalid, $this->proposalid, $this->arg('existing_pdb')));
 
             if (!sizeof($rows))
                 $this->_error('The specified pdb doesnt exist');
 
-            $this->db->pq("INSERT INTO protein_has_pdb (proteinhaspdbid,proteinid,pdbid) VALUES (s_protein_has_pdb.nextval,:1,:2)", array($this->arg('PROTEINID'), $this->arg('existing_pdb')));
+            if ($proteinid) {
+                $this->db->pq("INSERT INTO protein_has_pdb (proteinid,pdbid) VALUES (:1,:2)", array($proteinid, $this->arg('existing_pdb')));
+            } else if ($ligandid) {
+                $this->db->pq("INSERT INTO ligand_has_pdb (ligandid,pdbid) VALUES (:1,:2)", array($ligandid, $this->arg('existing_pdb')));
+            }
         }
 
         $this->_output(1);
     }
 
     # Duplication :(
-    function _associate_pdb($name, $contents, $code, $pid)
+    function _associate_pdb($name, $contents, $code, $pid, $lid)
     {
         $this->db->pq("INSERT INTO pdb (pdbid,name,contents,code) VALUES(s_pdb.nextval,:1,:2,:3) RETURNING pdbid INTO :id", array($name, $contents, $code));
         $pdbid = $this->db->id();
 
-        $this->db->pq("INSERT INTO protein_has_pdb (proteinhaspdbid,proteinid,pdbid) VALUES (s_protein_has_pdb.nextval,:1,:2)", array($pid, $pdbid));
+        if ($pid) {
+            $this->db->pq("INSERT INTO protein_has_pdb (proteinid,pdbid) VALUES (:1,:2)", array($pid, $pdbid));
+        } else if ($lid) {
+            $this->db->pq("INSERT INTO ligand_has_pdb (ligandid,pdbid) VALUES (:1,:2)", array($lid, $pdbid));
+        }
     }
 
     # ------------------------------------------------------------------------
@@ -2141,15 +2377,22 @@ class Sample extends Page
     {
         if (!$this->has_arg('prop'))
             $this->_error('No proposal specified');
-        #if (!$this->has_arg('pid')) $this->_error('No protein specified');
+
         if (!$this->has_arg('pdbid'))
             $this->_error('No pdb specified');
 
-        $pdb = $this->db->pq("SELECT pd.pdbid 
-              FROM pdb pd 
-              INNER JOIN protein_has_pdb hp ON hp.pdbid=pd.pdbid 
-              INNER JOIN protein p ON p.proteinid = hp.proteinid 
-              WHERE p.proposalid=:1 AND hp.proteinhaspdbid=:2", array($this->proposalid, $this->arg('pdbid')));
+        if ($this->has_arg('lid')) {
+            $pdb = $this->db->pq("SELECT lhp.pdbid, lhp.ligandid
+                  FROM ligand_has_pdb lhp
+                  INNER JOIN ligand l ON l.ligandid = lhp.ligandid
+                  WHERE l.proposalid=:1 AND lhp.pdbid=:2 AND l.ligandid=:3", array($this->proposalid, $this->arg('pdbid'), $this->arg('lid')));
+        } else {
+            $pdb = $this->db->pq("SELECT pd.pdbid
+                  FROM pdb pd
+                  INNER JOIN protein_has_pdb hp ON hp.pdbid=pd.pdbid
+                  INNER JOIN protein p ON p.proteinid = hp.proteinid
+                  WHERE p.proposalid=:1 AND hp.proteinhaspdbid=:2", array($this->proposalid, $this->arg('pdbid')));
+        }
 
         if (!sizeof($pdb))
             $this->_error('No such pdb');
@@ -2157,10 +2400,14 @@ class Sample extends Page
             $pdb = $pdb[0];
 
         # Remove association
-        $this->db->pq("DELETE FROM protein_has_pdb WHERE proteinhaspdbid=:1", array($this->arg('pdbid')));
+        if ($this->has_arg('lid')) {
+            $this->db->pq("DELETE FROM ligand_has_pdb WHERE pdbid=:1 and ligandid=:2", array($this->arg('pdbid'), $this->arg('lid')));
+        } else {
+            $this->db->pq("DELETE FROM protein_has_pdb WHERE proteinhaspdbid=:1", array($this->arg('pdbid')));
+        }
 
         # Remove entry if its the last one
-        $count = $this->db->pq("SELECT pdbid FROM protein_has_pdb WHERE pdbid=:1", array($pdb['PDBID']));
+        $count = $this->db->union(array("SELECT pdbid FROM protein_has_pdb WHERE pdbid=:1", "SELECT pdbid FROM ligand_has_pdb WHERE pdbid=:1"), array($pdb['PDBID']));
         if (!sizeof($count))
             $this->db->pq("DELETE FROM pdb WHERE pdbid=:1", array($pdb['PDBID']));
 
