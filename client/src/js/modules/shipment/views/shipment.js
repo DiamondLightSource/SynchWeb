@@ -50,11 +50,14 @@ define(['marionette',
             'click a.send': 'sendShipment',
             'click a.pdf': utils.signHandler,
             'click a.cancel_pickup': 'cancelPickup',
+            'click a.ready': 'markAsReady',
         },
 
         ui: {
             add_dewar: '#add_dewar',
             longwavelength: '.longwavelength',
+            ready: '.ready',
+            dynamic: '.DYNAMIC',
             sent: '.sent',
             booking: '.booking',
             dhlmessage: '.dhlmessage',
@@ -173,6 +176,23 @@ define(['marionette',
             this.fetchDewars(true)
         },
 
+        markAsReady: function(e) {
+            e.preventDefault()
+            utils.confirm({
+                title: 'Ready for Scheduling',
+                content: 'Are you sure you want to mark the shipment as ready for scheduling?<br /><br />'+
+                         'We ask users to define all samples prior to shipping any dewar to us. We can schedule dewars before they arrive, once we have confirmation that the dewar is ready to be loaded onto a beamline.<br /><br />'+
+                         '<b>Once you confirm that the shipment is finalised, you will not be able to add dewars or pucks.</b><br /><br />'+
+                         'If you have any questions, please email your local contact.',
+                callback: this.doMarkAsReady.bind(this)
+            })
+        },
+
+        doMarkAsReady: function() {
+            this.model.save({ DYNAMIC: 'Ready' }, { patch: true })
+            if (!app.staff) this.edit.remove('DYNAMIC')
+        },
+
         updateGUI: function() {
             this.updateCountryFromLabContact()
             this.showButtons()
@@ -262,14 +282,23 @@ define(['marionette',
         updateDynamic: function(){
             dynamic = this.model.get('DYNAMIC')
             dynamicSelectedValues = [true, 'Yes', 'yes', 'Y', 'y']
-            if (!dynamicSelectedValues.includes(dynamic)) {
+            this.ui.ready.hide()
+            if (dynamic === 'Ready') {
+                this.ui.dynamic.html('I would like a session to be scheduled - my shipment is ready for scheduling')
+            } else if (dynamicSelectedValues.includes(dynamic)) {
+                this.ui.dynamic.html(this.dynamicOptions['Yes'])
+                if (!this.industrial_visit) {
+                    this.ui.ready.show()
+                }
+            } else {
+                this.ui.dynamic.html(this.dynamicOptions[dynamic])
+            }
+            if (!dynamicSelectedValues.includes(dynamic) && dynamic !== 'Ready') {
                 this.$el.find(".remoteormailin").hide()
                 this.$el.find(".remoteform").hide()
                 this.ui.longwavelength.hide()
             } else {
-                industrial_codes = ['in', 'sw']
-                industrial_visit = industrial_codes.includes(app.prop.slice(0,2))
-                if (industrial_visit) {
+                if (this.industrial_visit) {
                     this.$el.find(".remoteormailin").show()
                 }
                 this.ui.longwavelength.show()
@@ -279,10 +308,22 @@ define(['marionette',
                     this.$el.find(".remoteform").show()
                 }
             }
+            if (dynamic === 'Ready' || (app.proposal && app.proposal.get('ACTIVE') != '1')) {
+                this.ui.add_dewar.hide()
+            } else {
+                this.ui.add_dewar.show()
+            }
+
+            if (this.dewars) {
+                this.dewars.each(function(dewar) {
+                    if (dewar.get('DYNAMIC') !== dynamic) {
+                        dewar.set('DYNAMIC', dynamic)
+                    }
+                })
+            }
         },
 
         onRender: function() {
-            if (app.proposal && app.proposal.get('ACTIVE') != '1') this.ui.add_dewar.hide()
 
             this.table.show(new DewarsView({ collection: this.dewars }))
             this.cont.show(new DewarContentView({ collection: this.dewarcontent }))
@@ -291,46 +332,49 @@ define(['marionette',
             
             this.listenTo(this.cont.currentView, 'refresh:dewars', this.refreshDewar, this)
             
-            var edit = new Editable({ model: this.model, el: this.$el })
-            edit.create('SHIPPINGNAME', 'textlong')
-            edit.create('SAFETYLEVEL', 'select', { data: {'Green': 'Green', 'Yellow':'Yellow', 'Red': 'Red'}, alert: true, revert: true })
-            edit.create('COMMENTS', 'textarea')
-            edit.create('DELIVERYAGENT_AGENTNAME', 'text')
-            edit.create('DELIVERYAGENT_AGENTCODE', 'text')
-            edit.create('DELIVERYAGENT_SHIPPINGDATE', 'date')
-            edit.create('DELIVERYAGENT_DELIVERYDATE', 'date')
-            edit.create('DELIVERYAGENT_FLIGHTCODE', 'text')
-            edit.create('PHYSICALLOCATION', 'text')
-            edit.create('READYBYTIME', 'time')
-            edit.create('CLOSETIME', 'time')
+            this.edit = new Editable({ model: this.model, el: this.$el })
+            this.edit.create('SHIPPINGNAME', 'textlong')
+            this.edit.create('SAFETYLEVEL', 'select', { data: {'Green': 'Green', 'Yellow':'Yellow', 'Red': 'Red'}, alert: true, revert: true })
+            this.edit.create('COMMENTS', 'textarea')
+            this.edit.create('DELIVERYAGENT_AGENTNAME', 'text')
+            this.edit.create('DELIVERYAGENT_AGENTCODE', 'text')
+            this.edit.create('DELIVERYAGENT_SHIPPINGDATE', 'date')
+            this.edit.create('DELIVERYAGENT_DELIVERYDATE', 'date')
+            this.edit.create('DELIVERYAGENT_FLIGHTCODE', 'text')
+            this.edit.create('PHYSICALLOCATION', 'text')
+            this.edit.create('READYBYTIME', 'time')
+            this.edit.create('CLOSETIME', 'time')
 
 
-            edit.create("ENCLOSEDHARDDRIVE", 'select', { data: {'Yes': 'Yes', 'No': 'No'}})
-            edit.create("ENCLOSEDTOOLS", 'select', { data: {'Yes': 'Yes', 'No': 'No'}})
-            edit.create("DYNAMIC", 'select', { data: {
+            this.edit.create("ENCLOSEDHARDDRIVE", 'select', { data: {'Yes': 'Yes', 'No': 'No'}})
+            this.edit.create("ENCLOSEDTOOLS", 'select', { data: {'Yes': 'Yes', 'No': 'No'}})
+            this.dynamicOptions = {
                 'No': 'I have a session already scheduled',
                 'UDC': 'I am sending pucks for Unattended Data Collection',
                 'Imaging': 'I am sending plates for imaging',
                 'Yes': 'I would like a session to be scheduled',
                 'Other': 'Something else',
-            }})
-            industrial_codes = ['in', 'sw']
-            industrial_visit = industrial_codes.includes(app.prop.slice(0,2))
-            if (!industrial_visit) {
+            }
+            if (app.staff || this.model.get('DYNAMIC') !== 'Ready') {
+                this.edit.create('DYNAMIC', 'select', { data: this.dynamicOptions})
+            }
+            industrial_codes = app.options.get('industrial_prop_codes')
+            this.industrial_visit = industrial_codes.includes(app.prop.slice(0,2))
+            if (!this.industrial_visit) {
                 this.$el.find(".remoteormailin").hide()
             } else {
-                edit.create("REMOTEORMAILIN", 'select', { data: {'Remote': 'Remote', 'Mail-in': 'Mail-in', 'Other': 'Other'}})
+                this.edit.create("REMOTEORMAILIN", 'select', { data: {'Remote': 'Remote', 'Mail-in': 'Mail-in', 'Other': 'Other'}})
             }
 
-            edit.create("LONGWAVELENGTH", 'select', { data: {'Yes': 'Yes', 'No': 'No'}})
-            edit.create("SESSIONLENGTH", 'text')
-            edit.create("ENERGY", 'text')
-            edit.create("MICROFOCUSBEAM", 'select', { data: {'Yes': 'Yes', 'No': 'No'}})
-            edit.create("SCHEDULINGRESTRICTIONS", 'text')
-            edit.create("LASTMINUTEBEAMTIME", 'select', { data: {'Yes': 'Yes', 'No': 'No'}})
-            edit.create("DEWARGROUPING", 'select', { data: {'Yes': 'Yes', 'No': 'No', 'Don\'t mind': 'Don\'t mind'}})
-            edit.create("EXTRASUPPORTREQUIREMENT", 'text');
-            edit.create("MULTIAXISGONIOMETRY", 'select', { data: {'Yes': 'Yes', 'No': 'No'}})
+            this.edit.create("LONGWAVELENGTH", 'select', { data: {'Yes': 'Yes', 'No': 'No'}})
+            this.edit.create("SESSIONLENGTH", 'text')
+            this.edit.create("ENERGY", 'text')
+            this.edit.create("MICROFOCUSBEAM", 'select', { data: {'Yes': 'Yes', 'No': 'No'}})
+            this.edit.create("SCHEDULINGRESTRICTIONS", 'text')
+            this.edit.create("LASTMINUTEBEAMTIME", 'select', { data: {'Yes': 'Yes', 'No': 'No'}})
+            this.edit.create("DEWARGROUPING", 'select', { data: {'Yes': 'Yes', 'No': 'No', 'Don\'t mind': 'Don\'t mind'}})
+            this.edit.create("EXTRASUPPORTREQUIREMENT", 'text');
+            this.edit.create("MULTIAXISGONIOMETRY", 'select', { data: {'Yes': 'Yes', 'No': 'No'}})
 
             this.updateGUI()
             this.listenTo(this.model, "change", this.updateGUI)
@@ -340,8 +384,8 @@ define(['marionette',
             this.contacts = new LabContacts(null, { state: { pageSize: 9999 } })
             this.contacts.fetch().done(function() {
                 console.log(self.contacts, self.contacts.kv())
-                edit.create('SENDINGLABCONTACTID', 'select', { data: self.contacts.kv() })
-                edit.create('RETURNLABCONTACTID', 'select', { data: self.contacts.kv() })
+                self.edit.create('SENDINGLABCONTACTID', 'select', { data: self.contacts.kv() })
+                self.edit.create('RETURNLABCONTACTID', 'select', { data: self.contacts.kv() })
             })
         },
         
