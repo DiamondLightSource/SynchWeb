@@ -968,6 +968,7 @@ class Processing extends Page {
             apss.multiplicity,
             apss.meanioversigi as isigi,
             apss.resioversigi2 as resisigi,
+            aps.autoprocscalingid,
             ap.spacegroup as sg,
             ap.refinedcell_a as cell_a,
             ap.refinedcell_b as cell_b,
@@ -1153,6 +1154,7 @@ class Processing extends Page {
 
             $formatted_result[$row['AUTOPROCPROGRAMID']]['TYPE'] = $row['TYPE'];
             $formatted_result[$row['AUTOPROCPROGRAMID']]['AID'] = $row['AUTOPROCPROGRAMID'];
+            $formatted_result[$row['AUTOPROCPROGRAMID']]['SCALINGID'] = $row['AUTOPROCSCALINGID'];
             $formatted_result[$row['AUTOPROCPROGRAMID']]['MESSAGES'] = array_key_exists($row['AUTOPROCPROGRAMID'], $messages_result)
                 ? $messages_result[$row['AUTOPROCPROGRAMID']]
                 : array();
