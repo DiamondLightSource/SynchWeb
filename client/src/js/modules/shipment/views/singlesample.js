@@ -304,10 +304,7 @@ define(['backbone',
                     source: this.getGlobalProteins.bind(this),
                     select: this.selectGlobalProtein.bind(this)
                 })
-                // prevent autocomplete from being created multiple times
-                if (this.ui.lig.data('ui-autocomplete')) {
-                    this.ui.lig.autocomplete('destroy');
-                }
+
                 this.ui.lig.autocomplete({
                     source: this.getLigands.bind(this),
                     select: this.selectLigand.bind(this)
@@ -322,6 +319,11 @@ define(['backbone',
                     editinline: this.getOption('existingContainer')
                 })
                 this.ui.comps.append(this.compview.render().$el)
+
+                // prevent autocomplete from being created multiple times
+                if (this.ligview) {
+                    this.ligview.remove()
+                }
                 this.ligview = new LigandsView({
                     showEmpty: true,
                     BLSAMPLEID: this.model.get('BLSAMPLEID'),
