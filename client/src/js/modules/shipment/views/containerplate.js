@@ -242,6 +242,8 @@ define(['marionette',
             add: '.add_image',
             ads: 'a.add_point',
             adr: 'a.add_region',
+            addis: 'a.add_dispensing',
+            deldis: 'a.del_dispensing',
 
             drop: '.dropimage',
             prog: '.progress',
@@ -275,6 +277,8 @@ define(['marionette',
             'change @ui.ins': 'selectInspection',
             'click @ui.ads': 'setAddSubsamplePoint',
             'click @ui.adr': 'setAddSubsampleRegion',
+            'click @ui.addis': 'setAddDispensing',
+            'click @ui.deldis': 'deleteDispensing',
             'click a.add_inspection': 'showAddInspection',
             'click a.view_sched': 'showViewSchedule',
             'click @ui.play': 'playInspection',
@@ -483,16 +487,24 @@ define(['marionette',
                 this.ui.ads.removeClass('button-highlight')
                 this.image.setAddSubsample(false)
                 this.ui.ads.find('span').text('Mark Point')
+                this.ui.ads.find('i').removeClass('fa-times').addClass('fa-plus')
 
             } else {
                 this.ui.ads.addClass('button-highlight')
                 this.image.setAddSubsample(true)
                 this.ui.ads.find('span').text('Finish')
+                this.ui.ads.find('i').removeClass('fa-plus').addClass('fa-times')
             }
 
             this.ui.adr.removeClass('button-highlight')
+            this.ui.addis.removeClass('button-highlight')
             this.image.setAddSubsampleRegion(false)
+            this.image.setAddDispensing(false)
             this.ui.adr.find('span').text('Mark Region')
+            this.ui.adr.find('i').removeClass('fa-times').addClass('fa-plus')
+            this.ui.addis.find('span').text('Mark Dispensing')
+            this.ui.addis.find('i').removeClass('fa-times').addClass('fa-plus')
+            this.ui.deldis.hide()
         },
 
 
@@ -503,16 +515,59 @@ define(['marionette',
                 this.ui.adr.removeClass('button-highlight')
                 this.image.setAddSubsampleRegion(false)
                 this.ui.adr.find('span').text('Mark Region')
+                this.ui.adr.find('i').removeClass('fa-times').addClass('fa-plus')
 
             } else {
                 this.ui.adr.addClass('button-highlight')
                 this.image.setAddSubsampleRegion(true)
                 this.ui.adr.find('span').text('Finish')
+                this.ui.adr.find('i').removeClass('fa-plus').addClass('fa-times')
             }
 
             this.ui.ads.removeClass('button-highlight')
+            this.ui.addis.removeClass('button-highlight')
             this.image.setAddSubsample(false)
+            this.image.setAddDispensing(false)
             this.ui.ads.find('span').text('Mark Point')
+            this.ui.ads.find('i').removeClass('fa-times').addClass('fa-plus')
+            this.ui.addis.find('span').text('Mark Dispensing')
+            this.ui.addis.find('i').removeClass('fa-times').addClass('fa-plus')
+            this.ui.deldis.hide()
+        },
+
+        setAddDispensing: function(e) {
+            if (e) e.preventDefault()
+
+            if (this.ui.addis.hasClass('button-highlight')) {
+                this.ui.addis.removeClass('button-highlight')
+                this.image.setAddDispensing(false)
+                this.ui.addis.find('span').text('Mark Dispensing')
+                this.ui.addis.find('i').removeClass('fa-times').addClass('fa-plus')
+                this.ui.deldis.hide()
+
+            } else {
+                this.ui.addis.addClass('button-highlight')
+                this.image.setAddDispensing(true)
+                this.ui.addis.find('span').text('Cancel')
+                this.ui.addis.find('i').removeClass('fa-plus').addClass('fa-times')
+                if (this.subsamples.length && this.subsamples.findWhere({ BLSAMPLEID: this.getSample() }).get('DISPENSEX')) {
+                    this.ui.deldis.show()
+                }
+            }
+
+            this.ui.ads.removeClass('button-highlight')
+            this.ui.adr.removeClass('button-highlight')
+            this.image.setAddSubsample(false)
+            this.image.setAddSubsampleRegion(false)
+            this.ui.ads.find('span').text('Mark Point')
+            this.ui.ads.find('i').removeClass('fa-times').addClass('fa-plus')
+            this.ui.adr.find('span').text('Mark Region')
+            this.ui.adr.find('i').removeClass('fa-times').addClass('fa-plus')
+        },
+
+        deleteDispensing: function(e) {
+            e.preventDefault()
+            this.image.deleteDispensing()
         },
 
 
@@ -905,12 +960,14 @@ define(['marionette',
                 this.listenTo(this.image, 'image:prev', this.prevImage, this)
                 this.listenTo(this.image, 'image:first', this.firstImage, this)
                 this.listenTo(this.image, 'image:last', this.lastImage, this)
+                this.listenTo(this.image, 'finishdispensing', this.setAddDispensing, this)
 
                 if (this.getOption('params').iid) this.ui.ins.val(this.getOption('params').iid)
                 this.selectInspection()
 
                 this.ui.prog.hide()
                 this.ui.prog.progressbar({ value: 0 })
+                this.ui.deldis.hide()
 
                 this.img.show(this.image)
                 this.sten.show(new ImageHistoryView({ historyimages: this.startendimages, embed: true }))

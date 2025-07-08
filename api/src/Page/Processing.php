@@ -978,6 +978,7 @@ class Processing extends Page {
             (SELECT COUNT(api1.autoprocintegrationid) FROM autoprocintegration api1 WHERE api1.autoprocprogramid = app.autoprocprogramid) as imagesweepcount,
             app.processingstatus,
             app.processingmessage,
+            app.processingenvironment,
             count(distinct pjis.datacollectionid) as dccount,
             max(pjis.processingjobid) as processingjobid,
             (SELECT IFNULL(blsg.name, bls.name) FROM processingjobparameter pjp
@@ -1058,6 +1059,9 @@ class Processing extends Page {
                         }
                         if ($row['GROUPNAME']) {
                             $value .= ' ('.$row['GROUPNAME'].')';
+                        }
+                        if ($row['PROCESSINGENVIRONMENT'] && strpos($row['PROCESSINGENVIRONMENT'], 'cluster=') !== false) {
+                            $value .= ' ('.$row['PROCESSINGENVIRONMENT'].')';
                         }
                     }
 
