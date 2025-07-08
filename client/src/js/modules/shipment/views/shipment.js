@@ -293,7 +293,7 @@ define(['marionette',
             } else {
                 this.ui.dynamic.html(this.dynamicOptions[dynamic])
             }
-            if (!dynamicSelectedValues.includes(dynamic) && dynamic != 'Ready') {
+            if (!dynamicSelectedValues.includes(dynamic) && dynamic !== 'Ready') {
                 this.$el.find(".remoteormailin").hide()
                 this.$el.find(".remoteform").hide()
                 this.ui.longwavelength.hide()
@@ -355,7 +355,7 @@ define(['marionette',
                 'Yes': 'I would like a session to be scheduled',
                 'Other': 'Something else',
             }
-            if (app.staff || this.model.get('DYNAMIC') != 'Ready') {
+            if (app.staff || this.model.get('DYNAMIC') !== 'Ready') {
                 this.edit.create('DYNAMIC', 'select', { data: this.dynamicOptions})
             }
             industrial_codes = app.options.get('industrial_prop_codes')
