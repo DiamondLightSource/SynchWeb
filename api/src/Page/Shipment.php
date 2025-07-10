@@ -1678,7 +1678,11 @@ class Shipment extends Page
         }
 
         if ($this->has_arg('ty')) {
-            $bls_tmp = $this->_get_beamlines_from_type($this->arg('ty'));
+            if ($this->arg('ty') == 'overview') {
+                $bls_tmp = $this->_get_beamlines_from_type($this->ty);
+            } else {
+                $bls_tmp = $this->_get_beamlines_from_type($this->arg('ty'));
+            }
             if (!empty($bls_tmp)) {
                 $bls = implode("', '", $bls_tmp);
                 $where .= " AND se.beamlinename IN ('$bls')";

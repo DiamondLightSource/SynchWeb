@@ -19,9 +19,15 @@ define(['backbone', 'collections/components', 'collections/ligands',
             this.listenTo(this, 'change:RADIATIONSENSITIVITY', this.updateRadSen)
             this.updateRadSen()
 
+            this.listenTo(this, 'change:X', this.updatePosition)
+
             this.listenTo(this, 'change', this.updateHasData)
             this.updateHasData()
 
+        },
+
+        updatePosition: function() {
+            this.save(this.changedAttributes(), { patch: true })
         },
 
         updateHasData: function() {
@@ -101,7 +107,10 @@ define(['backbone', 'collections/components', 'collections/ligands',
             COMPONENTIDS: [],
             COMPONENTAMOUNTS: [],
             LIGANDIDS: [],
-            LIGANDNAMES: []
+            LIGANDNAMES: [],
+            X: null,
+            Y: null,
+            Z: null,
         },
         
         validation: {
@@ -227,6 +236,15 @@ define(['backbone', 'collections/components', 'collections/ligands',
             EXPERIMENTKIND: {
                 required: false,
                 pattern: 'word'
+            },
+            X: {
+                required: false
+            },
+            Y: {
+                required: false
+            },
+            Z: {
+                required: false
             },
 
             COMPONENTAMOUNTS: function(from_ui, attr, all_values) {

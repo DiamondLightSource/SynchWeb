@@ -38,6 +38,7 @@ class DC extends Page
         'PERSONID' => '\d+',
         'AUTOPROCPROGRAMMESSAGEID' => '\d+',
         'PROCESSINGJOBID' => '\d+',
+        'expandgroups' => '\d',
         'debug' => '\d',
         'sgid' => '\d+'
     );
@@ -392,7 +393,7 @@ class DC extends Page
         }
 
         # Set Count field
-        if ($this->has_arg('dcg') || $this->has_arg('PROCESSINGJOBID') || $this->has_arg('sgid')) {
+        if ($this->has_arg('dcg') || $this->has_arg('PROCESSINGJOBID') || $this->has_arg('sgid') || $this->has_arg('expandgroups')) {
             $count_field = 'dc.datacollectionid';
         } else {
             $count_field = 'distinct dc.datacollectiongroupid';
@@ -627,6 +628,9 @@ class DC extends Page
                     IFNULL(max(dc.rotationaxis), 'Omega') as rotationaxis,
                     dc.detector2theta";
             $groupby = "GROUP BY dc.datacollectiongroupid";
+            if ($this->has_arg('expandgroups')) {
+                $groupby = "GROUP BY dc.datacollectionid";
+            }
         }
 
         // We don't want to remove duplicates, since if two counts are equal, one might go uncounted

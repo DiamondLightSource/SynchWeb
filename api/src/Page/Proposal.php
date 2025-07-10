@@ -390,7 +390,11 @@ class Proposal extends Page
         }
 
         if ($this->has_arg('ty')) {
-            $beamlines = $this->_get_beamlines_from_type($this->arg('ty'));
+            if ($this->arg('ty') == 'calendar') {
+                $beamlines = $this->_get_beamlines_from_type($this->ty);
+            } else {
+                $beamlines = $this->_get_beamlines_from_type($this->arg('ty'));
+            }
 
             if (!empty($beamlines)) {
                 $bls = implode("', '", $beamlines);
