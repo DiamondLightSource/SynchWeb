@@ -512,7 +512,7 @@ class Sample extends Page
 
                     if ($info['extension'] == 'pdb' || $info['extension'] == 'cif') {
                         $file = file_get_contents($_FILES[$fileRef]['tmp_name']);
-                        $this->_associate_pdb($info['basename'], $file, '', $ids[$model]['PHASEID']);
+                        $this->_associate_pdb($info['basename'], $file, '', $ids[$model]['PHASEID'], null);
                     }
                     $fileCount++;
                 }
