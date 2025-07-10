@@ -37,6 +37,7 @@ class Proposal extends Page
         'SHIPPINGID' => '\d+',
         'LABCONTACTID' => '\d+',
         'DATACOLLECTIONID' => '\d+',
+        'LIGANDID' => '\d+',
 
         // proposal
         'PROPOSALCODE' => '\w+',
@@ -894,6 +895,7 @@ class Proposal extends Page
             'SHIPPINGID' => 'sh.shippingid',
             'LABCONTACTID' => 'lc.labcontactid',
             'DATACOLLECTIONID' => 'dc.datacollectionid',
+            'LIGANDID' => 'l.ligandid',
         );
 
         $field = null;
@@ -952,6 +954,7 @@ class Proposal extends Page
                 LEFT OUTER JOIN container c ON c.dewarid = d.dewarid
 
                 LEFT OUTER JOIN labcontact lc ON lc.proposalid = p.proposalid
+                LEFT OUTER JOIN ligand l ON l.proposalid = p.proposalid
                 $where
             ", $args);
 
