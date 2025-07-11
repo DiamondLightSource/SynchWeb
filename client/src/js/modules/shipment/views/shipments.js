@@ -2,8 +2,23 @@ define(['marionette',
   'backgrid', 
   'views/table', ], 
   function(Marionette, Backgrid, TableView) {
-    
-    
+
+  var ContactCell = Backgrid.Cell.extend({
+    render: function() {
+      this.$el.empty()
+      var lcout = this.model.get('LCOUT')
+      var lcret = this.model.get('LCRET')
+      if (lcout && lcret && lcout !== lcret) {
+        this.$el.html(lcout + ' / ' + lcret)
+      } else if (lcout) {
+        this.$el.text(lcout)
+      } else if (lcret) {
+        this.$el.text(lcret)
+      }
+      return this
+    }
+  })
+
   var FocusableRow = Backgrid.Row.extend({
     events: {
       'click': 'onClick',
@@ -33,17 +48,17 @@ define(['marionette',
     
     initialize: function(options) {
       var columns = [{ name: 'SHIPPINGNAME', label: 'Name', cell: 'string', editable: false },
+                     { name: 'DEWARS', label: 'Dewar(s)', cell: 'string', editable: false },
                      { name: 'CREATED', label: 'Creation Date', cell: 'string', editable: false },
                      { name: 'VISIT', label: 'Visit', cell: 'string', editable: false },
-                     { name: 'LCOUT', label: 'Outgoing Contact', cell: 'string', editable: false },
-                     { name: 'LCRET', label: 'Return Contact', cell: 'string', editable: false },
+                     { name: 'CONTACTS', label: 'Lab Contact', cell: ContactCell, editable: false },
                      { name: 'SHIPPINGSTATUS', label: 'Status', cell: 'string', editable: false },
                      { name: 'DCOUNT', label: '# Comp', cell: 'string', editable: false },
                      { name: 'COMMENTS', label: 'Comments', cell: 'string', editable: false },
                      ]
         
       if (app.mobile()) {
-        _.each([2,3,5,6], function(v) {
+        _.each([1,4,6,7], function(v) {
             columns[v].renderable = false
         })
       }
