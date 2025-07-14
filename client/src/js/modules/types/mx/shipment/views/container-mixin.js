@@ -5,6 +5,7 @@ import AnomalousList from 'utils/anoms.js'
 import ExperimentKindsList from 'utils/experimentkinds.js'
 import DistinctProteins from 'modules/shipment/collections/distinctproteins'
 import ContainerRegistry from 'modules/shipment/collections/containerregistry'
+import ContainersCollection from 'collections/containers'
 import ContainerTypes from 'modules/shipment/collections/containertypes'
 import SampleGroups from 'collections/samplegroups'
 import ImagingImager from 'modules/imaging/collections/imagers'
@@ -40,6 +41,8 @@ export default {
       containerRegistryCollection: new ContainerRegistry(),
       containerRegistry: [],
       containerRegistryId: '',
+      parentContainersCollection: new ContainersCollection(),
+      parentContainers: [],
       containerTypeDetails: {},
 
       experimentTypes: [
@@ -135,6 +138,13 @@ export default {
       this.containerRegistryCollection = new ContainerRegistry(null, { state: { pageSize: 9999 }})
       const result = await this.$store.dispatch('getCollection', this.containerRegistryCollection)
       this.containerRegistry = [{ CONTAINERREGISTRYID: null, BARCODE: ""}, ...result.toJSON()]
+    },
+    async getParentContainers() {
+      this.parentContainersCollection = new ContainersCollection(null, { state: { pageSize: 9999 }})
+      this.parentContainersCollection.dewarID = this.container ? this.container.DEWARID : this.DEWARID
+      const result = await this.$store.dispatch('getCollection', this.parentContainersCollection)
+      const filteredResult = this.container ? result.toJSON().filter(item => item.CONTAINERID !== this.container.CONTAINERID) : result.toJSON()
+      this.parentContainers = [{ PARENTCONTAINERID: null, NAME: ""}, ...filteredResult]
     },
     async getContainerTypes() {
       this.containerFilter = [this.$store.state.proposal.proposalType]
@@ -512,6 +522,14 @@ export default {
   computed: {
     containerFilter: function() {
       return [this.$store.state.proposal.proposalType]
+    },
+    showParentContainer() {
+        if (!app.options.get('container_types_with_parents')) return false
+        if (this.container) {
+            return app.options.get('container_types_with_parents').indexOf(this.container.CONTAINERTYPE) > -1
+        } else {
+            return app.options.get('container_types_with_parents').indexOf(this.CONTAINERTYPE) > -1
+        }
     },
     isPuck() {
       return this.containerType.WELLPERROW === null

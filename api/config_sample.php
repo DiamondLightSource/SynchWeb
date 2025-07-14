@@ -124,6 +124,9 @@
     # List of enabled container types, all if empty
     $enabled_container_types = array();
 
+    # Show parent container field for these types
+    $container_types_with_parents = array();
+
     # Zocalo message broker credentials - Set to empty string to disable
     $rabbitmq_zocalo_host = 'rabbitmq.server.ac.uk';
     $rabbitmq_zocalo_port = 5672;

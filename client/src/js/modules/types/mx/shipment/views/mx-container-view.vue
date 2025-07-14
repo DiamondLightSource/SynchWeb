@@ -92,6 +92,22 @@
                 @save="save('BARCODE')"
               />
             </li>
+            <li
+              v-if="showParentContainer"
+              class="tw-flex tw-flex-row tw-w-full"
+            >
+              <span class="label">Parent Container</span>
+              <base-input-select
+                v-model="container.PARENTCONTAINERID"
+                :initial-text="container.PARENTCONTAINER ? container.PARENTCONTAINER : 'Click to edit'"
+                name="PARENTCONTAINERID"
+                :options="parentContainers"
+                :inline="true"
+                option-value-key="CONTAINERID"
+                option-text-key="NAME"
+                @save="save('PARENTCONTAINERID')"
+              />
+            </li>
             <li v-if="container.PIPELINE">
               <span class="label">Priority Processing</span>
               <base-input-select
@@ -363,6 +379,7 @@ export default {
     this.getGlobalProteins()
     this.getProteins()
     this.getContainerRegistry()
+    this.getParentContainers()
     this.getHistory()
     this.getContainerTypes()
     this.getUsers()

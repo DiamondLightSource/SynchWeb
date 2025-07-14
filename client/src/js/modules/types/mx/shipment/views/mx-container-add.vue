@@ -8,7 +8,7 @@
         ref="containerForm"
         v-slot="{ invalid, errors }"
       >
-        <!-- Old Add containers had an assign button here - try leaving it out as there is a menu item for /assign -->
+
         <form
           id="add_container"
           class="tw-flex"
@@ -67,6 +67,18 @@
                   :error-message="errors[0]"
                 />
               </validation-provider>
+
+              <base-input-select
+                v-show="showParentContainer"
+                dataTestId="add-container-parent-container"
+                v-model="PARENTCONTAINERID"
+                outer-class="tw-mb-2 tw-py-2"
+                label="Parent Container"
+                name="PARENTCONTAINERID"
+                :options="parentContainers"
+                option-value-key="CONTAINERID"
+                option-text-key="NAME"
+              />
 
               <base-input-select
                 v-model="PROCESSINGPIPELINEID"
@@ -475,6 +487,7 @@ export default {
       PROCESSINGPIPELINEID: null,
       NAME: "",
       CONTAINERREGISTRYID: null,
+      PARENTCONTAINERID: null,
       AUTOMATED: 0,
       BARCODE: "",
       PERSONID: "",
@@ -619,6 +632,7 @@ export default {
     this.getProteins()
     this.getContainerTypes()
     this.getContainerRegistry()
+    this.getParentContainers()
     this.getProcessingPipelines()
     this.formatExperimentKindList()
     this.getSampleGroups()
@@ -667,6 +681,7 @@ export default {
         containerAttributes = {
           ...containerAttributes,
           CONTAINERREGISTRYID: this.CONTAINERREGISTRYID,
+          PARENTCONTAINERID: this.PARENTCONTAINERID,
           PROCESSINGPIPELINEID: this.PROCESSINGPIPELINEID,
           SPACEGROUP: this.SPACEGROUP
         }
@@ -711,6 +726,7 @@ export default {
         this.NAME = ''
         this.BARCODE = ''
         this.CONTAINERREGISTRYID = ''
+        this.PARENTCONTAINERID = ''
         // Trigger default setting of UDC fields if selected
         this.selectQueueForUDC(this.AUTOMATED)
 
