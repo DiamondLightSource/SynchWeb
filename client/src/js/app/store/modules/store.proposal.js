@@ -8,6 +8,7 @@ const proposalModule = {
     // Proposal / visit info
     proposal: '',        // The proposal string (e.g. mx12345)
     proposalType: 'mx',  // Type of the proposal or default type for the user
+    proposalTypes: [],   // All possible types for the proposal
     proposalModel: null, // A backbone model for the current proposal
     visit: '',
   },
@@ -44,6 +45,11 @@ const proposalModule = {
       state.proposalType = proposalType
       app.type = state.proposalType
     },
+    // Code for all types for this proposal
+    setProposalTypes(state, proposalTypes) {
+      state.proposalTypes = proposalTypes
+      app.types = state.proposalTypes
+    },
     // Set current visit / session number
     setVisit(state, visit) {
       if (visit) {
@@ -79,6 +85,8 @@ const proposalModule = {
               success: function() {
                 let proposalType = proposalModel.get('TYPE')
                 commit('setProposalType', proposalType)
+                let proposalTypes = proposalModel.get('TYPES')
+                commit('setProposalTypes', proposalTypes)
                 commit('setProposalModel', proposalModel)
                 resolve()
               },
