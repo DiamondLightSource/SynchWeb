@@ -17,7 +17,7 @@ define(['marionette',
             var displayedPath = filePath.split('/').slice(0,4).join('/')+'/...'
 
             this.$el.html(`
-                <span>${displayedPath}</span>
+                <span title="${filePath}">${displayedPath}</span>
                 <button class="copy-path button" title="Copy full path to clipboard">
                     <i class="fa fa-clipboard"/>
                 </button>
