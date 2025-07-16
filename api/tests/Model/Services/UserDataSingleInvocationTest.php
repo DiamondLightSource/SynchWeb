@@ -169,126 +169,126 @@ final class UserDataSingleInvocationTest extends BaseUserDataTestCase
     public function testGetUsersWithValidSortBypID(): void
     {
         $res = $this->userData->getUsers(false, true, 's', 3, 'LOGIN', 5);
-        $this->assertEquals("SELECT p.personid, p.givenname, p.familyname, CONCAT(p.givenname, ' ', p.familyname) as fullname, p.login, p.emailaddress, p.phonenumber, l.name as labname, l.address, l.city, l.postcode, l.country FROM Person p LEFT OUTER JOIN Laboratory l ON l.laboratoryid = p.laboratoryid LEFT OUTER JOIN ProposalHasPerson prhp ON prhp.personid = p.personid LEFT OUTER JOIN LabContact lc ON lc.personid = p.personid WHERE p.login IS NOT NULL AND (prhp.proposalid=5 OR lc.proposalid=5 OR p.personid=null) AND (p.familyname LIKE CONCAT('%','s','%') OR p.givenname LIKE CONCAT('%','s','%') OR p.login LIKE CONCAT('%','s','%')) GROUP BY p.personid ORDER BY p.login ASC LIMIT 30,15", $this->db->getLastQuery());
+        $this->assertEquals("SELECT p.personid, p.givenname, p.familyname, CONCAT(p.givenname, ' ', p.familyname) as fullname, p.login, p.emailaddress, p.phonenumber, l.name as labname, l.address, l.city, l.postcode, l.country FROM Person p LEFT OUTER JOIN Laboratory l ON l.laboratoryid = p.laboratoryid WHERE p.login IS NOT NULL AND (p.familyname LIKE CONCAT('%','s','%') OR p.givenname LIKE CONCAT('%','s','%') OR p.login LIKE CONCAT('%','s','%')) GROUP BY p.personid ORDER BY p.login ASC LIMIT 30,15", $this->db->getLastQuery());
         $this->assertEmpty($res);
     }
 
     public function testGetUsersCountWithValidSortByPid(): void
     {
         $res = $this->userData->getUsers(true, true, 's', 3, 'LOGIN', 5);
-        $this->assertEquals("SELECT count(distinct p.personid) as tot FROM Person p LEFT OUTER JOIN ProposalHasPerson prhp ON prhp.personid = p.personid LEFT OUTER JOIN LabContact lc ON lc.personid = p.personid WHERE p.login IS NOT NULL AND (prhp.proposalid=5 OR lc.proposalid=5 OR p.personid=null) AND (p.familyname LIKE CONCAT('%','s','%') OR p.givenname LIKE CONCAT('%','s','%') OR p.login LIKE CONCAT('%','s','%'))", $this->db->getLastQuery());
+        $this->assertEquals("SELECT count(distinct p.personid) as tot FROM Person p WHERE p.login IS NOT NULL AND (p.familyname LIKE CONCAT('%','s','%') OR p.givenname LIKE CONCAT('%','s','%') OR p.login LIKE CONCAT('%','s','%'))", $this->db->getLastQuery());
         $this->assertEmpty($res);
     }
 
     public function testGetUsersWithValidSortBypIDPersonId(): void
     {
         $res = $this->userData->getUsers(false, true, 's', 3, 'LOGIN', 5, 6);
-        $this->assertEquals("SELECT p.personid, p.givenname, p.familyname, CONCAT(p.givenname, ' ', p.familyname) as fullname, p.login, p.emailaddress, p.phonenumber, l.name as labname, l.address, l.city, l.postcode, l.country FROM Person p LEFT OUTER JOIN Laboratory l ON l.laboratoryid = p.laboratoryid LEFT OUTER JOIN ProposalHasPerson prhp ON prhp.personid = p.personid LEFT OUTER JOIN LabContact lc ON lc.personid = p.personid WHERE 1=1 AND (prhp.proposalid=5 OR lc.proposalid=5 OR p.personid=null) AND p.personid=6 AND (p.familyname LIKE CONCAT('%','s','%') OR p.givenname LIKE CONCAT('%','s','%') OR p.login LIKE CONCAT('%','s','%')) GROUP BY p.personid ORDER BY p.login ASC LIMIT 30,15", $this->db->getLastQuery());
+        $this->assertEquals("SELECT p.personid, p.givenname, p.familyname, CONCAT(p.givenname, ' ', p.familyname) as fullname, p.login, p.emailaddress, p.phonenumber, l.name as labname, l.address, l.city, l.postcode, l.country FROM Person p LEFT OUTER JOIN Laboratory l ON l.laboratoryid = p.laboratoryid WHERE 1=1 AND p.personid=6 AND (p.familyname LIKE CONCAT('%','s','%') OR p.givenname LIKE CONCAT('%','s','%') OR p.login LIKE CONCAT('%','s','%')) GROUP BY p.personid ORDER BY p.login ASC LIMIT 30,15", $this->db->getLastQuery());
         $this->assertEmpty($res);
     }
 
     public function testGetUsersCountWithValidSortByPidPersonId(): void
     {
         $res = $this->userData->getUsers(true, true, 's', 3, 'LOGIN', 5, 6);
-        $this->assertEquals("SELECT count(distinct p.personid) as tot FROM Person p LEFT OUTER JOIN ProposalHasPerson prhp ON prhp.personid = p.personid LEFT OUTER JOIN LabContact lc ON lc.personid = p.personid WHERE 1=1 AND (prhp.proposalid=5 OR lc.proposalid=5 OR p.personid=null) AND p.personid=6 AND (p.familyname LIKE CONCAT('%','s','%') OR p.givenname LIKE CONCAT('%','s','%') OR p.login LIKE CONCAT('%','s','%'))", $this->db->getLastQuery());
+        $this->assertEquals("SELECT count(distinct p.personid) as tot FROM Person p WHERE 1=1 AND p.personid=6 AND (p.familyname LIKE CONCAT('%','s','%') OR p.givenname LIKE CONCAT('%','s','%') OR p.login LIKE CONCAT('%','s','%'))", $this->db->getLastQuery());
         $this->assertEmpty($res);
     }
 
     public function testGetUsersWithValidSortBypIDPersonIdIsManager(): void
     {
         $res = $this->userData->getUsers(false, true, 's', 3, 'LOGIN', 5, 6, true);
-        $this->assertEquals("SELECT p.personid, p.givenname, p.familyname, CONCAT(p.givenname, ' ', p.familyname) as fullname, p.login, p.emailaddress, p.phonenumber, l.name as labname, l.address, l.city, l.postcode, l.country FROM Person p LEFT OUTER JOIN Laboratory l ON l.laboratoryid = p.laboratoryid LEFT OUTER JOIN ProposalHasPerson prhp ON prhp.personid = p.personid LEFT OUTER JOIN LabContact lc ON lc.personid = p.personid WHERE 1=1 AND (prhp.proposalid=5 OR lc.proposalid=5 OR p.personid=null) AND p.personid=6 AND (p.familyname LIKE CONCAT('%','s','%') OR p.givenname LIKE CONCAT('%','s','%') OR p.login LIKE CONCAT('%','s','%')) GROUP BY p.personid ORDER BY p.login ASC LIMIT 30,15", $this->db->getLastQuery());
+        $this->assertEquals("SELECT p.personid, p.givenname, p.familyname, CONCAT(p.givenname, ' ', p.familyname) as fullname, p.login, p.emailaddress, p.phonenumber, l.name as labname, l.address, l.city, l.postcode, l.country FROM Person p LEFT OUTER JOIN Laboratory l ON l.laboratoryid = p.laboratoryid WHERE 1=1 AND p.personid=6 AND (p.familyname LIKE CONCAT('%','s','%') OR p.givenname LIKE CONCAT('%','s','%') OR p.login LIKE CONCAT('%','s','%')) GROUP BY p.personid ORDER BY p.login ASC LIMIT 30,15", $this->db->getLastQuery());
         $this->assertEmpty($res);
     }
 
     public function testGetUsersCountWithValidSortByPidPersonIdIsManager(): void
     {
         $res = $this->userData->getUsers(true, true, 's', 3, 'LOGIN', 5, 6, true);
-        $this->assertEquals("SELECT count(distinct p.personid) as tot FROM Person p LEFT OUTER JOIN ProposalHasPerson prhp ON prhp.personid = p.personid LEFT OUTER JOIN LabContact lc ON lc.personid = p.personid WHERE 1=1 AND (prhp.proposalid=5 OR lc.proposalid=5 OR p.personid=null) AND p.personid=6 AND (p.familyname LIKE CONCAT('%','s','%') OR p.givenname LIKE CONCAT('%','s','%') OR p.login LIKE CONCAT('%','s','%'))", $this->db->getLastQuery());
+        $this->assertEquals("SELECT count(distinct p.personid) as tot FROM Person p WHERE 1=1 AND p.personid=6 AND (p.familyname LIKE CONCAT('%','s','%') OR p.givenname LIKE CONCAT('%','s','%') OR p.login LIKE CONCAT('%','s','%'))", $this->db->getLastQuery());
         $this->assertEmpty($res);
     }
 
     public function testGetUsersWithValidSortBypIDPersonIdIsManagerCurrentUserId(): void
     {
         $res = $this->userData->getUsers(false, true, 's', 3, 'LOGIN', 5, 6, true, 7);
-        $this->assertEquals("SELECT p.personid, p.givenname, p.familyname, CONCAT(p.givenname, ' ', p.familyname) as fullname, p.login, p.emailaddress, p.phonenumber, l.name as labname, l.address, l.city, l.postcode, l.country FROM Person p LEFT OUTER JOIN Laboratory l ON l.laboratoryid = p.laboratoryid LEFT OUTER JOIN ProposalHasPerson prhp ON prhp.personid = p.personid LEFT OUTER JOIN LabContact lc ON lc.personid = p.personid WHERE 1=1 AND (prhp.proposalid=5 OR lc.proposalid=5 OR p.personid=7) AND p.personid=6 AND (p.familyname LIKE CONCAT('%','s','%') OR p.givenname LIKE CONCAT('%','s','%') OR p.login LIKE CONCAT('%','s','%')) GROUP BY p.personid ORDER BY p.login ASC LIMIT 30,15", $this->db->getLastQuery());
+        $this->assertEquals("SELECT p.personid, p.givenname, p.familyname, CONCAT(p.givenname, ' ', p.familyname) as fullname, p.login, p.emailaddress, p.phonenumber, l.name as labname, l.address, l.city, l.postcode, l.country FROM Person p LEFT OUTER JOIN Laboratory l ON l.laboratoryid = p.laboratoryid WHERE 1=1 AND (prhp.proposalid=5 OR lc.proposalid=5 OR p.personid=7) AND p.personid=6 AND (p.familyname LIKE CONCAT('%','s','%') OR p.givenname LIKE CONCAT('%','s','%') OR p.login LIKE CONCAT('%','s','%')) GROUP BY p.personid ORDER BY p.login ASC LIMIT 30,15", $this->db->getLastQuery());
         $this->assertEmpty($res);
     }
 
     public function testGetUsersCountWithValidSortByPidPersonIdIsManagerCurrentUserId(): void
     {
         $res = $this->userData->getUsers(true, true, 's', 3, 'LOGIN', 5, 6, true, 7);
-        $this->assertEquals("SELECT count(distinct p.personid) as tot FROM Person p LEFT OUTER JOIN ProposalHasPerson prhp ON prhp.personid = p.personid LEFT OUTER JOIN LabContact lc ON lc.personid = p.personid WHERE 1=1 AND (prhp.proposalid=5 OR lc.proposalid=5 OR p.personid=7) AND p.personid=6 AND (p.familyname LIKE CONCAT('%','s','%') OR p.givenname LIKE CONCAT('%','s','%') OR p.login LIKE CONCAT('%','s','%'))", $this->db->getLastQuery());
+        $this->assertEquals("SELECT count(distinct p.personid) as tot FROM Person p WHERE 1=1 AND (prhp.proposalid=5 OR lc.proposalid=5 OR p.personid=7) AND p.personid=6 AND (p.familyname LIKE CONCAT('%','s','%') OR p.givenname LIKE CONCAT('%','s','%') OR p.login LIKE CONCAT('%','s','%'))", $this->db->getLastQuery());
         $this->assertEmpty($res);
     }
 
     public function testGetUsersWithValidSortBypIDPersonIdIsManagerCurrentUserIdGid(): void
     {
         $res = $this->userData->getUsers(false, true, 's', 3, 'LOGIN', 5, 6, true, 7, 8);
-        $this->assertEquals("SELECT p.personid, p.givenname, p.familyname, CONCAT(p.givenname, ' ', p.familyname) as fullname, p.login, p.emailaddress, p.phonenumber, l.name as labname, l.address, l.city, l.postcode, l.country FROM Person p LEFT OUTER JOIN Laboratory l ON l.laboratoryid = p.laboratoryid LEFT OUTER JOIN ProposalHasPerson prhp ON prhp.personid = p.personid LEFT OUTER JOIN LabContact lc ON lc.personid = p.personid INNER JOIN UserGroup_has_Person uhp ON uhp.personid = p.personid WHERE 1=1 AND (prhp.proposalid=5 OR lc.proposalid=5 OR p.personid=7) AND p.personid=6 AND (p.familyname LIKE CONCAT('%','s','%') OR p.givenname LIKE CONCAT('%','s','%') OR p.login LIKE CONCAT('%','s','%')) AND uhp.usergroupid=8 GROUP BY p.personid ORDER BY p.login ASC LIMIT 30,15", $this->db->getLastQuery());
+        $this->assertEquals("SELECT p.personid, p.givenname, p.familyname, CONCAT(p.givenname, ' ', p.familyname) as fullname, p.login, p.emailaddress, p.phonenumber, l.name as labname, l.address, l.city, l.postcode, l.country FROM Person p LEFT OUTER JOIN Laboratory l ON l.laboratoryid = p.laboratoryid INNER JOIN UserGroup_has_Person uhp ON uhp.personid = p.personid WHERE 1=1 AND (prhp.proposalid=5 OR lc.proposalid=5 OR p.personid=7) AND p.personid=6 AND (p.familyname LIKE CONCAT('%','s','%') OR p.givenname LIKE CONCAT('%','s','%') OR p.login LIKE CONCAT('%','s','%')) AND uhp.usergroupid=8 GROUP BY p.personid ORDER BY p.login ASC LIMIT 30,15", $this->db->getLastQuery());
         $this->assertEmpty($res);
     }
 
     public function testGetUsersCountWithValidSortByPidPersonIdIsManagerCurrentUserIdGid(): void
     {
         $res = $this->userData->getUsers(true, true, 's', 3, 'LOGIN', 5, 6, true, 8);
-        $this->assertEquals("SELECT count(distinct p.personid) as tot FROM Person p LEFT OUTER JOIN ProposalHasPerson prhp ON prhp.personid = p.personid LEFT OUTER JOIN LabContact lc ON lc.personid = p.personid WHERE 1=1 AND (prhp.proposalid=5 OR lc.proposalid=5 OR p.personid=8) AND p.personid=6 AND (p.familyname LIKE CONCAT('%','s','%') OR p.givenname LIKE CONCAT('%','s','%') OR p.login LIKE CONCAT('%','s','%'))", $this->db->getLastQuery());
+        $this->assertEquals("SELECT count(distinct p.personid) as tot FROM Person p WHERE 1=1 AND (prhp.proposalid=5 OR lc.proposalid=5 OR p.personid=8) AND p.personid=6 AND (p.familyname LIKE CONCAT('%','s','%') OR p.givenname LIKE CONCAT('%','s','%') OR p.login LIKE CONCAT('%','s','%'))", $this->db->getLastQuery());
         $this->assertEmpty($res);
     }
 
     public function testGetUsersWithValidSortBypIDPersonIdIsManagerCurrentUserIdPjid(): void
     {
         $res = $this->userData->getUsers(false, true, 's', 3, 'LOGIN', 5, 6, true, 7, null, 10);
-        $this->assertEquals("SELECT CONCAT(p.personid, '-', php.projectid) as ppid, p.personid, p.givenname, p.familyname, CONCAT(p.givenname, ' ', p.familyname) as fullname, p.login, p.emailaddress, p.phonenumber, l.name as labname, l.address, l.city, l.postcode, l.country FROM Person p LEFT OUTER JOIN Laboratory l ON l.laboratoryid = p.laboratoryid LEFT OUTER JOIN ProposalHasPerson prhp ON prhp.personid = p.personid LEFT OUTER JOIN LabContact lc ON lc.personid = p.personid INNER JOIN Project_has_Person php ON p.personid = php.personid WHERE 1=1 AND (prhp.proposalid=5 OR lc.proposalid=5 OR p.personid=7) AND p.personid=6 AND (p.familyname LIKE CONCAT('%','s','%') OR p.givenname LIKE CONCAT('%','s','%') OR p.login LIKE CONCAT('%','s','%')) AND php.projectid=10 GROUP BY p.personid ORDER BY p.login ASC LIMIT 30,15", $this->db->getLastQuery());
+        $this->assertEquals("SELECT CONCAT(p.personid, '-', php.projectid) as ppid, p.personid, p.givenname, p.familyname, CONCAT(p.givenname, ' ', p.familyname) as fullname, p.login, p.emailaddress, p.phonenumber, l.name as labname, l.address, l.city, l.postcode, l.country FROM Person p LEFT OUTER JOIN Laboratory l ON l.laboratoryid = p.laboratoryid INNER JOIN Project_has_Person php ON p.personid = php.personid WHERE 1=1 AND (prhp.proposalid=5 OR lc.proposalid=5 OR p.personid=7) AND p.personid=6 AND (p.familyname LIKE CONCAT('%','s','%') OR p.givenname LIKE CONCAT('%','s','%') OR p.login LIKE CONCAT('%','s','%')) AND php.projectid=10 GROUP BY p.personid ORDER BY p.login ASC LIMIT 30,15", $this->db->getLastQuery());
         $this->assertEmpty($res);
     }
 
     public function testGetUsersCountWithValidSortByPidPersonIdIsManagerCurrentUserIdPjId(): void
     {
         $res = $this->userData->getUsers(true, true, 's', 3, 'LOGIN', 5, 6, true, 7, null, 10);
-        $this->assertEquals("SELECT count(distinct p.personid) as tot FROM Person p LEFT OUTER JOIN ProposalHasPerson prhp ON prhp.personid = p.personid LEFT OUTER JOIN LabContact lc ON lc.personid = p.personid INNER JOIN Project_has_Person php ON p.personid = php.personid WHERE 1=1 AND (prhp.proposalid=5 OR lc.proposalid=5 OR p.personid=7) AND p.personid=6 AND (p.familyname LIKE CONCAT('%','s','%') OR p.givenname LIKE CONCAT('%','s','%') OR p.login LIKE CONCAT('%','s','%')) AND php.projectid=10", $this->db->getLastQuery());
+        $this->assertEquals("SELECT count(distinct p.personid) as tot FROM Person p INNER JOIN Project_has_Person php ON p.personid = php.personid WHERE 1=1 AND (prhp.proposalid=5 OR lc.proposalid=5 OR p.personid=7) AND p.personid=6 AND (p.familyname LIKE CONCAT('%','s','%') OR p.givenname LIKE CONCAT('%','s','%') OR p.login LIKE CONCAT('%','s','%')) AND php.projectid=10", $this->db->getLastQuery());
         $this->assertEmpty($res);
     }
 
     public function testGetUsersWithValidSortBypIDPersonIdIsManagerCurrentUserIdVisitname(): void
     {
         $res = $this->userData->getUsers(false, true, 's', 3, 'LOGIN', 5, 6, true, 7, null, null, 'mx12345-1');
-        $this->assertEquals("SELECT count(ses.sessionid) as visits, DATE_FORMAT(max(ses.startdate), '%d-%m-%Y') as last, shp.remote, shp.role, p.personid, p.givenname, p.familyname, CONCAT(p.givenname, ' ', p.familyname) as fullname, p.login, p.emailaddress, p.phonenumber, l.name as labname, l.address, l.city, l.postcode, l.country FROM Person p LEFT OUTER JOIN Laboratory l ON l.laboratoryid = p.laboratoryid LEFT OUTER JOIN ProposalHasPerson prhp ON prhp.personid = p.personid LEFT OUTER JOIN LabContact lc ON lc.personid = p.personid INNER JOIN Session_has_Person shp ON shp.personid = p.personid INNER JOIN BLSession s ON shp.sessionid = s.sessionid INNER JOIN Proposal pr ON pr.proposalid = s.proposalid LEFT OUTER JOIN Session_has_Person shp2 ON p.personid = shp2.personid LEFT OUTER JOIN BLSession ses ON ses.sessionid = shp2.sessionid AND ses.startdate < s.startdate WHERE 1=1 AND (prhp.proposalid=5 OR lc.proposalid=5 OR p.personid=7) AND p.personid=6 AND (p.familyname LIKE CONCAT('%','s','%') OR p.givenname LIKE CONCAT('%','s','%') OR p.login LIKE CONCAT('%','s','%')) AND shp.remote IS NOT NULL AND pr.proposalcode = 'mx' AND pr.proposalnumber = '12345' AND s.visit_number = '1' GROUP BY p.personid, p.givenname, p.familyname, p.login ORDER BY p.login ASC LIMIT 30,15", $this->db->getLastQuery());
+        $this->assertEquals("SELECT count(ses.sessionid) as visits, DATE_FORMAT(max(ses.startdate), '%d-%m-%Y') as last, shp.remote, shp.role, p.personid, p.givenname, p.familyname, CONCAT(p.givenname, ' ', p.familyname) as fullname, p.login, p.emailaddress, p.phonenumber, l.name as labname, l.address, l.city, l.postcode, l.country FROM Person p LEFT OUTER JOIN Laboratory l ON l.laboratoryid = p.laboratoryid INNER JOIN Session_has_Person shp ON shp.personid = p.personid INNER JOIN BLSession s ON shp.sessionid = s.sessionid INNER JOIN Proposal pr ON pr.proposalid = s.proposalid LEFT OUTER JOIN Session_has_Person shp2 ON p.personid = shp2.personid LEFT OUTER JOIN BLSession ses ON ses.sessionid = shp2.sessionid AND ses.startdate < s.startdate WHERE 1=1 AND (prhp.proposalid=5 OR lc.proposalid=5 OR p.personid=7) AND p.personid=6 AND (p.familyname LIKE CONCAT('%','s','%') OR p.givenname LIKE CONCAT('%','s','%') OR p.login LIKE CONCAT('%','s','%')) AND shp.remote IS NOT NULL AND pr.proposalcode = 'mx' AND pr.proposalnumber = '12345' AND s.visit_number = '1' GROUP BY p.personid, p.givenname, p.familyname, p.login ORDER BY p.login ASC LIMIT 30,15", $this->db->getLastQuery());
         $this->assertEmpty($res);
     }
 
     public function testGetUsersCountWithValidSortByPidPersonIdIsManagerCurrentUserIdVisitname(): void
     {
         $res = $this->userData->getUsers(true, true, 's', 3, 'LOGIN', 5, 6, true, 7, null, null, 'mx12345-1');
-        $this->assertEquals("SELECT count(distinct p.personid) as tot FROM Person p LEFT OUTER JOIN ProposalHasPerson prhp ON prhp.personid = p.personid LEFT OUTER JOIN LabContact lc ON lc.personid = p.personid INNER JOIN Session_has_Person shp ON shp.personid = p.personid INNER JOIN BLSession s ON shp.sessionid = s.sessionid INNER JOIN Proposal pr ON pr.proposalid = s.proposalid LEFT OUTER JOIN Session_has_Person shp2 ON p.personid = shp2.personid LEFT OUTER JOIN BLSession ses ON ses.sessionid = shp2.sessionid AND ses.startdate < s.startdate WHERE 1=1 AND (prhp.proposalid=5 OR lc.proposalid=5 OR p.personid=7) AND p.personid=6 AND (p.familyname LIKE CONCAT('%','s','%') OR p.givenname LIKE CONCAT('%','s','%') OR p.login LIKE CONCAT('%','s','%')) AND shp.remote IS NOT NULL AND pr.proposalcode = 'mx' AND pr.proposalnumber = '12345' AND s.visit_number = '1'", $this->db->getLastQuery());
+        $this->assertEquals("SELECT count(distinct p.personid) as tot FROM Person p INNER JOIN Session_has_Person shp ON shp.personid = p.personid INNER JOIN BLSession s ON shp.sessionid = s.sessionid INNER JOIN Proposal pr ON pr.proposalid = s.proposalid LEFT OUTER JOIN Session_has_Person shp2 ON p.personid = shp2.personid LEFT OUTER JOIN BLSession ses ON ses.sessionid = shp2.sessionid AND ses.startdate < s.startdate WHERE 1=1 AND (prhp.proposalid=5 OR lc.proposalid=5 OR p.personid=7) AND p.personid=6 AND (p.familyname LIKE CONCAT('%','s','%') OR p.givenname LIKE CONCAT('%','s','%') OR p.login LIKE CONCAT('%','s','%')) AND shp.remote IS NOT NULL AND pr.proposalcode = 'mx' AND pr.proposalnumber = '12345' AND s.visit_number = '1'", $this->db->getLastQuery());
         $this->assertEmpty($res);
     }
 
     public function testGetUsersWithValidSortBypIDPersonIdIsManagerCurrentUserIdPerPage(): void
     {
         $res = $this->userData->getUsers(false, true, 's', 1, 'LOGIN', 5, 6, true, 7, null, null, null, 3);
-        $this->assertEquals("SELECT p.personid, p.givenname, p.familyname, CONCAT(p.givenname, ' ', p.familyname) as fullname, p.login, p.emailaddress, p.phonenumber, l.name as labname, l.address, l.city, l.postcode, l.country FROM Person p LEFT OUTER JOIN Laboratory l ON l.laboratoryid = p.laboratoryid LEFT OUTER JOIN ProposalHasPerson prhp ON prhp.personid = p.personid LEFT OUTER JOIN LabContact lc ON lc.personid = p.personid WHERE 1=1 AND (prhp.proposalid=5 OR lc.proposalid=5 OR p.personid=7) AND p.personid=6 AND (p.familyname LIKE CONCAT('%','s','%') OR p.givenname LIKE CONCAT('%','s','%') OR p.login LIKE CONCAT('%','s','%')) GROUP BY p.personid ORDER BY p.login ASC LIMIT 0,3", $this->db->getLastQuery());
+        $this->assertEquals("SELECT p.personid, p.givenname, p.familyname, CONCAT(p.givenname, ' ', p.familyname) as fullname, p.login, p.emailaddress, p.phonenumber, l.name as labname, l.address, l.city, l.postcode, l.country FROM Person p LEFT OUTER JOIN Laboratory l ON l.laboratoryid = p.laboratoryid WHERE 1=1 AND (prhp.proposalid=5 OR lc.proposalid=5 OR p.personid=7) AND p.personid=6 AND (p.familyname LIKE CONCAT('%','s','%') OR p.givenname LIKE CONCAT('%','s','%') OR p.login LIKE CONCAT('%','s','%')) GROUP BY p.personid ORDER BY p.login ASC LIMIT 0,3", $this->db->getLastQuery());
         $this->assertEmpty($res);
     }
 
     public function testGetUsersCountWithValidSortByPidPersonIdIsManagerCurrentUserIdPerPage(): void
     {
         $res = $this->userData->getUsers(true, true, 's', 1, 'LOGIN', 5, 6, true, 7, null, null, null, 3);
-        $this->assertEquals("SELECT count(distinct p.personid) as tot FROM Person p LEFT OUTER JOIN ProposalHasPerson prhp ON prhp.personid = p.personid LEFT OUTER JOIN LabContact lc ON lc.personid = p.personid WHERE 1=1 AND (prhp.proposalid=5 OR lc.proposalid=5 OR p.personid=7) AND p.personid=6 AND (p.familyname LIKE CONCAT('%','s','%') OR p.givenname LIKE CONCAT('%','s','%') OR p.login LIKE CONCAT('%','s','%'))", $this->db->getLastQuery());
+        $this->assertEquals("SELECT count(distinct p.personid) as tot FROM Person p WHERE 1=1 AND (prhp.proposalid=5 OR lc.proposalid=5 OR p.personid=7) AND p.personid=6 AND (p.familyname LIKE CONCAT('%','s','%') OR p.givenname LIKE CONCAT('%','s','%') OR p.login LIKE CONCAT('%','s','%'))", $this->db->getLastQuery());
         $this->assertEmpty($res);
     }
 
     public function testGetUsersCountWithValidSortByPidPersonIdIsManagerCurrentUserIdPerPageDir(): void
     {
         $res = $this->userData->getUsers(true, true, 's', 1, 'LOGIN', 5, 6, true, 7, null, null, null, 3, false);
-        $this->assertEquals("SELECT count(distinct p.personid) as tot FROM Person p LEFT OUTER JOIN ProposalHasPerson prhp ON prhp.personid = p.personid LEFT OUTER JOIN LabContact lc ON lc.personid = p.personid WHERE 1=1 AND (prhp.proposalid=5 OR lc.proposalid=5 OR p.personid=7) AND p.personid=6 AND (p.familyname LIKE CONCAT('%','s','%') OR p.givenname LIKE CONCAT('%','s','%') OR p.login LIKE CONCAT('%','s','%'))", $this->db->getLastQuery());
+        $this->assertEquals("SELECT count(distinct p.personid) as tot FROM Person p WHERE 1=1 AND (prhp.proposalid=5 OR lc.proposalid=5 OR p.personid=7) AND p.personid=6 AND (p.familyname LIKE CONCAT('%','s','%') OR p.givenname LIKE CONCAT('%','s','%') OR p.login LIKE CONCAT('%','s','%'))", $this->db->getLastQuery());
         $this->assertEmpty($res);
     }
 
     public function testGetUsersWithValidSortBypIDPersonIdIsManagerCurrentUserIdPerPageDirAndIsOnlyLogin(): void
     {
         $res = $this->userData->getUsers(false, true, 's', 1, 'LOGIN', 5, 6, true, 7, null, null, null, 3, false, false, true);
-        $this->assertEquals("SELECT p.personid, p.givenname, p.familyname, CONCAT(p.givenname, ' ', p.familyname) as fullname, p.login, p.emailaddress, p.phonenumber, l.name as labname, l.address, l.city, l.postcode, l.country FROM Person p LEFT OUTER JOIN Laboratory l ON l.laboratoryid = p.laboratoryid LEFT OUTER JOIN ProposalHasPerson prhp ON prhp.personid = p.personid LEFT OUTER JOIN LabContact lc ON lc.personid = p.personid WHERE p.login IS NOT NULL AND (prhp.proposalid=5 OR lc.proposalid=5 OR p.personid=7) AND p.personid=6 AND (p.familyname LIKE CONCAT('%','s','%') OR p.givenname LIKE CONCAT('%','s','%') OR p.login LIKE CONCAT('%','s','%')) GROUP BY p.personid ORDER BY p.login DESC LIMIT 0,3", $this->db->getLastQuery());
+        $this->assertEquals("SELECT p.personid, p.givenname, p.familyname, CONCAT(p.givenname, ' ', p.familyname) as fullname, p.login, p.emailaddress, p.phonenumber, l.name as labname, l.address, l.city, l.postcode, l.country FROM Person p LEFT OUTER JOIN Laboratory l ON l.laboratoryid = p.laboratoryid WHERE p.login IS NOT NULL AND (prhp.proposalid=5 OR lc.proposalid=5 OR p.personid=7) AND p.personid=6 AND (p.familyname LIKE CONCAT('%','s','%') OR p.givenname LIKE CONCAT('%','s','%') OR p.login LIKE CONCAT('%','s','%')) GROUP BY p.personid ORDER BY p.login DESC LIMIT 0,3", $this->db->getLastQuery());
         $this->assertEmpty($res);
     }
 
