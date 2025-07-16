@@ -183,14 +183,14 @@ final class UserDataSingleInvocationTest extends BaseUserDataTestCase
     public function testGetUsersWithValidSortBypIDPersonId(): void
     {
         $res = $this->userData->getUsers(false, true, 's', 3, 'LOGIN', 5, 6);
-        $this->assertEquals("SELECT p.personid, p.givenname, p.familyname, CONCAT(p.givenname, ' ', p.familyname) as fullname, p.login, p.emailaddress, p.phonenumber, l.name as labname, l.address, l.city, l.postcode, l.country FROM Person p LEFT OUTER JOIN Laboratory l ON l.laboratoryid = p.laboratoryid WHERE 1=1 AND p.personid=6 AND (p.familyname LIKE CONCAT('%','s','%') OR p.givenname LIKE CONCAT('%','s','%') OR p.login LIKE CONCAT('%','s','%')) GROUP BY p.personid ORDER BY p.login ASC LIMIT 30,15", $this->db->getLastQuery());
+        $this->assertEquals("SELECT p.personid, p.givenname, p.familyname, CONCAT(p.givenname, ' ', p.familyname) as fullname, p.login, p.emailaddress, p.phonenumber, l.name as labname, l.address, l.city, l.postcode, l.country FROM Person p LEFT OUTER JOIN Laboratory l ON l.laboratoryid = p.laboratoryid LEFT OUTER JOIN ProposalHasPerson prhp ON prhp.personid = p.personid LEFT OUTER JOIN LabContact lc ON lc.personid = p.personid WHERE 1=1 AND (prhp.proposalid=5 OR lc.proposalid=5 OR p.personid=null) AND p.personid=6 AND (p.familyname LIKE CONCAT('%','s','%') OR p.givenname LIKE CONCAT('%','s','%') OR p.login LIKE CONCAT('%','s','%')) GROUP BY p.personid ORDER BY p.login ASC LIMIT 30,15", $this->db->getLastQuery());
         $this->assertEmpty($res);
     }
 
     public function testGetUsersCountWithValidSortByPidPersonId(): void
     {
         $res = $this->userData->getUsers(true, true, 's', 3, 'LOGIN', 5, 6);
-        $this->assertEquals("SELECT count(distinct p.personid) as tot FROM Person p WHERE 1=1 AND p.personid=6 AND (p.familyname LIKE CONCAT('%','s','%') OR p.givenname LIKE CONCAT('%','s','%') OR p.login LIKE CONCAT('%','s','%'))", $this->db->getLastQuery());
+        $this->assertEquals("SELECT count(distinct p.personid) as tot FROM Person p LEFT OUTER JOIN ProposalHasPerson prhp ON prhp.personid = p.personid LEFT OUTER JOIN LabContact lc ON lc.personid = p.personid WHERE 1=1 AND (prhp.proposalid=5 OR lc.proposalid=5 OR p.personid=null) AND p.personid=6 AND (p.familyname LIKE CONCAT('%','s','%') OR p.givenname LIKE CONCAT('%','s','%') OR p.login LIKE CONCAT('%','s','%'))", $this->db->getLastQuery());
         $this->assertEmpty($res);
     }
 
