@@ -64,7 +64,7 @@ class UserData
     }
 
 
-    function getUsers($getCount, $isStaffMember, $stringMatch, $page, $sortBy = null, $pid=null,  $proposalid = null, $personId = null, $isManager = false, $currentUserId = null, $gid = null, $pjid = null, $visitName = null, $perPage = 15, $isAscending = true, $isAll = false, $onlyLogins = false)
+    function getUsers($getCount, $isStaffMember, $stringMatch, $page, $sortBy = null, $proposalid = null, $personId = null, $isManager = false, $currentUserId = null, $gid = null, $pjid = null, $visitName = null, $perPage = 15, $isAscending = true, $isAll = false, $onlyLogins = false)
     {
         $args = array();
 
@@ -99,8 +99,7 @@ class UserData
         // This blocks means that non-staff can only see users on their proposal, except when they looking at a visit 
         //  (i.e. the proposal that was checking is added to the where clause)
         if ((($personId && !$isManager) // if you're not a manager: you're looking for a person
-            || (!$isStaffMember && !$visitName)) // if you are not a staff member and not looking at a specific visit
-            || $pid) // if you are looking for user based on a proposal, but this 
+            || (!$isStaffMember && !$visitName))) // if you are not a staff member and not looking at a specific visit
         {
             $where .= ' AND (prhp.proposalid=:' . (sizeof($args) + 1) . ' OR lc.proposalid=:' . (sizeof($args) + 2) . ' OR p.personid=:' . (sizeof($args) + 3) . ')';
             array_push($args, $proposalid, $proposalid, $currentUserId);
