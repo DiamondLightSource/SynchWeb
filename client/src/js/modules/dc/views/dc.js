@@ -68,8 +68,10 @@ define(['marionette',
       const showStrategies = isCharacterization || hasStrategies
       const showProcessing = isCharacterization || (!hasStrategies && hasProcessing)
       if (!showStrategies) this.ui.strat.hide()
-      if (!showProcessing) this.ui.ap.hide()
-      if (!showProcessing) this.ui.dp.hide()
+      if (!showProcessing) {
+          this.ui.ap.hide();
+          this.ui.dp.hide();
+      }
       this.apstatus = new (this.getOption('apStatusItem'))({ ID: this.model.get('ID'), showStrategies: showStrategies, showProcessing: showProcessing, statuses: this.getOption('apstatuses'), el: this.$el })
       this.listenTo(this.apstatus, 'status', this.updateAP, this)
       this.apmessagestatus = new (this.getOption('apMessageStatusItem'))({ ID: this.model.get('ID'), statuses: this.getOption('apmessagestatuses'), el: this.$el })
