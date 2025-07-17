@@ -14,7 +14,7 @@ define(['marionette',
 
         render: function() {
             var filePath = this.model.get('FILEPATH')
-            var displayedPath = filePath.split('/').slice(0,4).join('/')+'/...'
+            var displayedPath = filePath.split('/').length > 4 ? filePath.split('/').slice(0, 4).join('/') + '/...' : filePath
 
             this.$el.html(`
                 <span title="${filePath}">${displayedPath}</span>
