@@ -6,7 +6,7 @@
 
 <table class="reflow cell">
     <thead>
-        <tr>
+        <tr class="stratrow">
             <th>Space Group</th>
             <th>A</th>
             <th>B</th>
@@ -17,7 +17,7 @@
         </tr>
     </thead>
     <tbody>
-        <tr>
+        <tr class="stratrow">
             <td><%-CELL.SG%></td>
             <td><%-CELL.A%></td>
             <td><%-CELL.B%></td>
@@ -32,7 +32,7 @@
 
 <table class="reflow strat">
     <thead>
-        <tr>
+        <tr class="stratrow">
             <th>Strategy</th>
             <th>Description</th>
             <th>Axis</th>
@@ -48,7 +48,7 @@
     </thead>
     
     <% _.each(STRATS, function(r, i) { %>
-    <tr draggable="true" sid="<%-i%>">
+    <tr class="stratrow" draggable="true" sid="<%-i%>">
         <td><%-r.COM%></td>
         <td><%-r.COMMENTS%></td>
         <td><%-r.ROTATIONAXIS%></td>
