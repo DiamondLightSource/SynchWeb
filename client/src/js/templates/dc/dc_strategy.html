@@ -1,12 +1,12 @@
 
-<h1><%-TYPE%></h1>
+<h2><%-TYPE%></h2>
 <p class="r">
     <a class="view button" title="Lookup Unit Cell" href="/cell/a/<%-CELL.A%>/b/<%-CELL.B%>/c/<%-CELL.C%>/al/<%-CELL.AL%>/be/<%-CELL.BE%>/ga/<%-CELL.GA%>"><i class="fa fa-search"></i> Lookup Cell</a>
 </p>
 
 <table class="reflow cell">
     <thead>
-        <tr>
+        <tr class="stratrow">
             <th>Space Group</th>
             <th>A</th>
             <th>B</th>
@@ -17,7 +17,7 @@
         </tr>
     </thead>
     <tbody>
-        <tr>
+        <tr class="stratrow">
             <td><%-CELL.SG%></td>
             <td><%-CELL.A%></td>
             <td><%-CELL.B%></td>
@@ -32,7 +32,7 @@
 
 <table class="reflow strat">
     <thead>
-        <tr>
+        <tr class="stratrow">
             <th>Strategy</th>
             <th>Description</th>
             <th>Axis</th>
@@ -48,7 +48,7 @@
     </thead>
     
     <% _.each(STRATS, function(r, i) { %>
-    <tr draggable="true" sid="<%-i%>">
+    <tr class="stratrow" draggable="true" sid="<%-i%>">
         <td><%-r.COM%></td>
         <td><%-r.COMMENTS%></td>
         <td><%-r.ROTATIONAXIS%></td>

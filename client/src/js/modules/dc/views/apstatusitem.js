@@ -48,14 +48,16 @@ define(['marionette', 'jquery'], function(Marionette, $) {
 
             if (this.getOption('XRC')) {
                 this.ui.xrc.html('Xray Centring: ' + val[res['XrayCentring']])
+            }
 
-            } else if (this.getOption('SCREEN') != 0) {
+            if (this.getOption('showStrategies')) {
                 this.ui.strat.empty()
                 _.each(res['screening'], function(sc, n) {
                     this.ui.strat.append(n+': '+val[sc]+' ')
                 }, this)
-               
-            } else {
+            }
+
+            if (this.getOption('showProcessing')) {
                 _.each({ap: 'autoproc',dp: 'downstream'}, function(ty, id) {
                     this.ui[id].empty()
                     var allResults = []

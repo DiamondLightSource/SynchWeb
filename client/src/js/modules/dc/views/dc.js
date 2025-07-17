@@ -62,7 +62,17 @@ define(['marionette',
       // edit.create('COMMENTS', 'text')
         
       this.imagestatus = new (this.getOption('imageStatusItem'))({ ID: this.model.get('ID'), TYPE: this.model.get('DCT'), statuses: this.getOption('imagestatuses'), el: this.$el })
-      this.apstatus = new (this.getOption('apStatusItem'))({ ID: this.model.get('ID'), SCREEN: (this.model.get('OVERLAP') != 0 && this.model.get('AXISRANGE')), statuses: this.getOption('apstatuses'), el: this.$el })
+      const isCharacterization = this.model.get('DCT') === "Characterization"
+      const hasStrategies = this.model.get('AXISRANGE') > 0 && this.model.get('OVERLAP') != 0
+      const hasProcessing = this.model.get('AXISRANGE') > 0 || this.model.get('DCT') === "Serial Fixed" || this.model.get('DCT') === "Serial Jet"
+      const showStrategies = isCharacterization || hasStrategies
+      const showProcessing = isCharacterization || (!hasStrategies && hasProcessing)
+      if (!showStrategies) this.ui.strat.hide()
+      if (!showProcessing) {
+          this.ui.ap.hide();
+          this.ui.dp.hide();
+      }
+      this.apstatus = new (this.getOption('apStatusItem'))({ ID: this.model.get('ID'), showStrategies: showStrategies, showProcessing: showProcessing, statuses: this.getOption('apstatuses'), el: this.$el })
       this.listenTo(this.apstatus, 'status', this.updateAP, this)
       this.apmessagestatus = new (this.getOption('apMessageStatusItem'))({ ID: this.model.get('ID'), statuses: this.getOption('apmessagestatuses'), el: this.$el })
 
@@ -102,6 +112,9 @@ define(['marionette',
       
     ui: {
       rp: 'a.reprocess',
+      strat: 'h1.strat',
+      ap: 'h1.ap',
+      dp: 'h1.dp',
     },
 
     showMessages: function(e) {
