@@ -4,7 +4,7 @@
 
 <table class="reflow cell">
     <thead>
-        <tr>
+        <tr class="stratrow">
             <th>Axes</th>
             <th>Kappa</th>
             <th>Chi</th>
@@ -13,7 +13,7 @@
     </thead>
     <tbody>
         <% _.each(STRATS, function(r, i) { %>
-        <tr>
+        <tr class="stratrow">
             <td><%-r.COMMENTS %></td>
             <td><%-r.KAPPA %></td>
             <td><%-r.CHI %></td>
