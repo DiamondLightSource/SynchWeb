@@ -13,9 +13,7 @@ export default {
   name: 'DialogBox',
   created: function() {
     let application = MarionetteApplication.getInstance()
-    application.addRegions({
-      dialog: DialogRegion
-    })
+    application.dialog = new DialogRegion({ el: '#dialog' })
   },
 }
 </script>
