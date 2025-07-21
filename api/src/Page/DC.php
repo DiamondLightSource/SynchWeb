@@ -37,6 +37,7 @@ class DC extends Page
         'PERSONID' => '\d+',
         'AUTOPROCPROGRAMMESSAGEID' => '\d+',
         'PROCESSINGJOBID' => '\d+',
+        'expandgroups' => '\d',
         'debug' => '\d',
         'sgid' => '\d+'
     );
@@ -381,7 +382,7 @@ class DC extends Page
         }
 
         # Set Count field
-        if ($this->has_arg('dcg') || $this->has_arg('PROCESSINGJOBID') || $this->has_arg('sgid')) {
+        if ($this->has_arg('dcg') || $this->has_arg('PROCESSINGJOBID') || $this->has_arg('sgid') || $this->has_arg('expandgroups')) {
             $count_field = 'dc.datacollectionid';
         } else {
             $count_field = 'distinct dc.datacollectiongroupid';
@@ -474,6 +475,7 @@ class DC extends Page
                     d.numberofpixelsx as detectornumberofpixelsx,
                     d.numberofpixelsy as detectornumberofpixelsy,
                     ses.archived,
+                    ses.purgedProcessedData,
                     IFNULL(dc.rotationaxis, 'Omega') as rotationaxis,
                     dc.detector2theta";
             $groupby = 'GROUP BY smp.name,
@@ -562,7 +564,7 @@ class DC extends Page
                     min(dc.axisrange) as axisrange,
                     min(dc.wavelength) as wavelength,
                     ".self::EVTOA."/min(dc.wavelength) as energy,
-                    min(dc.comments) as comments,
+                    ifnull(dcg.comments, (select mindc.comments from datacollection mindc where mindc.datacollectionid=min(dc.datacollectionid))) as comments,
                     1 as epk,
                     1 as ein,
                     1 as wpk,
@@ -611,9 +613,13 @@ class DC extends Page
                     max(d.numberofpixelsx) as detectornumberofpixelsx,
                     max(d.numberofpixelsy) as detectornumberofpixelsy,
                     max(ses.archived) as archived,
+                    max(ses.purgedProcessedData) as purgedProcessedData,
                     IFNULL(max(dc.rotationaxis), 'Omega') as rotationaxis,
                     dc.detector2theta";
             $groupby = "GROUP BY dc.datacollectiongroupid";
+            if ($this->has_arg('expandgroups')) {
+                $groupby = "GROUP BY dc.datacollectionid";
+            }
         }
 
         // We don't want to remove duplicates, since if two counts are equal, one might go uncounted
@@ -771,6 +777,7 @@ class DC extends Page
                     '',
                     '',
                     ses.archived,
+                    ses.purgedProcessedData,
                     '',
                     ''
                 FROM energyscan es
@@ -867,6 +874,7 @@ class DC extends Page
                 '',
                 '',
                 ses.archived,
+                ses.purgedProcessedData,
                 '',
                 ''
             FROM xfefluorescencespectrum xrf
@@ -963,6 +971,7 @@ class DC extends Page
                 '',
                 '',
                 ses.archived,
+                ses.purgedProcessedData,
                 '',
                 ''
             FROM robotaction r
@@ -1461,12 +1470,14 @@ class DC extends Page
     # Grid Scan Info
     function _grid_info()
     {
-        $info = $this->db->pq("SELECT dc.datacollectiongroupid, dc.datacollectionid, dc.axisstart, p.posx as x, p.posy as y, p.posz as z, g.dx_mm, g.dy_mm, g.steps_x, g.steps_y, IFNULL(g.micronsperpixelx,g.pixelspermicronx) as micronsperpixelx, IFNULL(g.micronsperpixely,g.pixelspermicrony) as micronsperpixely, g.snapshot_offsetxpixel, g.snapshot_offsetypixel, g.orientation, g.snaked, DATE_FORMAT(dc.starttime, '%Y%m%d') as startdate, xrc.status as xrcstatus, xrcr.xraycentringresultid
+        $info = $this->db->pq("SELECT dc.datacollectiongroupid, dc.datacollectionid, dc.axisstart, p.posx as x, p.posy as y, p.posz as z, g.dx_mm, g.dy_mm, g.steps_x, g.steps_y, g2.steps_y as steps_z, g.micronsperpixelx, g.micronsperpixely, g.snapshot_offsetxpixel, g.snapshot_offsetypixel, g.orientation, g.snaked, DATE_FORMAT(dc.starttime, '%Y%m%d') as startdate, xrc.status as xrcstatus, xrcr.xraycentringresultid
                 FROM gridinfo g
                 INNER JOIN datacollection dc on (dc.datacollectionid = g.datacollectionid) or (dc.datacollectiongroupid = g.datacollectiongroupid)
                 LEFT OUTER JOIN position p ON dc.positionid = p.positionid
                 LEFT OUTER JOIN xraycentring xrc ON dc.datacollectiongroupid = xrc.datacollectiongroupid
                 LEFT OUTER JOIN xraycentringresult xrcr ON xrc.xraycentringid = xrcr.xraycentringid
+                LEFT OUTER JOIN datacollection d2 ON (dc.datacollectiongroupid = d2.datacollectiongroupid AND dc.datacollectionid != d2.datacollectionid)
+                LEFT OUTER JOIN gridinfo g2 ON (d2.datacollectionid = g2.datacollectionid)
                 WHERE dc.datacollectionid = :1 ", array($this->arg('id')));
 
         if (!sizeof($info))
@@ -1500,20 +1511,26 @@ class DC extends Page
     {
         $info = $this->db->pq("SELECT dc.datacollectiongroupid, dc.datacollectionid,
                 xrc.xraycentringtype as method, xrcr.xraycentringresultid,
-                xrcr.centreofmassx as x, xrcr.centreofmassy as y, xrcr.centreofmassz as z
+                xrcr.centreofmassx as x, xrcr.centreofmassy as y, xrcr.centreofmassz as z,
+                xrcr.totalcount,
+                xrcr.boundingboxmaxx-xrcr.boundingboxminx as sizex,
+                xrcr.boundingboxmaxy-xrcr.boundingboxminy as sizey,
+                xrcr.boundingboxmaxz-xrcr.boundingboxminz as sizez,
+                s.blsampleid, s.name
                 FROM datacollection dc
                 INNER JOIN xraycentring xrc ON xrc.datacollectiongroupid = dc.datacollectiongroupid
                 INNER JOIN xraycentringresult xrcr ON xrcr.xraycentringid = xrc.xraycentringid
-                WHERE dc.datacollectionid = :1 ", array($this->arg('id')));
+                LEFT JOIN blsample s ON xrcr.blsampleid = s.blsampleid
+                WHERE dc.datacollectionid = :1
+                ORDER BY xrcr.totalcount desc", array($this->arg('id')));
 
         if (!sizeof($info))
             $this->_output(array('total' => 0, 'data' => array()));
         else {
             foreach ($info as &$i) {
                 foreach ($i as $k => &$v) {
-                    if ($k == 'METHOD')
-                        continue;
-                    $v = round(floatval($v), 2);
+                    if ($k == 'X' || $k == 'Y' || $k == 'Z')
+                        $v = number_format($v, 1);
                 }
             }
             $this->_output(array('total' => sizeof($info), 'data' => $info));

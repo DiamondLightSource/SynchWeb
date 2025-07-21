@@ -51,6 +51,8 @@ final class AssignControllerTest extends TestCase
         );
         global $bl_pv_env;
         $bl_pv_env = 'EPICS_CA_ADDR_LIST_TEST=666.45.678.9';
+        global $only_staff_can_assign;
+        $only_staff_can_assign = array();
     }
 
     protected function tearDown(): void

@@ -1082,6 +1082,11 @@ li:last-child .visit_users {
         width: 40.5%;
         height: 300px;
 
+        &.map {
+            width: 30%;
+            height: auto;
+        }
+
         &.image-third {
             width: 32.4%;
 

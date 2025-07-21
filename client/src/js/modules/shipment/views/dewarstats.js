@@ -32,12 +32,10 @@ define(['marionette',
         ui: {
             map: '.map',
             years: '.years',
-            data: 'input[name=data]',
             hist: 'input[name=hist]',
         },
 
         events: {
-            'change @ui.data': 'refresh',
             'change @ui.hist': 'refresh',
         },
 
@@ -45,11 +43,6 @@ define(['marionette',
         refresh: function() {
             this.run.fetch()
             this.countries.fetch()
-        },
-
-
-        getData: function() {
-            return this.ui.data.is(':checked') ? 1 : ''
         },
 
 
@@ -88,9 +81,6 @@ define(['marionette',
             this.listenTo(this.countries, 'sync', this.removeSpinnerCountry)
             this.listenTo(this.countries, 'error', this.removeSpinnerCountry)
 
-            this.run.queryParams.data = this.getData.bind(this)
-            this.countries.queryParams.data = this.getData.bind(this)
-
             this.run.queryParams.history = this.getHist.bind(this)
             this.countries.queryParams.history = this.getHist.bind(this)
 
@@ -108,7 +98,6 @@ define(['marionette',
                 { name: 'CTA', label: 'Facility Shipping', cell: 'integer', editable: false },
                 { name: 'DEWARS', label: 'Dewars', cell: 'integer', editable: false },
                 { name: 'CONTAINERS', label: 'Containers', cell: 'integer', editable: false },
-                // { name: 'DCS', label: '# DCs', cell: 'string', editable: false },
             ]
         
             if (app.mobile()) {
@@ -120,7 +109,6 @@ define(['marionette',
             this.getRegion('rruns').show(new TableView({ 
                 collection: this.run, 
                 columns: columns, 
-                filter: 's', 
                 tableClass: 'runs', 
                 loading: true,
                 backgrid: { emptyText: 'No dewar stats found' } 
@@ -130,7 +118,6 @@ define(['marionette',
             this.getRegion('rcts').show(new TableView({ 
                 collection: this.countries, 
                 columns: columns2, 
-                filter: 's', 
                 tableClass: 'countries',
                 loading: true, 
                 backgrid: { emptyText: 'No dewar stats found' } 

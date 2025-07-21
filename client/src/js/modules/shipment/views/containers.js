@@ -47,10 +47,31 @@ define(['marionette',
         argument: 'CONTAINERID',
         cookie: true,
     })
-    
+
+    var CustomHeaderCell = Backgrid.HeaderCell.extend({
+        render: function() {
+            // Allow HTML in the column header
+            this.$el.html(this.column.get("label"));
+            return this;
+        }
+    });
+
+    var highlightQueued = function(data, auto) {
+        const queued = auto ? data.QUEUEDAUTOSUBSAMPLES : data.QUEUEDMANUALSUBSAMPLES;
+        const completed = auto ? data.COMPLETEDAUTOSUBSAMPLES : data.COMPLETEDMANUALSUBSAMPLES;
+        const available = auto ? data.AVAILABLEAUTOSUBSAMPLES : data.AVAILABLEMANUALSUBSAMPLES;
+        return (queued > 0 ? '<span class="minor">'+queued+'</span>' : queued)+' / '+completed+' / '+available;
+    }
+
+    var queuedCompleted = function(data) {
+        if (data.LASTQUEUECOMPLETED) { return data.LASTQUEUECOMPLETED }
+        if (data.CONTAINERQUEUEID) { return 'Queued' }
+        return null
+    }
+
     return Marionette.View.extend({
         className: 'content',
-        template: _.template('<div><h1>Containers</h1><div class="filter type"></div><div class="filter"><ul><li><label><input type="checkbox" name="currentuser" /> My Containers</label></li></ul></div><div class="wrapper"></div></div>'),
+        template: _.template('<div><h1>Containers</h1><div class="filter"><span class="type"></span><span><ul><li><label><input type="checkbox" name="currentuser" /> My Containers</label></li></ul></span></div><div class="wrapper"></div></div>'),
         regions: { wrap: '.wrapper', type: '.type' },
         
         ui: {
@@ -61,7 +82,7 @@ define(['marionette',
             'change @ui.cur': 'refresh'
         },
 
-        hiddenColumns: [1,2,5,6,9,10,11],
+        hiddenColumns: [1,2,5,6,7,10,11,12],
 
         columns: [
             { name: 'NAME', label: 'Name', cell: 'string', editable: false },
@@ -69,10 +90,11 @@ define(['marionette',
             { name: 'BARCODE', label: 'Barcode', cell: 'string', editable: false },
             { name: 'SHIPMENT', label: 'Shipment', cell: 'string', editable: false },
             { name: 'SAMPLES', label: '# Samples', cell: 'string', editable: false },
-            { name: 'SUBSAMPLES', label: '# Subsamples', cell: 'string', editable: false },
+            { name: 'MANUAL', label: '<button>Manual Subsamples<br>Queued / Complete / Avail</button>', cell: table.TemplateCell, template: d=>highlightQueued(d,false), editable: false, headerCell: CustomHeaderCell },
+            { name: 'AUTO', label: '<button>Auto Subsamples<br>Queued / Complete / Avail</button>', cell: table.TemplateCell, template: d=>highlightQueued(d,true), editable: false, headerCell: CustomHeaderCell },
             { name: 'CONTAINERTYPE', label: 'Type', cell: 'string', editable: false },
             { name: 'CONTAINERSTATUS', label: 'Status', cell: 'string', editable: false },
-            { name: 'LASTQUEUECOMPLETED', label: 'Completed', cell: 'string', editable: false },
+            { name: 'LASTQUEUECOMPLETED', label: 'Completed', cell: table.TemplateCell, template: queuedCompleted, editable: false },
             { name: 'INSPECTIONS', label: 'Inspections', cell: 'string', editable: false },
             { name: 'LASTINSPECTIONDAYS', label: 'Last (d)', cell: 'string', editable: false },
             { name: 'AGE', label: 'Age (d)', cell: 'string', editable: false },
@@ -86,7 +108,7 @@ define(['marionette',
             { id: 'queued', name: 'Queued'},
             { id: 'completed', name: 'Completed'},
             { id: 'processing', name: 'Processing'},
-            { id: 'subsamples', name: 'Has Subsamples'},
+            { id: 'subsamples', name: 'Has Manual Subsamples'},
         ],
 
         showImaging: true,
@@ -100,7 +122,9 @@ define(['marionette',
         },
 
         initialize: function(options) {
-            var filters = this.getOption('filters').slice(0)
+            this.imager = options.imager
+            // dont show Plates/Pucks/In Imager filters if in imager mode
+            var filters = this.getOption('filters').slice(this.imager ? 3 : 0)
             var columns = this.getOption('columns').slice(0)
             if (app.user_can('disp_cont') && !app.mobile() && this.getOption('showImaging')) {
                 columns.push({ name: 'VISIT', label: 'Visit', cell: 'string', editable: false })
@@ -109,12 +133,6 @@ define(['marionette',
                 columns.push({ label: '', cell: table.TemplateCell, editable: false, test: 'REQUESTEDRETURN', template: '<i class="fa fa-paper-plane-o" title="User requested return"></i>' })
                 columns.push({ label: '', cell: DisposeCell, editable: false })
                 filters.push({ id: 'todispose', name: 'To Dispose'})
-            }
-
-            columns[2].renderable = false
-            if (options.barcode) {
-                columns[1].renderable = false
-                columns[2].renderable = true
             }
 
             if (app.mobile()) {
@@ -141,12 +159,16 @@ define(['marionette',
         },
 
         updateCols: function(selected) {
-            var isPuck = (selected == null || selected == 'puck')
+            var isPuck = !this.imager && (selected === null || selected === 'puck')
 
             var dew = this.table.grid.columns.findWhere({ name: 'DEWAR' })
             var bc = this.table.grid.columns.findWhere({ name: 'BARCODE' })
+            var manual = this.table.grid.columns.findWhere({ name: 'MANUAL' })
+            var auto = this.table.grid.columns.findWhere({ name: 'AUTO' })
             dew.set('renderable', isPuck)
             bc.set('renderable', !isPuck)
+            if (manual) manual.set('renderable', !isPuck)
+            if (auto) auto.set('renderable', !isPuck)
         },
                                           
         onRender: function() {

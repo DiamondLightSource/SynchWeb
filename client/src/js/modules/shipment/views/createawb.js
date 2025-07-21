@@ -112,6 +112,8 @@ define(['backbone',
             terms: '.terms',
             termsq: '.terms-quote',
             country: '.COUNTRY',
+            green: '.green',
+            red: '.red',
 
             createAWBForm: '.createAWBForm',
         },
@@ -350,6 +352,11 @@ define(['backbone',
             this.getRegion('qt').show(this.qtable)
 
             $.when.apply($, this.ready).done(this.doOnRender.bind(this))
+
+            if (this.shipment.get('SAFETYLEVEL') == 'Red') {
+                this.ui.green.hide()
+                this.ui.red.show()
+            }
         },
 
         doOnRender: function() {

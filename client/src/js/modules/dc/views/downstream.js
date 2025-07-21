@@ -8,11 +8,14 @@ define(['backbone', 'marionette',
     'modules/dc/views/mrbump',
     'modules/dc/views/bigep',
     'modules/dc/views/shelxt',
+    'modules/dc/views/ligandfit',
     'templates/dc/downstreamerror.html'
 
     ], function(Backbone, Marionette, TabView, DownStreams, DownstreamWrapper, 
         TableView, 
-        FastEP, DIMPLE, MrBUMP, BigEP, Shelxt, downstreamerror) {
+        FastEP, DIMPLE, MrBUMP, BigEP, Shelxt, LigandFit, downstreamerror) {
+
+    var dcPurgedProcessedData = "0"; // dataCollection.PURGEDPROCESSEDDATA via options from DC.js
 
     var DownstreamsCollection = Backbone.Collection.extend()
 
@@ -63,11 +66,13 @@ define(['backbone', 'marionette',
                 'Crank2': BigEP,
                 'AutoSHARP': BigEP,
                 'Shelxt': Shelxt,
+                'LigandFit': LigandFit,
             }
             
             if (model.get('PROCESS').PROCESSINGSTATUS != 1) {
                 return DownstreamWrapper.extend({
                     links: false,
+                    dcPurgedProcessedData,
                     childView: model.get('PROCESS').PROCESSINGSTATUS == null
                         ?  DownStreamRunning : DownStreamError
                 })
@@ -77,6 +82,7 @@ define(['backbone', 'marionette',
             for (var key in types) {
                 if (tabType.indexOf(key) > -1) {
                     return DownstreamWrapper.extend({
+                        dcPurgedProcessedData,
                         childView: types[key],
                     })
                 }
@@ -84,6 +90,7 @@ define(['backbone', 'marionette',
 
             return DownstreamWrapper.extend({
                 childView: DefaultDP,
+                dcPurgedProcessedData,
                 mapLink: false
             })
         },
@@ -120,6 +127,7 @@ define(['backbone', 'marionette',
                 holderWidth: this.getOption('holderWidth'),
                 downstreams: this.getOption('downstreams'),
                 DCID: this.getOption('id'),
+                mapButton: this.getOption('mapButton'),
             }
         },
 
@@ -146,6 +154,7 @@ define(['backbone', 'marionette',
         },
         
         initialize: function(options) {
+            dcPurgedProcessedData = options.dcPurgedProcessedData;
             this.collection = new DownStreams(null, { id: options.id })
             this.collection.fetch().done(this.render.bind(this))
         },

@@ -12,7 +12,6 @@ define(['backbone',
         'collections/containers',
         'modules/shipment/views/container',
         'modules/shipment/views/containerplate',
-        // 'modules/shipment/views/containeradd',
         'modules/shipment/views/containers',
         'modules/imaging/views/queuecontainer',
 
@@ -25,7 +24,6 @@ define(['backbone',
         'modules/shipment/collections/dewarregistry',
         'modules/shipment/views/dewarreg',
         'modules/shipment/views/regdewar',
-        'modules/shipment/views/regdewaradd',
         'modules/shipment/views/dewarregistry',
 
         'modules/shipment/views/dispatch',
@@ -48,9 +46,9 @@ define(['backbone',
     GetView,
     Dewar, Shipment, Shipments,
     ShipmentsView, ShipmentView, ShipmentAddView,
-    Container, Containers, ContainerView, ContainerPlateView, /*ContainerAddView,*/ ContainersView, QueueContainerView,
+    Container, Containers, ContainerView, ContainerPlateView, ContainersView, QueueContainerView,
     ContainerRegistry, ContainersRegistry, ContainerRegistryView, RegisteredContainer,
-    RegisteredDewar, DewarRegistry, DewarRegView, RegDewarView, RegDewarAddView, DewarRegistryView,
+    RegisteredDewar, DewarRegistry, DewarRegView, RegDewarView, DewarRegistryView,
     DispatchView, TransferView, Dewars, DewarOverview, ManifestView, DewarStats, CreateAWBView, RebookPickupView,
     PlanView, MigrateView,
     ProposalLookup) {
@@ -359,12 +357,7 @@ define(['backbone',
         })
     },
 
-    add_dewar: function() {
-      app.log('dew add view')
-      app.bc.reset([bc, { title: 'Registered Dewars', url: '/dewars' }, { title: 'Add New Dewar' }])
-      app.content.show(new RegDewarAddView())
-    },
-      
+
     dispatch_dewar: function(did) {
         var lookup = new ProposalLookup({ field: 'DEWARID', value: did })
         lookup.find({

@@ -58,6 +58,7 @@ class Proposal extends Page
         'BEAMLINESETUPID' => '\d+',
         'BEAMCALENDARID' => '\d+',
         'VISITNUMBER' => '\d+',
+        'RISKRATING' => '\w+',
 
         // visit has person
         'SHPKEY' => '\d+\-\d+',
@@ -328,10 +329,11 @@ class Proposal extends Page
 
         if ($this->has_arg('all')) {
             $args = array();
-            $where = 'WHERE 1=1';
             // 'All' is used for the main summary view (Next, Last, Commissioning)
             // Ignore session zero for this summary view - they should be included if a proposal is selected
-            $where .= " AND s.visit_number > 0";
+            $where = "WHERE s.visit_number > 0";
+            $select = '';
+            $join = '';
         } else {
             if (!$this->has_arg('prop'))
                 $this->_error('No proposal specified');
@@ -343,6 +345,9 @@ class Proposal extends Page
 
             $args = array($p);
             $where = 'WHERE s.proposalid = :1';
+            $select = 'COUNT(distinct dc.datacollectionid) AS dccount,';
+            $join = 'LEFT OUTER JOIN datacollectiongroup dcg ON dcg.sessionid = s.sessionid
+                     LEFT OUTER JOIN datacollection dc ON dcg.datacollectiongroupid = dc.datacollectiongroupid';
         }
 
         if ($this->has_arg('notnull')) {
@@ -384,7 +389,11 @@ class Proposal extends Page
         }
 
         if ($this->has_arg('ty')) {
-            $beamlines = $this->_get_beamlines_from_type($this->arg('ty'));
+            if ($this->arg('ty') == 'calendar') {
+                $beamlines = $this->_get_beamlines_from_type($this->ty);
+            } else {
+                $beamlines = $this->_get_beamlines_from_type($this->arg('ty'));
+            }
 
             if (!empty($beamlines)) {
                 $bls = implode("', '", $beamlines);
@@ -393,12 +402,23 @@ class Proposal extends Page
         }
 
         if ($this->has_arg('s')) {
-            $where .= " AND s.visit_number LIKE :" . (sizeof($args) + 1);
+            $where .= " AND (s.visit_number LIKE :" . (sizeof($args) + 1) . " OR s.beamlinename LIKE :" . (sizeof($args) + 2) . ")";
+            array_push($args, $this->arg('s'));
             array_push($args, $this->arg('s'));
         }
 
         if ($this->has_arg('scheduled')) {
             $where .= " AND s.scheduled=1";
+        }
+
+        if ($this->has_arg('RISKRATING')) {
+            if ($this->arg('RISKRATING') == 'high') {
+                $where .= " AND s.riskrating = 'high'";
+            } else if ($this->arg('RISKRATING') == 'medium') {
+                $where .= " AND s.riskrating in ('high', 'medium')";
+            } else if ($this->arg('RISKRATING') == 'low') {
+                $where .= " AND s.riskrating in ('high', 'medium', 'low')";
+            }
         }
 
         if ($visit) {
@@ -435,7 +455,9 @@ class Proposal extends Page
         $order = 's.startdate DESC';
 
         if ($this->has_arg('sort_by')) {
-            $cols = array('ST' => 's.startdate', 'EN' => 's.enddate', 'VIS' => 's.visit_number', 'BL' => 's.beamlinename', 'LC' => 's.beamlineoperator', 'COMMENT' => 's.comments');
+            $cols = array('ST' => 's.startdate', 'EN' => 's.enddate', 'VIS' => 's.visit_number', 'BL' => 's.beamlinename',
+                          'LC' => 's.beamlineoperator', 'COMMENT' => 's.comments', 'ERA' => 's.riskrating',
+                          'SESSIONTYPE' => 'sessiontype', 'DCCOUNT' => 'dccount');
             $dir = $this->has_arg('order') ? ($this->arg('order') == 'asc' ? 'ASC' : 'DESC') : 'ASC';
             if (array_key_exists($this->arg('sort_by'), $cols))
                 $order = $cols[$this->arg('sort_by')] . ' ' . $dir;
@@ -469,6 +491,7 @@ class Proposal extends Page
                     s.beamcalendarid,
                     CONCAT(p.proposalcode, p.proposalnumber)                      AS proposal,
                     COUNT(shp.personid)                                           AS persons,
+                    $select
                     s.proposalid
                 FROM BLSession s
                     INNER JOIN proposal p ON p.proposalid = s.proposalid
@@ -476,35 +499,13 @@ class Proposal extends Page
                     LEFT OUTER JOIN session_has_person shp ON shp.sessionid = s.sessionid
                     LEFT OUTER JOIN beamlinesetup bls on bls.beamlinesetupid = s.beamlinesetupid
                     LEFT OUTER JOIN beamcalendar bc ON bc.beamcalendarid = s.beamcalendarid
+                    $join
                 $where
                 GROUP BY s.sessionid
                 ORDER BY $order", $args);
 
-        $ids = array();
-        $wcs = array();
-        foreach ($rows as $r) {
-            array_push($ids, $r['SESSIONID']);
-            array_push($wcs, 'dcg.sessionid=:' . sizeof($ids));
-        }
-
-        $dcs = array();
-        if (sizeof($ids)) {
-            $where = implode(' OR ', $wcs);
-            $tdcs = $this->db->pq("SELECT count(dc.datacollectionid) as c, dcg.sessionid 
-                    FROM datacollection dc
-                    INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
-                    WHERE $where GROUP BY dcg.sessionid", $ids);
-            foreach ($tdcs as $t)
-                $dcs[$t['SESSIONID']] = $t['C'];
-        }
-
         foreach ($rows as &$r) {
-            $dc = array_key_exists($r['SESSIONID'], $dcs) ? $dcs[$r['SESSIONID']] : 0;
-            $r['COMMENT'] = $r['COMMENTS'];
-            $r['DCCOUNT'] = $dc;
-
             $bl_type = $this->_get_type_from_beamline($r['BL']);
-
             $r['TYPE'] = $bl_type ? $bl_type : 'gen';
         }
 

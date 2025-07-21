@@ -93,8 +93,8 @@ class Sample extends Page
         'scid' => '\d+-\d+',
 
         'BLSAMPLEID' => '\d+',
-        'X' => '\d+(.\d+)?',
-        'Y' => '\d+(.\d+)?',
+        'X' => '\d*(.\d+)?',
+        'Y' => '\d*(.\d+)?',
         'Z' => '\d+(.\d+)?',
         'X2' => '\d+(.\d+)?',
         'Y2' => '\d+(.\d+)?',
@@ -799,6 +799,9 @@ class Sample extends Page
                 po2.posx as x2,
                 po2.posy as y2,
                 po2.posz as z2,
+                bsp.posx as dispensex,
+                bsp.posy as dispensey,
+                bsp.posz as dispensez,
                 IF(cqs.containerqueuesampleid IS NOT NULL AND cqs.containerqueueid IS NULL, 1, 0) as readyforqueue,
                 cq.containerqueueid,
                 count(distinct IF(dc.overlap != 0,
@@ -824,7 +827,7 @@ class Sample extends Page
                 INNER JOIN shipping sh ON sh.shippingid = d.shippingid
                 INNER JOIN proposal p ON p.proposalid = sh.proposalid
 
-
+                LEFT OUTER JOIN blsampleposition bsp ON bsp.blsampleid = s.blsampleid
                 LEFT OUTER JOIN containerqueuesample cqs ON cqs.blsubsampleid = ss.blsubsampleid
                 LEFT OUTER JOIN containerqueue cq ON cqs.containerqueueid = cq.containerqueueid AND cq.completedtimestamp IS NULL
                 
@@ -1903,11 +1906,12 @@ class Sample extends Page
         if (!$this->has_arg('sid'))
             $this->_error('No sampleid specified');
 
-        $samp = $this->db->pq("SELECT b.blsampleid, pr.proteinid,cr.crystalid,dp.diffractionplanid 
+        $samp = $this->db->pq("SELECT b.blsampleid, pr.proteinid,cr.crystalid,dp.diffractionplanid,bsp.blsamplepositionid
               FROM blsample b 
               INNER JOIN crystal cr ON cr.crystalid = b.crystalid 
               INNER JOIN protein pr ON pr.proteinid = cr.proteinid 
               LEFT OUTER JOIN diffractionplan dp on dp.diffractionplanid = b.diffractionplanid 
+              LEFT OUTER JOIN blsampleposition bsp ON bsp.blsampleid = b.blsampleid AND bsp.positiontype='dispensing'
               WHERE pr.proposalid = :1 AND b.blsampleid = :2", array($this->proposalid, $this->arg('sid')));
 
         if (!sizeof($samp))
@@ -1979,6 +1983,34 @@ class Sample extends Page
                     $nextDCPIndex++;
                 }
             }
+        }
+
+        if ($this->has_arg('X') && $this->has_arg('Y')) {
+            $z = $this->has_arg('Z') ? $this->arg('Z') : null;
+            $pid = $samp['BLSAMPLEPOSITIONID'];
+            if ($this->arg('X') == '' && $this->arg('Y') == '') {
+                if (!empty($pid)) {
+                    $this->db->pq(
+                        "UPDATE blsampleposition SET posx=null, posy=null, posz=null, recordtimestamp=CURRENT_TIMESTAMP WHERE blsamplepositionid=:1",
+                        array($pid)
+                    );
+                }
+            } else {
+                if (empty($pid)) {
+                    $this->db->pq(
+                        "INSERT INTO blsampleposition (blsampleid, posx, posy, posz, positiontype, recordtimestamp)
+                        VALUES (:1, :2, :3, :4, 'dispensing', CURRENT_TIMESTAMP) RETURNING blsamplepositionid INTO :id",
+                        array($this->arg('sid'), $this->arg('X'), $this->arg('Y'), $z)
+                    );
+                    $pid = $this->db->id();
+                } else {
+                    $this->db->pq(
+                        "UPDATE blsampleposition SET posx=:1, posy=:2, posz=:3, recordtimestamp=CURRENT_TIMESTAMP WHERE blsamplepositionid=:4",
+                        array($this->arg('X'), $this->arg('Y'), $z, $pid)
+                    );
+                }
+            }
+            $this->_output(array('BLSAMPLEPOSITIONID' => $pid));
         }
     }
 
@@ -2704,23 +2736,22 @@ class Sample extends Page
         if (!$this->has_arg('prop'))
             $this->_error('No proposal specified');
 
-        $sgid = $this->_create_sample_group();
+        $name = $this->has_arg('NAME') ? $this->arg('NAME') : NULL;
 
-        $this->_output($sgid);
+        $sg = $this->db->pq("SELECT blsg.blsamplegroupid
+            FROM blsamplegroup blsg
+            WHERE blsg.name=:1 and blsg.proposalid=:2", array($name, $this->proposalid));
+        if (sizeof($sg)) $this->_error('The specified sample group name already exists');
+
+        $this->db->pq("INSERT INTO blsamplegroup (blsamplegroupid, name, proposalid, ownerid) VALUES(NULL, :1, :2, :3)",
+            array($name, $this->proposalid, $this->user->personId));
+        $sgid = $this->db->id();
 
         $this->_output(array(
             'BLSAMPLEGROUPID' => $sgid,
-            'NAME' => $this->has_arg('NAME') ? $this->arg('NAME') : NULL,
+            'NAME' => $name,
             'SAMPLEGROUPSAMPLES' => 0
         ));
-    }
-
-    function _create_sample_group()
-    {
-        $name = $this->has_arg('NAME') ? $this->arg('NAME') : NULL;
-        $this->db->pq("INSERT INTO blsamplegroup (blsamplegroupid, name, proposalid, ownerid) VALUES(NULL, :1, :2, :3)",
-            array($name, $this->proposalid, $this->user->personId));
-        return $this->db->id();
     }
 
     function _get_sample_groups_by_sample()
@@ -2728,14 +2759,11 @@ class Sample extends Page
         if (!$this->has_arg('prop'))
             $this->_error('No proposal specified');
 
-        $where = 'bsg.proposalid = :1';
-        $args = array($this->proposalid);
-
         if (!$this->has_arg('BLSAMPLEID'))
             $this->_error('No sample specified');
 
-        $where .= ' AND b.blsampleid = :2';
-        array_push($args, $this->arg('BLSAMPLEID'));
+        $where = 'bsg.proposalid = :1 AND b.blsampleid = :2';
+        $args = array($this->proposalid, $this->arg('BLSAMPLEID'));
 
         $tot = $this->db->pq("SELECT count(*) as total
                 FROM blsamplegroup bsg
