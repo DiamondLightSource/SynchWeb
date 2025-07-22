@@ -208,7 +208,14 @@ define(['marionette',
             }
             
             this.el.find('.'+attr).editable(submit.bind(this), $.extend({}, defaults, types[type], options, { onsubmit: onsubmit.bind(this), attr: attr, model: this.model })).addClass('editable')
-        }
+        },
+
+        remove: function(attr) {
+            // Find the element and destroy its editable instance
+            this.el.find('.' + attr).editable('destroy');
+            // Also remove the 'editable' class to fix the CSS
+            this.el.find('.' + attr).removeClass('editable');
+        },
         
     })
     

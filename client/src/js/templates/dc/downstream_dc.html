@@ -1,0 +1,21 @@
+<h1 class="clearfix">
+    <%-IMP%>_<%-RUN%> - <%-DIR%>
+</h1>
+
+<div class="distl" title="Per Image Analysis: Number of spots detected for each image."></div>
+
+<ul class="clearfix reproc">
+    <% if (BLSAMPLEID) { %>
+      <li class="sample"><span class="wrap">Sample: <a href="/samples/sid/<%-BLSAMPLEID%>"><%-SAMPLE%></a></span></li>
+      <li class="sample"><span class="wrap">Protein: <a href="/proteins/pid/<%-PROTEINID%>"><%-ACRONYM%></a></span></li>
+    <% } %>
+    <li>&<%-ROTATIONAXIS%>; Start: <%-AXISSTART%>&deg;</li>
+    <li>&<%-ROTATIONAXIS%>; Osc: <%-AXISRANGE%>&deg;</li>
+    <% if (SI != 1 ) { %> <li>First Image: <%-SI%></li><% } %>
+    <li>Resolution: <%-RESOLUTION%>&#197;</li>
+    <li>Wavelength: <%-WAVELENGTH%>&#197;</li>
+    <li>Exposure: <%-EXPOSURETIME%>s</li>
+    <li>Transmission: <%-TRANSMISSION%>%</li>
+
+</ul>
+

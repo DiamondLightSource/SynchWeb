@@ -169,7 +169,7 @@ define(['marionette', 'views/form',
         },
 
         isIndustrialProposal: function() {
-            industrial_codes = ['in', 'sw']
+            industrial_codes = app.options.get('industrial_prop_codes')
             return industrial_codes.includes(app.prop.slice(0,2))
         },
 

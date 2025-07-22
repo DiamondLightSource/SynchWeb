@@ -26,7 +26,7 @@
         <li data-testid="dc-resolution">Resolution: <%-RESOLUTION%>&#197;</li>
         <li data-testid="dc-wavelength">Wavelength: <%-WAVELENGTH%>&#197; (<%-ENERGY%>eV)</li>
         <li data-testid="dc-exposure-time">Exposure: <%-EXPOSURETIME%>s</li>
-        <%if (DCC > 1 && TOTALDOSE) { %>
+        <%if (DCC > 1 && TOTALDOSE > 0) { %>
             <li data-testid="dc-dose">Total Dose:  <%-TOTALDOSE%>MGy</li>
         <% } else if (DCC == 1 && TOTALABSDOSE) { %>
             <li data-testid="dc-dose">Dose:  <%-TOTALABSDOSE%>MGy</li>

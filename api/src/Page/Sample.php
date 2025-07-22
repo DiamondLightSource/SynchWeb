@@ -1721,9 +1721,6 @@ class Sample extends Page
         }
 
 
-        $tot = $this->db->pq("SELECT count(distinct pr.proteinid) as tot FROM protein pr INNER JOIN proposal p ON p.proposalid = pr.proposalid $join WHERE $where", $args);
-        $tot = intval($tot[0]['TOT']);
-
         if ($this->has_arg('s')) {
             $st = sizeof($args) + 1;
             $where .= " AND (lower(pr.name) LIKE lower(CONCAT(CONCAT('%',:" . $st . "), '%')) OR lower(pr.acronym) LIKE lower(CONCAT(CONCAT('%',:" . ($st + 1) . "), '%')))";
@@ -1731,6 +1728,19 @@ class Sample extends Page
                 array_push($args, $this->arg('s'));
         }
 
+        if ($this->has_arg('sid')) {
+            $where .= ' AND b.blsampleid=:' . (sizeof($args) + 1);
+            array_push($args, $this->arg('sid'));
+            $join .= ' LEFT JOIN diffractionplan dp ON dp.diffractionplanid = b.diffractionplanid';
+            $extc = 'dp.anomalousscatterer, ';
+        }
+
+        $tot = $this->db->pq("SELECT count(distinct pr.proteinid) as tot FROM protein pr
+                              INNER JOIN proposal p ON p.proposalid = pr.proposalid
+                              LEFT OUTER JOIN crystal cr ON cr.proteinid = pr.proteinid
+                              LEFT OUTER JOIN blsample b ON b.crystalid = cr.crystalid
+                              $join WHERE $where", $args);
+        $tot = intval($tot[0]['TOT']);
 
         $start = 0;
         $pp = $this->has_arg('per_page') ? $this->arg('per_page') : 15;

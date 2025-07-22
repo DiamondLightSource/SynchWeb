@@ -152,7 +152,8 @@ define(['marionette',
         this.ap = new DCAutoIntegrationView({ 
             id: this.model.get('ID'), 
             dcPurgedProcessedData: this.model.get('PURGEDPROCESSEDDATA'),
-            el: this.$el.find('div.autoproc') 
+            el: this.$el.find('div.autoproc'),
+            parent: this.model
           })
       } else this.ap.$el.slideToggle()
     },
