@@ -188,9 +188,9 @@ class Download extends Page
             array_push($args, $this->arg('FILENAME'));
         }
 
-        if ($this->has_arg('FILETYPE')) {
+        if ($this->has_arg('filetype')) {
             $where .= ' AND appa.filetype =:' . (sizeof($args) + 1);
-            array_push($args, $this->arg('FILETYPE'));
+            array_push($args, $this->arg('filetype'));
         }
 
         if ($this->has_arg('AUTOPROCPROGRAMID')) {

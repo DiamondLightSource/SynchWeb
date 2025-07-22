@@ -156,12 +156,6 @@ define(['marionette', 'views/form',
             this.$el.find('input[name=DELIVERYAGENT_SHIPPINGDATE]').val(today)
             this.$el.find('.facilityCourier').hide()
 
-            industrial_codes = ['in', 'sw']
-            industrial_visit = industrial_codes.includes(app.prop.slice(0,2))
-            if (industrial_visit) {
-                this.ui.facc.hide()
-            }
-
             if (this.shipping.get('TERMSACCEPTED') == 0) {
                 this.ui.courier.val(this.shipping.get('DELIVERYAGENT_AGENTNAME'))
                 this.ui.accountNumber.val(this.shipping.get('DELIVERYAGENT_AGENTCODE'))
@@ -280,7 +274,12 @@ define(['marionette', 'views/form',
             this.ui.dispatchDetails.show();
             this.enableValidation()
             this.ui.submit.show();
+
+            industrial_codes = app.options.get('industrial_prop_codes')
+            industrial_visit = industrial_codes.includes(app.prop.slice(0,2))
+
             if (
+                industrial_visit ||
                 this.terms.get("ACCEPTED") ||
                 (!app.options.get("facility_courier_countries").includes(this.dispatchCountry) &&
                  !app.options.get("facility_courier_countries_nde").includes(this.dispatchCountry))
@@ -289,6 +288,7 @@ define(['marionette', 'views/form',
             } else {
                 this.ui.facc.show()
             }
+
             if (
                 this.terms.get("ACCEPTED")
                 && app.options.get("shipping_service_app_url")

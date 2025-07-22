@@ -1743,7 +1743,8 @@ class Shipment extends Page
             d.code, d.barcode, d.storagelocation, d.dewarstatus, d.dewarid,
             d.trackingnumbertosynchrotron, d.trackingnumberfromsynchrotron, d.externalShippingIdFromSynchrotron,
             s.deliveryagent_agentname, d.weight, d.deliveryagent_barcode, GROUP_CONCAT(c.code SEPARATOR ', ') as containers,
-            s.sendinglabcontactid, s.returnlabcontactid, pe.givenname, pe.familyname, s.safetylevel as shippingsafetylevel
+            s.sendinglabcontactid, s.returnlabcontactid, pe.givenname, pe.familyname, s.safetylevel as shippingsafetylevel,
+            s.extra
               FROM dewar d
               LEFT OUTER JOIN container c ON c.dewarid = d.dewarid
               INNER JOIN shipping s ON d.shippingid = s.shippingid
@@ -1756,6 +1757,18 @@ class Shipment extends Page
               WHERE $where 
               GROUP BY CONCAT(p.proposalcode, p.proposalnumber, '-', se.visit_number), r.labcontactid, se.beamlineoperator, TO_CHAR(se.startdate, 'HH24:MI DD-MM-YYYY'), (case when se.visit_number > 0 then (CONCAT(p.proposalcode, p.proposalnumber, '-', se.visit_number)) else '' end),s.shippingid, s.shippingname, d.code, d.barcode, d.storagelocation, d.dewarstatus, d.dewarid,  d.trackingnumbertosynchrotron, d.trackingnumberfromsynchrotron, facilitycode, d.firstexperimentid
               ORDER BY $order", $args);
+
+        foreach ($dewars as &$s) {
+            $extra_json = json_decode($s['EXTRA'], true);
+            if (is_null($extra_json)) {
+                $extra_json = array();
+                foreach ($this->extra_arg_list as $arg) {
+                    $extra_json[$arg] = "";
+                }
+            }
+            $s = array_merge($s, $extra_json);
+        }
+
 
         if ($this->has_arg('did')) {
             if (sizeof($dewars))

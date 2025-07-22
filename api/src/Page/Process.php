@@ -11,6 +11,7 @@ class Process extends Page
         public static $arg_list = array(
             'PROCESSINGJOBID' => '\d+',
             'DATACOLLECTIONID' => '\d+',
+            'SCALINGID' => '\d+',
             'DISPLAYNAME' => '([\w\s\-])+',
             'COMMENTS' => '.*',
 
@@ -45,6 +46,7 @@ class Process extends Page
             array('/sweeps', 'post', '_add_reprocessing_sweeps'),
 
             array('/enqueue', 'post', '_enqueue'),
+            array('/enqueue/downstream', 'post', '_enqueue_downstream'),
 
             array('/pipelines', 'get', '_pipelines'),
         );
@@ -380,6 +382,36 @@ class Process extends Page
             )
         );
         $this->_send_zocalo_message($rabbitmq_zocalo_vhost, $message);
+
+        $this->_output(new \stdClass);
+    }
+
+    function _enqueue_downstream()
+    {
+        if (!$this->has_arg('DATACOLLECTIONID')) $this->_error('No data collection id specified');
+        if (!$this->has_arg('SCALINGID')) $this->_error('No scaling id specified');
+        if (!$this->has_arg('RECIPE')) $this->_error('No recipe specified');
+
+        $chk = $this->db->pq("SELECT dc.datacollectionid, aps.autoprocscalingid
+                FROM datacollection dc
+                INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
+                INNER JOIN blsession s ON s.sessionid = dcg.sessionid
+                INNER JOIN proposal p ON p.proposalid = s.proposalid
+                INNER JOIN processingjob rp ON rp.datacollectionid = dc.datacollectionid
+                INNER JOIN autoprocprogram app ON app.processingjobid = rp.processingjobid
+                INNER JOIN autoproc ap ON ap.autoprocprogramid = app.autoprocprogramid
+                INNER JOIN autoprocscaling aps ON aps.autoprocid = ap.autoprocid
+                WHERE p.proposalid = :1 AND dc.datacollectionid = :2 AND aps.autoprocscalingid = :3",
+                array($this->proposalid, $this->arg('DATACOLLECTIONID'), $this->arg('SCALINGID')));
+
+        if (!sizeof($chk)) $this->_error('No such data collection id or scaling id');
+
+        $parameters = array(
+            'ispyb_dcid' => intval($this->arg('DATACOLLECTIONID')),
+            'scaling_id' => intval($this->arg('SCALINGID')),
+        );
+
+        $this->_submit_zocalo_recipe($this->arg('RECIPE'), $parameters);
 
         $this->_output(new \stdClass);
     }
