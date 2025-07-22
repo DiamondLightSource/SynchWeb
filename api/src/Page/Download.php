@@ -368,10 +368,8 @@ class Download extends Page
 
         foreach ($rows as &$r) {
             $r['FILENAME'] = basename($r['FILEFULLPATH']);
-            $info = pathinfo($r['FILENAME']);
-            $r['NAME'] = basename($r['FILENAME'], '.' . $info['extension']);
+            $r['FILEPATH'] = dirname($r['FILEFULLPATH']);
 
-            $r['FILEFULLPATH'] = preg_replace('/.*\/' . $r['VISIT'] . '\//', '', $r['FILEFULLPATH']);
 
             foreach (array('DX_MM', 'DY_MM', 'STEPS_X', 'STEPS_Y', 'SNAKED') as $k) {
                 $r[$k] = floatval($r[$k]);
