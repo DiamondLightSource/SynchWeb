@@ -1621,15 +1621,15 @@ class DC extends Page
                 INNER JOIN autoproc ap ON aps.autoprocid = ap.autoprocid 
                 INNER JOIN autoprocprogram app ON api.autoprocprogramid = app.autoprocprogramid 
                 INNER JOIN autoprocprogramattachment appa ON appa.autoprocprogramid = app.autoprocprogramid 
-                WHERE api.datacollectionid = :1 AND api.autoprocprogramid=:2 AND appa.filetype LIKE 'Log'", array($id, $aid));
+                WHERE api.datacollectionid = :1 AND api.autoprocprogramid=:2 AND appa.filename='xdsstat.log'", array($id, $aid));
 
         if (!sizeof($info))
-            $this->_error('The specified auto processing doesnt exist');
+            $this->_error('The xdsstat.log file doesnt exist');
         else
             $info = $info[0];
         $this->db->close();
 
-        $file = $info['FILEPATH'] . '/xdsstat.log';
+        $file = $info['FILEPATH'] . '/' . $info['FILENAME'];
 
         $rows = array();
         if (file_exists($file)) {
