@@ -29,6 +29,8 @@ define([
             params: '.params'
         },
 
+        setProcessingVars: function() {},
+
         onDomRefresh: function() {
             var params = JSON.parse(this.model.get('SCANPARAMS'))
             if(params != null){

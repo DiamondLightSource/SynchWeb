@@ -42,8 +42,19 @@ define(['marionette',
       this.strat = null
       this.ap = null
       this.dp = null
+      this.showStrategies = true
+      this.showProcessing = true
+      this.setProcessingVars()
     },
-      
+
+    setProcessingVars: function() {
+      const hasProcessing = this.model.get('AXISRANGE') > 0 || this.model.get('DCT') === "Serial Fixed" || this.model.get('DCT') === "Serial Jet"
+      const isCharacterization = this.model.get('DCT') === "Characterization"
+      const hasStrategies = this.model.get('AXISRANGE') > 0 && this.model.get('OVERLAP') != 0
+      this.showStrategies = isCharacterization || hasStrategies
+      this.showProcessing = isCharacterization || (!hasStrategies && hasProcessing)
+    },
+
     onShow: function() {
       // element not always available at this point?
       var w = 0.175*$(window).width()*0.95
@@ -62,17 +73,13 @@ define(['marionette',
       // edit.create('COMMENTS', 'text')
         
       this.imagestatus = new (this.getOption('imageStatusItem'))({ ID: this.model.get('ID'), TYPE: this.model.get('DCT'), statuses: this.getOption('imagestatuses'), el: this.$el })
-      const isCharacterization = this.model.get('DCT') === "Characterization"
-      const hasStrategies = this.model.get('AXISRANGE') > 0 && this.model.get('OVERLAP') != 0
-      const hasProcessing = this.model.get('AXISRANGE') > 0 || this.model.get('DCT') === "Serial Fixed" || this.model.get('DCT') === "Serial Jet"
-      const showStrategies = isCharacterization || hasStrategies
-      const showProcessing = isCharacterization || (!hasStrategies && hasProcessing)
-      if (!showStrategies) this.ui.strat.hide()
-      if (!showProcessing) {
+      if (!this.showStrategies) this.ui.strat.hide()
+      if (!this.showProcessing) {
           this.ui.ap.hide();
           this.ui.dp.hide();
       }
-      this.apstatus = new (this.getOption('apStatusItem'))({ ID: this.model.get('ID'), showStrategies: showStrategies, showProcessing: showProcessing, statuses: this.getOption('apstatuses'), el: this.$el })
+
+      this.apstatus = new (this.getOption('apStatusItem'))({ ID: this.model.get('ID'), showStrategies: this.showStrategies, showProcessing: this.showProcessing, statuses: this.getOption('apstatuses'), el: this.$el })
       this.listenTo(this.apstatus, 'status', this.updateAP, this)
       this.apmessagestatus = new (this.getOption('apMessageStatusItem'))({ ID: this.model.get('ID'), statuses: this.getOption('apmessagestatuses'), el: this.$el })
 

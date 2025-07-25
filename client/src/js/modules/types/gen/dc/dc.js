@@ -21,6 +21,8 @@ define([
             'click a.dd': utils.signHandler,
         },
 
+        setProcessingVars: function() {},
+
         associateSample: function(e) {
             e.preventDefault()
             app.dialog.show(new AssocSampleView({ model: this.model }))
