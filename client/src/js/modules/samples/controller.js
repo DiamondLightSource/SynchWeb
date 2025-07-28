@@ -5,6 +5,8 @@ define(['marionette',
         'collections/samples',
         'models/protein',
         'collections/proteins',
+        'models/ligand',
+        'collections/ligands',
         'models/crystal',
         'collections/crystals',
 
@@ -16,6 +18,7 @@ define(['marionette',
   GetView,
   Sample, Samples, 
   Protein, Proteins,
+  Ligand, Ligands
   Crystal, Crystals,
   Instance,
   ProposalLookup) {
@@ -236,6 +239,60 @@ define(['marionette',
         })
     },
 
+    // Ligands
+    ligandlist: function(s, page) {
+        app.loading()
+        var title = GetView.LigandList.title(app.type)
+
+        app.bc.reset([{ title: title+'s', url: '/'+title.toLowerCase()+'s' }])
+        page = page ? parseInt(page) : 1
+        var params = { s : s }
+        var ligands = new Ligands(null, { state: { currentPage: page }, queryParams: params })
+        ligands.fetch().done(function() {
+            app.content.show(GetView.LigandList.get(app.type, { collection: ligands, params: { s: s } }))
+        })
+    },
+
+    ligandview: function(lid) {
+        app.loading()
+        var title = GetView.LigandList.title(app.type)
+        var pbc = { title: title+'s', url: '/'+title.toLowerCase()+'s' }
+
+        var lookup = new ProposalLookup({ field: 'LIGANDID', value: lid })
+        lookup.find({
+            success: function() {
+                var ligand = new Ligand({ LIGANDID: lid })
+                ligand.fetch({
+                    success: function() {
+                        app.bc.reset([pbc, { title: ligand.get('NAME') }])
+                        app.content.show(GetView.LigandView.get(app.type, { model: ligand }))
+                    },
+                    error: function() {
+                        app.bc.reset([pbc])
+                        app.message({ title: 'No such '+title, message: 'The specified '+title+' could not be found'})
+                    },
+                })
+            },
+
+            error: function() {
+                app.bc.reset([pbc])
+                app.message({ title: 'No such '+title, message: 'The specified '+title+' could not be found'})
+            }
+        })
+    },
+
+    ligandadd: function() {
+        var title = GetView.LigandList.title(app.type)
+
+        if (app.proposal && app.proposal.get('ACTIVE') != 1) {
+            app.message({ title: 'Proposal Not Active', message: 'This proposal is not active so new '+title+'s cannot be added'} )
+        } else {
+            var pbc = { title: title+'s', url: '/'+title.toLowerCase()+'s' }
+            app.bc.reset([pbc, { title: 'Add '+title }])
+            app.content.show(GetView.LigandAdd.get(app.type))
+        }
+    },
+
   }
        
        
@@ -278,6 +335,11 @@ define(['marionette',
     app.on('phases:view', function(pid) {
       app.navigate('phases/pid/'+pid)
       controller.proteinview(pid)
+    })
+
+    app.on('ligands:view', function(lid) {
+      app.navigate('ligands/lid/'+lid)
+      controller.ligandview(lid)
     })
   })
        
