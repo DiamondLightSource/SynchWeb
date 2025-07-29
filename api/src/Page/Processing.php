@@ -38,6 +38,7 @@ class Processing extends Page {
         'rmeas' => '[\d\.]+',
         'cchalf' => '[\d\.]+',
         'ccanom' => '[\d\.]+',
+        'images' => '\d+',
         'username' => '(\w|\s|\-|\.)+',
         'cloudrunid' => '(\w|\-)+',
         'AUTOPROCPROGRAMATTACHMENTID' => '\d+',
@@ -338,7 +339,7 @@ class Processing extends Page {
 
         $args = array($info[0]['SESSIONID']);
 
-        $where = 'dc.sessionid=:1 AND dc.overlap = 0 AND dc.axisrange > 0 AND dc.numberOfImages > 150 AND app.processingstatus = 1';
+        $where = 'dc.sessionid=:1 AND dc.overlap = 0 AND dc.axisrange > 0 AND app.processingstatus = 1';
 
         if ($this->has_arg('pipeline')) {
             $st = sizeof($args);
@@ -386,6 +387,12 @@ class Processing extends Page {
             $st = sizeof($args);
             $where .= " AND apssinner.ccanomalous >= :" . ($st + 1);
             array_push($args, $this->arg('ccanom'));
+        }
+
+        if ($this->has_arg('images')) {
+            $st = sizeof($args);
+            $where .= " AND dc.numberOfImages >= :" . ($st + 1);
+            array_push($args, $this->arg('images'));
         }
 
         if ($this->has_arg('s')) {

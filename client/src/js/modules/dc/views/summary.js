@@ -37,6 +37,7 @@ define(['backbone',
             'change @ui.maxrmeas': 'changeRmeas',
             'change @ui.mincchalf': 'changeCCHalf',
             'change @ui.minccanom': 'changeCCAnom',
+            'change @ui.minimages': 'changeImages',
         },
         
         ui: {
@@ -48,10 +49,16 @@ define(['backbone',
             maxrmeas: 'input[name=maxrmeas]',
             mincchalf: 'input[name=mincchalf]',
             minccanom: 'input[name=minccanom]',
+            minimages: 'input[name=minimages]',
         },
         
         initialize: function(options) {
             this.visit = options.model.get('VISIT')
+        },
+
+        updateData: function() {
+            this.collection.state['currentPage'] = 1
+            this.collection.fetch()
         },
 
         changePipeline: function() {
@@ -60,7 +67,7 @@ define(['backbone',
             } else {
                 delete this.collection.queryParams.pipeline
             }
-            this.collection.fetch()
+            this.updateData()
         },
 
         showSpaceGroups: async function() {
@@ -75,7 +82,7 @@ define(['backbone',
             } else {
                 delete this.collection.queryParams.spacegroup
             }
-            this.collection.fetch()
+            this.updateData()
         },
         
         changeResolution: function() {
@@ -84,7 +91,7 @@ define(['backbone',
             } else {
                 delete this.collection.queryParams.resolution
             }
-            this.collection.fetch()
+            this.updateData()
         },
 
         changeCompleteness: function() {
@@ -93,7 +100,7 @@ define(['backbone',
             } else {
                 delete this.collection.queryParams.completeness
             }
-            this.collection.fetch()
+            this.updateData()
         },
 
         changeAnomCompleteness: function() {
@@ -102,7 +109,7 @@ define(['backbone',
             } else {
                 delete this.collection.queryParams.anomcompleteness
             }
-            this.collection.fetch()
+            this.updateData()
         },
 
         changeRmeas: function() {
@@ -111,7 +118,7 @@ define(['backbone',
             } else {
                 delete this.collection.queryParams.rmeas
             }
-            this.collection.fetch()
+            this.updateData()
         },
 
         changeCCHalf: function() {
@@ -120,7 +127,7 @@ define(['backbone',
             } else {
                 delete this.collection.queryParams.cchalf
             }
-            this.collection.fetch()
+            this.updateData()
         },
 
         changeCCAnom: function() {
@@ -129,7 +136,16 @@ define(['backbone',
             } else {
                 delete this.collection.queryParams.ccanom
             }
-            this.collection.fetch()
+            this.updateData()
+        },
+
+        changeImages: function() {
+            if (this.ui.minimages.val()) {
+                this.collection.queryParams.images = this.ui.minimages.val()
+            } else {
+                delete this.collection.queryParams.images
+            }
+            this.updateData()
         },
 
         onRender: function() {
