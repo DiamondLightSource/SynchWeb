@@ -57,7 +57,7 @@
                 v-slot="{ errors }"
                 tag="div"
                 class="tw-mb-2 tw-py-2"
-                rules="required"
+                rules="required|alpha_dash"
                 name="Container Name"
                 vid="container-name"
               >
@@ -79,6 +79,22 @@
                 option-value-key="CONTAINERID"
                 option-text-key="NAME"
               />
+
+              <validation-provider
+                v-slot="{ errors }"
+                tag="div"
+                class="tw-mb-2 tw-py-2"
+                rules="numeric"
+                name="Parent Container Location"
+                vid="parent-container-location"
+              >
+                <base-input-text
+                  v-show="showParentContainer"
+                  v-model="PARENTCONTAINERLOCATION"
+                  label="Parent Container Location"
+                  :error-message="errors[0]"
+                />
+              </validation-provider>
 
               <base-input-select
                 v-model="PROCESSINGPIPELINEID"
@@ -488,6 +504,7 @@ export default {
       NAME: "",
       CONTAINERREGISTRYID: null,
       PARENTCONTAINERID: null,
+      PARENTCONTAINERLOCATION: null,
       AUTOMATED: 0,
       BARCODE: "",
       PERSONID: "",
@@ -682,6 +699,7 @@ export default {
           ...containerAttributes,
           CONTAINERREGISTRYID: this.CONTAINERREGISTRYID,
           PARENTCONTAINERID: this.PARENTCONTAINERID,
+          PARENTCONTAINERLOCATION: this.PARENTCONTAINERLOCATION,
           PROCESSINGPIPELINEID: this.PROCESSINGPIPELINEID,
           SPACEGROUP: this.SPACEGROUP
         }
@@ -727,6 +745,7 @@ export default {
         this.BARCODE = ''
         this.CONTAINERREGISTRYID = ''
         this.PARENTCONTAINERID = ''
+        this.PARENTCONTAINERLOCATION = ''
         // Trigger default setting of UDC fields if selected
         this.selectQueueForUDC(this.AUTOMATED)
 
