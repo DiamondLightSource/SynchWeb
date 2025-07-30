@@ -104,18 +104,21 @@
             </div>
 
             <div v-show="plateType === 'plate'">
-              <div class="tw-flex tw-w-full tw-relative">
+              <validation-provider
+                v-if="plateType === 'plate'"
+                v-slot="{ errors }"
+                tag="div"
+                class="tw-mb-2 tw-py-2"
+                rules="required"
+                name="Barcode"
+                vid="barcode"
+              >
                 <base-input-text
                   v-model="BARCODE"
-                  outer-class="tw-mb-2 tw-py-2 tw-flex tw-flex-1"
                   label="Barcode"
-                  name="Barcode"
+                  :error-message="getBarcodeErrorMessage(errors)"
                 />
-                <span
-                  v-if="barcodeMessage"
-                  class="barcode-message tw-text-xs tw-ml-4 tw-bg-content-light-background tw-rounded tw-p-2 tw-absolute"
-                >{{ barcodeMessage }}</span>
-              </div>
+              </validation-provider>
 
               <validation-provider
                 v-slot="{ errors }"
@@ -717,8 +720,14 @@ export default {
         // Reset state of form
         this.$refs.containerForm.reset()
       } catch (error) {
+        let errorMessage = 'Something went wrong creating this container, please try again'
+        if (error.response && error.response.data && error.response.data.message) {
+          errorMessage = error.response.data.message
+        } else if (error.message) {
+          errorMessage = error.message
+        }
         this.$store.commit('notifications/addNotification', {
-          message: 'Something went wrong creating this container, please try again',
+          message: errorMessage,
           level: 'error'
         })
       } finally {
@@ -822,6 +831,12 @@ export default {
 
         this.$store.commit('samples/updateSamplesField', { path: `samples/${index}/SCREENCOMPONENTGROUPID`, value: data })
       })
+    },
+    getBarcodeErrorMessage(veeValidateErrors) {
+      if (veeValidateErrors && veeValidateErrors.length > 0) {
+        return veeValidateErrors[0];
+      }
+      return this.barcodeMessage || '';
     },
   }
 }
