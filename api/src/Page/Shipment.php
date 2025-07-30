@@ -2581,27 +2581,36 @@ class Shipment extends Page
         $pipeline = $this->has_arg('PROCESSINGPIPELINEID') ? $this->arg('PROCESSINGPIPELINEID') : null;
         $source = $this->has_arg('SOURCE') ? $this->arg('SOURCE') : null;
 
-        $this->db->pq(
-            "INSERT INTO container (containerid,dewarid,code,bltimestamp,capacity,containertype,scheduleid,screenid,ownerid,requestedimagerid,comments,barcode,experimenttype,storagetemperature,containerregistryid,prioritypipelineid,source)
-              VALUES (s_container.nextval,:1,:2,CURRENT_TIMESTAMP,:3,:4,:5,:6,:7,:8,:9,:10,:11,:12,:13,:14,IFNULL(:15,CURRENT_USER)) RETURNING containerid INTO :id",
-            array($this->arg('DEWARID'), $this->arg('NAME'), $cap, $this->arg('CONTAINERTYPE'), $sch, $scr, $own, $rid, $com, $bar, $ext, $tem, $crid, $pipeline, $source)
-        );
+        try {
+            $this->db->pq(
+                "INSERT INTO container (containerid,dewarid,code,bltimestamp,capacity,containertype,scheduleid,screenid,ownerid,requestedimagerid,comments,barcode,experimenttype,storagetemperature,containerregistryid,prioritypipelineid,source)
+                 VALUES (s_container.nextval,:1,:2,CURRENT_TIMESTAMP,:3,:4,:5,:6,:7,:8,:9,:10,:11,:12,:13,:14,IFNULL(:15,CURRENT_USER)) RETURNING containerid INTO :id",
+                array($this->arg('DEWARID'), $this->arg('NAME'), $cap, $this->arg('CONTAINERTYPE'), $sch, $scr, $own, $rid, $com, $bar, $ext, $tem, $crid, $pipeline, $source)
+            );
 
-        $cid = $this->db->id();
+            $cid = $this->db->id();
 
-        if ($this->has_arg('SCHEDULEID')) {
-            $sh = $this->app->container['imagingShared'];
-            $sh->_generate_schedule(array(
-                'CONTAINERID' => $cid,
-                'SCHEDULEID' => $this->arg('SCHEDULEID'),
-            ));
+            if ($this->has_arg('SCHEDULEID')) {
+                $sh = $this->app->container['imagingShared'];
+                $sh->_generate_schedule(array(
+                    'CONTAINERID' => $cid,
+                    'SCHEDULEID' => $this->arg('SCHEDULEID'),
+                ));
+            }
+
+            if ($this->has_arg('AUTOMATED')) {
+                $this->db->pq("INSERT INTO containerqueue (containerid, personid) VALUES (:1, :2)", array($cid, $this->user->personId));
+            }
+
+            $this->_output(array('CONTAINERID' => $cid));
+
+        } catch (Exception $e) {
+            if ($e->getCode() == 1062) {
+                 $this->_error('Barcode is not unique. Please enter a different barcode.', 409);
+            } else {
+                $this->_error('An unexpected error occurred.', 500);
+            }
         }
-
-        if ($this->has_arg('AUTOMATED')) {
-            $this->db->pq("INSERT INTO containerqueue (containerid, personid) VALUES (:1, :2)", array($cid, $this->user->personId));
-        }
-
-        $this->_output(array('CONTAINERID' => $cid));
     }
 
 
