@@ -201,7 +201,6 @@ define(['marionette',
         editDispensing: function(x, y) {
             var s = new Sample({ BLSAMPLEID: this.model.get('BLSAMPLEID') })
             s.set({ X: x, Y: y })
-            this.trigger('finishdispensing')
             this.subsamples.fetch()
         },
         
