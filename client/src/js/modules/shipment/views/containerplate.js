@@ -960,7 +960,6 @@ define(['marionette',
                 this.listenTo(this.image, 'image:prev', this.prevImage, this)
                 this.listenTo(this.image, 'image:first', this.firstImage, this)
                 this.listenTo(this.image, 'image:last', this.lastImage, this)
-                this.listenTo(this.image, 'finishdispensing', this.setAddDispensing, this)
 
                 if (this.getOption('params').iid) this.ui.ins.val(this.getOption('params').iid)
                 this.selectInspection()
