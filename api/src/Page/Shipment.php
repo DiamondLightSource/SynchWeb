@@ -98,6 +98,7 @@ class Shipment extends Page
         'LASTMINUTEBEAMTIME' => '1?|Yes|No',
         'DEWARGROUPING' => '.*',
         'EXTRASUPPORTREQUIREMENT' => '.*',
+        'ONSITEUSERS' => '.*',
         'MULTIAXISGONIOMETRY' => '1?|Yes|No',
         'ENCLOSEDHARDDRIVE' => '1?|Yes|No',
         'ENCLOSEDTOOLS' => '1?|Yes|No',
@@ -165,6 +166,7 @@ class Shipment extends Page
         'LASTMINUTEBEAMTIME',
         'DEWARGROUPING',
         'EXTRASUPPORTREQUIREMENT',
+        'ONSITEUSERS',
         'MULTIAXISGONIOMETRY',
         'ENCLOSEDHARDDRIVE',
         'ENCLOSEDTOOLS',
@@ -406,7 +408,9 @@ class Shipment extends Page
             $extra_json = json_decode($s['EXTRA'], true);
             if (is_null($extra_json)) {
                 $extra_json = array();
-                foreach ($this->extra_arg_list as $arg) {
+            }
+            foreach ($this->extra_arg_list as $arg) {
+                if (!array_key_exists($arg, $extra_json)) {
                     $extra_json[$arg] = "";
                 }
             }
@@ -3117,6 +3121,7 @@ class Shipment extends Page
             }
             $dewar_grouping = $this->has_arg('DEWARGROUPING') ? $this->arg('DEWARGROUPING') : '';
             $extra_support_requirement = $this->has_arg('EXTRASUPPORTREQUIREMENT') ? $this->arg('EXTRASUPPORTREQUIREMENT') : '';
+            $onsite_users = $this->has_arg('ONSITEUSERS') ? $this->arg('ONSITEUSERS') : '';
             $multi_axis_goniometry = null;
             if ($this->has_arg('MULTIAXISGONIOMETRY')) {
                 $multi_axis_goniometry = $this->arg('MULTIAXISGONIOMETRY') ? "Yes" : "No";
@@ -3131,6 +3136,7 @@ class Shipment extends Page
                 "LASTMINUTEBEAMTIME" => $last_minute_beamtime,
                 "DEWARGROUPING" => $dewar_grouping,
                 "EXTRASUPPORTREQUIREMENT" => $extra_support_requirement,
+                "ONSITEUSERS" => $onsite_users,
                 "MULTIAXISGONIOMETRY" => $multi_axis_goniometry
             );
 
