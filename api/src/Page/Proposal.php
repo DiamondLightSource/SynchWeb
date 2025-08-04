@@ -240,7 +240,9 @@ class Proposal extends Page
                 foreach ($bls as $bl) {
                     $b = $bl['BEAMLINENAME'];
                     $bty = $this->_get_type_from_beamline($b);
-                    array_push($tys, $bty);
+                    if (!in_array($bty, $tys)) {
+                        array_push($tys, $bty);
+                    }
                     if (!$found) {
                         $ty = $bty;
                         $found = True;
@@ -251,7 +253,7 @@ class Proposal extends Page
             if (!$ty)
                 $ty = 'gen';
             $r['TYPE'] = $ty;
-            $r['TYPES'] = array_unique($tys);
+            $r['TYPES'] = $tys;
         }
 
         if ($id) {
