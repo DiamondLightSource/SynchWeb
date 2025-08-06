@@ -439,6 +439,8 @@ const INITIAL_CONTAINER_TYPE = {
   NAME: null,
   WELLDROP: -1,
   WELLPERROW: null,
+  DROPOFFSETX: null,
+  DROPOFFSETY: null,
 }
 
 export default {
@@ -567,7 +569,9 @@ export default {
               dropPerWellY: this.containerType['DROPPERWELLY'],
               dropWidth: this.containerType['DROPWIDTH'],
               wellDrop: this.containerType['WELLDROP'],
-              wellPerRow: this.containerType['WELLPERROW']
+              wellPerRow: this.containerType['WELLPERROW'],
+              dropOffsetX: this.containerType['DROPOFFSETX'],
+              dropOffsetY: this.containerType['DROPOFFSETY'],
             })
 
           }
