@@ -389,6 +389,12 @@
         'i04' => False,
     );
 
+    # puck capacity of beamlines which take pucks, sample capacity of those which take samples
+    $bl_capacity = array(
+        "i03" => array("pucks" => 37, "samples" => 0),
+        "i04" => array("pucks" => 37, "samples" => 0),
+    );
+
     # Dials server values
     $dials_rest_url = "";
     $dials_rest_jwt = "";

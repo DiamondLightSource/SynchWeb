@@ -27,6 +27,18 @@ class AssignData
                                     AND c.containerid=:2", array($visitId, $containerId));
     }
 
+    function getSample($visitId, $sampleId)
+    {
+        return $this->db->pq("SELECT b.blsampleid,b.name,d.dewarid,bl.beamlinename,c.containerid,c.code FROM blsample b
+                                INNER JOIN container c ON c.containerid = b.containerid
+                                INNER JOIN dewar d ON d.dewarid = c.dewarid
+                                INNER JOIN shipping s ON s.shippingid = d.shippingid
+                                INNER JOIN blsession bl ON bl.proposalid = s.proposalid
+                                INNER JOIN proposal p ON s.proposalid = p.proposalid
+                                WHERE CONCAT(p.proposalcode, p.proposalnumber, '-', bl.visit_number) LIKE :1
+                                    AND b.blsampleid=:2", array($visitId, $sampleId));
+    }
+
     function assignContainer($container, $location)
     {
         $this->updateDewar($container['DEWARID'], 'processing');
@@ -36,9 +48,25 @@ class AssignData
         $this->updateDewarHistory($container['DEWARID'], 'processing', $container['BEAMLINENAME'], $container['CODE'] . ' => ' . $location);
     }
 
+    function assignSample($sample, $location)
+    {
+        $this->updateSample($sample['BLSAMPLEID'], $location);
+
+        $this->updateDewar($sample['DEWARID'], 'processing');
+
+        $this->updateContainerAndHistory($sample['CONTAINERID'], 'processing', $sample['BEAMLINENAME'], null);
+
+        $this->updateDewarHistory($sample['DEWARID'], 'processing', $sample['BEAMLINENAME'], $sample['NAME'] . ' => ' . $location);
+    }
+
     function unassignContainer($container)
     {
         $this->updateContainerAndHistory($container['CONTAINERID'], 'at facility', '', '');
+    }
+
+    function unassignSample($sample)
+    {
+        $this->updateSample($sample['BLSAMPLEID'], null);
     }
 
     function updateContainerAndHistory($containerId, $status, $beamlineName, $location)
@@ -59,6 +87,12 @@ class AssignData
         $this->db->pq("UPDATE container 
                             SET beamlinelocation=:1, samplechangerlocation=:2, containerstatus=:3 
                             WHERE containerid=:4", array($beamlineName, $location, $status, $containerId));
+    }
+
+    function updateSample($sampleId, $location)
+    {
+        $this->db->pq("UPDATE blsample SET isinsamplechanger=:1
+                            WHERE blsampleid=:2", array($location, $sampleId));
     }
 
     function getDewar($dewarId, $proposalId, $visitId)

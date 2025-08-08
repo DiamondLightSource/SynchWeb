@@ -2,6 +2,7 @@ define(['marionette', 'backbone', 'views/pages',
     'collections/shipments',
     'collections/containers',
     'collections/dewars',
+    'collections/samples',
     'models/shipment',
     'models/dewar',
     'modules/assign/collections/pucknames',
@@ -15,6 +16,7 @@ define(['marionette', 'backbone', 'views/pages',
         Shipments,
         Containers,
         Dewars,
+        Samples,
         Shipment,
         Dewar,
         PuckNames,
@@ -46,15 +48,13 @@ define(['marionette', 'backbone', 'views/pages',
             'drop:unassign': 'unassignContainer',
         },
         
-        // possible circular reference
-        onDestroy: function() {
-            this.model.view = null
-        },
-        
-        
         // Assign Containers
         assignContainer: function(e, options) {
             console.log('confirm container on to', options.id, this.model)
+            if (options.id == this.model.get("SAMPLECHANGERLOCATION")) {
+                // already assigned in this location
+                return
+            }
             staffOnly = false
             const onlyStaffCanAssign = app.options.get('only_staff_can_assign') || {}
             if (options.bl in onlyStaffCanAssign) {
@@ -63,6 +63,7 @@ define(['marionette', 'backbone', 'views/pages',
             if (staffOnly && !app.staff) {
                 app.alert({ message: 'Only staff are able to assign containers on '+options.bl })
             } else {
+                options.shipments = this.getOption('shipments')
                 utils.confirm({
                     title: 'Confirm Container Assignment',
                     content: 'Are you sure you want to assign &quot;'+this.model.get('NAME')+'&quot; to sample changer position '+options.id+'?',
@@ -153,9 +154,131 @@ define(['marionette', 'backbone', 'views/pages',
         },
         
     })
-            
-            
-            
+
+
+    var SampleView = Marionette.CompositeView.extend({
+        template: _.template('<span class="r"><a class="button button-notext" title="Click to view sample" href="/samples/sid/<%-BLSAMPLEID%>"><i class="fa fa-search"></i> <span>View Sample</span></a></span><h1><%-NAME%></h1>'),
+        className: function() { return  'container' + (this.getOption('assigned') ? ' assigned' : '') },
+
+        initialize: function(options) {
+            this.getOption('model').view = this
+        },
+
+        onRender: function() {
+            this.$el.draggable({
+                containment: '#drag_container',
+                stack: '#unassigned div',
+                revert: true
+            })
+        },
+
+        events: {
+            'drop:assign': 'assignSample',
+            'drop:unassign': 'unassignSample',
+        },
+
+        // Assign Samples
+        assignSample: function(e, options) {
+            console.log('confirm sample on to', options.id, this.model)
+            if (options.id == this.model.get("ISINSAMPLECHANGER")) {
+                // already assigned in this location
+                return
+            }
+            staffOnly = false
+            const onlyStaffCanAssign = app.options.get('only_staff_can_assign') || {}
+            if (options.bl in onlyStaffCanAssign) {
+                staffOnly = onlyStaffCanAssign[options.bl]
+            }
+            if (staffOnly && !app.staff) {
+                app.alert({ message: 'Only staff are able to assign samples on '+options.bl })
+            } else {
+                options.shipments = this.getOption('shipments')
+                utils.confirm({
+                    title: 'Confirm Sample Assignment',
+                    content: 'Are you sure you want to assign &quot;'+this.model.get('NAME')+'&quot; to sample changer position '+options.id+'?',
+                    callback: this.doAssign.bind(this, options)
+                })
+            }
+        },
+
+        doAssign: function(options) {
+            console.log('dropped sample on to', options.id, this.model, options.assigned)
+            var assigned = options.assigned.where({ ISINSAMPLECHANGER: options.id.toString() })
+            _.each(assigned, function(c) {
+                c.view.doUnAssign.call(c.view,options)
+            })
+
+            Backbone.ajax({
+                url: app.apiurl+'/assign/assign',
+                data: { visit: options.visit, sid: this.model.get('BLSAMPLEID'), pos: options.id },
+                success: this.assignUpdateGUI.bind(this, options),
+                error: function(xhr, message, options) {
+                    try {
+                        json = JSON.parse(xhr.responseText)
+                        app.alert({ message: json.message })
+                    } catch {
+                        app.alert({ message: 'Something went wrong assigning this sample.' })
+                    }
+                },
+            })
+        },
+
+        assignUpdateGUI: function(options) {
+            this.trigger('remove:container', this.model)
+            this.model.set({ ISINSAMPLECHANGER: options.id.toString() })
+            options.assigned.add(this.model)
+        },
+
+        // Unassign Samples
+        unassignSample: function(e, options) {
+            console.log('unassign sample', this.model)
+            staffOnly = false
+            const onlyStaffCanAssign = app.options.get('only_staff_can_assign') || {}
+            if (options.bl in onlyStaffCanAssign) {
+                staffOnly = onlyStaffCanAssign[options.bl]
+            }
+            if (staffOnly && !app.staff) {
+                app.alert({ message: 'Only staff are able to unassign samples on '+options.bl })
+            } else {
+                utils.confirm({
+                    title: 'Confirm Sample Unassignment',
+                    content: 'Are you sure you want to unassign &quot;'+this.model.get('NAME')+'&quot; from sample changer position '+this.model.get('SAMPLECHANGERLOCATION')+'?',
+                    callback: this.doUnAssign.bind(this, options)
+                })
+            }
+        },
+
+        doUnAssign: function(options) {
+            console.log('unassigning', this.model)
+            Backbone.ajax({
+                url: app.apiurl+'/assign/unassign',
+                data: { visit: options.visit, sid: this.model.get('BLSAMPLEID') },
+                success: this.unassignUpdateGUI.bind(this, options),
+                error: function(xhr, message, options) {
+                    try {
+                        json = JSON.parse(xhr.responseText)
+                        app.alert({ message: json.message })
+                    } catch {
+                        app.alert({ message: 'Something went wrong unassigning this sample.' })
+                    }
+                },
+            })
+        },
+
+        unassignUpdateGUI: function(options) {
+            this.model.set({ ISINSAMPLECHANGER: null })
+            this.trigger('remove:container', this.model)
+            var shipments = _.uniq(options.shipments.pluck('SHIPPINGID'))
+            if (shipments.indexOf(this.model.get('SHIPPINGID')) > -1) {
+                var s = options.shipments.findWhere({ SHIPPINGID: this.model.get('SHIPPINGID') })
+                var d = s.get('DEWARS').findWhere({ DEWARID: this.model.get('DEWARID') })
+                d.get('CONTAINERS').add(this.model)
+                console.log('add sample to dewar')
+            }
+        },
+    })
+
+
     // List of Dewars in Shipment
     var DewarView = Marionette.CompositeView.extend({
         template: _.template('<h1 class="clearfix"><%-CODE%><span class="r deactivate"><a class="button deact"><i class="fa  fa-power-off"></i> Deactivate Dewar</a></span></h1><div class="containers clearfix"></div>'),
@@ -165,8 +288,17 @@ define(['marionette', 'backbone', 'views/pages',
             
             return classes
         },
-        
-        childView: ContainerView,
+
+        getChildView: function(model) {
+            return this.options.pucks > 0 ? ContainerView : SampleView;
+        },
+
+        childViewOptions: function() {
+            return {
+                shipments: this.options.shipments,
+            }
+        },
+
         childEvents: {
             'remove:container': 'removeContainer',
         },
@@ -213,6 +345,12 @@ define(['marionette', 'backbone', 'views/pages',
     var ShipmentView = Marionette.CompositeView.extend({
         template: _.template('<h1><%-SHIPPINGNAME%></h1>'),
         childView: DewarView,
+        childViewOptions: function() {
+            return {
+                pucks: this.getOption('pucks'),
+                shipments: this.getOption('shipments'),
+            }
+        },
         className: 'shipment',
         
         initialize: function(options) {
@@ -228,8 +366,11 @@ define(['marionette', 'backbone', 'views/pages',
         template: _.template('<%-id%> <span class="name"></span><div class="ac"></div>'),
         
         childView: ContainerView,
-        childViewOptions: {
-            assigned: true,
+        childViewOptions: function() {
+            return {
+                assigned: true,
+                shipments: this.getOption('shipments')
+            }
         },
         childViewContainer: '.ac',
         
@@ -296,6 +437,67 @@ define(['marionette', 'backbone', 'views/pages',
         }
         
     })
+
+    // Sample Changer Positions
+    var PositionSampleView = Marionette.CompositeView.extend({
+        className:'bl_puck',
+        template: _.template('<%-id%> <span class="name"></span><div class="ac"></div>'),
+
+        childView: SampleView,
+        childViewOptions: function() {
+            return {
+                assigned: true,
+                shipments: this.getOption('shipments')
+            }
+        },
+        childViewContainer: '.ac',
+
+        childEvents: {
+            'remove:container': 'removeContainer',
+        },
+
+        ui: {
+            name: '.name',
+        },
+
+        removeContainer: function(child, model) {
+            console.log('remove sample position', model)
+            this.collection.remove(model)
+            this.render()
+        },
+
+        collectionEvents: {
+            'change reset': 'render',
+        },
+
+        events: {
+            'drop': 'handleDrop',
+        },
+
+        initialize: function(options) {
+            this.collection = new Containers()
+            this.assigned = options.assigned
+            this.bl = options.bl
+            this.listenTo(this.assigned, 'change sync reset add remove', this.updateCollection, this)
+            this.updateCollection()
+        },
+
+        updateCollection: function() {
+            this.collection.reset(this.assigned.findWhere({ ISINSAMPLECHANGER: this.model.get('id').toString() }))
+        },
+
+        onRender: function() {
+            this.$el.attr('id', 'blpos'+this.model.get('id'))
+            this.$el.droppable({
+                accept: '.container',
+                hoverClass: 'bl_puck_drag',
+            })
+        },
+
+        handleDrop: function(e, ui) {
+            ui.draggable.trigger('drop:assign', { id: this.model.get('id'), assigned: this.assigned, visit: this.getOption('visit'), bl: this.bl })
+        }
+    })
             
             
     var SampleChangerView = Marionette.CollectionView.extend({
@@ -306,11 +508,24 @@ define(['marionette', 'backbone', 'views/pages',
                 assigned: this.getOption('assigned'),
                 visit: this.getOption('visit'),
                 bl: this.getOption('bl'),
-                pucknames: this.getOption('pucknames')
+                pucknames: this.getOption('pucknames'),
+                shipments: this.getOption('shipments'),
             }
         }
     })
 
+    var SampleChangerSampleView = Marionette.CollectionView.extend({
+        className: 'clearfix',
+        childView: PositionSampleView,
+        childViewOptions: function() {
+            return {
+                assigned: this.getOption('assigned'),
+                visit: this.getOption('visit'),
+                bl: this.getOption('bl'),
+                shipments: this.getOption('shipments'),
+            }
+        }
+    })
             
             
     return Marionette.CompositeView.extend({
@@ -318,7 +533,17 @@ define(['marionette', 'backbone', 'views/pages',
         className: 'content',
         childView: ShipmentView,
         childViewContainer: '#unassigned',
+        childViewOptions: function() {
+            return {
+                pucks: this.pucks,
+                shipments: this.collection,
+            }
+        },
         
+        ui: {
+            pcs: '.pcs',
+        },
+
         events: {
             'drop #unassigned': 'handleDrop',
         },
@@ -330,7 +555,6 @@ define(['marionette', 'backbone', 'views/pages',
         templateHelpers: function() {
             return {
                 VISIT: this.getOption('visit').toJSON(),
-                APP_TYPE: app.type,
             }
         },
         
@@ -340,27 +564,39 @@ define(['marionette', 'backbone', 'views/pages',
         },
         
         initialize: function(options) {
+            this.pucks = 10
+            this.samples = 0
+            const bl_capacity = app.options.get('bl_capacity') || {}
+            if (this.getOption('visit').get('BL') in bl_capacity) {
+                this.pucks = bl_capacity[this.getOption('visit').get('BL')]['pucks']
+                this.samples = bl_capacity[this.getOption('visit').get('BL')]['samples']
+            }
+
             this.collection = new Shipments()
-            
-            this.assigned = new Containers(null, { queryParams: { assigned: 1, bl: this.getOption('visit').get('BL') }, state: { pageSize: 9999 } })
+
+            if (this.pucks > 0) {
+                this.assigned = new Containers(null, { queryParams: { assigned: 1, bl: this.getOption('visit').get('BL') }, state: { pageSize: 9999 } })
+                this.containers = new Containers(null, { queryParams: { unassigned: this.getOption('visit').get('BL') }, state: { pageSize: 30, currentPage: options.page } })
+            } else {
+                this.assigned = new Samples(null, { queryParams: { assigned: this.getOption('visit').get('BL') }, state: { pageSize: 9999 } })
+                this.containers = new Samples(null, { queryParams: { unassigned: this.getOption('visit').get('BL') }, state: { pageSize: 30, currentPage: options.page } })
+            }
             this.assigned.fetch()
-            
-            this.containers = new Containers(null, { queryParams: { unassigned: this.getOption('visit').get('BL') }, state: { pageSize: 30, currentPage: options.page } })
-            var self = this
-            this.containers.fetch().done(function() {
-                console.log(self.containers)
-            })
+            this.containers.fetch()
+
             this.listenTo(this.containers, 'sync', this.generateShipments, this)
             this.paginator = new Pages({ collection: this.containers })
 
-            this.pucknames = new PuckNames()
-            this.pucknames.state.pageSize = 100
-            this.pucknames.queryParams.bl = this.getOption('visit').get('BL')
-            this.pucknames.fetch()
+            if (this.pucks > 0) {
+                this.pucknames = new PuckNames()
+                this.pucknames.state.pageSize = 100
+                this.pucknames.queryParams.bl = this.getOption('visit').get('BL')
+                this.pucknames.fetch()
+            }
 
             this.bl = this.getOption('visit').get('BL')
         },
-        
+
         generateShipments: function() {
             console.log('generate shipments')
             var sids = _.uniq(this.containers.pluck('SHIPPINGID'))
@@ -404,32 +640,48 @@ define(['marionette', 'backbone', 'views/pages',
         
         
         onShow: function() {
-            var pucks = 10
-            if (this.getOption('visit').get('BL') in app.config.pucks) {
-                pucks = app.config.pucks[this.getOption('visit').get('BL')]
+            var positions
+            if (this.pucks > 0) {
+                positions = new Backbone.Collection(_.map(_.range(1,this.pucks+1), function(i) { return { id: i } }))
+                this.scview = new SampleChangerView({
+                    collection: positions,
+                    assigned: this.assigned,
+                    visit: this.getOption('visit').get('VISIT'),
+                    bl: this.bl,
+                    shipments: this.collection,
+                    pucknames: this.pucknames,
+                })
+            } else {
+                positions = new Backbone.Collection(_.map(_.range(1,this.samples+1), function(i) { return { id: i } }))
+                this.scview = new SampleChangerSampleView({
+                    collection: positions,
+                    assigned: this.assigned,
+                    visit: this.getOption('visit').get('VISIT'),
+                    bl: this.bl,
+                    shipments: this.collection,
+                })
             }
             
-            var positions = new Backbone.Collection(_.map(_.range(1,pucks+1), function(i) { return { id: i } }))
-            this.scview = new SampleChangerView({
-                collection: positions,
-                assigned: this.assigned,
-                visit: this.getOption('visit').get('VISIT'),
-                bl: this.bl,
-                shipments: this.collection,
-                pucknames: this.pucknames,
-            })
             this.$el.find('#assigned').append(this.scview.render().$el)
             this.$el.find('.page_wrap').append(this.paginator.render().$el)
-            
+
             this.$el.find('#unassigned').droppable({
                 accept: '.bl_puck .ac div',
                 hoverClass: 'unassigned_drag',
             })
+
+            if (app.type == 'xpdf') {
+                this.ui.pcs.text('Puck')
+            } else if (this.pucks > 0) {
+                this.ui.pcs.text('Container')
+            } else {
+                this.ui.pcs.text('Sample')
+            }
         },
         
         onDestroy: function() {
             if (this.scview) this.scview.destroy()
-            this.pucknames.stop()
+            if (this.pucknames) this.pucknames.stop()
             // hmm no destroy?
             //if (this.paginator) this.paginator.destroy()
         },
