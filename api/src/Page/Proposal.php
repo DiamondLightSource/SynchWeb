@@ -243,7 +243,7 @@ class Proposal extends Page
                     if (!in_array($bty, $tys)) {
                         array_push($tys, $bty);
                     }
-                    if (!$found) {
+                    if (!$found && $bty) {
                         $ty = $bty;
                         $found = True;
                     }
