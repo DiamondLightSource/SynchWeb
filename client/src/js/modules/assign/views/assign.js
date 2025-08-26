@@ -242,7 +242,7 @@ define(['marionette', 'backbone', 'views/pages',
             } else {
                 utils.confirm({
                     title: 'Confirm Sample Unassignment',
-                    content: 'Are you sure you want to unassign &quot;'+this.model.get('NAME')+'&quot; from sample changer position '+this.model.get('SAMPLECHANGERLOCATION')+'?',
+                    content: 'Are you sure you want to unassign &quot;'+this.model.get('NAME')+'&quot; from sample changer position '+this.model.get('ISINSAMPLECHANGER')+'?',
                     callback: this.doUnAssign.bind(this, options)
                 })
             }
