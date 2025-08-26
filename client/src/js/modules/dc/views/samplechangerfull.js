@@ -21,9 +21,9 @@ define(['marionette',
         },
         
         onRender: function() {
-            var bl = this.getOption('bl')
+            const bl = this.getOption('bl')
             const bl_capacity = app.options.get('bl_capacity') || {}
-            var large = bl in bl_capacity && bl_capacity[bl]['pucks'] > 10
+            const large = bl in bl_capacity && bl_capacity[bl]['pucks'] > 10
             console.log('sc large', large)
             if (!app.mobile() && !large) {
                 this.$el.find('.left').css('width', '25%')
