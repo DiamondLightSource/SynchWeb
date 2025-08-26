@@ -92,7 +92,7 @@ define(['backbone', 'marionette',
                 holderWidth: this.getOption('holderWidth'),
                 mapButton: mapButton,
             })
-            this.wrapper.show(this.wrappedView)
+            this.getRegion('wrapper').show(this.wrappedView)
 
         },
 
