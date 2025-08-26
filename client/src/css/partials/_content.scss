@@ -1826,7 +1826,14 @@ textarea[name=pasted] {
     height: 250px;
 }
 
-
+.strategies {
+    > div {
+        padding: 10px;
+        table tr.stratrow {
+            cursor: auto;
+        }
+    }
+}
 
 @media (max-width: $breakpoint-small) {
 
