@@ -313,6 +313,9 @@
     # Industrial proposals are not allowed to use the facility shipping account
     $industrial_prop_codes = array('sw', 'in', 'ic');
 
+    # Proposal codes where data is deleted, not archived
+    $prop_codes_data_deleted = array('in');
+
     # This maps beamlinename in blsession to a proposal type
     # - Internal maps a beamline to an api "type", there are currently:
     #     mx, gen, em
