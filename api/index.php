@@ -104,7 +104,7 @@ function setupApplication($mode): Slim
             'redirects' => $redirects,
             'only_staff_can_assign' => $only_staff_can_assign,
             'industrial_prop_codes' => $industrial_prop_codes,
-            'prop_codes_data_deleted' => $prop_codes_data_deleted
+            'prop_codes_data_deleted' => $prop_codes_data_deleted ?? array(),
         )));
     });
     return $app;
