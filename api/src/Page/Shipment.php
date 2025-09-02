@@ -112,7 +112,7 @@ class Shipment extends Page
         // Container fields
         'DEWARID' => '\d+',
         'CAPACITY' => '\d+',
-        'CONTAINERTYPE' => '([\w\-])+',
+        'CONTAINERTYPE' => '([\s\w\-])+',
         'NAME' => '([\w\-])+',
         'SCHEDULEID' => '\d+',
         'SCREENID' => '\d+',
@@ -2748,7 +2748,7 @@ class Shipment extends Page
             $where .= ' AND ct.proposaltype = :1';
             array_push($args, $this->arg('PROPOSALTYPE'));
         }
-        $rows = $this->db->pq("SELECT ct.containerTypeId, name, ct.proposalType, ct.capacity, ct.wellPerRow, ct.dropPerWellX, ct.dropPerWellY, ct.dropHeight, ct.dropWidth, ct.wellDrop FROM ContainerType ct WHERE $where", $args);
+        $rows = $this->db->pq("SELECT ct.containerTypeId, name, ct.proposalType, ct.capacity, ct.wellPerRow, ct.dropPerWellX, ct.dropPerWellY, ct.dropHeight, ct.dropWidth, ct.wellDrop, ct.dropOffsetX, ct.dropOffsetY FROM ContainerType ct WHERE $where", $args);
         $this->_output(array('total' => count($rows), 'data' => $rows));
     }
 
