@@ -64,6 +64,8 @@ define(['marionette', 'views/form',
             'change @ui.safetylevel': 'changeSafetyLevel',
             'change @ui.dynamic': 'updateFirstExp',
             'change @ui.longwavelengthsel': 'updateLongWavelength',
+            'change @ui.extrasupportsel': 'updateExtraSupport',
+            'change @ui.onsiteusersel': 'updateOnsiteUser',
         },
         
         ui: {
@@ -82,6 +84,8 @@ define(['marionette', 'views/form',
             safetylevel: 'select[name=SAFETYLEVEL]',
             longwavelengthsel: 'select[name=LONGWAVELENGTH]',
             longwavelengthli: '.longwavelength',
+            extrasupportsel: 'select[name=EXTRASUPPORTYESNO]',
+            onsiteusersel: 'select[name=ONSITEUSERYESNO]',
         },
         
         addLC: function(e) {
@@ -168,6 +172,22 @@ define(['marionette', 'views/form',
             }
         },
 
+        updateExtraSupport: function() {
+            if (this.ui.extrasupportsel.val() === 'No') {
+                this.$el.find(".extrasupportdetail").hide()
+            } else {
+                this.$el.find(".extrasupportdetail").show()
+            }
+        },
+
+        updateOnsiteUser: function() {
+            if (this.ui.onsiteusersel.val() === 'No') {
+                this.$el.find(".onsiteuserdetail").hide()
+            } else {
+                this.$el.find(".onsiteuserdetail").show()
+            }
+        },
+
         isIndustrialProposal: function() {
             industrial_codes = app.options.get('industrial_prop_codes')
             return industrial_codes.includes(app.prop.slice(0,2))
@@ -216,6 +236,8 @@ define(['marionette', 'views/form',
             this.$el.find('li.d .floated').append(new FCodes({ collection: this.fcodes, dewars: this.dewars }).render().el)
 
             this.$el.find(".remoteform").hide()
+            this.$el.find(".extrasupportdetail").hide()
+            this.$el.find(".onsiteuserdetail").hide()
             this.$el.find(".remoteormailin").hide()
             
             this.checkFCodes()
