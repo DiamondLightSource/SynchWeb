@@ -614,6 +614,7 @@ define(['backbone', 'marionette', 'views/dialog',
             var nm = model.clone()
             nm.set('CID', this.collection.length+1)
             this.collection.add(nm)
+            this.toggleIndividual()
         },
           
         setCell: function(view, ap) {
