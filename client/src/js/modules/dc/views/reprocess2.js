@@ -102,7 +102,7 @@ define(['backbone', 'marionette', 'views/dialog',
 
 
         selectAll: function(e) {
-            e.preventDefault()
+            if (e) e.preventDefault()
 
             var si = parseInt(this.model.get('SI'))
             var ni = parseInt(this.model.get('NUMIMG'))
@@ -148,6 +148,8 @@ define(['backbone', 'marionette', 'views/dialog',
             this.$el.find('div input[type="text"]').css('width', '50px')
             this.ui.pipeline.html(this.getOption('pipelines').opts())
             this.model.set('PIPELINE', this.ui.pipeline.val())
+            // Wait 500ms to ensure distl plot has loaded
+            setTimeout(() => { this.selectAll() }, 500)
         },
 
         toggleSG: function(e) {
@@ -247,6 +249,12 @@ define(['backbone', 'marionette', 'views/dialog',
             sm: 'input[name=sm]',
             indexingMethod: 'select[name=method]',
             absorptionLevel: 'select[name=absorption_level]',
+            a: 'input[name=a]',
+            b: 'input[name=b]',
+            c: 'input[name=c]',
+            al: 'input[name=alpha]',
+            be: 'input[name=beta]',
+            ga: 'input[name=gamma]',
         },
 
         buttons: {
@@ -259,6 +267,7 @@ define(['backbone', 'marionette', 'views/dialog',
             'click a.opt': 'toggleOpts',
             'click @ui.ind': 'toggleIndividual',
             'change @ui.pipeline': 'updatePipeline',
+            'change @ui.indexingMethod': 'updateIndexingMethod',
             'click a.multicrystal': 'closeDialog',
         },
 
@@ -276,11 +285,40 @@ define(['backbone', 'marionette', 'views/dialog',
             }
         },
 
+        updateIndexingMethod: function() {
+            if (this.ui.indexingMethod.val() == 'real_space_grid_search') {
+                const st = this.ui.ind.is(':checked')
+                if (st) {
+                    let eachHasCell = true
+                    this.distlview.children.each(function(v) {
+                        if (!v.ui.a.val() || !v.ui.b.val() || !v.ui.c.val() ||
+                                !v.ui.al.val() || !v.ui.be.val() || !v.ui.ga.val()) {
+                            v.ui.cell.show()
+                            eachHasCell = false
+                        }
+                    })
+                    if (!eachHasCell) {
+                        app.alert({ message: 'Real Space Grid Search requires unit cell to be populated' })
+                        this.ui.indexingMethod.val('')
+                    }
+                } else {
+                    if (!this.ui.a.val() || !this.ui.b.val() || !this.ui.c.val() ||
+                            !this.ui.al.val() || !this.ui.be.val() || !this.ui.ga.val()) {
+                        app.alert({ message: 'Real Space Grid Search requires unit cell to be populated' })
+                        this.ui.indexingMethod.val('')
+                        this.ui.cell.show()
+                    }
+                }
+            }
+        },
+
         toggleIndividual: function(e) {
-            var st = this.ui.ind.is(':checked')
+            const st = this.ui.ind.is(':checked')
             st ? this.ui.mul.hide() : this.ui.mul.show()
+            if (st) this.ui.cell.hide()
             this.distlview.children.each(function(v) {
                 v.setInd(st)
+                if (!st) v.ui.cell.hide()
             })
         },
 
@@ -530,18 +568,16 @@ define(['backbone', 'marionette', 'views/dialog',
         },
 
         onRender: function() {
-            this.ui.opts.hide()
+            if (app.type != 'sm') this.ui.opts.hide()
             this.ui.cell.hide()
-            this.$el.find('span input[type="text"]').css('width', '50px')
+            this.$el.find('span input[type="text"]').css('width', '55px')
 
-            this.pipelines = new Pipelines([
-                { NAME: 'Xia2 DIALS', VALUE: 'xia2-dials' },
-                { NAME: 'Xia2 3dii', VALUE: 'xia2-3dii' },
-                { NAME: 'Fast DP', VALUE: 'fast_dp' },
-                { NAME: 'autoPROC', VALUE: 'autoPROC' },
-            ])
-
-            this.ui.pipeline.html(this.pipelines.opts())
+            const uspls = app.options.get('upstream_reprocessing_pipelines')
+            if (uspls) {
+                const pls = uspls[app.type] ?? uspls['default'];
+                this.pipelines = new Pipelines(pls)
+                this.ui.pipeline.html(this.pipelines.opts())
+            }
 
             this.indexingMethods = new IndexingMethods([
                 { NAME: '-', VALUE: '' },
