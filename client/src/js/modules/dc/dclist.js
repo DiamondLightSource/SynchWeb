@@ -50,7 +50,8 @@ function(Marionette,
               return {
                 IS_VISIT: is_vis,
                 VIS_LINK: vl,
-                APIURL: app.apiurl
+                APIURL: app.apiurl,
+                IS_ARCHIVED: app.options.get('prop_codes_data_deleted').some(code => app.prop.includes(code)) ? "deleted" : "archived",
               }
             },
             visit: vl,
