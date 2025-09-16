@@ -548,7 +548,7 @@ define(['marionette',
             } else {
                 this.ui.addis.addClass('button-highlight')
                 this.image.setAddDispensing(true)
-                this.ui.addis.find('span').text('Cancel')
+                this.ui.addis.find('span').text('Finish')
                 this.ui.addis.find('i').removeClass('fa-plus').addClass('fa-times')
                 if (this.subsamples.length && this.subsamples.findWhere({ BLSAMPLEID: this.getSample() }).get('DISPENSEX')) {
                     this.ui.deldis.show()
@@ -960,7 +960,6 @@ define(['marionette',
                 this.listenTo(this.image, 'image:prev', this.prevImage, this)
                 this.listenTo(this.image, 'image:first', this.firstImage, this)
                 this.listenTo(this.image, 'image:last', this.lastImage, this)
-                this.listenTo(this.image, 'finishdispensing', this.setAddDispensing, this)
 
                 if (this.getOption('params').iid) this.ui.ins.val(this.getOption('params').iid)
                 this.selectInspection()
