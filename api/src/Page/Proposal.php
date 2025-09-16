@@ -224,23 +224,28 @@ class Proposal extends Page
             // See if proposal code matches list in config
             $found = False;
             $ty = null;
+            $tys = array();
             foreach ($prop_types as $pty) {
                 if ($r['PROPOSALCODE'] == $pty) {
                     $ty = $pty;
+                    array_push($tys, $pty);
                     $found = True;
                 }
             }
 
             // Proposal code didnt match, work out what beamline the visits are on
-            if (!$found) {
-                $bls = $this->db->pq("SELECT s.beamlinename FROM blsession s WHERE s.proposalid=:1", array($r['PROPOSALID']));
+            $bls = $this->db->pq("SELECT s.beamlinename FROM blsession s WHERE s.proposalid=:1", array($r['PROPOSALID']));
 
-                if (sizeof($bls)) {
-                    foreach ($bls as $bl) {
-                        $b = $bl['BEAMLINENAME'];
-                        $ty = $this->_get_type_from_beamline($b);
-                        if ($ty)
-                            break;
+            if (sizeof($bls)) {
+                foreach ($bls as $bl) {
+                    $b = $bl['BEAMLINENAME'];
+                    $bty = $this->_get_type_from_beamline($b);
+                    if (!in_array($bty, $tys)) {
+                        array_push($tys, $bty);
+                    }
+                    if (!$found && $bty) {
+                        $ty = $bty;
+                        $found = True;
                     }
                 }
             }
@@ -248,6 +253,7 @@ class Proposal extends Page
             if (!$ty)
                 $ty = 'gen';
             $r['TYPE'] = $ty;
+            $r['TYPES'] = $tys;
         }
 
         if ($id) {

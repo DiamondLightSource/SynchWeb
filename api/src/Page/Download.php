@@ -188,9 +188,9 @@ class Download extends Page
             array_push($args, $this->arg('FILENAME'));
         }
 
-        if ($this->has_arg('FILETYPE')) {
+        if ($this->has_arg('filetype')) {
             $where .= ' AND appa.filetype =:' . (sizeof($args) + 1);
-            array_push($args, $this->arg('FILETYPE'));
+            array_push($args, $this->arg('filetype'));
         }
 
         if ($this->has_arg('AUTOPROCPROGRAMID')) {
@@ -368,10 +368,9 @@ class Download extends Page
 
         foreach ($rows as &$r) {
             $r['FILENAME'] = basename($r['FILEFULLPATH']);
+            $r['FILEPATH'] = dirname($r['FILEFULLPATH']);
             $info = pathinfo($r['FILENAME']);
             $r['NAME'] = basename($r['FILENAME'], '.' . $info['extension']);
-
-            $r['FILEFULLPATH'] = preg_replace('/.*\/' . $r['VISIT'] . '\//', '', $r['FILEFULLPATH']);
 
             foreach (array('DX_MM', 'DY_MM', 'STEPS_X', 'STEPS_Y', 'SNAKED') as $k) {
                 $r[$k] = floatval($r[$k]);

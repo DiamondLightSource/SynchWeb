@@ -18,7 +18,9 @@ define([
             'click a.dd': utils.signHandler,
             'click .holder h1.dp': 'loadAP',
         },
-        
+
+        setProcessingVars: function() {},
+
         showDiff: function(e) {
             e.preventDefault()
             this.$el.find('.diffraction a').eq(0).trigger('click')

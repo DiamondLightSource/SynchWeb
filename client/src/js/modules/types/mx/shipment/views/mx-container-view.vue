@@ -165,8 +165,8 @@
               <span v-else-if="shippingSafetyLevel === null">
                 Cannot queue container until shipment safety level is set
               </span>
-              <span v-else-if="shippingSafetyLevel != 'Green'">
-                Cannot queue containers in {{ shippingSafetyLevel }} shipments
+              <span v-else-if="shippingSafetyLevel.toLowerCase() !== 'green'">
+                Cannot queue containers in {{ shippingSafetyLevel.toLowerCase() }} shipments
               </span>
               <span v-else-if="containerQueueError">
                 There was an error submitting the container to the queue. Please fix any errors in the samples table.

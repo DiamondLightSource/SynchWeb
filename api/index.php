@@ -73,7 +73,7 @@ function setupApplication($mode): Slim
             $valid_components, $enabled_container_types, $synchweb_version, $redirects,
             $shipping_service_app_url, $use_shipping_service_redirect, $use_shipping_service_redirect_incoming_shipments,
             $dials_rest_url_rings, $closed_proposal_link, $ccp4_cloud_upload_url,
-            $only_staff_can_assign, $container_types_with_parents;
+            $only_staff_can_assign, $industrial_prop_codes, $prop_codes_data_deleted, $container_types_with_parents;
         $app->contentType('application/json');
         $options = $app->container['options'];
         $app->response()->body(json_encode(array(
@@ -103,7 +103,9 @@ function setupApplication($mode): Slim
             'ccp4_cloud_upload_url' => $ccp4_cloud_upload_url,
             'redirects' => $redirects,
             'only_staff_can_assign' => $only_staff_can_assign,
-            'container_types_with_parents' => $container_types_with_parents
+            'container_types_with_parents' => $container_types_with_parents,
+            'industrial_prop_codes' => $industrial_prop_codes,
+            'prop_codes_data_deleted' => $prop_codes_data_deleted ?? array(),
         )));
     });
     return $app;

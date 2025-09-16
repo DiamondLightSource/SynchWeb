@@ -43,6 +43,7 @@ class Sample extends Page
         'capillaryPhase' => '',
         'json' => '',
         'dcp' => '\d',
+        'pipeline' => '\w+',
 
         'collected_during' => '\w+\d+-\d+',
 
@@ -827,7 +828,11 @@ class Sample extends Page
                 INNER JOIN shipping sh ON sh.shippingid = d.shippingid
                 INNER JOIN proposal p ON p.proposalid = sh.proposalid
 
-                LEFT OUTER JOIN blsampleposition bsp ON bsp.blsampleid = s.blsampleid
+                LEFT OUTER JOIN
+                    (SELECT * FROM blsampleposition bsp1 WHERE bsp1.blSamplePositionId =
+                        (SELECT MAX(blSamplePositionId) FROM BLSamplePosition bsp2 WHERE bsp2.blSampleId = bsp1.blSampleId AND bsp2.positiontype='dispensing')
+                    ) bsp ON bsp.blSampleId = s.blSampleId
+
                 LEFT OUTER JOIN containerqueuesample cqs ON cqs.blsubsampleid = ss.blsubsampleid
                 LEFT OUTER JOIN containerqueue cq ON cqs.containerqueueid = cq.containerqueueid AND cq.completedtimestamp IS NULL
                 
@@ -1177,7 +1182,11 @@ class Sample extends Page
               $join WHERE $where", $args);
         $tot = intval($tot[0]['TOT']);
 
-
+        # Get stats only for a specific processing pipeline
+        if ($this->has_arg('pipeline')) {
+            $where .= ' AND (app.processingprograms is null OR app.processingpipelineid is null OR app.processingpipelineid=:' . (sizeof($args) + 1) . ')';
+            array_push($args, $this->arg('pipeline'));
+        }
 
         $start = 0;
         $pp = $this->has_arg('per_page') ? $this->arg('per_page') : 15;
@@ -1717,9 +1726,6 @@ class Sample extends Page
         }
 
 
-        $tot = $this->db->pq("SELECT count(distinct pr.proteinid) as tot FROM protein pr INNER JOIN proposal p ON p.proposalid = pr.proposalid $join WHERE $where", $args);
-        $tot = intval($tot[0]['TOT']);
-
         if ($this->has_arg('s')) {
             $st = sizeof($args) + 1;
             $where .= " AND (lower(pr.name) LIKE lower(CONCAT(CONCAT('%',:" . $st . "), '%')) OR lower(pr.acronym) LIKE lower(CONCAT(CONCAT('%',:" . ($st + 1) . "), '%')))";
@@ -1727,6 +1733,19 @@ class Sample extends Page
                 array_push($args, $this->arg('s'));
         }
 
+        if ($this->has_arg('sid')) {
+            $where .= ' AND b.blsampleid=:' . (sizeof($args) + 1);
+            array_push($args, $this->arg('sid'));
+            $join .= ' LEFT JOIN diffractionplan dp ON dp.diffractionplanid = b.diffractionplanid';
+            $extc = 'dp.anomalousscatterer, ';
+        }
+
+        $tot = $this->db->pq("SELECT count(distinct pr.proteinid) as tot FROM protein pr
+                              INNER JOIN proposal p ON p.proposalid = pr.proposalid
+                              LEFT OUTER JOIN crystal cr ON cr.proteinid = pr.proteinid
+                              LEFT OUTER JOIN blsample b ON b.crystalid = cr.crystalid
+                              $join WHERE $where", $args);
+        $tot = intval($tot[0]['TOT']);
 
         $start = 0;
         $pp = $this->has_arg('per_page') ? $this->arg('per_page') : 15;
@@ -1911,7 +1930,10 @@ class Sample extends Page
               INNER JOIN crystal cr ON cr.crystalid = b.crystalid 
               INNER JOIN protein pr ON pr.proteinid = cr.proteinid 
               LEFT OUTER JOIN diffractionplan dp on dp.diffractionplanid = b.diffractionplanid 
-              LEFT OUTER JOIN blsampleposition bsp ON bsp.blsampleid = b.blsampleid AND bsp.positiontype='dispensing'
+              LEFT OUTER JOIN
+                  (SELECT * FROM BLSamplePosition bsp1 WHERE bsp1.blSamplePositionId =
+                      (SELECT MAX(blSamplePositionId) FROM BLSamplePosition bsp2 WHERE bsp2.blSampleId = bsp1.blSampleId AND bsp2.positiontype='dispensing')
+                  ) bsp ON bsp.blSampleId = b.blSampleId
               WHERE pr.proposalid = :1 AND b.blsampleid = :2", array($this->proposalid, $this->arg('sid')));
 
         if (!sizeof($samp))

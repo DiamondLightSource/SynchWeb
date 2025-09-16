@@ -38,6 +38,7 @@ class Processing extends Page {
         'rmeas' => '[\d\.]+',
         'cchalf' => '[\d\.]+',
         'ccanom' => '[\d\.]+',
+        'images' => '\d+',
         'username' => '(\w|\s|\-|\.)+',
         'cloudrunid' => '(\w|\-)+',
         'AUTOPROCPROGRAMATTACHMENTID' => '\d+',
@@ -338,7 +339,7 @@ class Processing extends Page {
 
         $args = array($info[0]['SESSIONID']);
 
-        $where = 'dc.sessionid=:1 AND dc.overlap = 0 AND dc.axisrange > 0 AND dc.numberOfImages > 150 AND app.processingstatus = 1';
+        $where = 'dc.sessionid=:1 AND dc.overlap = 0 AND dc.axisrange > 0 AND app.processingstatus = 1';
 
         if ($this->has_arg('pipeline')) {
             $st = sizeof($args);
@@ -386,6 +387,12 @@ class Processing extends Page {
             $st = sizeof($args);
             $where .= " AND apssinner.ccanomalous >= :" . ($st + 1);
             array_push($args, $this->arg('ccanom'));
+        }
+
+        if ($this->has_arg('images')) {
+            $st = sizeof($args);
+            $where .= " AND dc.numberOfImages >= :" . ($st + 1);
+            array_push($args, $this->arg('images'));
         }
 
         if ($this->has_arg('s')) {
@@ -968,6 +975,7 @@ class Processing extends Page {
             apss.multiplicity,
             apss.meanioversigi as isigi,
             apss.resioversigi2 as resisigi,
+            aps.autoprocscalingid,
             ap.spacegroup as sg,
             ap.refinedcell_a as cell_a,
             ap.refinedcell_b as cell_b,
@@ -1153,6 +1161,7 @@ class Processing extends Page {
 
             $formatted_result[$row['AUTOPROCPROGRAMID']]['TYPE'] = $row['TYPE'];
             $formatted_result[$row['AUTOPROCPROGRAMID']]['AID'] = $row['AUTOPROCPROGRAMID'];
+            $formatted_result[$row['AUTOPROCPROGRAMID']]['SCALINGID'] = $row['AUTOPROCSCALINGID'];
             $formatted_result[$row['AUTOPROCPROGRAMID']]['MESSAGES'] = array_key_exists($row['AUTOPROCPROGRAMID'], $messages_result)
                 ? $messages_result[$row['AUTOPROCPROGRAMID']]
                 : array();

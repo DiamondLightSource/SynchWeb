@@ -147,8 +147,6 @@ export default {
       this.parentContainers = [{ PARENTCONTAINERID: null, NAME: ""}, ...filteredResult]
     },
     async getContainerTypes() {
-      this.containerFilter = [this.$store.state.proposal.proposalType]
-
       const result = await this.$store.dispatch('getCollection', this.containerTypesCollection)
       this.containerTypes = result.toJSON()
       // Do we have valid start state?
@@ -521,7 +519,7 @@ export default {
   },
   computed: {
     containerFilter: function() {
-      return [this.$store.state.proposal.proposalType]
+      return this.$store.state.proposal.proposalTypes
     },
     showParentContainer() {
         if (!app.options.get('container_types_with_parents')) return false
