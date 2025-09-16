@@ -132,6 +132,8 @@ class Shipment extends Page
         'SOURCE' => '[\w\-]+',
 
         'CONTAINERREGISTRYID' => '\d+',
+        'PARENTCONTAINERID' => '\d*',
+        'PARENTCONTAINERLOCATION' => '\d*',
         'PROPOSALID' => '\d+',
         't' => '\w+',
 
@@ -2387,6 +2389,7 @@ class Shipment extends Page
                 count(distinct ci.containerinspectionid) as inspections,
                 c.scheduleid, c.screenid, c.ownerid, c.imagerid, c.bltimestamp, c.samplechangerlocation, c.beamlinelocation, c.containertype, c.capacity, c.barcode,
                 c.containerstatus, c.containerid, c.code as name, c.requestedreturn, c.requestedimagerid, c.comments, c.experimenttype, c.storagetemperature,
+                c.parentcontainerid, c.parentcontainerlocation, pc.code as parentcontainer,
                 sc.name as screen,
                 i.temperature, i.name as imager,
                 CONCAT(p.proposalcode, p.proposalnumber) as prop, CONCAT(p.proposalcode, p.proposalnumber, '-', ses.visit_number) as visit, ses.beamlinename,
@@ -2416,6 +2419,7 @@ class Shipment extends Page
                                   LEFT OUTER JOIN containerqueue cq2 ON cq2.containerid = c.containerid AND cq2.completedtimestamp IS NOT NULL
                                   LEFT OUTER JOIN containerregistry reg ON reg.containerregistryid = c.containerregistryid
                                   LEFT OUTER JOIN blsession ses ON c.sessionid = ses.sessionid
+                                  LEFT OUTER JOIN container pc ON c.parentcontainerid = pc.containerid
 
                                   $join
                                   WHERE $where
@@ -2541,11 +2545,12 @@ class Shipment extends Page
         if (!sizeof($chkc))
             $this->_error('No such container');
 
-        $fields = array('NAME' => 'CODE', 'REQUESTEDRETURN' => 'REQUESTEDRETURN', 'REQUESTEDIMAGERID' => 'REQUESTEDIMAGERID', 'COMMENTS' => 'COMMENTS', 'BARCODE' => 'BARCODE', 'CONTAINERTYPE' => 'CONTAINERTYPE', 'EXPERIMENTTYPE' => 'EXPERIMENTTYPE', 'STORAGETEMPERATURE' => 'STORAGETEMPERATURE', 'CONTAINERREGISTRYID' => 'CONTAINERREGISTRYID', 'PROCESSINGPIPELINEID' => 'PRIORITYPIPELINEID', 'OWNERID' => 'OWNERID');
+        $fields = array('NAME' => 'CODE', 'REQUESTEDRETURN' => 'REQUESTEDRETURN', 'REQUESTEDIMAGERID' => 'REQUESTEDIMAGERID', 'COMMENTS' => 'COMMENTS', 'BARCODE' => 'BARCODE', 'CONTAINERTYPE' => 'CONTAINERTYPE', 'EXPERIMENTTYPE' => 'EXPERIMENTTYPE', 'STORAGETEMPERATURE' => 'STORAGETEMPERATURE', 'CONTAINERREGISTRYID' => 'CONTAINERREGISTRYID', 'PROCESSINGPIPELINEID' => 'PRIORITYPIPELINEID', 'OWNERID' => 'OWNERID', 'PARENTCONTAINERID' => 'PARENTCONTAINERID', 'PARENTCONTAINERLOCATION' => 'PARENTCONTAINERLOCATION');
         foreach ($fields as $k => $f) {
             if ($this->has_arg($k)) {
-                $this->db->pq("UPDATE container SET $f=:1 WHERE containerid=:2", array($this->arg($k), $this->arg('cid')));
-                $this->_output(array($k => $this->arg($k)));
+                $val = $this->arg($k) != '' ? $this->arg($k) : null;
+                $this->db->pq("UPDATE container SET $f=:1 WHERE containerid=:2", array($val, $this->arg('cid')));
+                $this->_output(array($k => $val));
             }
         }
 
@@ -2581,15 +2586,17 @@ class Shipment extends Page
         $tem = $this->has_arg('STORAGETEMPERATURE') ? $this->arg('STORAGETEMPERATURE') : null;
 
         $crid = $this->has_arg('CONTAINERREGISTRYID') ? $this->arg('CONTAINERREGISTRYID') : null;
+        $pcid = $this->has_arg('PARENTCONTAINERID') ? $this->arg('PARENTCONTAINERID') : null;
+        $pcl = $this->has_arg('PARENTCONTAINERLOCATION') ? $this->arg('PARENTCONTAINERLOCATION') : null;
 
         $pipeline = $this->has_arg('PROCESSINGPIPELINEID') ? $this->arg('PROCESSINGPIPELINEID') : null;
         $source = $this->has_arg('SOURCE') ? $this->arg('SOURCE') : null;
 
         try {
             $this->db->pq(
-                "INSERT INTO container (containerid,dewarid,code,bltimestamp,capacity,containertype,scheduleid,screenid,ownerid,requestedimagerid,comments,barcode,experimenttype,storagetemperature,containerregistryid,prioritypipelineid,source)
-                 VALUES (s_container.nextval,:1,:2,CURRENT_TIMESTAMP,:3,:4,:5,:6,:7,:8,:9,:10,:11,:12,:13,:14,IFNULL(:15,CURRENT_USER)) RETURNING containerid INTO :id",
-                array($this->arg('DEWARID'), $this->arg('NAME'), $cap, $this->arg('CONTAINERTYPE'), $sch, $scr, $own, $rid, $com, $bar, $ext, $tem, $crid, $pipeline, $source)
+                "INSERT INTO container (containerid,dewarid,code,bltimestamp,capacity,containertype,scheduleid,screenid,ownerid,requestedimagerid,comments,barcode,experimenttype,storagetemperature,containerregistryid,parentcontainerid,parentcontainerlocation,prioritypipelineid,source)
+                 VALUES (s_container.nextval,:1,:2,CURRENT_TIMESTAMP,:3,:4,:5,:6,:7,:8,:9,:10,:11,:12,:13,:14,:15,:16,IFNULL(:17,CURRENT_USER)) RETURNING containerid INTO :id",
+                array($this->arg('DEWARID'), $this->arg('NAME'), $cap, $this->arg('CONTAINERTYPE'), $sch, $scr, $own, $rid, $com, $bar, $ext, $tem, $crid, $pcid, $pcl, $pipeline, $source)
             );
 
             $cid = $this->db->id();
