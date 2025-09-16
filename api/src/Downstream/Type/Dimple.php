@@ -187,11 +187,11 @@ class Dimple extends DownstreamPlugin {
 
         foreach ($blobs as $n => $blob) {
             array_push($peaks, array(
-                $blob['X'],
-                $blob['Y'],
-                $blob['Z'],
-                $blob['HEIGHT'],
-                $blob['OCCUPANCY'],
+                number_format($blob['X'], 2),
+                number_format($blob['Y'], 2),
+                number_format($blob['Z'], 2),
+                number_format($blob['HEIGHT'], 2),
+                number_format($blob['OCCUPANCY'], 1),
                 $blob['NEARESTATOMDISTANCE'] . ' ' . $blob['NEARESTATOMNAME'] . '_' . $blob['NEARESTATOMCHAINID']
                     . ':' . $blob['NEARESTATOMRESNAME'] . $blob['NEARESTATOMRESSEQ'],
             ));
