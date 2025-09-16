@@ -120,6 +120,8 @@ class Dimple extends DownstreamPlugin {
             $dat['PKLIST'] = $pklist;
         }
 
+        $dat['ANODE_PEAKS'] = $this->_get_anode_peaks($this->process['PARAMETERS']['scaling_id']);
+
         $results = new DownstreamResult($this);
         $results->data = $dat;
 
@@ -164,5 +166,37 @@ class Dimple extends DownstreamPlugin {
         } else {
             return $pdb['FILE'];
         }
+    }
+
+    function _get_anode_peaks($scaling_id) {
+
+        $peaks = array();
+        $plot = array();
+
+        $blobs = $this->db->pq(
+            "SELECT mb.x, mb.y, mb.z, mb.height, mb.occupancy,
+            mb.nearestatomdistance, mb.nearestatomname, mb.nearestatomchainid,
+            mb.nearestatomresname, mb.nearestatomresseq
+            FROM mxmrrunblob mb
+            INNER JOIN mxmrrun m ON mb.mxmrrunid = m.mxmrrunid
+            WHERE mb.maptype='anomalous' and m.autoprocscalingid=:1
+            ORDER BY mb.height DESC
+            LIMIT 10",
+            array($scaling_id)
+        );
+
+        foreach ($blobs as $n => $blob) {
+            array_push($peaks, array(
+                $blob['X'],
+                $blob['Y'],
+                $blob['Z'],
+                $blob['HEIGHT'],
+                $blob['OCCUPANCY'],
+                $blob['NEARESTATOMDISTANCE'] . ' ' . $blob['NEARESTATOMNAME'] . '_' . $blob['NEARESTATOMCHAINID']
+                    . ':' . $blob['NEARESTATOMRESNAME'] . $blob['NEARESTATOMRESSEQ'],
+            ));
+            array_push($plot, array($n+1, $blob['HEIGHT']));
+        }
+        return array('TABLE' => $peaks, 'PLOT' => $plot);
     }
 }
