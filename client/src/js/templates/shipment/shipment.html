@@ -112,6 +112,7 @@
                 EXTRASUPPORTREQUIREMENT=(typeof EXTRASUPPORTREQUIREMENT !== 'undefined')? EXTRASUPPORTREQUIREMENT : null;
                 MULTIAXISGONIOMETRY=(typeof MULTIAXISGONIOMETRY !== 'undefined')? MULTIAXISGONIOMETRY : null;
                 LONGWAVELENGTH=(typeof LONGWAVELENGTH !== 'undefined')? LONGWAVELENGTH : null;
+                ONSITEUSER=(typeof ONSITEUSERS !== 'undefined')? ONSITEUSERS : null;
             %>
             <li>
                 <span class="label">Hard drive enclosed</span>
@@ -165,12 +166,17 @@
                 </li>
 
                 <li class="remoteform">
-                    <span class="label">Group Dewars</span>
+                    <span class="label">Group Shipments</span>
                     <span class="DEWARGROUPING"><%-DEWARGROUPING %></span>
                 </li>
 
                 <li class="remoteform">
-                    <span class="label">Extra Support Requirement</span>
+                    <span class="label">On-site Users</span>
+                    <span class="ONSITEUSERS"><%-ONSITEUSERS %></span>
+                </li>
+
+                <li class="remoteform">
+                    <span class="label">Extra Support Required</span>
                     <span class="EXTRASUPPORTREQUIREMENT"><%-EXTRASUPPORTREQUIREMENT %></span>
                 </li>
 

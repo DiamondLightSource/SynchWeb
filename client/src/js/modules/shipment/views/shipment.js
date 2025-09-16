@@ -373,7 +373,8 @@ define(['marionette',
             this.edit.create("SCHEDULINGRESTRICTIONS", 'text')
             this.edit.create("LASTMINUTEBEAMTIME", 'select', { data: {'Yes': 'Yes', 'No': 'No'}})
             this.edit.create("DEWARGROUPING", 'select', { data: {'Yes': 'Yes', 'No': 'No', 'Don\'t mind': 'Don\'t mind'}})
-            this.edit.create("EXTRASUPPORTREQUIREMENT", 'text');
+            this.edit.create("EXTRASUPPORTREQUIREMENT", 'text', { placeholder: 'No' });
+            this.edit.create("ONSITEUSERS", 'text', { placeholder: 'No' });
             this.edit.create("MULTIAXISGONIOMETRY", 'select', { data: {'Yes': 'Yes', 'No': 'No'}})
 
             this.updateGUI()
