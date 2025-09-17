@@ -119,7 +119,20 @@ class PDF extends Page
         if (!$this->has_arg('sid'))
             $this->_error('No shipment specified', 'No shipment id was specified');
 
-        $ship = $this->db->pq("SELECT s.safetylevel, CONCAT(p.proposalcode, p.proposalnumber) as prop, s.shippingid, s.shippingname, pe.givenname, pe.familyname, pe.phonenumber,pe.faxnumber, l.name as labname, l.address, l.city, l.postcode, l.country, pe2.givenname as givenname2, pe2.familyname as familyname2, pe2.phonenumber as phonenumber2, pe2.faxnumber as faxnumber2, l2.name as labname2, l2.address as address2, l2.city as city2, l2.postcode as postcode2, l2.country as country2, c2.courieraccount, c2.billingreference, c2.defaultcourriercompany
+        $ship = $this->db->pq("SELECT s.safetylevel, CONCAT(p.proposalcode, p.proposalnumber) as prop, s.shippingid, s.shippingname,
+                pe.givenname, pe.familyname, pe.phonenumber, pe.faxnumber, l.name as labname, l.address, l.city, l.postcode, l.country,
+                IFNULL(pe2.givenname, pe.givenname) as givenname2,
+                IFNULL(pe2.familyname, pe.familyname) as familyname2,
+                IFNULL(pe2.phonenumber, pe.phonenumber) as phonenumber2,
+                IFNULL(pe2.faxnumber, pe.faxnumber) as faxnumber2,
+                IFNULL(l2.name, l.name) as labname2,
+                IFNULL(l2.address, l.address) as address2,
+                IFNULL(l2.city, l.city) as city2,
+                IFNULL(l2.postcode, l.postcode) as postcode2,
+                IFNULL(l2.country, l.country) as country2,
+                IFNULL(c2.courieraccount, c.courieraccount) as courieraccount,
+                IFNULL(c2.billingreference, c.billingreference) as billingreference,
+                IFNULL(c2.defaultcourriercompany, c.defaultcourriercompany) as defaultcourriercompany
                 FROM shipping s 
                 INNER JOIN labcontact c ON s.sendinglabcontactid = c.labcontactid 
                 INNER JOIN person pe ON c.personid = pe.personid 
