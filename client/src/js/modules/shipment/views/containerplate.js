@@ -74,6 +74,7 @@ define(['marionette',
     AutoScoreSchemas, AutoScores,
 
     Users,
+
     Editable, TableView, table, XHRImage, utils,
     template, templateimage){
 
