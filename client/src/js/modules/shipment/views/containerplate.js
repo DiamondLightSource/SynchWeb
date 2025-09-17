@@ -74,7 +74,6 @@ define(['marionette',
     AutoScoreSchemas, AutoScores,
 
     Users,
-
     Editable, TableView, table, XHRImage, utils,
     template, templateimage){
 
@@ -908,7 +907,9 @@ define(['marionette',
         doOnShow: function() {
             this.ui.ins.html(this.inspections.opts())
 
-            this.type = this.ctypes.findWhere({ name: this.model.get('CONTAINERTYPE') })
+            this.type = this.ctypes.find(m =>
+                m.get('name').toLowerCase() === this.model.get('CONTAINERTYPE').toLowerCase()
+            )
             this.plateView = new PlateView({ collection: this.samples, type: this.type, showImageStatus: this.model.get('INSPECTIONS') > 0 })
             this.listenTo(this.plateView, 'plate:select', this.resetZoom, this)
             this.plate.show(this.plateView)
