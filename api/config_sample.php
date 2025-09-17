@@ -394,6 +394,34 @@
     $dials_rest_jwt = "";
     $dials_rest_url_rings = false;
 
+    # Upstream reprocessing pipelines, by beamline type
+    $upstream_reprocessing_pipelines = array(
+        'sm' => array(
+            array('NAME' => 'Xia2 DIALS', 'VALUE' => 'xia2-dials'),
+            array('NAME' => 'Xia2 DIALS aimless', 'VALUE' => 'xia2-dials-aimless'),
+        ),
+        'default' => array(
+            array('NAME' => 'Xia2 DIALS', 'VALUE' => 'xia2-dials'),
+            array('NAME' => 'Xia2 3dii', 'VALUE' => 'xia2-3dii'),
+            array('NAME' => 'Fast DP', 'VALUE' => 'fast_dp'),
+            array('NAME' => 'autoPROC', 'VALUE' => 'autoPROC'),
+        ),
+    );
+
+    # Downstream reprocessing pipelines, by beamline type
+    $downstream_reprocessing_pipelines = array(
+        'sm' => array(
+            array('NAME' => 'shelxt', 'VALUE' => 'trigger-shelxt'),
+        ),
+        'default' => array(
+            array('NAME' => 'Dimple', 'VALUE' => 'trigger-dimple'),
+            array('NAME' => 'Fast EP', 'VALUE' => 'trigger-fastep'),
+            array('NAME' => 'Big EP', 'VALUE' => 'trigger-bigep'),
+            array('NAME' => 'MrBUMP', 'VALUE' => 'trigger-mrbump'),
+        ),
+    );
+
+
     # Add a button to upload file to CCP4 cloud
     #$ccp4_cloud_upload_url = 'https://data.cloud.ccp4.ac.uk/api/data/<%=USERNAME%>/<%=FACILITYNAME%>/<%=IMAGEPREFIX%>_<%=DATACOLLECTIONNUMBER%>/upload';
 ?>
