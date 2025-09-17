@@ -11,13 +11,19 @@ define(['marionette'], function(Marionette) {
         dOptions: {
         },
         
+        destroyOnClose: false,
+
         dialogOptions: function() {
+            var self = this
             return _.extend({}, {
                 title: this.getOption('title'),
                 width: 'auto',
                 height: 'auto',
                 resizable: false,
-                buttons: this.generateButtons(this.getOption('buttons'))
+                buttons: this.generateButtons(this.getOption('buttons')),
+                close: function() {
+                    if (self.getOption('destroyOnClose')) self.destroy();
+                },
             }, this.getOption('dOptions'))
         },
         

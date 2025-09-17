@@ -20,6 +20,7 @@ define(['marionette',
     'modules/imaging/views/imagehistory',
 
     'modules/imaging/views/addinspection',
+    'modules/imaging/views/inspectionimages',
     'modules/imaging/views/actualschedule',
     'modules/imaging/views/subtosample',
 
@@ -61,7 +62,7 @@ define(['marionette',
     SingleSample,
 
     ContainerInspections, InspectionImage, InspectionImages, ImageViewer, ImageHistoryView,
-    AddInspectionView, ActualScheduleView, SubToSampleView,
+    AddInspectionView, InspectionImagesView, ActualScheduleView, SubToSampleView,
 
     ScreenComponentGroups,
     ScreenComponents,
@@ -282,6 +283,7 @@ define(['marionette',
             'click a.add_inspection': 'showAddInspection',
             'click a.view_sched': 'showViewSchedule',
             'click @ui.play': 'playInspection',
+            'click a.inspection_images': 'showInspectionImages',
 
             'dragover @ui.drop': 'dragHover',
             'dragleave @ui.drop': 'dragHover',
@@ -450,6 +452,20 @@ define(['marionette',
                 this.doOnShow()
 
             } else this.ui.ins.val(m.get('CONTAINERINSPECTIONID')).trigger('change')
+        },
+
+        showInspectionImages: function(e) {
+            e.preventDefault()
+            this.inspectionImagesView = new InspectionImagesView({ dialog: true, CONTAINERINSPECTIONID: this.ui.ins.val() })
+            app.dialog.show(new DialogView({
+                title: 'Inspection Images',
+                view: this.inspectionImagesView,
+                autoSize: true,
+                destroyOnClose: true,
+                dOptions: {
+                    height: $(window).height() * 0.8,
+                },
+            }))
         },
 
 
