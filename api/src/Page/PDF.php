@@ -124,9 +124,9 @@ class PDF extends Page
                 INNER JOIN labcontact c ON s.sendinglabcontactid = c.labcontactid 
                 INNER JOIN person pe ON c.personid = pe.personid 
                 INNER JOIN laboratory l ON l.laboratoryid = pe.laboratoryid 
-                INNER JOIN labcontact c2 ON s.returnlabcontactid = c2.labcontactid 
-                INNER JOIN person pe2 ON c2.personid = pe2.personid
-                INNER JOIN laboratory l2 ON l2.laboratoryid = pe2.laboratoryid 
+                LEFT OUTER JOIN labcontact c2 ON s.returnlabcontactid = c2.labcontactid
+                LEFT OUTER JOIN person pe2 ON c2.personid = pe2.personid
+                LEFT OUTER JOIN laboratory l2 ON l2.laboratoryid = pe2.laboratoryid
                 INNER JOIN proposal p ON p.proposalid = s.proposalid  
                 WHERE s.shippingid=:1", array($this->arg('sid')));
 
