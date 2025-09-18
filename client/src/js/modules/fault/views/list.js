@@ -33,7 +33,7 @@ define(['marionette', 'modules/fault/views/filters', 'views/table', 'utils/table
                 })
             }
             
-            this.table = new TableView({ collection: options.collection, columns: columns, tableClass: 'proposals', filter: this.getOption('search') ? 's' : false, loading: true, backgrid: { row: ClickableRow, emptyText: 'No faults found' } })
+            this.table = new TableView({ collection: options.collection, columns: columns, tableClass: 'proposals', filter: 's', search: options.params.s, loading: true, backgrid: { row: ClickableRow, emptyText: 'No faults found' } })
             
             if (this.getOption('filters')) this.filters = new FilterView({ collection: options.collection, params: this.getOption('params') })
         },
