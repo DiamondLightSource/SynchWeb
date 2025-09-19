@@ -16,6 +16,15 @@ class FastEp extends DownstreamPlugin {
             'ATOMS' => array(array('sad_fa.pdb file not found'))
         );
 
+        $integrator = $this->_lookup_autoproc(
+            null,
+            $this->process['PARAMETERS']['scaling_id']
+        );
+        if ($integrator) {
+            $dat['PARENTAUTOPROCPROGRAM'] = $integrator['PROCESSINGPROGRAMS'];
+            $dat['PARENTAUTOPROCPROGRAMID'] = $integrator['AUTOPROCPROGRAMID'];
+        }
+
         $ats = array();
         $pdb = $this->_get_attachments("sad_fa.pdb");
         if ($pdb) {
