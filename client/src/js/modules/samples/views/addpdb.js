@@ -62,7 +62,7 @@ define(['backbone', 'views/dialog', 'modules/samples/models/pdb', 'modules/sampl
         
 
         createModel: function(options) {
-            this.model = new PDB({ PROTEINID: options.pid })
+            this.model = new PDB({ PROTEINID: options.pid, lid: options.lid })
         },
 
         initialize: function(options) {
