@@ -790,6 +790,10 @@ li:last-child .visit_users {
             display: none;
             overflow: auto;
 
+            .larger {
+                font-size: 14px;
+            }
+
             .dcap {
                 padding: 1% 1% 0 1%;
 
@@ -895,6 +899,10 @@ li:last-child .visit_users {
                 }
             }
 
+            &.align_center td {
+                text-align: center;
+            }
+
         }
 
 
@@ -997,7 +1005,7 @@ li:last-child .visit_users {
             height: auto;
         }
 
-        .plot_dimple {
+        .plot_dimple, .plot_anode {
             width: 70%;
             float: right;
 
@@ -1826,7 +1834,14 @@ textarea[name=pasted] {
     height: 250px;
 }
 
-
+.strategies {
+    > div {
+        padding: 10px;
+        table tr.stratrow {
+            cursor: auto;
+        }
+    }
+}
 
 @media (max-width: $breakpoint-small) {
 

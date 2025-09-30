@@ -116,7 +116,7 @@ export default {
             pageSize: 15,
             currentPage: 1,
             proposal: app.prop,
-            isArchived: app.prop.includes("in") ? "deleted" : "archived",
+            isArchived: app.options.get('prop_codes_data_deleted').some(code => app.prop.includes(code)) ? "deleted" : "archived",
             visitCollection: [],
             visits: [],
             dewars: [],

@@ -37,6 +37,7 @@ define(['marionette',
     'modules/imaging/collections/autoscoreschemas',
     'modules/imaging/collections/autoscores',
     'collections/users',
+    'collections/processingpipelines',
 
     'utils/editable',
     'views/table',
@@ -74,7 +75,7 @@ define(['marionette',
     AutoScoreSchemas, AutoScores,
 
     Users,
-
+    ProcessingPipelines,
     Editable, TableView, table, XHRImage, utils,
     template, templateimage){
 
@@ -261,6 +262,7 @@ define(['marionette',
 
             sampleStatusCurrent: 'input[id=sample_status_current]',
             param: 'select[name=param]',
+            pipeline: 'select[name=pipeline]',
             rank: 'input[name=rank]',
 
             sampleStatusAuto: 'input[id=sample_status_auto]',
@@ -295,6 +297,7 @@ define(['marionette',
 
             'click @ui.rank': 'setRankStatus',
             'change @ui.param': 'setParamValue',
+            'change @ui.pipeline': 'setPipeline',
 
             'click @ui.sampleStatusAuto': 'setSampleStatusShown',
             'change @ui.class': 'setAutoStatus',
@@ -333,6 +336,11 @@ define(['marionette',
         setParamValue: function() {
             this.ui.rank.prop('checked', true)
             this.setRankStatus()
+        },
+
+        setPipeline: function() {
+            this.samples.queryParams.pipeline = this.ui.pipeline.val()
+            this.samples.fetch({ data: {'sort_by': 'POSITION' } })
         },
 
         setRankStatus: function() {
@@ -548,7 +556,7 @@ define(['marionette',
             } else {
                 this.ui.addis.addClass('button-highlight')
                 this.image.setAddDispensing(true)
-                this.ui.addis.find('span').text('Cancel')
+                this.ui.addis.find('span').text('Finish')
                 this.ui.addis.find('i').removeClass('fa-plus').addClass('fa-times')
                 if (this.subsamples.length && this.subsamples.findWhere({ BLSAMPLEID: this.getSample() }).get('DISPENSEX')) {
                     this.ui.deldis.show()
@@ -684,10 +692,18 @@ define(['marionette',
             // Assumption all plates are for vmxi, so login => users only
             this.users.queryParams.login = 1
 
+            this.processing_pipelines = new ProcessingPipelines()
+            this.processing_pipelines.queryParams.category = 'processing'
+            this.processing_pipelines.fetch().done(this.updatePipelines.bind(this))
+
             this.touchstartX = 0;
             this.touchstartY = 0;
 
             Backbone.Validation.bind(this)
+        },
+
+        updatePipelines: function() {
+            this.ui.pipeline.html('<option value="">All pipelines</option>'+this.processing_pipelines.opts())
         },
 
         updateSchemas: function() {
@@ -908,7 +924,9 @@ define(['marionette',
         doOnShow: function() {
             this.ui.ins.html(this.inspections.opts())
 
-            this.type = this.ctypes.findWhere({ name: this.model.get('CONTAINERTYPE') })
+            this.type = this.ctypes.find(m =>
+                m.get('name').toLowerCase() === this.model.get('CONTAINERTYPE').toLowerCase()
+            )
             this.plateView = new PlateView({ collection: this.samples, type: this.type, showImageStatus: this.model.get('INSPECTIONS') > 0 })
             this.listenTo(this.plateView, 'plate:select', this.resetZoom, this)
             this.plate.show(this.plateView)
@@ -960,7 +978,6 @@ define(['marionette',
                 this.listenTo(this.image, 'image:prev', this.prevImage, this)
                 this.listenTo(this.image, 'image:first', this.firstImage, this)
                 this.listenTo(this.image, 'image:last', this.lastImage, this)
-                this.listenTo(this.image, 'finishdispensing', this.setAddDispensing, this)
 
                 if (this.getOption('params').iid) this.ui.ins.val(this.getOption('params').iid)
                 this.selectInspection()

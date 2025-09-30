@@ -13,6 +13,44 @@ define(['marionette',
     // string for comparison with filepaths. Pulled from config to share across optionsCells.
     var persistentStorageSegment = undefined; 
 
+    var PathCell = Backgrid.Cell.extend({
+        events: {
+            'click .copy-path': 'copyPathToClipboard'
+        },
+
+        render: function() {
+            var filePath = this.model.get('FILEPATH')
+            var displayedPath = filePath.split('/').length > 4 ? filePath.split('/').slice(0, 4).join('/') + '/...' : filePath
+
+            this.$el.html(`
+                <span title="${filePath}">${displayedPath}</span>
+                <button class="copy-path button" title="Copy full path to clipboard">
+                    <i class="fa fa-clipboard"/>
+                </button>
+            `)
+
+            return this
+        },
+
+        copyPathToClipboard: function(e) {
+            e.preventDefault()
+            var fullPath = this.model.get('FILEPATH')
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(fullPath).then(() => {
+                    var $icon = $(e.currentTarget).find('i')
+                    $icon.removeClass('fa-clipboard').addClass('fa-check')
+                    setTimeout(() => {
+                        $icon.removeClass('fa-check').addClass('fa-clipboard')
+                    }, 2000)
+                }).catch(err => {
+                    alert('Failed to copy path. Please try again or copy manually: ' + fullPath)
+                })
+            } else {
+                alert('Full path: ' + fullPath)
+            }
+        }
+    })
+
     var OptionsCell = Backgrid.Cell.extend({
         events: {
             'click a.dl': utils.signHandler,
@@ -157,6 +195,7 @@ define(['marionette',
             this.isPurgedSession = (options && options.dcPurgedProcessedData) ? (options.dcPurgedProcessedData !== "0") : false;
 
             var columns = [
+                { name: 'FILEPATH', label: 'Path', cell: PathCell, editable: false },
                 { name: 'FILENAME', label: 'File', cell: 'string', editable: false },
                 { name: 'FILETYPE', label: 'Type', cell: 'string', editable: false },
                 { 

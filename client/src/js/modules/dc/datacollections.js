@@ -115,6 +115,7 @@ function(Marionette, Pages, DCListView,
             IS_PJ: !(!this.getOption('params').pjid),
             IS_STAFF: app.staff,
             CONTAINERS: this.containers,
+            IS_ARCHIVED: app.options.get('prop_codes_data_deleted').some(code => app.prop.includes(code)) ? "deleted" : "archived",
         }
     },
     

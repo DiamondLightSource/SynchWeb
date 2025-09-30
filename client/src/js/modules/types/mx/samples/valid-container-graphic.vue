@@ -94,6 +94,8 @@ export default {
       geometry.drops.y = this.containerType.DROPPERWELLY
       geometry.drops.h = this.containerType.DROPHEIGHT
       geometry.drops.w = this.containerType.DROPWIDTH
+      geometry.drops.offsetx = this.containerType.DROPOFFSETX
+      geometry.drops.offsety = this.containerType.DROPOFFSETY
       geometry.well = this.containerType.WELLDROP
       geometry.columns = this.containerType.WELLPERROW
       geometry.containerType = this.containerType.NAME

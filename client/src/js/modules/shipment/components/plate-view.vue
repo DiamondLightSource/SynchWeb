@@ -136,8 +136,8 @@ export default {
         for (let i = 0; i < this.container.drops.x; ++i) {
           if (dropIndex !== this.wellIndex) {
             drops.push({
-              x: this.cell.padding + this.dropWidth * i,
-              y: this.cell.padding + this.dropHeight * j,
+              x: this.cell.padding + this.dropWidth * i + this.container.drops.offsetx * this.cell.width,
+              y: this.cell.padding + this.dropHeight * j + this.container.drops.offsety * this.cell.height,
             })
           }
           dropIndex += 1
