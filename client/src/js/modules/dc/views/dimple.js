@@ -8,7 +8,9 @@ define([
     
         ui: {
             plot: '.plot_dimple',
+            plot_anode: '.plot_anode',
             rstats: '.rstats',
+            rstats_div: '.rstats_div',
             blob: '.blobs img',
             blobs: '.blobs',
         },
@@ -39,9 +41,10 @@ define([
             if (app.mobile()) {
                 this.ui.plot.width(0.93*(this.options.holderWidth-14))
             } else {
-                this.ui.rstats.width(0.20*(this.options.holderWidth-14))
-                this.ui.plot.width(0.47*(this.options.holderWidth-14))
+                this.ui.rstats.width(0.25*(this.options.holderWidth-14))
+                this.ui.plot.width(0.42*(this.options.holderWidth-14))
                 this.ui.plot.height(this.ui.plot.width()*0.41-80)
+                this.ui.rstats_div.height(this.ui.plot.width()*0.41-80)
             }
 
             this.ui.blobs.css('min-height', this.ui.plot.width()*0.41-80)
@@ -51,8 +54,18 @@ define([
             var pl = $.extend({}, utils.default_plot, { series: { lines: { show: true }}})
             $.plot(this.ui.plot, data, pl)
             
+            const anodePeaks = this.model.get('ANODE_PEAKS');
+            if (anodePeaks && anodePeaks.TABLE && anodePeaks.TABLE.length > 0) {
+                this.ui.plot_anode.width(0.42 * (this.options.holderWidth - 14))
+                this.ui.plot_anode.height(this.ui.plot.width() * 0.41 - 80)
+
+                var anode_data = [{ data: anodePeaks.PLOT, label: 'Peak Height (sig)' }]
+                var anode_pl = $.extend({}, utils.default_plot, { series: { lines: { show: true }}});
+                $.plot(this.ui.plot_anode, anode_data, anode_pl)
+            }
+
         },
-    
+
     })
 
 })
