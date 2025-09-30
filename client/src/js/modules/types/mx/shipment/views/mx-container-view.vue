@@ -29,11 +29,22 @@
           <ul>
             <li>
               <span class="label">Name</span>
-              <base-input-text
-                v-model="container.NAME"
-                :inline="true"
-                @save="save('NAME')"
-              />
+              <validation-provider
+                v-slot="{ errors }"
+                tag="div"
+                rules="required|alpha_dash"
+                name="Container Name"
+                vid="container-name"
+              >
+                <base-input-text
+                  v-model="container.NAME"
+                  :inline="true"
+                  :validate-on-input="true"
+                  @save="save('NAME')"
+                  @blur="loadContainerData"
+                  :error-message="errors[0]"
+                />
+              </validation-provider>
             </li>
 
             <li>
@@ -92,6 +103,44 @@
                 @save="save('BARCODE')"
               />
             </li>
+            <li
+              v-if="showParentContainer"
+            >
+              <span class="label">Parent Container</span>
+              <base-input-select
+                v-model="container.PARENTCONTAINERID"
+                :initial-text="container.PARENTCONTAINER ? container.PARENTCONTAINER : 'Click to edit'"
+                name="PARENTCONTAINERID"
+                :options="parentContainers"
+                :inline="true"
+                option-value-key="CONTAINERID"
+                option-text-key="NAME"
+                @save="save('PARENTCONTAINERID')"
+              />
+            </li>
+            <li
+              v-if="showParentContainer"
+            >
+              <span class="label">Parent Container Location</span>
+              <validation-provider
+                v-slot="{ errors }"
+                tag="div"
+                rules="numeric"
+                name="Parent Container Location"
+                vid="parent-container-location"
+              >
+                <base-input-text
+                  v-model="container.PARENTCONTAINERLOCATION"
+                  :initial-text="container.PARENTCONTAINERLOCATION ? container.PARENTCONTAINERLOCATION : 'Click to edit'"
+                  name="PARENTCONTAINERLOCATION"
+                  :inline="true"
+                  :validate-on-input="true"
+                  @save="save('PARENTCONTAINERLOCATION')"
+                  @blur="loadContainerData"
+                  :error-message="errors[0]"
+                />
+              </validation-provider>
+            </li>
             <li v-if="container.PIPELINE">
               <span class="label">Priority Processing</span>
               <base-input-select
@@ -116,8 +165,8 @@
               <span v-else-if="shippingSafetyLevel === null">
                 Cannot queue container until shipment safety level is set
               </span>
-              <span v-else-if="shippingSafetyLevel != 'Green'">
-                Cannot queue containers in {{ shippingSafetyLevel }} shipments
+              <span v-else-if="shippingSafetyLevel.toLowerCase() !== 'green'">
+                Cannot queue containers in {{ shippingSafetyLevel.toLowerCase() }} shipments
               </span>
               <span v-else-if="containerQueueError">
                 There was an error submitting the container to the queue. Please fix any errors in the samples table.
@@ -363,6 +412,7 @@ export default {
     this.getGlobalProteins()
     this.getProteins()
     this.getContainerRegistry()
+    this.getParentContainers()
     this.getHistory()
     this.getContainerTypes()
     this.getUsers()
@@ -404,16 +454,19 @@ export default {
     },
     // Effectively a patch request to update specific fields
     async save(parameter) {
-      let params = {}
-      params[parameter] = this.container[parameter]
+      const validated = await this.$refs.containerForm.validate()
+      if (validated) {
+        let params = {}
+        params[parameter] = this.container[parameter]
 
-      await this.$store.dispatch('saveModel', { model: this.containerModel, attributes: params })
-      this.$store.commit('notifications/addNotification', {
-        title: 'Success:',
-        message: 'Container has been successfully updated',
-        level: 'success'
-      })
-      await this.$store.dispatch('getModel', this.containerModel)
+        await this.$store.dispatch('saveModel', { model: this.containerModel, attributes: params })
+        this.$store.commit('notifications/addNotification', {
+          title: 'Success:',
+          message: 'Container has been successfully updated',
+          level: 'success'
+        })
+        await this.$store.dispatch('getModel', this.containerModel)
+      }
       this.loadContainerData()
     },
     async getHistory() {

@@ -124,6 +124,9 @@
     # List of enabled container types, all if empty
     $enabled_container_types = array();
 
+    # Show parent container field for these types
+    $container_types_with_parents = array();
+
     # Zocalo message broker credentials - Set to empty string to disable
     $rabbitmq_zocalo_host = 'rabbitmq.server.ac.uk';
     $rabbitmq_zocalo_port = 5672;
@@ -312,6 +315,9 @@
 
     # Industrial proposals are not allowed to use the facility shipping account
     $industrial_prop_codes = array('sw', 'in', 'ic');
+
+    # Proposal codes where data is deleted, not archived
+    $prop_codes_data_deleted = array('in');
 
     # This maps beamlinename in blsession to a proposal type
     # - Internal maps a beamline to an api "type", there are currently:
