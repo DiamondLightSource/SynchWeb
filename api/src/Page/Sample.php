@@ -120,6 +120,8 @@ class Sample extends Page
         'BEAMLINENAME' => '[\w\-]+',
         'SOURCE' => '[\w\-]+',
 
+        'assigned' => '[\w\-]+',
+        'unassigned' => '[\w\-]+',
         'queued' => '\d',
         'UNQUEUE' => '\d',
         'nodata' => '\d',
@@ -1145,6 +1147,16 @@ class Sample extends Page
             array_push($args, $sessionid);
         }
 
+        if ($this->has_arg('assigned')) {
+            $where .= " AND d.dewarstatus LIKE 'processing' AND b.isinsamplechanger > 0 AND c.beamlinelocation LIKE :" . (sizeof($args) + 1);
+            array_push($args, $this->arg('assigned'));
+        }
+
+        if ($this->has_arg('unassigned')) {
+            $where .= " AND b.isinsamplechanger is null AND d.storagelocation=:" . (sizeof($args) + 1);
+            array_push($args, $this->arg('unassigned'));
+        }
+
         // Search
         if ($this->has_arg('s')) {
             $st = sizeof($args) + 1;
@@ -1219,7 +1231,7 @@ class Sample extends Page
                                   , TO_CHAR(cq.createdtimestamp, 'DD-MM-YYYY HH24:MI') as queuedtimestamp, b.smiles
                                   , $cseq $sseq string_agg(cpr.name) as componentnames, string_agg(cpr.density) as componentdensities
                                   , string_agg(cpr.proteinid) as componentids, string_agg(cpr.acronym) as componentacronyms, string_agg(cpr.global) as componentglobals, string_agg(chc.abundance) as componentamounts, string_agg(ct.symbol) as componenttypesymbols, b.volume, pct.symbol,ROUND(cr.abundance,3) as abundance, TO_CHAR(b.recordtimestamp, 'DD-MM-YYYY') as recordtimestamp, dp.radiationsensitivity, dp.energy, dp.userpath, dp.strategyoption, dp.minimalresolution as minimumresolution
-                                  , count(distinct dc.dataCollectionId) as dcc            
+                                  , count(distinct dc.dataCollectionId) as dcc, b.isinsamplechanger
                                   
                                   FROM blsample b
 
