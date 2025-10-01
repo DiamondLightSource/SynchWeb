@@ -42,12 +42,13 @@ class LigandFit extends DownstreamPlugin {
     }
 
     function results() {
+        $json_data = "[]";
         $json_filepath = $this->_get_ligandfit_results_json();
         if (sizeof($json_filepath)) {
-            $json_path = $json_filepath[0]["FILEPATH"] . "/" . $json_filepath[0]["FILENAME"] ;
-            $json_data = file_get_contents($json_path);
-        } else {
-            $json_data = "[]";
+            $json_path = $json_filepath[0]["FILEPATH"] . "/" . $json_filepath[0]["FILENAME"];
+            if (file_exists($json_path)) {
+                $json_data = file_get_contents($json_path);
+            }
         }
         $dat = array();
         $appaid = $this->_get_model_appaid();
