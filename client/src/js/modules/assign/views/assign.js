@@ -5,6 +5,7 @@ define(['marionette', 'backbone', 'views/pages',
     'collections/samples',
     'models/shipment',
     'models/dewar',
+    'models/container',
     'modules/assign/collections/pucknames',
     
     'utils',
@@ -19,6 +20,7 @@ define(['marionette', 'backbone', 'views/pages',
         Samples,
         Shipment,
         Dewar,
+        Container,
         PuckNames,
     
         utils,
@@ -271,8 +273,8 @@ define(['marionette', 'backbone', 'views/pages',
             var shipments = _.uniq(options.shipments.pluck('SHIPPINGID'))
             if (shipments.indexOf(this.model.get('SHIPPINGID')) > -1) {
                 var s = options.shipments.findWhere({ SHIPPINGID: this.model.get('SHIPPINGID') })
-                var d = s.get('DEWARS').findWhere({ DEWARID: this.model.get('DEWARID') })
-                d.get('CONTAINERS').add(this.model)
+                var d = s.get('DEWARS').findWhere({ CONTAINERID: this.model.get('CONTAINERID') })
+                if (d) d.get('CONTAINERS').add(this.model)
                 console.log('add sample to dewar')
             }
         },
@@ -599,28 +601,44 @@ define(['marionette', 'backbone', 'views/pages',
 
         generateShipments: function() {
             console.log('generate shipments')
-            var sids = _.uniq(this.containers.pluck('SHIPPINGID'))
-            var shipments = []
+            let sids = _.uniq(this.containers.pluck('SHIPPINGID'))
+            let shipments = []
             _.each(sids, function(sid) {
-                var conts = new Containers(this.containers.where({ SHIPPINGID: sid }))
+                let conts, items;
+
+                if (this.pucks > 0) {
+                    conts = new Containers(this.containers.where({ SHIPPINGID: sid }))
+                    let dids = _.uniq(conts.pluck('DEWARID'))
+                    items = new Dewars()
+                    _.each(dids, function(did) {
+                        let d = conts.findWhere({ DEWARID: did })
+                        let dewar = new Dewar({
+                            DEWARID: did,
+                            CODE: d.get('DEWAR'),
+                            DEWARSTATUS: d.get('DEWARSTATUS'),
+                            CONTAINERS: new Containers(conts.where({ DEWARID: did }))
+                        })
+                        items.add(dewar)
+                    }, this)
+                } else {
+                    conts = new Samples(this.containers.where({ SHIPPINGID: sid }))
+                    let cids = _.uniq(conts.pluck('CONTAINERID'))
+                    items = new Containers()
+                    _.each(cids, function(cid) {
+                        let c = conts.findWhere({ CONTAINERID: cid })
+                        let container = new Container({
+                            CONTAINERID: cid,
+                            CODE: c.get('CONTAINER'),
+                            CONTAINERS: new Samples(conts.where({ CONTAINERID: cid }))
+                        })
+                        items.add(container)
+                    }, this)
+                }
                 
-                var dids = _.uniq(conts.pluck('DEWARID'))
-                var dewars = new Dewars()
-                _.each(dids, function(did) {
-                    var d = conts.findWhere({ DEWARID: did })
-                    var dewar = new Dewar({
-                        DEWARID: did,
-                        CODE: d.get('DEWAR'),
-                        DEWARSTATUS: d.get('DEWARSTATUS'),
-                        CONTAINERS: new Containers(conts.where({ DEWARID: did }))
-                    })
-                    dewars.add(dewar)
-                }, this)
-                
-                var shipment = new Shipment({
+                let shipment = new Shipment({
                     SHIPPINGID: sid,
                     SHIPPINGNAME: conts.at(0).get('SHIPMENT'),
-                    DEWARS: dewars,
+                    DEWARS: items,
                 })
                 shipments.push(shipment)
             }, this)
@@ -629,9 +647,10 @@ define(['marionette', 'backbone', 'views/pages',
             // This means that there is no ability to unassign containers. Fix: add a dummy shipment here.
             // Dragging a container to a shipment does not associate the container with that shipment - it will still be in the original shipment.
             if (shipments.length == 0) {
-                var unassignShipment = new Shipment({
+                let unassignText = this.pucks > 0 ? 'Drag a container here to unassign' : 'Drag a sample here to unassign'
+                let unassignShipment = new Shipment({
                     SHIPPINGID: 0,
-                    SHIPPINGNAME: 'Drag Container here to unassign',
+                    SHIPPINGNAME: unassignText,
                 })
                 shipments.push(unassignShipment)
             }

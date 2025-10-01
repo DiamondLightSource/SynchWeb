@@ -1153,7 +1153,7 @@ class Sample extends Page
         }
 
         if ($this->has_arg('unassigned')) {
-            $where .= " AND b.isinsamplechanger is null AND d.storagelocation=:" . (sizeof($args) + 1);
+            $where .= " AND b.isinsamplechanger is null AND c.beamlinelocation=:" . (sizeof($args) + 1);
             array_push($args, $this->arg('unassigned'));
         }
 
