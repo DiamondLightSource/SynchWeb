@@ -611,12 +611,25 @@ class Imaging extends Page
             array_push($args, $this->arg('sid'));
         }
 
-        $images = $this->db->pq("SELECT i.containerid, si.containerinspectionid, ROUND(TIMESTAMPDIFF('HOUR', min(i2.bltimestamp), i.bltimestamp)/24,1) as delta, si.blsampleimageid, si.blsampleid, si.micronsperpixelx, si.micronsperpixely, si.blsampleimagescoreid, si.comments, TO_CHAR(si.bltimestamp, 'DD-MM-YYYY HH24:MI') as bltimestamp, sc.name as scorename, sc.score, sc.colour as scorecolour, max.maxscore, scorecolours.colour as maxscorecolour
+        $order = 'i.bltimestamp';
+
+        if ($this->has_arg('sort_by')) {
+            $cols = array(
+                'BLTIMESTAMP' => 'i.bltimestamp',
+                'LOCATION' => 'b.location+0'
+            );
+            $dir = $this->has_arg('order') ? ($this->arg('order') == 'asc' ? 'ASC' : 'DESC') : 'ASC';
+            if (array_key_exists($this->arg('sort_by'), $cols))
+                $order = $cols[$this->arg('sort_by')] . ' ' . $dir;
+        }
+
+        $images = $this->db->pq("SELECT i.containerid, si.containerinspectionid, ROUND(TIMESTAMPDIFF('HOUR', min(i2.bltimestamp), i.bltimestamp)/24,1) as delta, si.blsampleimageid, si.blsampleid, si.micronsperpixelx, si.micronsperpixely, si.blsampleimagescoreid, si.comments, TO_CHAR(si.bltimestamp, 'DD-MM-YYYY HH24:MI') as bltimestamp, sc.name as scorename, sc.score, sc.colour as scorecolour, max.maxscore, scorecolours.colour as maxscorecolour, b.location
               FROM blsampleimage si
               LEFT OUTER JOIN blsampleimagescore sc ON sc.blsampleimagescoreid = si.blsampleimagescoreid
               INNER JOIN containerinspection i ON i.containerinspectionid = si.containerinspectionid
               LEFT OUTER JOIN containerinspection i2 ON i.containerid = i2.containerid
 
+              INNER JOIN blsample b ON b.blsampleid = si.blsampleid
               INNER JOIN container c ON c.containerid = i.containerid
               INNER JOIN dewar d ON d.dewarid = c.dewarid
               INNER JOIN shipping s ON s.shippingid = d.shippingid
@@ -631,7 +644,7 @@ class Imaging extends Page
 
               WHERE p.proposalid = :1 $where
               GROUP BY i.containerid, si.containerinspectionid, i.bltimestamp, si.blsampleimageid, si.blsampleid, si.micronsperpixelx, si.micronsperpixely, si.blsampleimagescoreid, si.comments, TO_CHAR(si.bltimestamp, 'DD-MM-YYYY HH24:MI'), sc.name, sc.score, sc.colour
-              ORDER BY i.bltimestamp", $args);
+              ORDER BY $order", $args);
 
 
         if ($this->has_arg('imid')) {
