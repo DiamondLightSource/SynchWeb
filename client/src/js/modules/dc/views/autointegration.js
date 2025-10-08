@@ -184,6 +184,11 @@ define(['marionette',
             }
 
             this.$el.slideDown()
+
+            if (typeof this.getOption('onReady') === 'function') {
+                this.getOption('onReady')(this)
+            }
+
         }
 
     })
