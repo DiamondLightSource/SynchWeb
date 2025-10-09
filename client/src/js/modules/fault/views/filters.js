@@ -45,7 +45,7 @@ define(['marionette',
 
             _.each(frags, function(v, f) {
                 url = url.replace(new RegExp('\\/'+f+'\\/\\w+'), '')
-                if (this.ui[v].val() && this.ui[v].val() != 0) url += '/'+f+'/'+this.ui[v].val()
+                if (this.ui[v].val()) url += '/'+f+'/'+this.ui[v].val()
             }, this)
             
             url += searchFrag
@@ -71,13 +71,13 @@ define(['marionette',
                 return self.ui.bl.val()
             }
             this.collection.queryParams.sid = function() {
-                if (self.ui.system.val() > 0) return self.ui.system.val()
+                return self.ui.system.val()
             }
             this.collection.queryParams.cid = function() {
-                if (self.ui.component.val() > 0) return self.ui.component.val()
+                return self.ui.component.val()
             }
             this.collection.queryParams.scid = function() {
-                if (self.ui.subcomponent.val() > 0) return self.ui.subcomponent.val()
+                return self.ui.subcomponent.val()
             }
 
             this.firstLoad = true
@@ -145,7 +145,7 @@ define(['marionette',
         },
         doUpdateSystems: function(e) {
             var val = this.ui.system.val()
-            this.ui.system.html('<option value="0">-</option>'+this.systems.opts()).val(val)
+            this.ui.system.html('<option value="">-</option>'+this.systems.opts()).val(val)
             if (this.getOption('params') && this.getOption('params').system && this.firstLoad) {
                 this.ui.system.val(this.getOption('params').system)
                 this.updateComponents()
@@ -159,7 +159,7 @@ define(['marionette',
         },
         doUpdateComponents: function(e) {
             var val = this.ui.component.val()
-            this.ui.component.html('<option value="0">-</option>'+this.components.opts()).val(val)
+            this.ui.component.html('<option value="">-</option>'+this.components.opts()).val(val)
             if (this.getOption('params') && this.getOption('params').component && this.firstLoad) {
                 this.ui.component.val(this.getOption('params').component)
                 this.updateSubComponents()
@@ -173,7 +173,7 @@ define(['marionette',
         },
         doUpdateSubComponents: function(e) {
             var val = this.ui.subcomponent.val()
-            this.ui.subcomponent.html('<option value="0">-</option>'+this.subcomponents.opts()).val(val)
+            this.ui.subcomponent.html('<option value="">-</option>'+this.subcomponents.opts()).val(val)
             if (this.getOption('params') && this.firstLoad) this.ui.subcomponent.val(this.getOption('params').subcomponent)
             if (e || this.firstLoad) this.collection.fetch()
             if (this.firstLoad) this.firstLoad = false

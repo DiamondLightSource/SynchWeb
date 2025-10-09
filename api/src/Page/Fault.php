@@ -308,19 +308,14 @@ class Fault extends Page
     # Return a list of beamlines with ids
     function _get_beamlines()
     {
-        $row_tmp = $this->db->pq("SELECT distinct beamlinename as name FROM blsession WHERE beamlinename NOT LIKE 'i04 1' ORDER BY beamlinename");
+        $row_tmp = $this->db->pq("SELECT distinct beamlinename as name FROM blsession WHERE beamlinename != '' ORDER BY beamlinename");
         $rows = array();
         foreach ($row_tmp as $r)
         {
             array_push($rows, array('NAME' => $r['NAME']));
         }
 
-        // $rows = array(array('NAME' => 'i02'), array('NAME' => 'i03'), array('NAME' => 'i04'), array('NAME' => 'i04-1'), array('NAME' => 'i24'));
-
-        $bls = array();
-        foreach ($rows as $r)
-            $bls[$r['NAME']] = $r['NAME'];
-        $this->_output($this->has_arg('array') ? $bls : $rows);
+        $this->_output($rows);
     }
 
     # ------------------------------------------------------------------------
@@ -348,19 +343,18 @@ class Fault extends Page
 
         $rows = $this->db->pq("SELECT s.systemid, s.name, s.description, string_agg(hs.beamlinename) as beamlines FROM bf_system s INNER JOIN bf_system_beamline hs ON s.systemid = hs.systemid " . $where . " GROUP BY s.systemid, s.name, s.description ORDER BY s.name", $args);
 
-        $sys = array();
-        foreach ($rows as $s)
-            $sys[$s['SYSTEMID']] = $s['NAME'];
-
-        $this->_output($this->has_arg('array') ? $sys : $rows);
+        $this->_output($rows);
     }
 
     # ------------------------------------------------------------------------
     # Return a list of components for a system on a beamline
     function _get_components()
     {
-        if (!$this->has_arg('sid'))
-            $this->_error('No systemid specified');
+        if (!$this->has_arg('sid')) {
+            $this->_output(array());
+            return;
+        }
+
         $args = array($this->arg('sid'));
 
         if ($this->has_arg('bl'))
@@ -381,19 +375,18 @@ class Fault extends Page
 
         $rows = $this->db->pq('SELECT c.componentid, c.name, c.description, string_agg(hc.beamlinename) as beamlines FROM bf_component c INNER JOIN bf_component_beamline hc ON c.componentid = hc.componentid WHERE c.systemid=:1' . $where . ' GROUP BY c.componentid, c.name, c.description ORDER BY beamlines,c.name', $args);
 
-        $com = array();
-        foreach ($rows as $c)
-            $com[$c['COMPONENTID']] = $c['NAME'];
-
-        $this->_output($this->has_arg('array') ? $com : $rows);
+        $this->_output($rows);
     }
 
     # ------------------------------------------------------------------------
     # Return a list of subcomponents for a component on a beamline
     function _get_subcomponents()
     {
-        if (!$this->has_arg('cid'))
-            $this->_error('No componentid specified');
+        if (!$this->has_arg('cid')) {
+            $this->_output(array());
+            return;
+        }
+
         $args = array($this->arg('cid'));
 
         if ($this->has_arg('bl'))
@@ -414,11 +407,7 @@ class Fault extends Page
 
         $rows = $this->db->pq('SELECT s.subcomponentid, s.name, s.description, string_agg(hs.beamlinename) as beamlines FROM bf_subcomponent s INNER JOIN bf_subcomponent_beamline hs ON s.subcomponentid = hs.subcomponentid WHERE s.componentid=:1' . $where . ' GROUP BY s.subcomponentid, s.name, s.description ORDER BY s.name', $args);
 
-        $scom = array();
-        foreach ($rows as $s)
-            $scom[$s['SUBCOMPONENTID']] = $s['NAME'];
-
-        $this->_output($this->has_arg('array') ? $scom : $rows);
+        $this->_output($rows);
     }
 
 
