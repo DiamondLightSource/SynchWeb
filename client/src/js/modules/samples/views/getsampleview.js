@@ -11,6 +11,10 @@ define(['views/getview',
         'modules/samples/views/proteinview',
         'modules/samples/views/proteinadd',
 
+        'modules/samples/views/ligandlist',
+        'modules/samples/views/ligandview',
+        'modules/samples/views/ligandadd',
+
         'modules/types/gen/samples/views/componentlist',
         'modules/types/gen/samples/views/componentadd',
         'modules/types/gen/samples/views/componentview',
@@ -33,6 +37,7 @@ define(['views/getview',
     SimpleSampleAdd,
 
     ProteinList, ProteinView, AddProteinView,
+    LigandList, LigandView, AddLigandView,
     GenComponentList, GenComponentAdd, GenComponentView,
 
     XPDFPhaseList, XPDFPhaseView, XPDFPhaseAdd,
@@ -60,6 +65,11 @@ define(['views/getview',
 
     var ProteinDefault = 'Component'
 
+    var LigandTitles = {
+        mx: 'Ligand',
+    }
+
+    var LigandDefault = 'Ligand'
 
     var CrystalTitles = {
         xpdf: 'Sample',
@@ -147,6 +157,38 @@ define(['views/getview',
 
             titles: ProteinTitles,
             default_title: ProteinDefault,
+        }),
+
+        LigandList: new GetView({
+            views: {
+                mx: LigandList,
+            },
+            default: LigandList,
+
+            titles: LigandTitles,
+            default_title: LigandDefault,
+        }),
+
+
+        LigandAdd: new GetView({
+            views: {
+                mx: AddLigandView,
+            },
+            default: AddLigandView,
+
+            titles: LigandTitles,
+            default_title: LigandDefault,
+        }),
+
+
+        LigandView: new GetView({
+            views: {
+                mx: LigandView,
+            },
+            default: LigandView,
+
+            titles: LigandTitles,
+            default_title: LigandDefault,
         }),
 
 

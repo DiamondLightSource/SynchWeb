@@ -1,6 +1,6 @@
-define(['backbone', 'collections/components', 
+define(['backbone', 'collections/components', 'collections/ligands',
     'utils/experimentkinds',
-    'utils/radiationsensitivity'], function(Backbone, Components, EXP, RS) {
+    'utils/radiationsensitivity'], function(Backbone, Components, Ligands, EXP, RS) {
     
     return Backbone.Model.extend({
         idAttribute: 'BLSAMPLEID',
@@ -10,6 +10,7 @@ define(['backbone', 'collections/components',
         initialize: function(attrs, options) {
             var addPrimary = (options && options.addPrimary) || (this.collection && this.collection.state.addPrimary)
             this.set('components', new Components(null, { pmodel: this, addPrimary: addPrimary }))
+            this.set('ligands', new Ligands(null, { pmodel: this }))
             this.updateScreeningOptions()
 
             this.listenTo(this, 'change:EXPERIMENTKIND', this.updateExpKind)
@@ -105,6 +106,8 @@ define(['backbone', 'collections/components',
             INITIALSAMPLEGROUP: '',
             COMPONENTIDS: [],
             COMPONENTAMOUNTS: [],
+            LIGANDIDS: [],
+            LIGANDNAMES: [],
             X: null,
             Y: null,
             Z: null,

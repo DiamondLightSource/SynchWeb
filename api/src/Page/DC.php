@@ -19,6 +19,7 @@ class DC extends Page
         'aid' => '\d+',
         'pjid' => '\d+',
         'pid' => '\d+',
+        'lid' => '\d+',
         'h' => '\d\d',
         'dmy' => '\d\d\d\d\d\d\d\d',
         'ssid' => '\d+',
@@ -257,6 +258,16 @@ class DC extends Page
                 $extj[$i] .= " INNER JOIN crystal cr ON cr.crystalid = smp.crystalid INNER JOIN protein pr ON pr.proteinid = cr.proteinid";
                 $sess[$i] = 'pr.proteinid=:' . (sizeof($args) + 1);
                 array_push($args, $this->arg('pid'));
+            }
+
+            # Ligands
+        } else if ($this->has_arg('lid')) {
+            $info = $this->db->pq("SELECT ligandid FROM ligand l WHERE l.ligandid=:1", array($this->arg('lid')));
+
+            foreach (array('dc', 'es', 'r', 'xrf') as $i => $t) {
+                $extj[$i] .= " INNER JOIN blsample_has_ligand bhl ON bhl.blsampleid = smp.blsampleid";
+                $sess[$i] = 'bhl.ligandid=:' . (sizeof($args) + 1);
+                array_push($args, $this->arg('lid'));
             }
 
             # Processing job
