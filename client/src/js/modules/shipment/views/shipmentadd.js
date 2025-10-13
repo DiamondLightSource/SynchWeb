@@ -56,23 +56,36 @@ define(['marionette', 'views/form',
         },
 
         events: {
-            'change input[name=DEWARS]': 'updateFCodes',
+            'change @ui.dewars': 'updateFCodes',
             'change @ui.lcret': 'getlcdetails',
             'change select[name^=FCODES]': 'checkFCodes',
             'change @ui.name': 'checkFCodes',
             'click a.add_lc': 'addLC',
-            'click @ui.noexp': 'updateFirstExp',
-            'click @ui.dynamic': 'updateDynamicSchedule',
+            'change @ui.safetylevel': 'changeSafetyLevel',
+            'change @ui.dynamic': 'updateFirstExp',
+            'change @ui.longwavelengthsel': 'updateLongWavelength',
+            'change @ui.extrasupportsel': 'updateExtraSupport',
+            'change @ui.onsiteusersel': 'updateOnsiteUser',
         },
         
         ui: {
+            dewars: 'input[name=DEWARS]',
             lcret: 'select[name=RETURNLABCONTACTID]',
             lcout: 'select[name=SENDINGLABCONTACTID]',
             first: 'select[name=FIRSTEXPERIMENTID]',
             name: 'input[name=SHIPPINGNAME]',
-            noexp: 'input[name=noexp]',
-            dynamic: 'input[name=DYNAMIC]', // A checkbox to indicate dynamic/remote mail-in scheduling
-            comments: 'textarea[name=COMMENTS]', // We need this so we can prefill comments to aid users
+            dynamic: 'input[name=DYNAMIC]',
+            udc: '#udc',
+            responsive: '#responsive',
+            imaging: '#imaging',
+            existing: '#existingsession',
+            nosessions: '#nosessions',
+            other: '#other',
+            safetylevel: 'select[name=SAFETYLEVEL]',
+            longwavelengthsel: 'select[name=LONGWAVELENGTH]',
+            longwavelengthli: '.longwavelength',
+            extrasupportsel: 'select[name=EXTRASUPPORTYESNO]',
+            onsiteusersel: 'select[name=ONSITEUSERYESNO]',
         },
         
         addLC: function(e) {
@@ -97,36 +110,108 @@ define(['marionette', 'views/form',
             app.alert({ message: 'Something went wrong registering this shipment, please try again'})
         },
         
-        updateFirstExp: function() {
-            if (this.ui.noexp.is(':checked')) {
-                this.ui.first.html('<option value=""> - </option>')
-                this.ui.dynamic.prop('checked', false)
+        changeSafetyLevel: function() {
+            if (this.ui.safetylevel.val() === 'Green') {
+                this.ui.udc.prop('disabled', false)
+                this.ui.responsive.prop('disabled', false)
+                this.ui.imaging.prop('disabled', false)
+                this.ui.other.prop('disabled', false)
             } else {
-                this.ui.first.html(this.visits.opts())
+                this.ui.udc.prop('disabled', true)
+                this.ui.udc.prop('checked', false)
+                this.ui.responsive.prop('disabled', true)
+                this.ui.responsive.prop('checked', false)
+                this.ui.imaging.prop('disabled', true)
+                this.ui.imaging.prop('checked', false)
+                this.ui.other.prop('disabled', true)
+                this.ui.other.prop('checked', false)
+                this.updateDynamicSchedule()
             }
+            this.visits.fetch().done(this.updateFirstExp.bind(this))
+        },
+
+        updateFirstExp: function() {
+            if (this.visits.length === 0) {
+                this.ui.existing.prop('disabled', true)
+                this.ui.existing.prop('checked', false)
+                this.ui.nosessions.html('(no suitable sessions found)')
+            } else {
+                this.ui.existing.prop('disabled', false)
+                this.ui.nosessions.html('')
+            }
+            if (this.ui.existing.is(':checked')) {
+                this.ui.first.show()
+                this.ui.first.html('<option value="!">Please select one</option>'+this.visits.opts())
+            } else {
+                this.ui.first.html('<option value=""> - </option>').change()
+                this.ui.first.hide()
+            }
+            if (this.ui.other.is(':checked')) {
+                this.model.validation.COMMENTS.required = true
+            } else {
+                this.model.validation.COMMENTS.required = false
+            }
+            this.updateDynamicSchedule()
         },
 
         updateDynamicSchedule: function() {
-            // Added as a fix to allow dynamic sessions
-            // An extra option for proposals with no sessions yet that are not automated
-            industrial_codes = ['in', 'sw']
-            industrial_visit = industrial_codes.includes(app.prop.slice(0,2))
-            if (this.ui.dynamic.is(':checked')) {
-                this.ui.first.html('<option value=""> - </option>')
-                this.ui.noexp.prop('checked', false)
-                this.$el.find(".remoteform").show()
-                if (industrial_visit) {
-                    this.model.validation.REMOTEORMAILIN.required = true
-                    this.$el.find(".remoteormailin").show()
-                }
+            if (this.ui.responsive.is(':checked')) {
+                this.ui.longwavelengthli.show()
+                this.updateLongWavelength()
             } else {
-                this.model.validation.REMOTEORMAILIN.required = false
-                this.ui.first.html(this.visits.opts())
-                this.$el.find(".remoteform").hide()
-                if (industrial_visit) {
-                    this.$el.find(".remoteormailin").hide()
-                }
+                this.ui.longwavelengthli.hide()
+                this.hideRemoteForm()
             }
+        },
+
+        updateLongWavelength: function() {
+            if (this.ui.longwavelengthsel.val() === 'No') {
+                this.showRemoteForm()
+            } else {
+                this.hideRemoteForm()
+            }
+        },
+
+        updateExtraSupport: function() {
+            if (this.ui.extrasupportsel.val() === 'No') {
+                this.$el.find(".extrasupportdetail").hide()
+            } else {
+                this.$el.find(".extrasupportdetail").show()
+            }
+        },
+
+        updateOnsiteUser: function() {
+            if (this.ui.onsiteusersel.val() === 'No') {
+                this.$el.find(".onsiteuserdetail").hide()
+            } else {
+                this.$el.find(".onsiteuserdetail").show()
+            }
+        },
+
+        isIndustrialProposal: function() {
+            industrial_codes = app.options.get('industrial_prop_codes')
+            return industrial_codes.includes(app.prop.slice(0,2))
+        },
+
+        showRemoteForm: function() {
+            this.$el.find(".remoteform").show()
+            if (this.isIndustrialProposal()) {
+                this.model.validation.REMOTEORMAILIN.required = true
+                this.$el.find(".remoteormailin").show()
+            }
+        },
+
+        hideRemoteForm: function() {
+            this.model.validation.REMOTEORMAILIN.required = false
+            this.$el.find(".remoteform").hide()
+            if (this.isIndustrialProposal()) {
+                this.$el.find(".remoteormailin").hide()
+            }
+        },
+
+        getRiskRating: function() {
+            if (this.ui.safetylevel.val() === 'Yellow') return 'medium'
+            if (this.ui.safetylevel.val() === 'Red') return 'high'
         },
 
         onRender: function() {
@@ -141,6 +226,7 @@ define(['marionette', 'views/form',
             this.refreshContacts()
             
             this.visits = new Visits(null, { queryParams: { next: 1 }, state: { pageSize: 9999 } })
+            this.visits.queryParams.RISKRATING = this.getRiskRating.bind(this)
             this.visits.fetch().done(this.updateFirstExp.bind(this))
             
             this.date('input[name=DELIVERYAGENT_SHIPPINGDATE], input[name=DELIVERYAGENT_DELIVERYDATE]')
@@ -150,6 +236,8 @@ define(['marionette', 'views/form',
             this.$el.find('li.d .floated').append(new FCodes({ collection: this.fcodes, dewars: this.dewars }).render().el)
 
             this.$el.find(".remoteform").hide()
+            this.$el.find(".extrasupportdetail").hide()
+            this.$el.find(".onsiteuserdetail").hide()
             this.$el.find(".remoteormailin").hide()
             
             this.checkFCodes()
@@ -191,7 +279,7 @@ define(['marionette', 'views/form',
          Update number of facility code inputs based on number of dewars
         */
         updateFCodes: function() {
-            var d = this.$el.find('input[name=DEWARS]').val()
+            var d = this.ui.dewars.val()
             d > 0 ? this.$el.find('li.d').show() : this.$el.find('li.d').hide()
             var fcs = _.map(_.range(1,parseInt(d)+1), function(i) { return { id: i } })
             this.fcodes.set(fcs)

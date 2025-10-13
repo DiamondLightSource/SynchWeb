@@ -63,16 +63,8 @@ class UserData
         $this->db->pq("DELETE FROM usergroup_has_permission WHERE usergroupid=:1 and permissionid=:2", array($userGroupId, $permisionId));
     }
 
-    private function addPersonOrProposalSearch($proposalid, $personId, &$args): string
-    {
-        $whereClause = ' AND (prhp.proposalid=:' . (sizeof($args) + 1) . ' OR lc.proposalid=:' . (sizeof($args) + 2) . ' OR p.personid=:' . (sizeof($args) + 3) . ')';
-        array_push($args, $proposalid);
-        array_push($args, $proposalid);
-        array_push($args, $personId);
-        return $whereClause;
-    }
 
-    function getUsers($getCount, $isStaffMember, $stringMatch, $page, $sortBy = null, $pid=null,  $proposalid = null, $personId = null, $isManager = false, $currentUserId = null, $gid = null, $sid = null, $pjid = null, $visitName = null, $perPage = 15, $isAscending = true, $isAll = false, $onlyLogins = false)
+    function getUsers($getCount, $isStaffMember, $stringMatch, $page, $sortBy = null, $proposalid = null, $personId = null, $isManager = false, $currentUserId = null, $gid = null, $pjid = null, $visitName = null, $perPage = 15, $isAscending = true, $isAll = false, $onlyLogins = false)
     {
         $args = array();
 
@@ -94,9 +86,9 @@ class UserData
         else
             $where = 'p.login IS NOT NULL';
 
-        if ($personId == "" && $stringMatch == "" && $gid == "" && $sid == "" && $visitName == "" && $pjid == "")
+        if ($personId == "" && $stringMatch == "" && $gid == "" && $visitName == "" && $pjid == "")
         {
-            //secured by making sure the user has access toproposalid
+            //secured by making sure the user has access to proposalid
             return $this->getUsersForProposal($where, $getCount, $page, $sortBy, $proposalid, $currentUserId, $perPage, $isAscending, $start, $end);
         }
 
@@ -105,12 +97,14 @@ class UserData
         $group = 'GROUP BY p.personid';
 
         // This blocks means that non-staff can only see users on their proposal, except when they looking at a visit 
-        //  (i.e. the proposal that was checkin page.php is added to the where clause)
-        if ((($personId && !$isManager) // if you not a manager: you looking for a person 
-            || (!$isStaffMember && !$visitName)) // if you are not a staff member and not loking at a specific visit
-            || $pid) // if you are looking for user based on a proposal, but this 
+        //  (i.e. the proposal that was checking is added to the where clause)
+        if ((($personId && !$isManager) // if you're not a manager: you're looking for a person
+            || (!$isStaffMember && !$visitName))) // if you are not a staff member and not looking at a specific visit
         {
-            $where .= $this->addPersonOrProposalSearch($proposalid, $currentUserId, $args);
+            $where .= ' AND (prhp.proposalid=:' . (sizeof($args) + 1) . ' OR lc.proposalid=:' . (sizeof($args) + 2) . ' OR p.personid=:' . (sizeof($args) + 3) . ')';
+            array_push($args, $proposalid, $proposalid, $currentUserId);
+            $join .= 'LEFT OUTER JOIN proposalhasperson prhp ON prhp.personid = p.personid
+                      LEFT OUTER JOIN labcontact lc ON lc.personid = p.personid ';
         }
 
         if ($personId)
@@ -122,45 +116,38 @@ class UserData
         if ($stringMatch)
         {
             $st = sizeof($args) + 1;
-            $where .= " AND (lower(p.familyname) LIKE lower(CONCAT(CONCAT('%',:" . $st .
-                "),'%')) OR lower(p.givenname) LIKE lower(CONCAT(CONCAT('%',:" .
-                ($st + 1) . "),'%')) OR lower(p.login) LIKE lower(CONCAT(CONCAT('%',:" . ($st + 2) . "),'%')))";
+            $where .= " AND (p.familyname LIKE CONCAT('%',:" . $st . ",'%') OR p.givenname LIKE CONCAT('%',:" . ($st + 1) . ",'%') OR p.login LIKE CONCAT('%',:" . ($st + 2) . ",'%'))";
             for ($i = 0; $i < 3; $i++)
             {
                 array_push($args, $stringMatch);
             }
         }
 
-        // TODO: the following statements were not previously coded as mutually exclusive, however logically they must be as no attempt was made to extend the JOIN statement
-        // - it may be worth reviewing this, however.
         if ($gid)
         {
-            $join = 'INNER JOIN usergroup_has_person uhp ON uhp.personid = p.personid';
+            $join .= 'INNER JOIN usergroup_has_person uhp ON uhp.personid = p.personid';
             $where .= ' AND uhp.usergroupid=:' . (sizeof($args) + 1);
             array_push($args, $gid);
         }
-        else if ($sid)
-        {
-            // TODO: this is an invalid DB table - does this need to be removed entirely?
-            $join = 'INNER JOIN blsession_has_person shp ON shp.personid = p.personid';
-            $where .= ' AND shp.sessionid=:' . (sizeof($args) + 1);
-            array_push($args, $sid);
-        }
         else if ($visitName)
         {
+            $pattern = '/([A-z]+)(\d+)-(\d+)/';
+            preg_match($pattern, $visitName, $matches);
+            if (!sizeof($matches))
+                $this->_error('No such visit');
             $extc = "count(ses.sessionid) as visits, TO_CHAR(max(ses.startdate), 'DD-MM-YYYY') as last, shp.remote, shp.role,";
-            $join = 'INNER JOIN session_has_person shp ON shp.personid = p.personid
+            $join .= 'INNER JOIN session_has_person shp ON shp.personid = p.personid
                      INNER JOIN blsession s ON shp.sessionid = s.sessionid
                      INNER JOIN proposal pr ON pr.proposalid = s.proposalid
                      LEFT OUTER JOIN session_has_person shp2 ON p.personid = shp2.personid
                      LEFT OUTER JOIN blsession ses ON ses.sessionid = shp2.sessionid AND ses.startdate < s.startdate';
-            $where .= " AND shp.remote IS NOT NULL AND CONCAT(pr.proposalcode, pr.proposalnumber, '-', s.visit_number) LIKE :" . (sizeof($args) + 1);
+            $where .= " AND shp.remote IS NOT NULL AND pr.proposalcode = :" . (sizeof($args) + 1) . " AND pr.proposalnumber = :" . (sizeof($args) + 2) . " AND s.visit_number = :" . (sizeof($args) + 3);
             $group = 'GROUP BY p.personid, p.givenname, p.familyname, p.login';
-            array_push($args, $visitName);
+            array_push($args, $matches[1], $matches[2], $matches[3]);
         }
         else if ($pjid)
         {
-            $join = 'INNER JOIN project_has_person php ON p.personid = php.personid';
+            $join .= 'INNER JOIN project_has_person php ON p.personid = php.personid';
             $where .= ' AND php.projectid=:' . (sizeof($args) + 1);
             $extc = "CONCAT(p.personid, '-', php.projectid) as ppid,";
             array_push($args, $pjid);
@@ -170,8 +157,6 @@ class UserData
         {
             $tot = $this->db->pq("SELECT count(distinct p.personid) as tot
                 FROM person p
-                LEFT OUTER JOIN proposalhasperson prhp ON prhp.personid = p.personid
-                LEFT OUTER JOIN labcontact lc ON lc.personid = p.personid
                 $join
                 WHERE $where", $args);
 
@@ -194,8 +179,6 @@ class UserData
 
         $rows = $this->db->paginate("SELECT $extc p.personid, p.givenname, p.familyname, CONCAT(p.givenname, ' ', p.familyname) as fullname, p.login, p.emailaddress, p.phonenumber, l.name as labname, l.address, l.city, l.postcode, l.country
                                FROM person p
-                               LEFT OUTER JOIN proposalhasperson prhp ON prhp.personid = p.personid
-                               LEFT OUTER JOIN labcontact lc ON lc.personid = p.personid
                                LEFT OUTER JOIN laboratory l ON l.laboratoryid = p.laboratoryid
                                $join
                                WHERE $where
@@ -340,6 +323,7 @@ class UserData
                 ->whereIdEquals("personid", $personId)
                 ->update("person");
         }
+        return $laboratoryId;
     }
 
     function addGroupUser($personId, $gid)

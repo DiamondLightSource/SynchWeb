@@ -8,11 +8,12 @@
         <li>&<%-ROTATIONAXIS%>; Start: <%-AXISSTART%>&deg;</li>
         <% if ((KAPPA && KAPPA !=0) || (PHI && PHI != 0) || (CHISTART && CHISTART !=0)) { %><li><% if (KAPPA != null) { %>&kappa;: <%-KAPPA%>&deg;<% } %> <% if (PHI != null) { %>&phi;: <%-PHI%>&deg;<% } %> <% if (CHISTART != null) { %>&chi;: <%-CHISTART%>&deg;<% } %></li><% } %>
         <li>Resolution: <%-RESOLUTION%>&#197;</li>
-        <li>Wavelength: <%-WAVELENGTH%>&#197;</li>
+        <li>Wavelength: <%-WAVELENGTH%>&#197; (<%-ENERGY%>eV)</li>
         <li>Exposure: <%-EXPOSURETIME%>s</li>
         <li>Transmission: <%-TRANSMISSION%>%</li>
         <li>Beamsize: <%-BSX%>x<%-BSY%>&mu;m</li>
         <li>Boxsize: <span class="boxx"></span>x<span class="boxy"></span>&mu;m</li>
+        <li>Grid scan size: <span class="gridsize"></span></li>
         <li class="comment">Comment: <span class="COMMENTS"><%-COMMENTS%></span></li>
         <% if (!STATE) { %><li>Status: <span class="b">Stopped</span></li><% } %>
 
@@ -31,6 +32,9 @@
     <a href="#" class="button zoom"><i class="fa fa-search-plus"></i> <span>Enlarge</span></a>
 
     <div class="holder">
-        <h1 title="Xray Centring Status and Results" class="xrc"><span><i class="fa fa-spinner fa-spin"></i></span></h1>
+        <h1 title="Xray Centring Status and Results" class="xrc">Grid Scan Processing<span><i class="fa fa-spinner fa-spin"></i></span></h1>
+        <div class="xrc"></div>
+        <h1 title="Click to show autoprocessing results such as XIA2" class="ap" data-testid="dc-autoprocessing">Auto Processing<span><i class="fa fa-spinner fa-spin"></i></span></h1>
+        <div class="autoproc"></div>
     </div>
 </div>

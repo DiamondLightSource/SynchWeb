@@ -42,8 +42,19 @@ define(['marionette',
       this.strat = null
       this.ap = null
       this.dp = null
+      this.showStrategies = true
+      this.showProcessing = true
+      this.setProcessingVars()
     },
-      
+
+    setProcessingVars: function() {
+      const hasProcessing = this.model.get('AXISRANGE') > 0 || this.model.get('DCT') === "Serial Fixed" || this.model.get('DCT') === "Serial Jet"
+      const isCharacterization = this.model.get('DCT') === "Characterization"
+      const hasStrategies = this.model.get('AXISRANGE') > 0 && this.model.get('OVERLAP') != 0
+      this.showStrategies = isCharacterization || hasStrategies
+      this.showProcessing = isCharacterization || (!hasStrategies && hasProcessing)
+    },
+
     onShow: function() {
       // element not always available at this point?
       var w = 0.175*$(window).width()*0.95
@@ -62,7 +73,13 @@ define(['marionette',
       // edit.create('COMMENTS', 'text')
         
       this.imagestatus = new (this.getOption('imageStatusItem'))({ ID: this.model.get('ID'), TYPE: this.model.get('DCT'), statuses: this.getOption('imagestatuses'), el: this.$el })
-      this.apstatus = new (this.getOption('apStatusItem'))({ ID: this.model.get('ID'), SCREEN: (this.model.get('OVERLAP') != 0 && this.model.get('AXISRANGE')), statuses: this.getOption('apstatuses'), el: this.$el })
+      if (!this.showStrategies) this.ui.strat.hide()
+      if (!this.showProcessing) {
+          this.ui.ap.hide();
+          this.ui.dp.hide();
+      }
+
+      this.apstatus = new (this.getOption('apStatusItem'))({ ID: this.model.get('ID'), showStrategies: this.showStrategies, showProcessing: this.showProcessing, statuses: this.getOption('apstatuses'), el: this.$el })
       this.listenTo(this.apstatus, 'status', this.updateAP, this)
       this.apmessagestatus = new (this.getOption('apMessageStatusItem'))({ ID: this.model.get('ID'), statuses: this.getOption('apmessagestatuses'), el: this.$el })
 
@@ -102,6 +119,9 @@ define(['marionette',
       
     ui: {
       rp: 'a.reprocess',
+      strat: 'h1.strat',
+      ap: 'h1.ap',
+      dp: 'h1.dp',
     },
 
     showMessages: function(e) {
@@ -149,14 +169,24 @@ define(['marionette',
                             
     loadAP: function(e) {
       if (!this.ap) {
-        this.ap = new DCAutoIntegrationView({ id: this.model.get('ID'), el: this.$el.find('div.autoproc') })
+        this.ap = new DCAutoIntegrationView({ 
+            id: this.model.get('ID'), 
+            dcPurgedProcessedData: this.model.get('PURGEDPROCESSEDDATA'),
+            el: this.$el.find('div.autoproc'),
+            parent: this.model
+          })
       } else this.ap.$el.slideToggle()
     },
       
       
     loadDP: function(e) {
       if (!this.dp) {
-        this.dp = new DCDownstreamView({ id: this.model.get('ID'), el: this.$el.find('div.downstream'), holderWidth: this.$el.find('.holder').width() })
+        this.dp = new DCDownstreamView({ 
+          id: this.model.get('ID'),
+          dcPurgedProcessedData: this.model.get('PURGEDPROCESSEDDATA'),
+          el: this.$el.find('div.downstream'),
+          holderWidth: this.$el.find('.holder').width() 
+        })
       } else this.dp.$el.slideToggle()
     },
                                       

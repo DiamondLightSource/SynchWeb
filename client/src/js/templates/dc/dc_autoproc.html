@@ -4,8 +4,8 @@
     <% if (PROCESSINGSTATUS == 0) { %>
 
     <p class="r downloads">
-        <a class="view button dll" href="<%-APIURL%>/download/id/<%-DCID%>/aid/<%-AID%>/archive/1"><i class="fa fa-archive"></i> Archive</a>
         <a class="apattach button" href="#"><i class="fa fa-files-o"></i> Logs &amp; Files</a>
+        <a class="view button dll" href="<%-APIURL%>/download/ap/archive/<%-AID%>"><i class="fa fa-cloud-download"></i> Download Zip</a>
     </p>
 
     <p>This processing job failed: <%-PROCESSINGMESSAGE%></p>
@@ -22,15 +22,17 @@
         </a>
         <% } %>
 
+        <a class="mainlog button dll" href="<%-APIURL%>/download/ap/log/<%-AID%>"><i class="fa fa-file"></i> Processing Log</a>
         <a class="plot button" href="#"><i class="fa fa-line-chart"></i> Plots</a>
-        <a class="view button dll" href="<%-APIURL%>/download/ap/archive/<%-AID%>"><i class="fa fa-archive"></i> Archive</a>
         <a class="apattach button" href="#"><i class="fa fa-files-o"></i> Logs &amp; Files</a>
+        <a class="view button dll" href="<%-APIURL%>/download/ap/archive/<%-AID%>"><i class="fa fa-cloud-download"></i> Download Zip</a>
     
         <% if (TYPE == 'fast_dp') { %>
         <a href="#" class="button view rd"><i class="fa fa-search"></i> Radiation Damage</a>
         <% } %>
     
         <a class="view button" title="Lookup Unit Cell" href="/cell/a/<%-CELL.CELL_A%>/b/<%-CELL.CELL_B%>/c/<%-CELL.CELL_C%>/al/<%-CELL.CELL_AL%>/be/<%-CELL.CELL_BE%>/ga/<%-CELL.CELL_GA%>"><i class="fa fa-search"></i> Lookup Cell</a>
+        <a class="downstream button" href="#"><i class="fa fa-cogs"></i> Downstream Processing</a>
     </p>
 
     <table class="reflow bc">

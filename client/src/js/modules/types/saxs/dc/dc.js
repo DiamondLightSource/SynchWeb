@@ -18,7 +18,9 @@ define([
             'click a.dd': utils.signHandler,
             'click .holder h1.dp': 'loadAP',
         },
-        
+
+        setProcessingVars: function() {},
+
         showDiff: function(e) {
             e.preventDefault()
             this.$el.find('.diffraction a').eq(0).trigger('click')
@@ -26,7 +28,7 @@ define([
 
         loadAP: function(e) {
             if (!this.ap) {
-              this.ap = new DCDownstreamView({ id: this.model.get('ID'), el: this.$el.find('div.downstream') })
+              this.ap = new DCDownstreamView({ id: this.model.get('ID'), el: this.$el.find('div.downstream'), dcPurgedProcessedData: this.model.get('PURGEDPROCESSEDDATA') })
             } else this.ap.$el.slideToggle()
         },
         

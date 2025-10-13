@@ -8,7 +8,7 @@
         ref="containerForm"
         v-slot="{ invalid, errors }"
       >
-        <!-- Old Add containers had an assign button here - try leaving it out as there is a menu item for /assign -->
+
         <form
           id="add_container"
           class="tw-flex"
@@ -57,13 +57,41 @@
                 v-slot="{ errors }"
                 tag="div"
                 class="tw-mb-2 tw-py-2"
-                rules="required"
+                rules="required|alpha_dash"
                 name="Container Name"
                 vid="container-name"
               >
                 <base-input-text
                   v-model="NAME"
                   label="Container Name"
+                  :error-message="errors[0]"
+                />
+              </validation-provider>
+
+              <base-input-select
+                v-show="showParentContainer"
+                dataTestId="add-container-parent-container"
+                v-model="PARENTCONTAINERID"
+                outer-class="tw-mb-2 tw-py-2"
+                label="Parent Container"
+                name="PARENTCONTAINERID"
+                :options="parentContainers"
+                option-value-key="CONTAINERID"
+                option-text-key="NAME"
+              />
+
+              <validation-provider
+                v-slot="{ errors }"
+                tag="div"
+                class="tw-mb-2 tw-py-2"
+                rules="numeric"
+                name="Parent Container Location"
+                vid="parent-container-location"
+              >
+                <base-input-text
+                  v-show="showParentContainer"
+                  v-model="PARENTCONTAINERLOCATION"
+                  label="Parent Container Location"
                   :error-message="errors[0]"
                 />
               </validation-provider>
@@ -90,25 +118,35 @@
               <div class="tw-mb-2 tw-py-2">
                 <label>Queue For UDC</label>
                 <base-input-checkbox
+                  v-if="shippingSafetyLevel === 'Green'"
                   v-model="QUEUEFORUDC"
                   name="Queue For UDC"
                 />
+                <span v-else-if="shippingSafetyLevel === null">
+                  Cannot queue container until shipment safety level is set
+                </span>
+                <span v-else>
+                  Cannot queue containers in {{ shippingSafetyLevel }} shipments
+                </span>
               </div>
             </div>
 
             <div v-show="plateType === 'plate'">
-              <div class="tw-flex tw-w-full tw-relative">
+              <validation-provider
+                v-if="plateType === 'plate'"
+                v-slot="{ errors }"
+                tag="div"
+                class="tw-mb-2 tw-py-2"
+                rules="required"
+                name="Barcode"
+                vid="barcode"
+              >
                 <base-input-text
                   v-model="BARCODE"
-                  outer-class="tw-mb-2 tw-py-2 tw-flex tw-flex-1"
                   label="Barcode"
-                  name="Barcode"
+                  :error-message="getBarcodeErrorMessage(errors)"
                 />
-                <span
-                  v-if="barcodeMessage"
-                  class="barcode-message tw-text-xs tw-ml-4 tw-bg-content-light-background tw-rounded tw-p-2 tw-absolute"
-                >{{ barcodeMessage }}</span>
-              </div>
+              </validation-provider>
 
               <validation-provider
                 v-slot="{ errors }"
@@ -374,6 +412,30 @@
         </template>
       </custom-dialog-box>
     </portal>
+
+    <portal to="dialog">
+      <custom-dialog-box
+        v-if="displayConfirmationModal"
+        @perform-modal-action="addContainer"
+        @close-modal-action="closeModalAction"
+      >
+        <template>
+          <div class="tw-bg-modal-header-background tw-py-1 tw-pl-4 tw-pr-2 tw-rounded-sm tw-flex tw-w-full tw-justify-between tw-items-center tw-relative">
+            <p>Create Container?</p>
+            <button
+              class="tw-flex tw-items-center tw-border tw-rounded-sm tw-border-content-border tw-bg-white tw-text-content-page-color tw-p-1"
+              @click="closeModalAction"
+            >
+              <i class="fa fa-times" />
+            </button>
+          </div>
+          <div class="tw-py-3 tw-px-4">
+            Are you sure? You have only defined {{ sampleCount }} sample(s).
+          </div>
+        </template>
+      </custom-dialog-box>
+    </portal>
+
   </div>
 </template>
 
@@ -408,6 +470,8 @@ const INITIAL_CONTAINER_TYPE = {
   NAME: null,
   WELLDROP: -1,
   WELLPERROW: null,
+  DROPOFFSETX: null,
+  DROPOFFSETY: null,
 }
 
 export default {
@@ -444,6 +508,8 @@ export default {
       PROCESSINGPIPELINEID: null,
       NAME: "",
       CONTAINERREGISTRYID: null,
+      PARENTCONTAINERID: null,
+      PARENTCONTAINERLOCATION: null,
       AUTOMATED: 0,
       BARCODE: "",
       PERSONID: "",
@@ -461,6 +527,7 @@ export default {
 
       // The dewar that this container will belong to
       dewar: null,
+      shippingSafetyLevel: null,
 
       processingPipeline: '',
       processingPipelines: [],
@@ -469,7 +536,9 @@ export default {
       proteinSelection: null,
       selectedSample: null,
       sampleLocation: 0,
+      sampleCount: 0,
       displayImagerScheduleModal: false,
+      displayConfirmationModal: false,
       selectedSchedule: null,
       selectedScreen: null,
       schedulingComponentHeader: [
@@ -533,30 +602,15 @@ export default {
               dropPerWellY: this.containerType['DROPPERWELLY'],
               dropWidth: this.containerType['DROPWIDTH'],
               wellDrop: this.containerType['WELLDROP'],
-              wellPerRow: this.containerType['WELLPERROW']
+              wellPerRow: this.containerType['WELLPERROW'],
+              dropOffsetX: this.containerType['DROPOFFSETX'],
+              dropOffsetY: this.containerType['DROPOFFSETY'],
             })
 
           }
           this.getUsers()
           this.resetSamples(type.get('CAPACITY'))
         }
-      }
-    },
-    AUTOMATED: {
-      immediate: true,
-      handler: function(newVal) {
-        const proteinsCollection = new DistinctProteins()
-        // If now on, add safety level to query
-        // Automated collections limited to GREEN Low risk samples
-        if (newVal) {
-          proteinsCollection.queryParams.SAFETYLEVEL = 'GREEN';
-        } else {
-          proteinsCollection.queryParams.SAFETYLEVEL = 'ALL';
-        }
-        this.$store.dispatch('getCollection', proteinsCollection).then( (result) => {
-          this.proteins = result.toJSON()
-        })
-        app.trigger('samples:automated', newVal)
       }
     },
     CONTAINERREGISTRYID: {
@@ -593,6 +647,7 @@ export default {
   created: function() {
     this.containerType = INITIAL_CONTAINER_TYPE
     this.dewar = this.options.dewar.toJSON()
+    this.shippingSafetyLevel = this.dewar.SHIPPINGSAFETYLEVEL
     this.DEWARID = this.dewar.DEWARID
 
     this.resetSamples(this.containerType.CAPACITY)
@@ -601,6 +656,7 @@ export default {
     this.getProteins()
     this.getContainerTypes()
     this.getContainerRegistry()
+    this.getParentContainers()
     this.getProcessingPipelines()
     this.formatExperimentKindList()
     this.getSampleGroups()
@@ -618,9 +674,16 @@ export default {
 
       if (!validated) return
 
-      this.addContainer()
+      this.sampleCount = this.samples.filter(s => +s.PROTEINID > 0 && s.NAME !== '').length;
+
+      if (this.plateType === 'plate' && this.sampleCount < this.containerType.CAPACITY) {
+        this.displayConfirmationModal = true
+      } else {
+        this.addContainer()
+      }
     },
     addContainer() {
+      this.displayConfirmationModal = false
       let containerAttributes = {
         NAME: this.NAME,
         DEWARID: this.DEWARID,
@@ -642,6 +705,8 @@ export default {
         containerAttributes = {
           ...containerAttributes,
           CONTAINERREGISTRYID: this.CONTAINERREGISTRYID,
+          PARENTCONTAINERID: this.PARENTCONTAINERID,
+          PARENTCONTAINERLOCATION: this.PARENTCONTAINERLOCATION,
           PROCESSINGPIPELINEID: this.PROCESSINGPIPELINEID,
           SPACEGROUP: this.SPACEGROUP
         }
@@ -674,7 +739,7 @@ export default {
 
         await this.$store.dispatch('samples/save', containerId)
         this.$store.commit('notifications/addNotification', {
-          message: `New Container created, click <a href=/containers/cid/${containerId}>here</a> to view it`,
+          message: `New Container created, click <a href=/containers/cid/${containerId}>here</a> to view it. Remember to add sequences and PDBs if needed.`,
           level: 'info',
           persist: true
         })
@@ -686,14 +751,22 @@ export default {
         this.NAME = ''
         this.BARCODE = ''
         this.CONTAINERREGISTRYID = ''
+        this.PARENTCONTAINERID = ''
+        this.PARENTCONTAINERLOCATION = ''
         // Trigger default setting of UDC fields if selected
         this.selectQueueForUDC(this.AUTOMATED)
 
         // Reset state of form
         this.$refs.containerForm.reset()
       } catch (error) {
+        let errorMessage = 'Something went wrong creating this container, please try again'
+        if (error.response && error.response.data && error.response.data.message) {
+          errorMessage = error.response.data.message
+        } else if (error.message) {
+          errorMessage = error.message
+        }
         this.$store.commit('notifications/addNotification', {
-          message: 'Something went wrong creating this container, please try again',
+          message: errorMessage,
           level: 'error'
         })
       } finally {
@@ -704,10 +777,6 @@ export default {
       let samples
       if (newVal) {
         samples = this.samples.map(sample => {
-          if (!sample.CENTRINGMETHOD) {
-            sample.CENTRINGMETHOD = 'diffraction'
-          }
-
           if (!sample.EXPERIMENTKIND) {
             sample.EXPERIMENTKIND = 'Ligand binding'
           }
@@ -765,18 +834,19 @@ export default {
     },
     closeModalAction() {
       this.displayImagerScheduleModal = false
+      this.displayConfirmationModal = false
     },
     async checkContainerBarcode() {
-      try {
-        const response = await this.$store.dispatch('fetchDataFromApi', {
-          url: `/shipment/containers/barcode/${this.BARCODE}`,
-          requestType: 'fetching barcode status'
-        })
+      const response = await this.$store.dispatch('fetchDataFromApi', {
+        url: `/shipment/containers/barcode/${this.BARCODE}`,
+        requestType: 'fetching barcode status'
+      })
 
+      if (response.PROP) {
         const { PROP } = response
         this.BARCODECHECK = 0
         this.barcodeMessage = `This barcode is already registered to ${PROP}`
-      } catch (error) {
+      } else {
         this.BARCODECHECK = 1
         this.barcodeMessage = ''
       }
@@ -800,6 +870,12 @@ export default {
 
         this.$store.commit('samples/updateSamplesField', { path: `samples/${index}/SCREENCOMPONENTGROUPID`, value: data })
       })
+    },
+    getBarcodeErrorMessage(veeValidateErrors) {
+      if (veeValidateErrors && veeValidateErrors.length > 0) {
+        return veeValidateErrors[0];
+      }
+      return this.barcodeMessage || '';
     },
   }
 }

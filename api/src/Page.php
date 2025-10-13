@@ -222,29 +222,8 @@ class Page
         {
             $auth = $this->staff;
 
-            // Beamline Sample Registration
         }
-        else if ($this->blsr() && !$this->user->loginId)
-        {
-            $auth = false;
-
-            if ($this->has_arg('visit'))
-            {
-                $blsr_visits = array();
-                foreach ($this->blsr_visits() as $v)
-                    array_push($blsr_visits, $v['VISIT']);
-
-                if (in_array($this->arg('visit'), $blsr_visits))
-                    $auth = True;
-
-            }
-            else
-            {
-                $auth = true;
-            }
-
-            // Barcode Scanners
-        }
+        // Barcode Scanners
         else if ($this->bcr() && !$this->user->loginId)
         {
             $auth = true;
@@ -761,42 +740,6 @@ class Page
     }
 
 
-    # ------------------------------------------------------------------------
-    # Beamline sample registration: Get Beamline from IP
-    function ip2bl()
-    {
-        global $ip2bl;
-        $parts = explode('.', $_SERVER['REMOTE_ADDR']);
-
-        if ($parts && sizeof($parts) > 1 && array_key_exists($parts[2], $ip2bl))
-        {
-            return $ip2bl[$parts[2]];
-        }
-    }
-
-
-    # Return visit list for blsr;
-    function blsr_visits()
-    {
-        $b = $this->ip2bl();
-
-        if (!$b)
-            return array();
-
-        $visits = $this->db->pq("SELECT CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) as visit, TO_CHAR(s.startdate, 'DD-MM-YYYY HH24:MI') as st, TO_CHAR(s.enddate, 'DD-MM-YYYY HH24:MI') as en,s.beamlinename as bl FROM blsession s INNER JOIN proposal p ON (p.proposalid = s.proposalid) WHERE TIMESTAMPDIFF('DAY', s.startdate, CURRENT_TIMESTAMP) < 1 AND TIMESTAMPDIFF('DAY', CURRENT_TIMESTAMP, s.enddate) < 2 AND s.beamlinename LIKE :1 ORDER BY s.startdate", array($b));
-        $v = $this->db->paginate("SELECT CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) as visit, TO_CHAR(s.startdate, 'DD-MM-YYYY HH24:MI') as st, TO_CHAR(s.enddate, 'DD-MM-YYYY HH24:MI') as en,s.beamlinename as bl FROM blsession s INNER JOIN proposal p ON (p.proposalid = s.proposalid) WHERE p.proposalcode LIKE 'cm' AND s.beamlinename LIKE :1 AND s.enddate <= CURRENT_TIMESTAMP ORDER BY s.startdate DESC", array($b, 0, 1));
-        $visits = array_merge($visits, $v);
-        return $visits;
-    }
-
-    # Beamline Sample Registration Machine
-    function blsr()
-    {
-        global $blsr;
-
-        return in_array($_SERVER['REMOTE_ADDR'], $blsr);
-    }
-
     # Barcode Scanner Machines
     function bcr()
     {
@@ -815,7 +758,9 @@ class Page
      */
     function _get_name($fedid)
     {
-        $src = $this->_ldap_search('uid=' . $fedid);
+        global $ldap_id_field;
+
+        $src = $this->_ldap_search($ldap_id_field . '=' . $fedid);
         return array_key_exists($fedid, $src) ? $src[$fedid] : '';
     }
 
@@ -827,7 +772,9 @@ class Page
      */
     function _get_email($fedid)
     {
-        $src = $this->_ldap_search('uid=' . $fedid, True);
+        global $ldap_id_field;
+
+        $src = $this->_ldap_search($ldap_id_field . '=' . $fedid, True);
         return array_key_exists($fedid, $src) ? $src[$fedid] : $fedid;
     }
 
@@ -910,12 +857,12 @@ class Page
      * Search LDAP for name or email
      *
      * @param boolean $email Search for an email adddress if true, search for name if false
-     * @param string $search ldap query, typically uid=fedid or name search
+     * @param string $search ldap query, typically cn=fedid or name search
      * @return array Returns array of results, either fedid=>emailAddresses or fedid=>"givenname sn" from ldap records
      */
     function _ldap_search($search, $email = False)
     {
-        global $ldap_server, $ldap_search;
+        global $ldap_server, $ldap_search, $ldap_id_field;
 
         $ret = array();
         if (is_null($ldap_server)) {
@@ -938,7 +885,7 @@ class Page
             {
                 // Strictly speaking we could set anything as the key here, since only the first record is used in e.g. _get_email_fn
                 // But as the logic maps fedid=>email, use similar keys here
-                $fedid = $info[$i]['uid'][0];
+                $fedid = $info[$i][$ldap_id_field][0];
                 if ($email)
                 {
                     $ret[$fedid] = array_key_exists('mail', $info[$i]) ? $info[$i]['mail'][0] : '';
@@ -1093,9 +1040,9 @@ class Page
 
     function _submit_zocalo_recipe($recipe, $parameters, $error_code = 500)
     {
-        global $zocalo_mx_reprocess_queue;
+        global $rabbitmq_zocalo_vhost;
 
-        if (isset($zocalo_mx_reprocess_queue))
+        if (isset($rabbitmq_zocalo_vhost))
         {
             // Send job to processing queue
             $zocalo_message = array(
@@ -1104,19 +1051,21 @@ class Page
                 ),
                 'parameters' => $parameters,
             );
-            $this->_send_zocalo_message($zocalo_mx_reprocess_queue, $zocalo_message, $error_code);
+            $this->_send_zocalo_message($rabbitmq_zocalo_vhost, $zocalo_message, $error_code);
         }
     }
 
 
-    function _send_zocalo_message($zocalo_queue, $zocalo_message, $error_code = 500)
+    function _send_zocalo_message($rabbitmq_zocalo_vhost, $zocalo_message, $error_code = 500)
     {
         global
-        $zocalo_server,
-        $zocalo_username,
-        $zocalo_password;
+        $rabbitmq_zocalo_host,
+        $rabbitmq_zocalo_port,
+        $rabbitmq_zocalo_username,
+        $rabbitmq_zocalo_password,
+        $rabbitmq_zocalo_routing_key;
 
-        if (empty($zocalo_server) || empty($zocalo_queue))
+        if (empty($rabbitmq_zocalo_host) || empty($rabbitmq_zocalo_vhost))
         {
             $message = 'Zocalo server or queue not specified.';
             error_log($message);
@@ -1128,9 +1077,8 @@ class Page
 
         try
         {
-            error_log("Sending message" . var_export($zocalo_message, true));
-            $queue = new Queue($zocalo_server, $zocalo_username, $zocalo_password);
-            $queue->send($zocalo_queue, $zocalo_message, true, $this->user->loginId);
+            $queue = new Queue($rabbitmq_zocalo_host, $rabbitmq_zocalo_port, $rabbitmq_zocalo_username, $rabbitmq_zocalo_password, $rabbitmq_zocalo_vhost);
+            $queue->send($zocalo_message, $rabbitmq_zocalo_routing_key);
         }
         catch (Exception $e)
         {

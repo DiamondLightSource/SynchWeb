@@ -1082,6 +1082,11 @@ li:last-child .visit_users {
         width: 40.5%;
         height: 300px;
 
+        &.map {
+            width: 30%;
+            height: auto;
+        }
+
         &.image-third {
             width: 32.4%;
 
@@ -1821,7 +1826,14 @@ textarea[name=pasted] {
     height: 250px;
 }
 
-
+.strategies {
+    > div {
+        padding: 10px;
+        table tr.stratrow {
+            cursor: auto;
+        }
+    }
+}
 
 @media (max-width: $breakpoint-small) {
 

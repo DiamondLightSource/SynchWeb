@@ -9,8 +9,8 @@ class Contact extends Page
 {
 
         public static $arg_list = array('CARDNAME' => '([\w\s\-])+',
-                              'FAMILYNAME' => '([\w\-])+',
-                              'GIVENNAME' => '([\w\-])+',
+                              'FAMILYNAME' => '([\w\s\-])+',
+                              'GIVENNAME' => '([\w\s\-])+',
                               'PHONENUMBER' => '.*',
                               'EMAILADDRESS' => '.*',
                               'LABNAME' => '([\w\s\-])+',
@@ -39,10 +39,10 @@ class Contact extends Page
         # Get List of Lab Contacts
         function _get_contacts() {
             if (!$this->has_arg('prop')) $this->_error('No proposal specified');
-            
+
             $args = array($this->proposalid);
             $where = 'WHERE c.proposalid = :1';
-            
+
             if ($this->has_arg('cid')) {
                 $where .= ' AND c.labcontactid=:'.(sizeof($args)+1);
                 array_push($args, $this->arg('cid'));
@@ -63,37 +63,36 @@ class Contact extends Page
             $pp = $this->has_arg('per_page') ? $this->arg('per_page') : 15;
             $start = 0;
             $end = $pp;
-            
+
             if ($this->has_arg('page')) {
                 $pg = $this->arg('page') - 1;
                 $start = $pg*$pp;
                 $end = $pg*$pp+$pp;
             }
-            
+
             $st = sizeof($args)+1;
             $en = $st + 1;
             array_push($args, $start);
             array_push($args, $end);
-            
+
             $order = 'c.labcontactid DESC';
-        
-            $rows = $this->db->paginate("SELECT c.labcontactid, c.cardname, pe.givenname, pe.familyname, pe.phonenumber, l.name as labname, l.address, l.city, l.country, c.courieraccount,  c.billingreference, c.defaultcourriercompany, c.dewaravgcustomsvalue, c.dewaravgtransportvalue, pe.emailaddress, l.postcode, l.country
+
+            $rows = $this->db->paginate("SELECT c.labcontactid, c.cardname, pe.givenname, pe.familyname, pe.phonenumber, IF(pe.login IS NOT NULL, pe.login, IF(pe.externalid IS NOT NULL, 'External', NULL)) AS login, l.name as labname, l.address, l.city, l.country, c.courieraccount, c.billingreference, c.defaultcourriercompany, c.dewaravgcustomsvalue, c.dewaravgtransportvalue, pe.emailaddress, l.postcode, l.country
                                  FROM labcontact c 
                                  INNER JOIN person pe ON c.personid = pe.personid 
                                  INNER JOIN laboratory l ON l.laboratoryid = pe.laboratoryid 
                                  INNER JOIN proposal p ON p.proposalid = c.proposalid 
                                  $where ORDER BY $order", $args);
-            
+
             if ($this->has_arg('cid')) {
                 if (sizeof($rows))$this->_output($rows[0]);
                 else $this->_error('No such contact');
-                
-            } else $this->_output(array('total' => $tot,
-                                 'data' => $rows,
-                           ));
+            } else {
+                $this->_output(array('total' => $tot, 'data' => $rows));
+            }
         }
-        
-        
+
+
         # ------------------------------------------------------------------------
         # Update field for lab contact
         function _update_contact() {

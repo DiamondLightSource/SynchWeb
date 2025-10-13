@@ -3,46 +3,17 @@
     <p class="help">This page shows details and contents of the selected shipment. Most parameters can be edited by simply clicking on them.</p>
     <p class="help excl">Shipments need to have an outgoing and return home lab contact before shipment labels can be printed</p>
 
-    <% if (DHL_ENABLE) { %>
-        <% if (DELIVERYAGENT_HAS_LABEL == '1') { %>
-            <p class="message notify">You can print your Air Waybill by clicking &quot;Print Air Waybill&quot; below</p>
-        <% } else if (COUNTRY && FACILITY_COURIER_COUNTRIES_NDE.includes(COUNTRY) ) { %>
-            <p class="message alert">International shipping is not available through this application. If you're arranging your own shipping (e.g. industrial users), enter your tracking numbers below after booking and include printed return labels in the dewar case. European academic users, please see <a href="<%-FACILITY_COURIER_COUNTRIES_LINK%>">here</a>.</p>
-        <% } else if (COUNTRY && !FACILITY_COURIER_COUNTRIES.includes(COUNTRY) ) { %>
-            <p class="message alert">International shipping is not available through this application. If you're arranging your own shipping, enter your tracking numbers below after booking and include printed return labels in the dewar case.</p>
-        <% } else { %>
-            <p class="message notify">You can now book your shipment with DHL using &quot;Create Air Waybill&quot; below</p>
-        <% } %>
-    <% } %>
+    <span class="dhlmessage"></span>
 
-    <% if (LCOUT && LCRET) { %>
-    <div class="ra">
-        <% if ((SHIPPINGSTATUS == 'opened' || SHIPPINGSTATUS == 'awb created' || SHIPPINGSTATUS == 'pickup booked') && PROCESSING == 0) { %>
-            <a class="button send" href="#"><i class="fa fa-plane"></i> Mark as Sent</a>
-        <% } %>
+    <div class="ra buttons">
+        <span class="sent"></span>
 
-        <% if (!DELIVERYAGENT_AGENTNAME || (DHL_ENABLE && DELIVERYAGENT_AGENTNAME.toLowerCase().trim() == 'dhl')) { %>
-        <% if (DELIVERYAGENT_HAS_LABEL == '1') { %>
-            <a class="button pdf" href="<%-APIURL%>/pdf/awb/sid/<%-SHIPPINGID%>"><i class="fa fa-print"></i> Print Air Waybill</a>
-            <!-- <a class="button cancel" href="#"><i class="fa fa-truck"></i> Cancel Pickup</a> -->
-            <% if (!DELIVERYAGENT_PICKUPCONFIRMATION) { %>
-                <a class="button awb" href="/shipments/pickup/sid/<%-SHIPPINGID%>"><i class="fa fa-truck"></i> Rebook Pickup</a>
-            <% } %>
-        <% } else if (COUNTRY && COUNTRY !="United Kingdom" ) { %>
-            <a class="button" href="#"><i class="fa fa-credit-card"></i> Create Air Waybill - Disabled</a>
-        <% } else if (EXTERNALSHIPPINGIDTOSYNCHROTRON && app.options.get("shipping_service_app_url_incoming")) { %>
-            <% const link = `${app.options.get('shipping_service_app_url_incoming')}/shipment-requests/${EXTERNALSHIPPINGIDTOSYNCHROTRON}/incoming` %>
-            <a class="button shipping-service" href="<%-link%>"><i class="fa fa-print"></i> Manage shipment booking</a>
-        <% } else { %>
-            <a class="button awb" href="/shipments/awb/sid/<%-SHIPPINGID%>"><i class="fa fa-credit-card"></i> Create DHL Air Waybill</a>
-        <% } %>
-        <% } %>
+        <span class="booking"></span>
 
         <a href="<%-APIURL%>/pdf/sid/<%-SHIPPINGID%>/prop/<%-PROP%>" class="label button pdf" title="Print Shipment Labels"><i class="fa fa-print"></i> Print Shipment Labels</a>
 
         <a href="<%-APIURL%>/pdf/container/sid/<%-SHIPPINGID%>/prop/<%-PROP%>" class="label button pdf" title="Print Shipment Contents"><i class="fa fa-print"></i> Print Contents</a>
     </div>
-    <% } %>
 
     <div class="form">
         <ul>
@@ -70,6 +41,7 @@
                 <span class="label">Safety Level</span>
                 <span class="SAFETYLEVEL"><%-SAFETYLEVEL%></span>
             </li>
+            <% if (!EXTERNALSHIPPINGIDTOSYNCHROTRON || !app.options.get("shipping_service_app_url_incoming")) { %>
             <li>
                 <span class="label">Courier</span>
                 <span class="DELIVERYAGENT_AGENTNAME"><%-DELIVERYAGENT_AGENTNAME%></span>
@@ -126,8 +98,8 @@
                 <span class="label">Estimated Delivery Date</span>
                 <span class="DELIVERYAGENT_DELIVERYDATE"><%-DELIVERYAGENT_DELIVERYDATE%></span>
             </li>
+            <% } %>
             <%
-                DYNAMIC=(typeof DYNAMIC !== 'undefined')? DYNAMIC : 'No';
                 REMOTEORMAILIN=(typeof REMOTEORMAILIN !== 'undefined')? REMOTEORMAILIN : null;
                 SESSIONLENGTH=(typeof SESSIONLENGTH !== 'undefined')? SESSIONLENGTH : null;
                 ENERGY=(typeof ENERGY !== 'undefined')? ENERGY : null;
@@ -139,6 +111,8 @@
                 ENCLOSEDTOOLS=(typeof ENCLOSEDTOOLS !== 'undefined')? ENCLOSEDTOOLS : null; 
                 EXTRASUPPORTREQUIREMENT=(typeof EXTRASUPPORTREQUIREMENT !== 'undefined')? EXTRASUPPORTREQUIREMENT : null;
                 MULTIAXISGONIOMETRY=(typeof MULTIAXISGONIOMETRY !== 'undefined')? MULTIAXISGONIOMETRY : null;
+                LONGWAVELENGTH=(typeof LONGWAVELENGTH !== 'undefined')? LONGWAVELENGTH : null;
+                ONSITEUSER=(typeof ONSITEUSERS !== 'undefined')? ONSITEUSERS : null;
             %>
             <li>
                 <span class="label">Hard drive enclosed</span>
@@ -151,11 +125,15 @@
             </li>
 
             <li>
-                <span class="label">Responsive</span>
-                <span class="DYNAMIC"><%-DYNAMIC %></span>
+                <span class="label">Scheduling</span>
+                <span class="DYNAMIC"></span>
+                <a href="#" class="button ready"><i class="fa fa-check-square-o"></i> Shipment is ready for scheduling</a>
             </li>
 
-                
+                <li class="longwavelength">
+                    <span class="label">Long wavelength</span>
+                    <span class="LONGWAVELENGTH"><%-LONGWAVELENGTH %></span>
+                </li>
 
                 <li class="remoteormailin">
                     <span class="label">Remote or mail in</span>
@@ -188,12 +166,17 @@
                 </li>
 
                 <li class="remoteform">
-                    <span class="label">Group Dewars</span>
+                    <span class="label">Group Shipments</span>
                     <span class="DEWARGROUPING"><%-DEWARGROUPING %></span>
                 </li>
 
                 <li class="remoteform">
-                    <span class="label">Extra Support Requirement</span>
+                    <span class="label">On-site Users</span>
+                    <span class="ONSITEUSERS"><%-ONSITEUSERS %></span>
+                </li>
+
+                <li class="remoteform">
+                    <span class="label">Extra Support Required</span>
                     <span class="EXTRASUPPORTREQUIREMENT"><%-EXTRASUPPORTREQUIREMENT %></span>
                 </li>
 

@@ -5,6 +5,9 @@ define([
     return DCItemView.extend({
         template: template,
         plotView: null,
+
+        setProcessingVars: function() {},
+
     })
 
 })

@@ -16,15 +16,16 @@
             <div class="tw-pb-2">
                 <input data-testid="visit-table-search"
                        placeholder='Search'                         
-                       v-on:keyup.enter="fetchData" 
+                       v-on:keyup="fetchData"
                        v-model = "searchVisit"/>
             </div>
 
             <table data-testid="visit-table" class="tw-w-full tw-mb-2">
                 <thead>
                     <td v-for="(value) in headers" :key="value.id" data-testid="visit-table-headers"
-                    class="tw-w-1/8 tw-bg-table-header-background tw-text-table-header-color tw-font-bold tw-py-2 tw-text-center">
-                    {{value.title}}
+                    class="tw-w-1/8 tw-bg-table-header-background tw-text-table-header-color tw-py-2 tw-text-center">
+                        <button v-if="value.key != 'DEWARS'" class="tw-font-bold" :id="value.order || value.key" @click="headerClick($event)">{{value.title}}</button>
+                        <span v-else class="tw-font-bold">{{value.title}}</span>
                     </td>
                 </thead>
 
@@ -57,7 +58,10 @@
                                 <a v-if="value.key == 'LINKS' && visit.DCCOUNT>0" class="button button-notext" title="View Statistics" id="STATS"><i class="fa fa-pie-chart"></i></a>
                                 <a v-if="value.key == 'LINKS' && visit.DCCOUNT>0" class="button button-notext" title="Download PDF Report" id="PDF"><i class="fa fa-list"></i></a>
                                 <a v-if="value.key == 'LINKS' && visit.DCCOUNT>0" class="button button-notext" title="Export Data Collections to CSV" id="CSV"><i class="fa fa-file-o"></i></a>
-                                
+                                <span v-if="value.key == 'ERA' && visit.RISKRATING == 'Low'" title="Risk Rating: Low">&#128994;</span>
+                                <span v-else-if="value.key == 'ERA' && visit.RISKRATING == 'Medium'" title="Risk Rating: Medium">&#128993;</span>
+                                <span v-else-if="value.key == 'ERA' && visit.RISKRATING == 'High'" title="Risk Rating: High">&#128308;</span>
+                                <span v-else-if="value.key == 'ERA'" title="No approved ERA">&#9899;</span>
                                 <div data-testid="visit-table-archived" v-if="value.key == 'ARCHIVED' && visit.ARCHIVED == 1">
                                     <i class="fa fa-archive r" :title="'The raw data from this visit have been '+ isArchived + '. You can no longer reprocess data or view full sized diffraction images.'"></i>
                                 </div>
@@ -112,27 +116,35 @@ export default {
             pageSize: 15,
             currentPage: 1,
             proposal: app.prop,
-            isArchived: app.prop.includes("in") ? "deleted" : "archived",
+            isArchived: app.options.get('prop_codes_data_deleted').some(code => app.prop.includes(code)) ? "deleted" : "archived",
             visitCollection: [],
             visits: [],
             dewars: [],
             searchVisit : '',
+            orderBy: '',
+            order: 1,
             headers: [
                 {
                     key: "STARTDATE",
-                    title: 'Start'
+                    title: 'Start',
+                    order: 'ST'
                 },
                 {
                     key: "ENDDATE",
-                    title: 'End'
+                    title: 'End',
+                    order: 'EN'
                 },
                 {
                     key: "VIS",
                     title: 'Number'
                 },
                 {
-                    key: "BEAMLINENAME",
+                    key: "BL",
                     title: 'Beamline'
+                },
+                {
+                    key: "ERA",
+                    title: 'ERA'
                 },
                 {
                     key: "DEWARS",
@@ -140,7 +152,8 @@ export default {
                 },
                 {
                     key: "UNIQUELCS",
-                    title: 'Local Contact'
+                    title: 'Local Contact',
+                    order: 'LC'
                 },
                 {
                     key: "COMMENTS",
@@ -171,6 +184,7 @@ export default {
             window.location.href = '/proposals/';
         }
         this.fetchData()
+        this.fetchData = _.debounce(this.fetchData, 500)
     },
     methods: {
         async fetchData() {
@@ -181,8 +195,18 @@ export default {
                 page: this.currentPage,
                 per_page: this.pageSize,
                 prop: this.proposal,
-                s: this.searchVisit,
+                order: 'order',
+                directions: {
+                    '-1': 'asc',
+                    '1': 'desc',
+                },
             };
+            this.visitCollection.state = {
+                sortKey: 'sort_by',
+                order: this.order,
+            };
+            if (this.searchVisit) this.visitCollection.queryParams.s = this.searchVisit;
+            if (this.orderBy) this.visitCollection.queryParams.sort_by = this.orderBy;
 
             const results = await this.$store.dispatch('getCollection', this.visitCollection);
             this.visits = results.toJSON().map((e) => {
@@ -251,6 +275,15 @@ export default {
             else {
                 window.location.href = 'dc/visit/' + this.proposal + '-' + visit.VIS;
             }
+        },
+        headerClick(event) {
+            if (this.orderBy === event.target.id) {
+                this.order = -this.order;
+            } else {
+                this.order = 1;
+            }
+            this.orderBy = event.target.id;
+            this.fetchData();
         },
         handleFocusOut(visit) {
             // if click outside of active input box then input returns to text

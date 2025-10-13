@@ -16,7 +16,6 @@ class UserController extends Page
         'pjid' => '\d+',
         'peid' => '\d+',
         'uid' => '\d+',
-        'sid' => '\d+',
         'visit' => '\w+\d+-\d+',
         'location' => '(\w|-|\/)+',
         'all' => '\d',
@@ -167,24 +166,17 @@ class UserController extends Page
 
     function _get_users()
     {
-        // remove this after successfully completing LIMS-742 ticket
-        if($this->has_arg('pid')){
-            error_log("pid used (for ticket: https://jira.diamond.ac.uk/browse/LIMS-742)");
-        }
-        
         $rows = $this->userData->getUsers(
             false,
             $this->staff,
             $this->argOrEmptyString('s'),
             $this->argOrEmptyString('page'),
             $this->argOrEmptyString('sort_by'),
-            $this->argOrEmptyString('pid'),
             $this->proposalid,        
             $this->argOrEmptyString('PERSONID'),
             $this->user->hasPermission('manage_users'),
             $this->user->personId,
             $this->argOrEmptyString('gid'),
-            $this->argOrEmptyString('sid'),
             $this->argOrEmptyString('pjid'),
             $this->argOrEmptyString('visit'),
             $this->def_arg('per_page', 15),
@@ -208,13 +200,11 @@ class UserController extends Page
                 $this->argOrEmptyString('s'),
                 $this->argOrEmptyString('page'),
                 $this->argOrEmptyString('sort_by'),
-                $this->argOrEmptyString('pid'),
                 $this->proposalid,
                 $this->argOrEmptyString('PERSONID'),
                 $this->user->hasPermission('manage_users'),
                 $this->user->personId,
                 $this->argOrEmptyString('gid'),
-                $this->argOrEmptyString('sid'),
                 $this->argOrEmptyString('pjid'),
                 $this->argOrEmptyString('visit'),
                 $this->def_arg('per_page', 15),
@@ -275,13 +265,8 @@ class UserController extends Page
         $person = $this->userData->getUser($this->user->personId, $this->proposalid, $this->arg('PERSONID'));
         $person = $person[0];
         $this->_output((array) $person);
-        $laboratory = null;
-        if ($person['LABORATORYID'])
-        {
-            $laboratory = $this->userData->getLaboratory($person['LABORATORYID'])[0];
-        }
 
-        $this->userData->updateLaboratory(
+        $laboratoryId = $this->userData->updateLaboratory(
             $this->arg('PERSONID'),
             $this->argOrNull('LABNAME'),
             $this->argOrNull('ADDRESS'),
@@ -290,7 +275,7 @@ class UserController extends Page
             $this->argOrNull('COUNTRY'),
             $person['LABORATORYID']
         );
-        $laboratory = $this->userData->getLaboratory($person['LABORATORYID']);
+        $laboratory = $this->userData->getLaboratory($laboratoryId);
         $this->_output((array) $laboratory[0]);
     }
 

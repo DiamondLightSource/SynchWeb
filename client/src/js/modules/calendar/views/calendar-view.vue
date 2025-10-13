@@ -244,7 +244,7 @@ export default {
           all: 1,
         }
 
-        if (app.staff) queryParams.ty = this.proposalType
+        if (app.staff) queryParams.ty = 'calendar'
         if (this.selectedBeamline !== 'all') queryParams.bl = this.selectedBeamline
 
         const visitsCollection = new Visits(null, {

@@ -12,6 +12,7 @@ define(['backbone', 'marionette',
         className: 'downstream-item',
         links: true,
         mapLink: true,
+        dcPurgedProcessedData: "0",
         template: _.template('<div class="dpmessages"></div><% if(PARENT) { %><div class="r dplinks"></div><h2><%-PARENT%></h2><% } else { %><div class="ra dplinks"></div><% } %><div class="dpwrapper"></div>'),
         regions: {
             messages: '.dpmessages',
@@ -39,7 +40,11 @@ define(['backbone', 'marionette',
 
             app.dialog.show(new DialogView({ 
                 title: 'Attachments: '+this.model.escape('TYPE'),
-                view: new AutoProcAttachmentsView({ collection: this.attachments, idParam: 'AUTOPROCPROGRAMATTACHMENTID' }), 
+                view: new AutoProcAttachmentsView({ 
+                    collection: this.attachments,
+                    idParam: 'AUTOPROCPROGRAMATTACHMENTID',
+                    dcPurgedProcessedData: this.dcPurgedProcessedData 
+                }), 
                 autosize: true 
             }))
         },
@@ -60,22 +65,17 @@ define(['backbone', 'marionette',
             this.messages.show(new APMessagesView({
                 messages: new Backbone.Collection(this.model.get('MESSAGES')), embed: true 
             }))
-            this.wrappedView = new (this.getOption('childView'))({ 
-                model: this.model,
-                templateHelpers: this.getOption('templateHelpers'),
-                holderWidth: this.getOption('holderWidth'),
-            })
-            this.wrapper.show(this.wrappedView)
 
             if (!this.model.get('AUTOMATIC')) {
                 this.ui.links.html('<i class="fa fa-refresh" title="Reprocessed"></i> ')
             }
 
+            var mapButton = null
             if (this.getOption('links')) {
                 var links = [
                     '<a class="view button" href="/dc/map/id/'+this.getOption('DCID')+'/aid/'+this.model.get('AID')+'"><i class="fa fa-search"></i> Map / Model Viewer</a>',
-                    '<a class="dll button" href="'+app.apiurl+'/download/ap/archive/'+this.model.get('AID')+'"><i class="fa fa-archive"></i> Archive</a>',
-                    '<a class="pattach button" href="#"><i class="fa fa-files-o"></i> Logs &amp; Files</a>'
+                    '<a class="pattach button" href="#"><i class="fa fa-files-o"></i> Logs &amp; Files</a>',
+                    '<a class="dll button" href="'+app.apiurl+'/download/ap/archive/'+this.model.get('AID')+'"><i class="fa fa-cloud-download"></i> Download Zip</a>',
                 ]
 
                 if (!this.getOption('mapLink')) {
@@ -83,7 +83,17 @@ define(['backbone', 'marionette',
                 }
 
                 this.ui.links.append(links.join(' '))
+                mapButton = this.ui.links.find('a.view')
             }
+
+            this.wrappedView = new (this.getOption('childView'))({
+                model: this.model,
+                templateHelpers: this.getOption('templateHelpers'),
+                holderWidth: this.getOption('holderWidth'),
+                mapButton: mapButton,
+            })
+            this.wrapper.show(this.wrappedView)
+
         },
 
         onDomRefresh: function() {

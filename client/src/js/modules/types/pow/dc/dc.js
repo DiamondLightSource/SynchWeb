@@ -18,7 +18,9 @@ define([
             'click a.assoc': 'associateSample',
             'click a.dd': utils.signHandler,
         },
-        
+
+        setProcessingVars: function() {},
+
         showPlot: function(e) {
             e.preventDefault()
             app.dialog.show(new DialogView({ title: '1D Plot', view: new DatPlotLarge({ parent: this.model }), autoSize: true }))

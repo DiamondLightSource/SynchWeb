@@ -8,6 +8,7 @@ define(['marionette',
     'modules/dc/views/aiplots',
     'modules/dc/views/autoprocattachments',
     'modules/dc/views/apmessages',
+    'modules/dc/views/downstreamreprocess',
 
     'views/log',
     'views/table',
@@ -16,9 +17,11 @@ define(['marionette',
     'templates/dc/dc_autoproc.html'], function(Marionette, Backbone, Backgrid, TabView,
         AutoProcAttachments, AutoIntegrations, 
         RDPlotView, AIPlotsView, AutoProcAttachmentsView, APMessagesView, 
+        DownstreamView,
         LogView, TableView, table,
         utils, template) {
-       
+
+    var dcPurgedProcessedData = "0"; // dataCollection.PURGEDPROCESSEDDATA via options from DC.js
 
     var AutoIntegrationItem = Marionette.LayoutView.extend({
         template: template,
@@ -29,6 +32,7 @@ define(['marionette',
             'click .rd': 'showRD',
             'click .plot': 'showPlots',
             'click a.apattach': 'showAttachments',
+            'click a.downstream': 'downstream',
             'click .dll': utils.signHandler,
         },
 
@@ -41,7 +45,7 @@ define(['marionette',
         },
         
         showAttachments: function(e) {
-            e.preventDefault()
+            if (e) e.preventDefault()
 
             this.attachments = new AutoProcAttachments()
             this.attachments.queryParams.AUTOPROCPROGRAMID = this.model.get('AID')
@@ -49,9 +53,16 @@ define(['marionette',
 
             app.dialog.show(new DialogView({ 
                 title: 'Auto Processing Attachments: '+this.model.escape('TYPE'),
-                view: new AutoProcAttachmentsView({ collection: this.attachments }), 
+                view: new AutoProcAttachmentsView({ collection: this.attachments, dcPurgedProcessedData }), 
                 autosize: true 
             }))
+
+            this.listenTo(this.attachments, 'file:uploaded', this.showAttachments, this)
+        },
+
+        downstream: function(e) {
+            e.preventDefault()
+            app.dialog.show(new DownstreamView({ model: this.getOption('templateHelpers').PARENT, scalingid: this.model.get('SCALINGID'), autoprocprogramid: this.model.get('AID'), type: this.model.get('TYPE')}))
         },
 
         showLog: function(e) {
@@ -95,6 +106,7 @@ define(['marionette',
                     DCID: dcId,
                     APIURL: app.apiurl,
                     PROPOSAL_TYPE: app.type,
+                    PARENT: this.options.parent,
                 }
             }
         },
@@ -122,6 +134,7 @@ define(['marionette',
         },
         
         initialize: function(options) {
+            dcPurgedProcessedData = options.dcPurgedProcessedData;
             this.collection = new AutoIntegrations(null, { id: options.id })
             this.collection.fetch().done(this.render.bind(this))
         },
@@ -166,6 +179,7 @@ define(['marionette',
                     collection: this.collection,
                     id: this.getOption('id'),
                     el: this.$el.find('.res'),
+                    parent: this.options.parent,
                 }))
             }
 

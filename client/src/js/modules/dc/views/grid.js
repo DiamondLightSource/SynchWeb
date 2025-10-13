@@ -10,10 +10,11 @@ define(['marionette',
     'modules/dc/views/dccomments', 
     'modules/dc/views/attachments',
     'modules/dc/views/apstatusitem',
-    'modules/dc/models/gridxrc',
+    'modules/dc/views/gridxrc',
+    'modules/dc/views/autointegration',
     'templates/dc/grid.html', 'backbone-validation'], 
     function(Marionette, DCBase, TabView, AddToProjectView, Editable, Backbone, ImageViewer, GridPlot, 
-      DialogView, DCCommentsView, AttachmentsView, APStatusItem, GridXRC,
+      DialogView, DCCommentsView, AttachmentsView, APStatusItem, GridXRC, DCAutoIntegrationView,
       template) {
 
   return DCBase.extend({
@@ -22,6 +23,8 @@ define(['marionette',
     apStatusItem: APStatusItem,
 
     events: {
+      'click @ui.xrcholder': 'loadXRC',
+      'click @ui.apholder': 'loadAP',
       'click @ui.zoom': 'toggleZoom'
     },
 
@@ -40,7 +43,9 @@ define(['marionette',
       warning: '.warning',
       warningli: '.warning-li',
 
-      holder: '.holder h1',
+      xrcholder: '.holder h1.xrc',
+      apholder: '.holder h1.ap',
+      gridsize: '.gridsize',
     },
 
     toggleZoom: function(e) {
@@ -93,7 +98,8 @@ define(['marionette',
       
 
     onShow: function() {
-      this.ui.holder.hide()
+      this.ui.xrcholder.hide()
+      this.ui.apholder.hide()
       this.ui.zoom.hide()
       this.ui.warningli.hide()
 
@@ -107,8 +113,8 @@ define(['marionette',
       // edit.create('COMMENTS', 'text')
         
       this.gridplot.gridPromise().done(this.showBox.bind(this))
-      this.apstatus = new (this.getOption('apStatusItem'))({ ID: this.model.get('ID'), XRC: true, statuses: this.getOption('apstatuses'), el: this.$el })
-      this.listenTo(this.apstatus, 'model:change', this.checkXRC)
+      this.apstatus = new (this.getOption('apStatusItem'))({ ID: this.model.get('ID'), XRC: true, showProcessing: true, statuses: this.getOption('apstatuses'), el: this.$el })
+      this.listenTo(this.apstatus, 'model:change', this.checkXRCandAP)
 
       this.updateInPlace(true)
     },
@@ -120,6 +126,14 @@ define(['marionette',
         if (this.ui.bx.text) this.ui.by.text((gi.get('DY_MM')*1000).toFixed(0))
 
         if (gi.get('STEPS_Y') > 10 && this.ui.zoom.show) this.ui.zoom.show()
+        var gridsize = gi.get('STEPS_X') + ' x ' + gi.get('STEPS_Y')
+        if (gi.get('STEPS_Z')) { gridsize += ' x ' + gi.get('STEPS_Z') }
+        this.ui.gridsize.html(gridsize)
+    },
+
+    checkXRCandAP: function() {
+        this.checkXRC()
+        this.checkAP()
     },
 
     checkXRC: function() {
@@ -127,30 +141,44 @@ define(['marionette',
             var state = this.apstatus.getStatus({ type: 'XrayCentring' })
             console.log('xrc state', state)
             if (state >= 1 && !this.hasXRC) {
-                this.ui.holder.show()
+                this.ui.xrcholder.show()
                 this.hasXRC = true
             }
 
             if (state >= 2) {
-                this.xrc = new GridXRC({ id: this.model.get('ID') })
-                this.xrc.fetch({
-                    success: this.showXRC.bind(this)
-                })
+                this.xrc = new GridXRC({ id: this.model.get('ID'), el: this.$el.find('div.xrc') })
             }
         }
     },
 
-    showXRC: function() {
-        var xrcs = this.xrc.get('data')
-        var t = ''
-        for (var i = 0; i < xrcs.length; i++) {
-            t += ' - Crystal '+(i+1)+': X Pos '+xrcs[i]['X']+' Y Pos '+xrcs[i]['Y']+' Z Pos '+xrcs[i]['Z']
-        }
-        if (xrcs.length > 0) {
-            this.ui.holder.prepend('Method: '+xrcs[0]['METHOD']+t)
+    loadXRC: function(e) {
+        if (!this.xrc) {
+            this.xrc = new GridXRC({ id: this.model.get('ID'), el: this.$el.find('div.xrc') })
         } else {
-            this.ui.holder.prepend('Found no diffraction')
+            this.xrc.$el.slideToggle()
         }
+    },
+
+    checkAP: function() {
+        if (!this.ap) {
+            var state = this.apstatus.getStatus({ type: 'autoproc' })
+            console.log('ap state', state)
+            if (state) {
+                this.ui.apholder.show()
+            }
+        }
+    },
+
+    loadAP: function(e) {
+      if (!this.ap) {
+          this.ap = new DCAutoIntegrationView({
+              id: this.model.get('ID'),
+              dcPurgedProcessedData: this.model.get('PURGEDPROCESSEDDATA'),
+              el: this.$el.find('div.autoproc')
+          })
+      } else {
+          this.ap.$el.slideToggle()
+      }
     },
                                       
     onDestroy: function() {

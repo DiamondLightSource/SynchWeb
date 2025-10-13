@@ -4,8 +4,6 @@ define(['marionette',
     'views/table',
     'utils/table',
     'utils',
-    'highmaps',
-    'highmaps-world',
     'templates/shipment/dewarstats.html', 'jquery.flot', 'jquery.flot.tooltip'], 
     function(Marionette,
         DewarOverview,
@@ -13,8 +11,6 @@ define(['marionette',
         TableView,
         table,
         utils,
-        Highcharts,
-        HighchartsWorldMap, // Needs to be loaded to provide custom/world map
         template) {
     
 
@@ -36,12 +32,10 @@ define(['marionette',
         ui: {
             map: '.map',
             years: '.years',
-            data: 'input[name=data]',
             hist: 'input[name=hist]',
         },
 
         events: {
-            'change @ui.data': 'refresh',
             'change @ui.hist': 'refresh',
         },
 
@@ -49,11 +43,6 @@ define(['marionette',
         refresh: function() {
             this.run.fetch()
             this.countries.fetch()
-        },
-
-
-        getData: function() {
-            return this.ui.data.is(':checked') ? 1 : ''
         },
 
 
@@ -80,7 +69,6 @@ define(['marionette',
 
 
         initialize: function() {
-            console.log(Highcharts)
             this.run = new DewarOverview(null, { queryParams: { group_by: 'year' } })
             this.countries = new SortedDewars(null, { queryParams: { group_by: 'country' } })
             this.countries.state.pageSize = 25
@@ -92,9 +80,6 @@ define(['marionette',
             this.listenTo(this.countries, 'request', this.addSpinnerCountry)
             this.listenTo(this.countries, 'sync', this.removeSpinnerCountry)
             this.listenTo(this.countries, 'error', this.removeSpinnerCountry)
-
-            this.run.queryParams.data = this.getData.bind(this)
-            this.countries.queryParams.data = this.getData.bind(this)
 
             this.run.queryParams.history = this.getHist.bind(this)
             this.countries.queryParams.history = this.getHist.bind(this)
@@ -113,7 +98,6 @@ define(['marionette',
                 { name: 'CTA', label: 'Facility Shipping', cell: 'integer', editable: false },
                 { name: 'DEWARS', label: 'Dewars', cell: 'integer', editable: false },
                 { name: 'CONTAINERS', label: 'Containers', cell: 'integer', editable: false },
-                // { name: 'DCS', label: '# DCs', cell: 'string', editable: false },
             ]
         
             if (app.mobile()) {
@@ -125,7 +109,6 @@ define(['marionette',
             this.rruns.show(new TableView({ 
                 collection: this.run, 
                 columns: columns, 
-                filter: 's', 
                 tableClass: 'runs', 
                 loading: true,
                 backgrid: { emptyText: 'No dewar stats found' } 
@@ -135,23 +118,16 @@ define(['marionette',
             this.rcts.show(new TableView({ 
                 collection: this.countries, 
                 columns: columns2, 
-                filter: 's', 
                 tableClass: 'countries',
                 loading: true, 
                 backgrid: { emptyText: 'No dewar stats found' } 
             }))
 
-            this.listenTo(this.countries, 'sync', this.plotMap)
-            this.plotMap()
         },
-
 
         onShow: function() {
             this.listenTo(this.run, 'sync', this.plotYears)
-            this.plotMap()
         },
-
-
         plotYears: function() {
             var ticks = []
             var cols = utils.getColors(3)
@@ -182,60 +158,6 @@ define(['marionette',
             }
 
             $.plot(this.ui.years, data, options)  
-        },
-
-
-        plotMap: function() {
-            var data = []
-            this.countries.fullCollection.each(function(c) {
-                if (c.get('CODE')) data.push({ code: c.get('CODE'), value: parseInt(c.get('DEWARS')) })
-            })
-
-            var num = 5
-            var cols = utils.getColors(num)
-            var stops = []
-            _.each(_.range(num), function(n) {
-                stops.push([(1/num)*n, cols[n]])
-            })
-
-            Highcharts.mapChart({
-                chart: {
-                    renderTo: this.ui.map[0],
-                    backgroundColor:'rgba(255, 255, 255, 0.0)',
-                    map: 'custom/world'
-                },
-
-                title: {
-                    text: 'Dewar breakdown by Country'
-                },
-
-                mapNavigation: {
-                    enabled: true,
-                    buttonOptions: {
-                        verticalAlign: 'bottom'
-                    }
-                },
-
-                colorAxis: {
-                    min: 1,
-                    type: 'logarithmic',
-                    stops: stops,
-                },
-
-                series: [{
-                    data: data,
-                    joinBy: ['iso-a2', 'code'],
-                    states: {
-                        hover: {
-                            color: '#a4edba'
-                        }
-                    },
-                    dataLabels: {
-                        enabled: true,
-                        format: '{point.properties.postal}'
-                    }
-                }]
-            });
         },
         
     })

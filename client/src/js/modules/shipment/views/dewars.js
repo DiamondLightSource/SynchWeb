@@ -12,8 +12,8 @@ define(['marionette', 'backbone',
     
         'backbone-validation',
     ], function(Marionette, Backbone, Visits, DewarRegistry, ValidatedRow, Editable, forms, utils, template, rowtemplate, rowtemplatenew) {
-    
-        
+
+
     var GridRow = ValidatedRow.extend(_.extend({}, forms, {
         getTemplate: function() {
             return this.model.get('new') ? rowtemplatenew : rowtemplate
@@ -33,16 +33,20 @@ define(['marionette', 'backbone',
             'click a.deact': 'deactivateDewar',
             'click a.print': utils.signHandler,
         },
-        
+
         ui: {
             first: 'select[name=FIRSTEXPERIMENTID]',
             fc: 'select[name=FACILITYCODE]',
+            deact: '.deact',
+            dispatch: '.dispatch',
+            transfer: '.transfer',
+            ssd: '.ssdispatch',
+            addcont: '.add-container-small',
         },
 
         className: function() {
             if (this.model.get('DEWARSTATUS') == 'processing') return 'active'
         },
-        
 
         deactivateDewar: function(e) {
             e.preventDefault()
@@ -52,6 +56,8 @@ define(['marionette', 'backbone',
                 data: { did: this.model.get('DEWARID') },
                 success: function() {
                     self.$el.removeClass('active')
+                    self.model.set('DEWARSTATUS', 'at facility')
+                    self.showHideButtons()
                 },
                 
                 error: function() {
@@ -66,7 +72,7 @@ define(['marionette', 'backbone',
             if (this.model.get('new')) return
             app.trigger('shipment:showdewar', this.model.get('DEWARID'))
         },
-        
+
         setData: function() {
             var data = {}
             _.each(['CODE', 'FACILITYCODE','FIRSTEXPERIMENTID','TRACKINGNUMBERTOSYNCHROTRON','TRACKINGNUMBERFROMSYNCHROTRON', 'WEIGHT'], function(f) {
@@ -82,11 +88,11 @@ define(['marionette', 'backbone',
                 self.render()
             })
         },
-        
+
         error: function(m,r,o) {
             app.message('Something went wrong creating this dewar, please try again')
         },
-        
+
         cancelDewar: function(e) {
             e.preventDefault()
             this.model.collection.remove(this.model)
@@ -95,7 +101,7 @@ define(['marionette', 'backbone',
         initialize: function() {
             this.showDewar = _.debounce(this.showDewar, 500)
         },
-    
+
         onRender: function() {
             console.log('rendering row')
             Backbone.Validation.unbind(this)
@@ -120,21 +126,50 @@ define(['marionette', 'backbone',
             })
 
             this.ui.fc.html(this.getOption('regdewars').opts({ empty: true }))
+            this.showHideButtons()
+            this.listenTo(this.model, 'change', this.showHideButtons)
+        },
+
+        showHideButtons: function() {
+            if (this.model.get('DEWARSTATUS') === 'processing') {
+                this.ui.deact.show()
+                this.ui.dispatch.hide()
+                this.ui.transfer.hide()
+            } else {
+                this.ui.deact.hide()
+                this.ui.dispatch.show()
+                this.ui.transfer.show()
+            }
+            if (this.model.get('STORAGELOCATION') === 'stores-out') {
+                this.ui.dispatch.hide()
+                this.ui.transfer.hide()
+            }
+            if (app.options.get('shipping_service_app_url') && this.model.get('EXTERNALSHIPPINGIDFROMSYNCHROTRON')) {
+                let link = app.options.get('shipping_service_app_url')+'/shipment-requests/'+this.model.get('EXTERNALSHIPPINGIDFROMSYNCHROTRON')+'/outgoing'
+                this.ui.ssd.attr('href', link)
+            } else {
+                this.ui.ssd.hide()
+            }
+            if (this.model.get('DYNAMIC') === 'Ready') {
+                this.ui.addcont.hide()
+            } else {
+                this.ui.addcont.show()
+            }
         },
 
         modelEvents: {
             sync: 'render'
         }
     }))
-    
+
 
     var EmptyView = Marionette.ItemView.extend({
         tagName: 'tr',
         template: _.template('<td colspan="10">No dewars for this shipment</td>')
     })
-        
+
     return GridView = Backbone.Marionette.CompositeView.extend({
-        tagName: "table",
+        tagName: 'table',
         emptyView: EmptyView,
         className: 'dewars reflow',
         template: template,
@@ -154,12 +189,6 @@ define(['marionette', 'backbone',
             this.regdewars.state.pageSize = 9999
             this.regdewars.fetch()
         },
-        
-        // This magically works, which is worrying...
-        /*appendHtml: function(collectionView, itemView){
-            collectionView.$("tbody").append(itemView.el);
-        },*/
-        
     })
     
 })

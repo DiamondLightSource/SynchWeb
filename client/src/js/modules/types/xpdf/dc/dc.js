@@ -29,6 +29,8 @@ define([
             params: '.params'
         },
 
+        setProcessingVars: function() {},
+
         onDomRefresh: function() {
             var params = JSON.parse(this.model.get('SCANPARAMS'))
             if(params != null){
@@ -44,7 +46,7 @@ define([
 
         loadAP: function() {
             if (!this.ap) {
-              this.ap = new DCDownstreamView({ id: this.model.get('ID'), el: this.$el.find('div.downstream') })
+              this.ap = new DCDownstreamView({ id: this.model.get('ID'), el: this.$el.find('div.downstream'), dcPurgedProcessedData: this.model.get('PURGEDPROCESSEDDATA') })
             } else this.ap.$el.slideToggle()
         },
 

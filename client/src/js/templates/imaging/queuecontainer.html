@@ -2,8 +2,7 @@
 
 <p class="help">This pages allows you to queue samples in a container for data collection</p>
 
-<% if (CONTAINERQUEUEID) { %>
-<p class="message alert">
+<p class="message alert unqueuebutton">
     <% if (['disposed', 'in_storage', null].indexOf(CONTAINERSTATUS) > -1) { %>
         This container is queued for data collection, you can not modify it without unqueuing it
         <a href="#" class="button unqueue"><i class="fa fa-times"></i> Unqueue</a>
@@ -11,7 +10,6 @@
         This container is en route for data collection, it cannot be unqueued.
     <% } %>
 </p>
-<% } %>
 
 <div class="clearfix xtalpreview">
     <div class="image right"></div>
@@ -20,7 +18,7 @@
             <ul>
                 <li>
                     <span class="label">Container</span>
-                    <span class="NAME"><%-NAME%></span>
+                    <span class="NAME"><a href="/containers/cid/<%-CONTAINERID%>"><%-NAME%></a></span>
                 </li>
 
                 <li>
@@ -29,6 +27,8 @@
                 </li>
             </ul>
         </div>
+
+        <div class="plate plate-max-width"></div>
 
         <h2>Available Samples</h2>
         <div class="filter">
@@ -40,9 +40,7 @@
                 <li><label><input type="checkbox" name="nodata" /> Without Data</label></li>
                 <li><label><input type="checkbox" name="notcompleted" /> Not Completed</label></li>
             </ul>
-        </div>
-        <div class="filter">
-            <div class="filter filter-nohide afilt"></div>
+        <span class="filter filter-nohide afilt"></span>
         </div>
         <div class="asamples"></div>
     </div>
@@ -50,7 +48,7 @@
 
 <h2>Queued Samples</h2>
 
-<div class="filter">
+<div class="filter unqueuesamples">
 <span class="r">
 <a href="#" class="button unqueuesel" title="Remove the selected samples from the queue"><i class="fa fa-minus"></i> Unqueue Selected</a>
 <a href="#" class="button unqueueall" title="Remove all samples from the queue"><i class="fa fa-minus"></i> Unqueue All</a>
@@ -65,10 +63,12 @@ Presets: <select name="preset"></select>
 </div>
 <div class="qsamples"></div>
 
-<% if (!CONTAINERQUEUEID) { %>
+<span class="queuebutton">
 <h2>Queue Plate</h2>
 <p>Queuing the container will make the queued items immutable, please make sure you have added all sub samples, and that they have valid experimental plans</p>
 <div class="form">
     <button name="submit" value="1" type="submit" class="button submit">Queue Container</button>
+    <span class="queuelength"></span>
 </div>
-<% } %>
+</span>
+

@@ -18,7 +18,7 @@ const routes = [
                         visit: route.params.visit, 
                         s: route.params.search, 
                         t: 'fc',
-                        per_page: app.mobile() ? 5 : 15, // Was 16 in mc but assume that's error - normally 15
+                        expandgroups: 1,
                     },
                     state: { currentPage: route.params.page ? parseInt(route.params.page) : 1}
                 }),

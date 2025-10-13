@@ -165,7 +165,7 @@ const routes = [
                     options: {
                         collection: new Screens() 
                     },
-                    breadcrumbs: [{ title: 'Crysallisation Screens', url: '/imaging/screen' }],
+                    breadcrumbs: [{ title: 'Crystallisation Screens', url: '/imaging/screen' }],
                 },
             },
             {
@@ -176,7 +176,7 @@ const routes = [
                     options: {
                         model: new Screen({SCREENID: route.params.sid})
                     },
-                    breadcrumbs: [{ title: 'Crysallisation Screens', url: '/imaging/screen' }],
+                    breadcrumbs: [{ title: 'Crystallisation Screens', url: '/imaging/screen' }],
                     breadcrumb_tags: ['NAME']
                 }),
             },
