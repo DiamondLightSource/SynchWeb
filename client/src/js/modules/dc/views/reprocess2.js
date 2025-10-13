@@ -148,8 +148,20 @@ define(['backbone', 'marionette', 'views/dialog',
             this.$el.find('div input[type="text"]').css('width', '50px')
             this.ui.pipeline.html(this.getOption('pipelines').opts())
             this.model.set('PIPELINE', this.ui.pipeline.val())
-            // Wait 500ms to ensure distl plot has loaded
-            setTimeout(() => { this.selectAll() }, 500)
+
+            // check .distl element has been created before selecting all
+            const callback = (mutationList, observer) => {
+                for (const mutation of mutationList) {
+                    for (const node of mutation.addedNodes) {
+                        if (node.nodeType === Node.ELEMENT_NODE && node.querySelector('.distl')) {
+                            this.selectAll()
+                            observer.disconnect()
+                        }
+                    }
+                }
+            }
+            const observer = new MutationObserver(callback)
+            observer.observe(document.getElementById("dialog"), { childList: true, subtree: true })
         },
 
         toggleSG: function(e) {
@@ -347,7 +359,7 @@ define(['backbone', 'marionette', 'views/dialog',
             var s = this.collection.where({ selected: true })
 
             if (!s.length) {
-                app.alert({ message: 'Please selected some data sets to integrate' })
+                app.alert({ message: 'Please select some data sets to integrate' })
                 return
             }
 
