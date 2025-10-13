@@ -203,7 +203,7 @@ define(['module'], function (module) {
         },
 
         write: function (pluginName, moduleName, write, config) {
-            if (buildMap.hasOwnProperty(moduleName)) {
+            if (Object.prototype.hasOwnProperty.call(buildMap, moduleName)) {
                 var content = text.jsEscape(buildMap[moduleName]);
                 write.asModule(pluginName + "!" + moduleName,
                                "define(function () { return '" +
@@ -270,7 +270,7 @@ define(['module'], function (module) {
             //Allow plugins direct access to xhr headers
             if (headers) {
                 for (header in headers) {
-                    if (headers.hasOwnProperty(header)) {
+                    if (Object.prototype.hasOwnProperty.call(headers, header)) {
                         xhr.setRequestHeader(header.toLowerCase(), headers[header]);
                     }
                 }

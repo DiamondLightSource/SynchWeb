@@ -8,7 +8,7 @@
         ref="containerForm"
         v-slot="{ invalid, errors }"
       >
-        <!-- Old Add containers had an assign button here - try leaving it out as there is a menu item for /assign -->
+
         <form
           id="add_container"
           class="tw-flex"
@@ -57,13 +57,41 @@
                 v-slot="{ errors }"
                 tag="div"
                 class="tw-mb-2 tw-py-2"
-                rules="required"
+                rules="required|alpha_dash"
                 name="Container Name"
                 vid="container-name"
               >
                 <base-input-text
                   v-model="NAME"
                   label="Container Name"
+                  :error-message="errors[0]"
+                />
+              </validation-provider>
+
+              <base-input-select
+                v-show="showParentContainer"
+                dataTestId="add-container-parent-container"
+                v-model="PARENTCONTAINERID"
+                outer-class="tw-mb-2 tw-py-2"
+                label="Parent Container"
+                name="PARENTCONTAINERID"
+                :options="parentContainers"
+                option-value-key="CONTAINERID"
+                option-text-key="NAME"
+              />
+
+              <validation-provider
+                v-slot="{ errors }"
+                tag="div"
+                class="tw-mb-2 tw-py-2"
+                rules="numeric"
+                name="Parent Container Location"
+                vid="parent-container-location"
+              >
+                <base-input-text
+                  v-show="showParentContainer"
+                  v-model="PARENTCONTAINERLOCATION"
+                  label="Parent Container Location"
                   :error-message="errors[0]"
                 />
               </validation-provider>
@@ -104,18 +132,21 @@
             </div>
 
             <div v-show="plateType === 'plate'">
-              <div class="tw-flex tw-w-full tw-relative">
+              <validation-provider
+                v-if="plateType === 'plate'"
+                v-slot="{ errors }"
+                tag="div"
+                class="tw-mb-2 tw-py-2"
+                rules="required"
+                name="Barcode"
+                vid="barcode"
+              >
                 <base-input-text
                   v-model="BARCODE"
-                  outer-class="tw-mb-2 tw-py-2 tw-flex tw-flex-1"
                   label="Barcode"
-                  name="Barcode"
+                  :error-message="getBarcodeErrorMessage(errors)"
                 />
-                <span
-                  v-if="barcodeMessage"
-                  class="barcode-message tw-text-xs tw-ml-4 tw-bg-content-light-background tw-rounded tw-p-2 tw-absolute"
-                >{{ barcodeMessage }}</span>
-              </div>
+              </validation-provider>
 
               <validation-provider
                 v-slot="{ errors }"
@@ -439,6 +470,8 @@ const INITIAL_CONTAINER_TYPE = {
   NAME: null,
   WELLDROP: -1,
   WELLPERROW: null,
+  DROPOFFSETX: null,
+  DROPOFFSETY: null,
 }
 
 export default {
@@ -475,6 +508,8 @@ export default {
       PROCESSINGPIPELINEID: null,
       NAME: "",
       CONTAINERREGISTRYID: null,
+      PARENTCONTAINERID: null,
+      PARENTCONTAINERLOCATION: null,
       AUTOMATED: 0,
       BARCODE: "",
       PERSONID: "",
@@ -567,7 +602,9 @@ export default {
               dropPerWellY: this.containerType['DROPPERWELLY'],
               dropWidth: this.containerType['DROPWIDTH'],
               wellDrop: this.containerType['WELLDROP'],
-              wellPerRow: this.containerType['WELLPERROW']
+              wellPerRow: this.containerType['WELLPERROW'],
+              dropOffsetX: this.containerType['DROPOFFSETX'],
+              dropOffsetY: this.containerType['DROPOFFSETY'],
             })
 
           }
@@ -619,6 +656,7 @@ export default {
     this.getProteins()
     this.getContainerTypes()
     this.getContainerRegistry()
+    this.getParentContainers()
     this.getProcessingPipelines()
     this.formatExperimentKindList()
     this.getSampleGroups()
@@ -667,6 +705,8 @@ export default {
         containerAttributes = {
           ...containerAttributes,
           CONTAINERREGISTRYID: this.CONTAINERREGISTRYID,
+          PARENTCONTAINERID: this.PARENTCONTAINERID,
+          PARENTCONTAINERLOCATION: this.PARENTCONTAINERLOCATION,
           PROCESSINGPIPELINEID: this.PROCESSINGPIPELINEID,
           SPACEGROUP: this.SPACEGROUP
         }
@@ -711,14 +751,22 @@ export default {
         this.NAME = ''
         this.BARCODE = ''
         this.CONTAINERREGISTRYID = ''
+        this.PARENTCONTAINERID = ''
+        this.PARENTCONTAINERLOCATION = ''
         // Trigger default setting of UDC fields if selected
         this.selectQueueForUDC(this.AUTOMATED)
 
         // Reset state of form
         this.$refs.containerForm.reset()
       } catch (error) {
+        let errorMessage = 'Something went wrong creating this container, please try again'
+        if (error.response && error.response.data && error.response.data.message) {
+          errorMessage = error.response.data.message
+        } else if (error.message) {
+          errorMessage = error.message
+        }
         this.$store.commit('notifications/addNotification', {
-          message: 'Something went wrong creating this container, please try again',
+          message: errorMessage,
           level: 'error'
         })
       } finally {
@@ -822,6 +870,12 @@ export default {
 
         this.$store.commit('samples/updateSamplesField', { path: `samples/${index}/SCREENCOMPONENTGROUPID`, value: data })
       })
+    },
+    getBarcodeErrorMessage(veeValidateErrors) {
+      if (veeValidateErrors && veeValidateErrors.length > 0) {
+        return veeValidateErrors[0];
+      }
+      return this.barcodeMessage || '';
     },
   }
 }

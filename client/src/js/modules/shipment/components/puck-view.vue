@@ -72,6 +72,24 @@ export default {
       sampleRadius = 50
       sampleHighlightRadius = 19
       containerImage = '/assets/images/gridbox_no_labels_470x470.png'
+    } else if (this.container.containerType === "Cryo-EM Puck") {
+      sampleCentres = [
+        [295, 78],
+        [392, 172],
+        [399, 278],
+        [290, 395],
+        [180, 395],
+        [71, 278],
+        [78, 172],
+        [175, 78],
+        [288, 182],
+        [295, 290],
+        [175, 290],
+        [182, 182],
+      ]
+      sampleRadius = 50
+      sampleHighlightRadius = 40
+      containerImage = '/assets/images/cryoem_puck_no_labels_470x470.png'
     } else if (this.container.capacity === "4") {
       sampleCentres = [
         [152.5, 152.5],

@@ -7,7 +7,7 @@ define(['backbone'], function(Backbone) {
         "click a[data-backgrid-action=clear]": "clear",
         "submit": "search"
     },
-      
+
     /**
        @param {Object} options
        @param {Backbone.Collection} options.collection
@@ -22,7 +22,7 @@ define(['backbone'], function(Backbone) {
         this.value = options.value || this.value;
         this.placeholder = options.placeholder || this.placeholder
         this.template = options.template || this.template;
-            
+
         //this.url = options.url || this.url
         if (options.url == false) this.url = false
         this.urlFragment = options.urlFragment || this.urlFragment
@@ -38,7 +38,7 @@ define(['backbone'], function(Backbone) {
         }
         this.search = _.debounce(this.search, 400)
     },
-  
+
     /** @property */
     tagName: 'div',
 
@@ -159,18 +159,18 @@ define(['backbone'], function(Backbone) {
       }
       else collection.fetch({reset: true});
     },
-    
+
 
     /**
        Renders a search form with a text box, optionally with a placeholder and
        a preset value if supplied during initialization.
     */
     render: function () {
-      $('input.search-mobile').focus().keyup(function() {
-        $('input[type=search]').val($(this).val()).trigger('keyup')
-      }).parent('span').addClass('enable')
-      $('#sidebar,.cont_wrap').addClass('searchbox')
-        
+      this.$('input.search-mobile').focus().keyup(function() {
+        this.$('input[type=search]').val($(this).val()).trigger('keyup');
+      }).parent('span').addClass('enable');
+      this.$('#sidebar,.cont_wrap').addClass('searchbox');
+
       this.$el.empty().append(this.template({
         name: this.name,
         placeholder: this.placeholder,
@@ -180,14 +180,14 @@ define(['backbone'], function(Backbone) {
       this.delegateEvents();
       return this;
     },
-      
+
     destroy: function() {
-      $('input.search-mobile').unbind('keyup').parent('span').removeClass('enable')
-      $('#sidebar,.cont_wrap').removeClass('searchbox')
+      this.$('input.search-mobile').unbind('keyup').parent('span').removeClass('enable');
+      this.$('#sidebar,.cont_wrap').removeClass('searchbox');
     },
-      
-      
+
+
   });
-       
+
   return Search
 })

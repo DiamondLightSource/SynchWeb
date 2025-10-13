@@ -98,6 +98,7 @@ class Shipment extends Page
         'LASTMINUTEBEAMTIME' => '1?|Yes|No',
         'DEWARGROUPING' => '.*',
         'EXTRASUPPORTREQUIREMENT' => '.*',
+        'ONSITEUSERS' => '.*',
         'MULTIAXISGONIOMETRY' => '1?|Yes|No',
         'ENCLOSEDHARDDRIVE' => '1?|Yes|No',
         'ENCLOSEDTOOLS' => '1?|Yes|No',
@@ -112,7 +113,7 @@ class Shipment extends Page
         // Container fields
         'DEWARID' => '\d+',
         'CAPACITY' => '\d+',
-        'CONTAINERTYPE' => '([\w\-])+',
+        'CONTAINERTYPE' => '([\s\w\-])+',
         'NAME' => '([\w\-])+',
         'SCHEDULEID' => '\d+',
         'SCREENID' => '\d+',
@@ -131,6 +132,8 @@ class Shipment extends Page
         'SOURCE' => '[\w\-]+',
 
         'CONTAINERREGISTRYID' => '\d+',
+        'PARENTCONTAINERID' => '\d*',
+        'PARENTCONTAINERLOCATION' => '\d*',
         'PROPOSALID' => '\d+',
         't' => '\w+',
 
@@ -165,6 +168,7 @@ class Shipment extends Page
         'LASTMINUTEBEAMTIME',
         'DEWARGROUPING',
         'EXTRASUPPORTREQUIREMENT',
+        'ONSITEUSERS',
         'MULTIAXISGONIOMETRY',
         'ENCLOSEDHARDDRIVE',
         'ENCLOSEDTOOLS',
@@ -406,7 +410,9 @@ class Shipment extends Page
             $extra_json = json_decode($s['EXTRA'], true);
             if (is_null($extra_json)) {
                 $extra_json = array();
-                foreach ($this->extra_arg_list as $arg) {
+            }
+            foreach ($this->extra_arg_list as $arg) {
+                if (!array_key_exists($arg, $extra_json)) {
                     $extra_json[$arg] = "";
                 }
             }
@@ -2383,6 +2389,7 @@ class Shipment extends Page
                 count(distinct ci.containerinspectionid) as inspections,
                 c.scheduleid, c.screenid, c.ownerid, c.imagerid, c.bltimestamp, c.samplechangerlocation, c.beamlinelocation, c.containertype, c.capacity, c.barcode,
                 c.containerstatus, c.containerid, c.code as name, c.requestedreturn, c.requestedimagerid, c.comments, c.experimenttype, c.storagetemperature,
+                c.parentcontainerid, c.parentcontainerlocation, pc.code as parentcontainer,
                 sc.name as screen,
                 i.temperature, i.name as imager,
                 CONCAT(p.proposalcode, p.proposalnumber) as prop, CONCAT(p.proposalcode, p.proposalnumber, '-', ses.visit_number) as visit, ses.beamlinename,
@@ -2412,6 +2419,7 @@ class Shipment extends Page
                                   LEFT OUTER JOIN containerqueue cq2 ON cq2.containerid = c.containerid AND cq2.completedtimestamp IS NOT NULL
                                   LEFT OUTER JOIN containerregistry reg ON reg.containerregistryid = c.containerregistryid
                                   LEFT OUTER JOIN blsession ses ON c.sessionid = ses.sessionid
+                                  LEFT OUTER JOIN container pc ON c.parentcontainerid = pc.containerid
 
                                   $join
                                   WHERE $where
@@ -2537,11 +2545,12 @@ class Shipment extends Page
         if (!sizeof($chkc))
             $this->_error('No such container');
 
-        $fields = array('NAME' => 'CODE', 'REQUESTEDRETURN' => 'REQUESTEDRETURN', 'REQUESTEDIMAGERID' => 'REQUESTEDIMAGERID', 'COMMENTS' => 'COMMENTS', 'BARCODE' => 'BARCODE', 'CONTAINERTYPE' => 'CONTAINERTYPE', 'EXPERIMENTTYPE' => 'EXPERIMENTTYPE', 'STORAGETEMPERATURE' => 'STORAGETEMPERATURE', 'CONTAINERREGISTRYID' => 'CONTAINERREGISTRYID', 'PROCESSINGPIPELINEID' => 'PRIORITYPIPELINEID', 'OWNERID' => 'OWNERID');
+        $fields = array('NAME' => 'CODE', 'REQUESTEDRETURN' => 'REQUESTEDRETURN', 'REQUESTEDIMAGERID' => 'REQUESTEDIMAGERID', 'COMMENTS' => 'COMMENTS', 'BARCODE' => 'BARCODE', 'CONTAINERTYPE' => 'CONTAINERTYPE', 'EXPERIMENTTYPE' => 'EXPERIMENTTYPE', 'STORAGETEMPERATURE' => 'STORAGETEMPERATURE', 'CONTAINERREGISTRYID' => 'CONTAINERREGISTRYID', 'PROCESSINGPIPELINEID' => 'PRIORITYPIPELINEID', 'OWNERID' => 'OWNERID', 'PARENTCONTAINERID' => 'PARENTCONTAINERID', 'PARENTCONTAINERLOCATION' => 'PARENTCONTAINERLOCATION');
         foreach ($fields as $k => $f) {
             if ($this->has_arg($k)) {
-                $this->db->pq("UPDATE container SET $f=:1 WHERE containerid=:2", array($this->arg($k), $this->arg('cid')));
-                $this->_output(array($k => $this->arg($k)));
+                $val = $this->arg($k) != '' ? $this->arg($k) : null;
+                $this->db->pq("UPDATE container SET $f=:1 WHERE containerid=:2", array($val, $this->arg('cid')));
+                $this->_output(array($k => $val));
             }
         }
 
@@ -2577,31 +2586,42 @@ class Shipment extends Page
         $tem = $this->has_arg('STORAGETEMPERATURE') ? $this->arg('STORAGETEMPERATURE') : null;
 
         $crid = $this->has_arg('CONTAINERREGISTRYID') ? $this->arg('CONTAINERREGISTRYID') : null;
+        $pcid = $this->has_arg('PARENTCONTAINERID') ? $this->arg('PARENTCONTAINERID') : null;
+        $pcl = $this->has_arg('PARENTCONTAINERLOCATION') ? $this->arg('PARENTCONTAINERLOCATION') : null;
 
         $pipeline = $this->has_arg('PROCESSINGPIPELINEID') ? $this->arg('PROCESSINGPIPELINEID') : null;
         $source = $this->has_arg('SOURCE') ? $this->arg('SOURCE') : null;
 
-        $this->db->pq(
-            "INSERT INTO container (containerid,dewarid,code,bltimestamp,capacity,containertype,scheduleid,screenid,ownerid,requestedimagerid,comments,barcode,experimenttype,storagetemperature,containerregistryid,prioritypipelineid,source)
-              VALUES (s_container.nextval,:1,:2,CURRENT_TIMESTAMP,:3,:4,:5,:6,:7,:8,:9,:10,:11,:12,:13,:14,IFNULL(:15,CURRENT_USER)) RETURNING containerid INTO :id",
-            array($this->arg('DEWARID'), $this->arg('NAME'), $cap, $this->arg('CONTAINERTYPE'), $sch, $scr, $own, $rid, $com, $bar, $ext, $tem, $crid, $pipeline, $source)
-        );
+        try {
+            $this->db->pq(
+                "INSERT INTO container (containerid,dewarid,code,bltimestamp,capacity,containertype,scheduleid,screenid,ownerid,requestedimagerid,comments,barcode,experimenttype,storagetemperature,containerregistryid,parentcontainerid,parentcontainerlocation,prioritypipelineid,source)
+                 VALUES (s_container.nextval,:1,:2,CURRENT_TIMESTAMP,:3,:4,:5,:6,:7,:8,:9,:10,:11,:12,:13,:14,:15,:16,IFNULL(:17,CURRENT_USER)) RETURNING containerid INTO :id",
+                array($this->arg('DEWARID'), $this->arg('NAME'), $cap, $this->arg('CONTAINERTYPE'), $sch, $scr, $own, $rid, $com, $bar, $ext, $tem, $crid, $pcid, $pcl, $pipeline, $source)
+            );
 
-        $cid = $this->db->id();
+            $cid = $this->db->id();
 
-        if ($this->has_arg('SCHEDULEID')) {
-            $sh = $this->app->container['imagingShared'];
-            $sh->_generate_schedule(array(
-                'CONTAINERID' => $cid,
-                'SCHEDULEID' => $this->arg('SCHEDULEID'),
-            ));
+            if ($this->has_arg('SCHEDULEID')) {
+                $sh = $this->app->container['imagingShared'];
+                $sh->_generate_schedule(array(
+                    'CONTAINERID' => $cid,
+                    'SCHEDULEID' => $this->arg('SCHEDULEID'),
+                ));
+            }
+
+            if ($this->has_arg('AUTOMATED')) {
+                $this->db->pq("INSERT INTO containerqueue (containerid, personid) VALUES (:1, :2)", array($cid, $this->user->personId));
+            }
+
+            $this->_output(array('CONTAINERID' => $cid));
+
+        } catch (Exception $e) {
+            if ($e->getCode() == 1062) {
+                 $this->_error('Barcode is not unique. Please enter a different barcode.', 409);
+            } else {
+                $this->_error('An unexpected error occurred.', 500);
+            }
         }
-
-        if ($this->has_arg('AUTOMATED')) {
-            $this->db->pq("INSERT INTO containerqueue (containerid, personid) VALUES (:1, :2)", array($cid, $this->user->personId));
-        }
-
-        $this->_output(array('CONTAINERID' => $cid));
     }
 
 
@@ -2748,7 +2768,7 @@ class Shipment extends Page
             $where .= ' AND ct.proposaltype = :1';
             array_push($args, $this->arg('PROPOSALTYPE'));
         }
-        $rows = $this->db->pq("SELECT ct.containerTypeId, name, ct.proposalType, ct.capacity, ct.wellPerRow, ct.dropPerWellX, ct.dropPerWellY, ct.dropHeight, ct.dropWidth, ct.wellDrop FROM ContainerType ct WHERE $where", $args);
+        $rows = $this->db->pq("SELECT ct.containerTypeId, name, ct.proposalType, ct.capacity, ct.wellPerRow, ct.dropPerWellX, ct.dropPerWellY, ct.dropHeight, ct.dropWidth, ct.wellDrop, ct.dropOffsetX, ct.dropOffsetY FROM ContainerType ct WHERE $where", $args);
         $this->_output(array('total' => count($rows), 'data' => $rows));
     }
 
@@ -3117,6 +3137,7 @@ class Shipment extends Page
             }
             $dewar_grouping = $this->has_arg('DEWARGROUPING') ? $this->arg('DEWARGROUPING') : '';
             $extra_support_requirement = $this->has_arg('EXTRASUPPORTREQUIREMENT') ? $this->arg('EXTRASUPPORTREQUIREMENT') : '';
+            $onsite_users = $this->has_arg('ONSITEUSERS') ? $this->arg('ONSITEUSERS') : '';
             $multi_axis_goniometry = null;
             if ($this->has_arg('MULTIAXISGONIOMETRY')) {
                 $multi_axis_goniometry = $this->arg('MULTIAXISGONIOMETRY') ? "Yes" : "No";
@@ -3131,6 +3152,7 @@ class Shipment extends Page
                 "LASTMINUTEBEAMTIME" => $last_minute_beamtime,
                 "DEWARGROUPING" => $dewar_grouping,
                 "EXTRASUPPORTREQUIREMENT" => $extra_support_requirement,
+                "ONSITEUSERS" => $onsite_users,
                 "MULTIAXISGONIOMETRY" => $multi_axis_goniometry
             );
 

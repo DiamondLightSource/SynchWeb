@@ -59,7 +59,7 @@ https://eslint.vuejs.org/rules/no-v-html.html
       </span>
     </span>
     <button
-      v-if="inline && editable"
+      v-if="inline && editable && !errorMessage"
       class="button tw-px-2 tw-py-1"
       @mousedown="onSave"
     >
@@ -132,6 +132,11 @@ export default {
       type: Boolean,
       default: false
     },
+    // Force validation on input, even to an inline field
+    validateOnInput: {
+      type: Boolean,
+      default: false
+    },
     // If using the input within a table, set quiet mode to suppress error messages
     // Keeps the styling around input fields
     quiet: {
@@ -190,7 +195,7 @@ export default {
     updateValue(event) {
       // If we are in inline editing mode, only update model on save
       // If not them update value via input event
-      if (!this.inline) this.$emit("input", event.target.value);
+      if (!this.inline || this.validateOnInput) this.$emit("input", event.target.value);
     },
     onBlur() {
       // If in inline edit mode cancel edit
