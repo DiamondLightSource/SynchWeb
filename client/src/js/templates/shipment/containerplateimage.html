@@ -173,11 +173,11 @@
         </li>
         <% } %>
 
-        <% if (IMAGERID) { %>
         <li class="clearfix">
             <span class="label">Actions</span>
-            
+
             <div class="text_table">
+                <% if (IMAGERID) { %>
                 <div class="queue"></div>
                 
                 <div>
@@ -185,10 +185,11 @@
                     <span class="adhoc"></span>    
                 </div> 
                 <div class="return"></div><br />
+                <% } %>
                 <div><a href="#" class="button csv_dispensing"><i class="fa fa-file-o"></i> <span>Download Dispensing CSV</span></a></div>
             </div>
         </li>
-        <% } %>
+
 
         <li class="clearfix">
             <span class="label tw-align-top">Location History</span>
