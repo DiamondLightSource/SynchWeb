@@ -35,6 +35,7 @@ class Download extends Page
 
         'ppl' => '\w+',
         'aid' => '\w+',
+        'cid' => '\d+',
 
         'filetype' => '\w+',
         'blsampleid' => '\d+',
@@ -49,6 +50,7 @@ class Download extends Page
     public static $dispatch = array(
         array('/plots', 'get', '_auto_processing_plots'),
         array('/csv/visit/:visit', 'get', '_csv_report'),
+        array('/csv/container/:cid', 'get', '_dispensing_csv'),
         array('/sign', 'post', '_sign_url'),
         array('/data/visit/:visit', 'get', '_download_visit'),
         array('/attachments', 'get', '_get_attachments'),
@@ -314,6 +316,44 @@ class Download extends Page
         foreach ($rows as $r) {
             $r['COMMENTS'] = '"' . $r['COMMENTS'] . '"';
             print implode(',', array_values($r)) . "\n";
+        }
+    }
+
+    # ------------------------------------------------------------------------
+    # CSV Report of dispensing positions for a plate
+    function _dispensing_csv()
+    {
+        if (!$this->has_arg('cid'))
+            $this->_error('No container id specified');
+        $rows = $this->db->pq("SELECT c.code, s.location, ct.capacity, ct.wellperrow,
+                bsp.posx, bsp.posy, si.imagefullpath, si.micronsperpixelx, si.micronsperpixely
+                FROM blsample s
+                INNER JOIN container c ON c.containerid = s.containerid
+                INNER JOIN blsampleimage si ON si.blsampleid = s.blsampleid
+                LEFT OUTER JOIN containertype ct ON (c.containertypeid IS NOT NULL AND c.containertypeid = ct.containertypeid) OR (c.containertypeid IS NULL AND c.containertype = ct.name)
+                LEFT OUTER JOIN
+                    (SELECT * FROM blsampleposition bsp1 WHERE bsp1.blsamplepositionid =
+                        (SELECT MAX(blsamplepositionid) FROM blsampleposition bsp2 WHERE bsp2.blsampleid = bsp1.blsampleid AND bsp2.positiontype='dispensing')
+                    ) bsp ON bsp.blsampleid = s.blsampleid
+                WHERE c.containerid=:1
+                ORDER BY s.location+0",
+                array($this->arg('cid')));
+        $plate = $rows[0];
+        $rowNames = range("A", "H");
+        $dropsPerWell = $plate["CAPACITY"] / (count($rowNames) * $plate["WELLPERROW"]);
+        $this->app->response->headers->set("Content-type", "application/vnd.ms-excel");
+        $this->_set_disposition_attachment($this->app->response, $plate["CODE"] . ".csv");
+        list($width, $height, $type, $attr) = getimagesize($plate['IMAGEFULLPATH']);
+        foreach ($rows as $r) {
+            if (!$r["POSX"]) continue;
+            $wellNumber = intval(($r["LOCATION"] - 1) / $dropsPerWell);  # 0 indexed
+	        $rowNumber = intval($wellNumber / $plate["WELLPERROW"]);  # 0 indexed
+	        $row = $rowNames[$rowNumber];
+	        $column = $wellNumber - ($rowNumber * $plate["WELLPERROW"]) + 1;
+	        $drop = intval($r["LOCATION"] - ($dropsPerWell * $wellNumber));
+	        $xval = ($r["POSX"] - $width/2) * $r["MICRONSPERPIXELX"];
+	        $yval = ($r["POSY"] - $height/2) * $r["MICRONSPERPIXELY"];
+	        print $row . $column . "d" . $drop . "," . $xval . "," . $yval . "\n";
         }
     }
 

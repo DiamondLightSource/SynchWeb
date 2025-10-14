@@ -281,6 +281,7 @@ define(['marionette',
             'click @ui.adr': 'setAddSubsampleRegion',
             'click @ui.addis': 'setAddDispensing',
             'click @ui.deldis': 'deleteDispensing',
+            'click a.csv_dispensing': 'downloadDispensingCSV',
             'click a.add_inspection': 'showAddInspection',
             'click a.view_sched': 'showViewSchedule',
             'click @ui.play': 'playInspection',
@@ -307,6 +308,33 @@ define(['marionette',
 
         modelEvents: {
             'change:QUEUED': 'updatedQueued',
+        },
+
+        downloadDispensingCSV: function(e) {
+            e.preventDefault()
+            this.signHandler(app.apiurl+'/download/csv/container/'+this.model.get('CONTAINERID'));
+        },
+
+        signHandler(url) {
+            this.sign({
+                url: url,
+                callback: function(resp) {
+                    window.location = url+'?token='+resp.token
+                }
+            })
+        },
+
+        sign(options) {
+            Backbone.ajax({
+                url: app.apiurl+'/download/sign',
+                method: 'POST',
+                data: {
+                    validity: options.url.replace(app.apiurl, ''),
+                },
+                success: function(resp) {
+                    if (options && options.callback) options.callback(resp)
+                }
+            })
         },
 
         setSampleStatusShown: function() {
