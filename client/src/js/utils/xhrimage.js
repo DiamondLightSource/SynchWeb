@@ -48,7 +48,7 @@ define(['marionette'], function() {
             var blob = new Blob([this.response], { type: mimeType })
             self.src = window.URL.createObjectURL(blob)
             app.imagecache[url] = self.src
-            if (callback) callback(this)
+            if (callback) callback(self)
         }
 
         xhr.onprogress = function(e) {
