@@ -22,16 +22,33 @@ define(['views/dialog',
 
         inspectionLoaded: function() {
             var self = this
-            
+            const loadDelay = 200 // milliseconds
+            this.imageTimers = new Map() // Track timers per image
+
             this.observer = new IntersectionObserver(function(entries, observer) {
                 entries.forEach(entry => {
+                    const img = $(entry.target)
+
                     if (entry.isIntersecting) {
-                        const img = $(entry.target)
-                        let im = new XHRImage()
-                        im.load(img.data('src'), function(loadedImage) {
-                            img.attr('src', loadedImage.src)
-                        })
-                        observer.unobserve(entry.target)
+                        // Start a delayed load
+                        const timerId = setTimeout(() => {
+                            let im = new XHRImage()
+                            im.load(img.data('src'), function(loadedImage) {
+                                img.attr('src', loadedImage.src)
+                            })
+                            observer.unobserve(entry.target) // Unobserve after loading
+                            self.imageTimers.delete(entry.target)
+                        }, loadDelay)
+
+                        // Store timer so we can cancel if needed
+                        self.imageTimers.set(entry.target, timerId)
+                    } else {
+                        // No longer visible: cancel pending load if exists
+                        const timerId = self.imageTimers.get(entry.target)
+                        if (timerId) {
+                            clearTimeout(timerId)
+                            self.imageTimers.delete(entry.target)
+                        }
                     }
                 })
             })
@@ -62,6 +79,14 @@ define(['views/dialog',
             $('body').removeClass('dialog-open')
             if (this.observer) {
                 this.observer.disconnect()
+            }
+
+            // Cancel all pending image timers
+            if (this.imageTimers) {
+                for (const timer of this.imageTimers.values()) {
+                    clearTimeout(timer)
+                }
+                this.imageTimers.clear()
             }
         },
     })
