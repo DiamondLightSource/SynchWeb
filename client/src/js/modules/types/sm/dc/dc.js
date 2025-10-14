@@ -7,19 +7,7 @@ define([
     return DCItemView.extend({
         apStatusItem: APStatusItem,
         template: Template,
-
         setProcessingVars: function() {},
-
-        loadAP: function(e) {
-            if (!this.ap) {
-              this.ap = new DCAutoIntegrationView({
-                id: this.model.get('ID'),
-                dcPurgedProcessedData: this.model.get('PURGEDPROCESSEDDATA'),
-                el: this.$el.find('div.autoproc'),
-                parent: this.model,
-              })
-            } else this.ap.$el.slideToggle()
-        },
     })
 
 })

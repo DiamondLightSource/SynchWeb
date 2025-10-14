@@ -74,7 +74,7 @@ function setupApplication($mode): Slim
             $shipping_service_app_url, $use_shipping_service_redirect, $use_shipping_service_redirect_incoming_shipments,
             $dials_rest_url_rings, $closed_proposal_link, $ccp4_cloud_upload_url,
             $only_staff_can_assign, $industrial_prop_codes, $upstream_reprocessing_pipelines, $downstream_reprocessing_pipelines,
-            $prop_codes_data_deleted, $container_types_with_parents;
+            $prop_codes_data_deleted, $container_types_with_parents, $bl_capacity;
         $app->contentType('application/json');
         $options = $app->container['options'];
         $app->response()->body(json_encode(array(
@@ -97,18 +97,19 @@ function setupApplication($mode): Slim
             'valid_components' => $valid_components,
             'enabled_container_types' => $enabled_container_types,
             'synchweb_version' => $synchweb_version,
+            'redirects' => $redirects,
             'shipping_service_app_url' => $use_shipping_service_redirect || $use_shipping_service_redirect_incoming_shipments ? $shipping_service_app_url : null,
             'shipping_service_app_url_incoming' => $use_shipping_service_redirect_incoming_shipments ? $shipping_service_app_url : null,
-            'closed_proposal_link' => $closed_proposal_link,
             'dials_rest_url_rings' => $dials_rest_url_rings,
+            'closed_proposal_link' => $closed_proposal_link,
             'ccp4_cloud_upload_url' => $ccp4_cloud_upload_url,
-            'redirects' => $redirects,
             'only_staff_can_assign' => $only_staff_can_assign,
             'industrial_prop_codes' => $industrial_prop_codes,
             'upstream_reprocessing_pipelines' => $upstream_reprocessing_pipelines,
             'downstream_reprocessing_pipelines' => $downstream_reprocessing_pipelines,
-            'container_types_with_parents' => $container_types_with_parents,
             'prop_codes_data_deleted' => $prop_codes_data_deleted ?? array(),
+            'container_types_with_parents' => $container_types_with_parents,
+            'bl_capacity' => $bl_capacity,
         )));
     });
     return $app;
