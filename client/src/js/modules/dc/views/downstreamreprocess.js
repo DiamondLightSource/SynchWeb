@@ -100,6 +100,10 @@ define(['backbone', 'marionette', 'views/dialog',
             this.model.set('PIPELINENAME', this.ui.pipeline.find('option:selected').text())
             var btns = this.buttons
             var warning = ''
+            if (!this.model.get('PIPELINENAME')) {
+                warning = ' No pipelines available'
+                btns = this.disabledButtons
+            }
             if (['MrBUMP', 'Dimple'].includes(this.model.get('PIPELINENAME')) && this.type.includes('autoPROC')) {
                 warning = ' Cannot rerun ' + this.model.get('PIPELINENAME') + ' on ' + this.type + ' results'
                 btns = this.disabledButtons
@@ -112,7 +116,7 @@ define(['backbone', 'marionette', 'views/dialog',
                 warning = ' Cannot run Dimple as no PDBs defined'
                 btns = this.disabledButtons
             }
-            if (this.model.get('PIPELINENAME') === 'MrBUMP' && this.model.get('HASSEQ') === 'No') {
+            if (this.model.get('PIPELINENAME') === 'MrBUMP' && (this.model.get('HASSEQ') === 'No' || !this.model.get('HASSEQ'))) {
                 warning = ' Cannot run MrBUMP as no sequence defined'
                 btns = this.disabledButtons
             }
@@ -120,7 +124,7 @@ define(['backbone', 'marionette', 'views/dialog',
                 warning = ' Cannot run Fast EP as no anomalous scatterer defined'
                 btns = this.disabledButtons
             }
-            if (this.model.get('PIPELINENAME') === 'Big EP' && this.model.get('HASSEQ') === 'No') {
+            if (this.model.get('PIPELINENAME') === 'Big EP' && (this.model.get('HASSEQ') === 'No' || !this.model.get('HASSEQ'))) {
                 warning = ' Cannot run Big EP as no sequence defined'
                 btns = this.disabledButtons
             }
@@ -155,7 +159,7 @@ define(['backbone', 'marionette', 'views/dialog',
 
 
         initialize: function(options) {
-            this.proteins = new Proteins(null, { queryParams: { sid: options.model.get('BLSAMPLEID') } })
+            this.proteins = new Proteins(null, { queryParams: { sid: options.model.get('BLSAMPLEID') || -1 } })
             this._ready = this.proteins.fetch()
             this._ready.done(this.doOnReady.bind(this))
             this.scalingid = options.scalingid
@@ -169,24 +173,23 @@ define(['backbone', 'marionette', 'views/dialog',
         },
 
         onRender: function() {
-
-            this.pipelines = new Pipelines([
-                { NAME: 'Dimple', VALUE: 'trigger-dimple' },
-                { NAME: 'Fast EP', VALUE: 'trigger-fastep' },
-                { NAME: 'Big EP', VALUE: 'trigger-bigep' },
-                { NAME: 'MrBUMP', VALUE: 'trigger-mrbump' },
-            ])
-
-            this.ui.pipeline.html(this.pipelines.opts())           
+            const dspls = app.options.get('downstream_reprocessing_pipelines')
+            if (dspls) {
+                const pls = dspls[app.type] ?? dspls['default'];
+                this.pipelines = new Pipelines(pls)
+                this.ui.pipeline.html(this.pipelines.opts())
+            }
         },
-        
+
         doOnReady: function() {
             var protein = this.proteins.at(0)
-            var self = this
-            _.each(['ACRONYM','PROTEINID','HASSEQ','PDBS','ANOMALOUSSCATTERER'], function(k) {
-                self.model.set(k, protein.get(k))
-            })
-            this.pdbs = new PDBs(null, { pid: this.model.get('PROTEINID') })
+            if (protein) {
+                var self = this
+                _.each(['ACRONYM','PROTEINID','HASSEQ','PDBS','ANOMALOUSSCATTERER'], function(k) {
+                    self.model.set(k, protein.get(k))
+                })
+            }
+            this.pdbs = new PDBs(null, { pid: this.model.get('PROTEINID') || -1 })
             this.pdbs.fetch().done(this.updatePipeline.bind(this))
             this.collection = new IDDataCollections()
             if (this.model) {

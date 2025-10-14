@@ -7,9 +7,7 @@ define([
     return DCItemView.extend({
         apStatusItem: APStatusItem,
         template: Template,
-
         setProcessingVars: function() {},
-
     })
 
 })
