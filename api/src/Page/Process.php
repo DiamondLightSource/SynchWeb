@@ -383,7 +383,7 @@ class Process extends Page
         );
         $this->_send_zocalo_message($rabbitmq_zocalo_vhost, $message);
 
-        $this->_output(new \stdClass);
+        $this->_output('Job successfully submitted');
     }
 
     function _enqueue_downstream()
@@ -413,7 +413,7 @@ class Process extends Page
 
         $this->_submit_zocalo_recipe($this->arg('RECIPE'), $parameters);
 
-        $this->_output(new \stdClass);
+        $this->_output('Job successfully submitted');
     }
 
     /*

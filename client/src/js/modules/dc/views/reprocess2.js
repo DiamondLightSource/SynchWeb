@@ -309,7 +309,7 @@ define(['backbone', 'marionette', 'views/dialog',
             var s = this.collection.where({ selected: true })
 
             if (!s.length) {
-                app.alert({ message: 'Please selected some data sets to integrate' })
+                app.alert({ message: 'Please select some data sets to integrate' })
                 return
             }
 
@@ -403,10 +403,11 @@ define(['backbone', 'marionette', 'views/dialog',
                 }, this)
 
                 $.when.apply($, reqs).done(function() {
-                    app.message({ message: jobs+' reprocessing job(s) successfully submitted'})
                     _.each(rps, function(rp) {
                         self._enqueue({ PROCESSINGJOBID: rp.get('PROCESSINGJOBID') })
                     })
+                    app.message({ message: jobs+' reprocessing job(s) successfully submitted'})
+                    self._disableIntegrateButton()
                 })
 
 
@@ -495,8 +496,9 @@ define(['backbone', 'marionette', 'views/dialog',
                         reqs.push(reprocessingsweeps.save())
 
                         $.when.apply($, reqs).done(function() {
-                            app.message({ message: '1 reprocessing job successfully submitted'})
                             self._enqueue({ PROCESSINGJOBID: reprocessing.get('PROCESSINGJOBID') })
+                            app.message({ message: '1 reprocessing job successfully submitted'})
+                            self._disableIntegrateButton()
                         })
                     },
 
@@ -506,6 +508,15 @@ define(['backbone', 'marionette', 'views/dialog',
                 }))
 
             }
+        },
+
+
+        _disableIntegrateButton: function() {
+            var btn = $('.ui-dialog-buttonpane button:contains("Integrate")')
+            btn.button('disable').button('option', 'label', 'Submitted!')
+            setTimeout(function() {
+                btn.button('enable').button('option', 'label', 'Integrate')
+            }, 5000)
         },
 
 

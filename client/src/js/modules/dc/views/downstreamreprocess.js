@@ -137,7 +137,17 @@ define(['backbone', 'marionette', 'views/dialog',
             
             this._enqueue({ RECIPE: this.model.get('PIPELINE'), DATACOLLECTIONID: this.model.get('ID'), SCALINGID: this.scalingid })
             app.message({ message: 'Downstream processing job successfully submitted'})
+            this._disableIntegrateButton()
             
+        },
+
+
+        _disableIntegrateButton: function() {
+            var btn = $('.ui-dialog-buttonpane button:contains("Submit")')
+            btn.button('disable').button('option', 'label', 'Submitted!')
+            setTimeout(function() {
+                btn.button('enable').button('option', 'label', 'Submit')
+            }, 5000)
         },
 
 
