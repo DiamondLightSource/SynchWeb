@@ -60,7 +60,7 @@ define(['backbone', 'marionette',
     
         events: {
             'click .integrate': 'integrate',
-            'click a.opt': 'toggleOpts',
+            'click button.opt': 'toggleOpts',
             'change @ui.pipeline': 'updatePipeline',
         },
 
@@ -110,7 +110,7 @@ define(['backbone', 'marionette',
             var s = this.collection.where({ selected: true })
 
             if (!s.length) {
-                utils.confirm({ title: 'No data collections selected', content: 'Please selected some data sets to integrate' })
+                utils.confirm({ title: 'No data collections selected', content: 'Please select some data sets to integrate', buttons: {'Ok': 'closeDialog'}})
                 return
             }
 
@@ -193,8 +193,9 @@ define(['backbone', 'marionette',
                     var reprocessingsweeps = new ReprocessingImageSweeps(sweeps)
                     reprocessingsweeps.save()
 
-                    app.message({ message: '1 reprocessing job successfully submitted'})
                     self._enqueue({ PROCESSINGJOBID: reprocessing.get('PROCESSINGJOBID') })
+                    app.message({ message: 'Reprocessing job successfully submitted'})
+                    self._disableIntegrateButton()
                 },
 
                 error: function() {
@@ -202,6 +203,16 @@ define(['backbone', 'marionette',
                 }
             })
 
+        },
+
+
+        _disableIntegrateButton: function() {
+            var btn = $('button.integrate')
+            var btnHtml = btn.html()
+            btn.prop('disabled', true).html('<i class="fa fa-check"></i> Submitted!');
+            setTimeout(function() {
+                btn.prop('disabled', false).html(btnHtml);
+            }, 5000)
         },
 
 

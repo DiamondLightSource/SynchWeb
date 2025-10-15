@@ -81,10 +81,10 @@ define(['backbone',
         },
         
         events: {
-            'click a.dismiss': 'disimss',
+            'click a.dismiss': 'dismiss',
         },
 
-        disimss: function(e) { 
+        dismiss: function(e) {
             e.preventDefault()
             this.destroy()
         },
@@ -118,13 +118,15 @@ define(['backbone',
         var ConfirmDialog = DialogView.extend({
             title: options.title,
             template: _.template(options.content),
-            buttons: {
+            buttons: options.buttons || {
                 'Ok': 'onOK',
                 'Cancel': 'closeDialog',
             },
             
             onOK: function() {
-                options.callback()
+                if (typeof options.callback === 'function') {
+                    options.callback();
+                }
                 this.closeDialog()
             },
         })
