@@ -222,7 +222,9 @@ class Processing extends Page {
                 INNER JOIN proposal p ON p.proposalid = s.proposalid
                 INNER JOIN autoprocintegration api ON api.datacollectionid = dc.datacollectionid
                 INNER JOIN autoprocprogram app ON api.autoprocprogramid = app.autoprocprogramid
-                WHERE $where AND app.processingprograms NOT IN ('$filter') AND app.processingprograms NOT IN ('$screening_filter')",
+                WHERE $where
+                    AND app.processingprograms NOT IN ('$filter')
+                    AND app.processingprograms NOT IN ('$screening_filter')",
                 "SELECT app.autoprocprogramid, dc.datacollectionid, app.processingprograms, app.processingstatus as status, 'downstream' as type
                 FROM datacollection dc 
                 INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
@@ -231,8 +233,10 @@ class Processing extends Page {
                 INNER JOIN processingjob pj ON pj.datacollectionid = dc.datacollectionid
                 INNER JOIN autoprocprogram app ON pj.processingjobid = app.processingjobid
                 LEFT OUTER JOIN autoprocintegration api ON api.autoprocprogramid = app.autoprocprogramid
-                WHERE $where AND api.autoprocintegrationid IS NULL
-                    AND app.processingprograms NOT IN ('$filter') AND app.processingprograms NOT IN ('$screening_filter')",
+                WHERE $where
+                    AND api.autoprocintegrationid IS NULL
+                    AND app.processingprograms NOT IN ('$filter')
+                    AND app.processingprograms NOT IN ('$screening_filter')",
                 "SELECT app.autoprocprogramid, dc.datacollectionid, app.processingprograms, app.processingstatus as status, 'screening' as type
                 FROM datacollection dc
                 INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
@@ -241,8 +245,10 @@ class Processing extends Page {
                 INNER JOIN processingjob pj ON pj.datacollectionid = dc.datacollectionid
                 INNER JOIN autoprocprogram app ON pj.processingjobid = app.processingjobid
                 LEFT OUTER JOIN autoprocintegration api ON api.autoprocprogramid = app.autoprocprogramid
-                WHERE $where AND api.autoprocintegrationid IS NULL
-                    AND app.processingprograms NOT IN ('$filter') AND app.processingprograms IN ('$screening_filter')",
+                WHERE $where
+                    AND api.autoprocintegrationid IS NULL
+                    AND app.processingprograms NOT IN ('$filter')
+                    AND app.processingprograms IN ('$screening_filter')",
             ),
             $ids
         );
@@ -708,8 +714,9 @@ class Processing extends Page {
     }
 
     function _get_downstreams($dcid = null, $aid = null) {
-        global $downstream_filter;
+        global $downstream_filter, $strat_align;
         $filter = $downstream_filter ? implode("','", $downstream_filter) : '';
+        $screening_filter = $strat_align ? implode("','", $strat_align) : '';
 
         $where = '';
         $args = array($this->proposalid);
@@ -741,6 +748,7 @@ class Processing extends Page {
                 INNER JOIN proposal p ON p.proposalid = s.proposalid
                 WHERE api.autoprocintegrationid IS NULL AND p.proposalid=:1 $where
                     AND app.processingprograms NOT IN ('$filter')
+                    AND app.processingprograms NOT IN ('$screening_filter')
                 GROUP BY app.autoprocprogramid",
             $args
         );
