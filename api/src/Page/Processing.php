@@ -148,22 +148,27 @@ class Processing extends Page {
                 INNER JOIN datacollectiongroup dcg on dc.datacollectiongroupid = dcg.datacollectiongroupid
                 INNER JOIN blsession s ON s.sessionid = dcg.sessionid 
                 INNER JOIN proposal p ON p.proposalid = s.proposalid
-                WHERE $where
-                GROUP BY dc.datacollectionid, sc.programversion",
+                WHERE sc.autoprocprogramid is null AND $where",
             $ids
         );
 
         $statuses = array();
-        foreach ($screenings as $screening) {
-            if (!array_key_exists($screening['DATACOLLECTIONID'], $statuses)) {
-                $statuses[$screening['DATACOLLECTIONID']][
-                    'screening'
-                ] = array();
+        foreach ($screenings as $s) {
+            if (!array_key_exists($s['DATACOLLECTIONID'], $statuses)) {
+                $statuses[$s['DATACOLLECTIONID']] = array();
             }
-
-            $statuses[$screening['DATACOLLECTIONID']]['screening'][
-                $screening['PROGRAMVERSION']
-            ] = $this->_map_status($screening["INDEXINGSUCCESS"]);
+            if (!array_key_exists('screening', $statuses[$s['DATACOLLECTIONID']])
+            ) {
+                $statuses[$s['DATACOLLECTIONID']]['screening'] = array();
+            }
+            if (!array_key_exists($s['PROGRAMVERSION'], $statuses[$s['DATACOLLECTIONID']]['screening'])
+            ) {
+                $statuses[$s['DATACOLLECTIONID']]['screening'][$s['PROGRAMVERSION']] = array();
+            }
+            array_push(
+                $statuses[$s['DATACOLLECTIONID']]['screening'][$s['PROGRAMVERSION']],
+                $this->_map_status($s['INDEXINGSUCCESS'])
+            );
         }
 
         return $statuses;
@@ -204,8 +209,9 @@ class Processing extends Page {
     }
 
     function _autoproc_status($where, $ids) {
-        global $downstream_filter;
+        global $downstream_filter, $strat_align;
         $filter = $downstream_filter ? implode("','", $downstream_filter) : '';
+        $screening_filter = $strat_align ? implode("','", $strat_align) : '';
 
         $processings = $this->db->union(
             array(
@@ -216,7 +222,9 @@ class Processing extends Page {
                 INNER JOIN proposal p ON p.proposalid = s.proposalid
                 INNER JOIN autoprocintegration api ON api.datacollectionid = dc.datacollectionid
                 INNER JOIN autoprocprogram app ON api.autoprocprogramid = app.autoprocprogramid
-                WHERE $where AND app.processingprograms NOT IN ('$filter')",
+                WHERE $where
+                    AND app.processingprograms NOT IN ('$filter')
+                    AND app.processingprograms NOT IN ('$screening_filter')",
                 "SELECT app.autoprocprogramid, dc.datacollectionid, app.processingprograms, app.processingstatus as status, 'downstream' as type
                 FROM datacollection dc 
                 INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
@@ -225,8 +233,22 @@ class Processing extends Page {
                 INNER JOIN processingjob pj ON pj.datacollectionid = dc.datacollectionid
                 INNER JOIN autoprocprogram app ON pj.processingjobid = app.processingjobid
                 LEFT OUTER JOIN autoprocintegration api ON api.autoprocprogramid = app.autoprocprogramid
-                WHERE $where AND api.autoprocintegrationid IS NULL
-                    AND app.processingprograms NOT IN ('$filter')",
+                WHERE $where
+                    AND api.autoprocintegrationid IS NULL
+                    AND app.processingprograms NOT IN ('$filter')
+                    AND app.processingprograms NOT IN ('$screening_filter')",
+                "SELECT app.autoprocprogramid, dc.datacollectionid, app.processingprograms, app.processingstatus as status, 'screening' as type
+                FROM datacollection dc
+                INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
+                INNER JOIN blsession s ON s.sessionid = dcg.sessionid
+                INNER JOIN proposal p ON p.proposalid = s.proposalid
+                INNER JOIN processingjob pj ON pj.datacollectionid = dc.datacollectionid
+                INNER JOIN autoprocprogram app ON pj.processingjobid = app.processingjobid
+                LEFT OUTER JOIN autoprocintegration api ON api.autoprocprogramid = app.autoprocprogramid
+                WHERE $where
+                    AND api.autoprocintegrationid IS NULL
+                    AND app.processingprograms NOT IN ('$filter')
+                    AND app.processingprograms IN ('$screening_filter')",
             ),
             $ids
         );
@@ -280,6 +302,30 @@ class Processing extends Page {
         return array($where, $ids);
     }
 
+    function merge_deep_arrays($a, $b) {
+        foreach ($b as $key => $value) {
+            if (isset($a[$key])) {
+                if (is_array($a[$key]) && is_array($value)) {
+                    // Determine if arrays are associative or numeric
+                    if (array_keys($a[$key]) === range(0, count($a[$key]) - 1) &&
+                        array_keys($value) === range(0, count($value) - 1)) {
+                        // Both are numeric arrays - merge them
+                        $a[$key] = array_merge($a[$key], $value);
+                    } else {
+                        // At least one is associative - merge recursively
+                        $a[$key] = $this->merge_deep_arrays($a[$key], $value);
+                    }
+                } else {
+                    // One is not array, overwrite with $b's value
+                    $a[$key] = $value;
+                }
+            } else {
+                $a[$key] = $value;
+            }
+        }
+        return $a;
+    }
+
     /**
      * All screening, auto processing, and downstream statuses
      */
@@ -308,7 +354,8 @@ class Processing extends Page {
         $xrcs = $this->_xrc_status($where, $ids);
         $autoprocs = $this->_autoproc_status($where, $ids);
 
-        $statuses = array_replace_recursive($screenings, $xrcs, $autoprocs);
+        $combined = $this->merge_deep_arrays($screenings, $autoprocs);
+        $statuses = array_replace_recursive($xrcs, $combined);
 
         $out = array();
         foreach ($ids as $id) {
@@ -667,8 +714,9 @@ class Processing extends Page {
     }
 
     function _get_downstreams($dcid = null, $aid = null) {
-        global $downstream_filter;
+        global $downstream_filter, $strat_align;
         $filter = $downstream_filter ? implode("','", $downstream_filter) : '';
+        $screening_filter = $strat_align ? implode("','", $strat_align) : '';
 
         $where = '';
         $args = array($this->proposalid);
@@ -700,6 +748,7 @@ class Processing extends Page {
                 INNER JOIN proposal p ON p.proposalid = s.proposalid
                 WHERE api.autoprocintegrationid IS NULL AND p.proposalid=:1 $where
                     AND app.processingprograms NOT IN ('$filter')
+                    AND app.processingprograms NOT IN ('$screening_filter')
                 GROUP BY app.autoprocprogramid",
             $args
         );

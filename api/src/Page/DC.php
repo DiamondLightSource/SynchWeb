@@ -1264,7 +1264,16 @@ class DC extends Page
     {
         global $strat_align;
 
-        $rows = $this->db->pq("SELECT s.programversion, st.rankingresolution as rankres, ssw.wedgenumber, sssw.subwedgenumber, ssw.chi, ssw.kappa, ssw.phi, dc.datacollectionid as dcid, s.comments, dc.transmission as dctrn, dc.wavelength as lam, dc.imagedirectory imd, dc.imageprefix as imp, dc.comments as dcc, dc.blsampleid as sid, sl.spacegroup as sg, sl.unitcell_a as a, sl.unitcell_b as b, sl.unitcell_c as c, sl.unitcell_alpha as al, sl.unitcell_beta as be, sl.unitcell_gamma as ga, CONCAT(CONCAT(IF(sssw.comments, sssw.comments, IF(ssw.comments, ssw.comments, s.shortcomments)), ' Wedge'), IFNULL(ssw.wedgenumber, '')) as com, sssw.axisstart as st, sssw.exposuretime as time, sssw.transmission as tran, sssw.oscillationrange as oscran, sssw.resolution as res, sssw.numberofimages as nimg, det.numberofpixelsx, det.detectorpixelsizehorizontal, sssw.rotationaxis
+        $rows = $this->db->pq("SELECT s.programversion, s.comments,
+                st.rankingresolution as rankres,
+                ssw.wedgenumber, ssw.chi, ssw.kappa, ssw.phi, ssw.comments as sswcomments,
+                sssw.subwedgenumber, sssw.axisstart as st, sssw.exposuretime as time, sssw.transmission as tran,
+                sssw.oscillationrange as oscran, sssw.resolution as res, sssw.numberofimages as nimg, sssw.rotationaxis,
+                dc.datacollectionid as dcid, dc.transmission as dctrn, dc.wavelength as lam, dc.imagedirectory imd,
+                dc.imageprefix as imp, dc.comments as dcc, dc.blsampleid as sid,
+                sl.spacegroup as sg, sl.unitcell_a as a, sl.unitcell_b as b, sl.unitcell_c as c, sl.unitcell_alpha as al, sl.unitcell_beta as be, sl.unitcell_gamma as ga,
+                det.numberofpixelsx, det.detectorpixelsizehorizontal,
+                CONCAT(IF(sssw.comments, sssw.comments, IF(ssw.comments, ssw.comments, s.shortcomments)), ' Wedge', IFNULL(ssw.wedgenumber, '')) as com
                 FROM screeningstrategy st 
                 INNER JOIN screeningoutput so on st.screeningoutputid = so.screeningoutputid 
                 INNER JOIN screening s on so.screeningid = s.screeningid 
@@ -1292,6 +1301,11 @@ class DC extends Page
             }
 
             if ($is_align) {
+                foreach ($r as $k => &$v) {
+                    if (in_array($k, $nf)) {
+                        $v = number_format(floatval($v), 2);
+                    }
+                }
                 array_push($output[$r['PROGRAMVERSION']]['STRATS'], $r);
             } else {
 
