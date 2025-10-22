@@ -50,7 +50,6 @@ define(['marionette',
         initialize: function(options) {
             APItemCell.__super__.initialize.call(this,options)
             this.listenTo(this.model, 'change reset', this.render, this)
-            this.template = '<i class="fa fa-spin fa-spinner"></i>'
         },
         
         render: function() {
@@ -65,15 +64,16 @@ define(['marionette',
                     '<i class="fa icon red fa-times alt="Failed"></i>']
         
             var label = this.column.get('program')
-            this.$el.html(_.template(this.template))
             if (this.model.get('APLOADED') == true) {
-                var ap = res[this.column.get('group')][label]
-                var ress = {}
-                _.each(ap, function(a) {
-                    if (!(a in ress)) ress[a] = 0
-                    ress[a]++
-                })
-                this.$el.html(_.map(ress, function(c, st) { return c > 1 ? '<span class="count">'+c+'x</span> '+val[st] : val[st]}))
+                if (this.column.get('group') in res) {
+                    var ap = res[this.column.get('group')][label]
+                    var ress = {}
+                    _.each(ap, function(a) {
+                        if (!(a in ress)) ress[a] = 0
+                        ress[a]++
+                    })
+                    this.$el.html(_.map(ress, function(c, st) { return c > 1 ? '<span class="count">'+c+'x</span> '+val[st] : val[st]}))
+                }
             }
             this.delegateEvents();
             return this;
@@ -119,7 +119,7 @@ define(['marionette',
 
         updateColumns: function() {
             var states = this.statuses.pluck('STATES')
-            var group_names = _.keys(states[0])
+            var group_names = _.chain(states).map(_.keys).flatten().uniq().value();
             var groups = {}
             _.each(group_names, function(group) {
                 groups[group] = _.unique(_.map(states, function(state) { return _.keys(state[group]) }).flat())
