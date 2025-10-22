@@ -121,6 +121,7 @@ class Dimple extends DownstreamPlugin {
         }
 
         $dat['ANODE_PEAKS'] = $this->_get_anode_peaks($this->process['PARAMETERS']['scaling_id']);
+        $dat['ANODE_MODEL'] = $this->_get_anode_model();
 
         $results = new DownstreamResult($this);
         $results->data = $dat;
@@ -198,5 +199,13 @@ class Dimple extends DownstreamPlugin {
             array_push($plot, array($n+1, $blob['HEIGHT']));
         }
         return array('TABLE' => $peaks, 'PLOT' => $plot);
+    }
+
+    function _get_anode_model() {
+        $model = $this->_get_attachments('anode.html');
+        if ($model) {
+            return $model['AUTOPROCPROGRAMATTACHMENTID'];
+        }
+        return;
     }
 }

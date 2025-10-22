@@ -13,6 +13,7 @@ define([
             rstats_div: '.rstats_div',
             blob: '.blobs img',
             blobs: '.blobs',
+            viewer: '.viewer',
         },
         
         showBlob: function() {
@@ -31,6 +32,12 @@ define([
 
             this.ui.blob.hide()
             
+            if (this.model.get('ANODE_MODEL')) {
+                this.ui.viewer.attr('href', app.apiurl+'/download/ap/attachments/' + this.model.get('ANODE_MODEL') + '/dl/2');
+            } else {
+                this.ui.viewer.hide()
+            }
+
             if (this.model.get('BLOBS') > 0) {
                 this.blob = new XHRImage()
                 this.blob.onload = this.showBlob.bind(this)

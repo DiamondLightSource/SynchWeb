@@ -113,7 +113,7 @@ abstract class DownstreamPlugin implements DownstreamPluginInterface {
         }
 
         $rows = $this->db->pq(
-            "SELECT appa.filename, appa.filepath, appa.filetype, CONCAT(appa.filepath, '/', appa.filename) as file
+            "SELECT appa.autoprocprogramattachmentid, appa.filename, appa.filepath, appa.filetype, CONCAT(appa.filepath, '/', appa.filename) as file
             FROM autoprocprogramattachment appa
             WHERE appa.autoprocprogramid = :1 $where
             ORDER BY appa.importancerank,appa.filename",
