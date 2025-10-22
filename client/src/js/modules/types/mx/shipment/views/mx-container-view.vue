@@ -66,7 +66,8 @@
             <li>
               <span class="label">Owner</span>
               <base-input-select
-                v-model="container.OWNER"
+                v-model="container.OWNERID"
+                :initial-text="container.OWNER"
                 :options="users"
                 option-value-key="PERSONID"
                 :inline="true"

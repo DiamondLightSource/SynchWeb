@@ -30,19 +30,20 @@ var bc = { title: 'Fault Database', url: '/fault' }
 const routes = [
     {
         // sys, com and sub should all be ids of sub systems and components for the beamline
-        path: '/faults(/bl/)?:bl([a-zA-Z0-9_-]+)?(/sys/)?:sys([0-9]+)?(/com/)?:com([0-9]+)?(/sub/)?:sub([0-9]+)?(/page/)?:page([0-9]+)?',
+        path: '/faults(/bl/)?:bl([a-zA-Z0-9_-]+)?(/sys/)?:sys([0-9]+)?(/com/)?:com([0-9]+)?(/sub/)?:sub([0-9]+)?(/s/)?:s([a-zA-Z0-9_%-]+)?(/page/)?:page([0-9]+)?',
         name: 'faults-view',
         component: MarionetteView,
         props: route => ({
             mview: FaultListView,
             options: {
-                collection: new Faults(null, { state: { currentPage: route.params.page ? parseInt(route.params.page) : 1} })
-            },
-            params: {
-                beamline: route.params.bl || '',
-                system: route.params.sys || '',
-                component: route.params.com || '',
-                subcomponent: route.params.sub || ''
+                collection: new Faults(null, { state: { currentPage: route.params.page ? parseInt(route.params.page) : 1} }),
+                params: {
+                    beamline: route.params.bl || '',
+                    system: route.params.sys || '',
+                    component: route.params.com || '',
+                    subcomponent: route.params.sub || '',
+                    s: route.params.s,
+                },
             },
             breadcrumbs: [bc],
         })

@@ -29,6 +29,30 @@ define(['backbone', 'marionette',
             'click .logf': 'showLog',
             'click a.pattach': 'showAttachments',
             'click .dll': utils.signHandler,
+            'click a.viewupstream': 'viewUpstream',
+        },
+
+        viewUpstream: function(e) {
+            e.preventDefault()
+
+            const pappid = this.model.get('PARENTAUTOPROCPROGRAMID')
+            const downstream = this.$el.closest('.downstream')
+            const ap = downstream.siblings('.ap')
+            const autoproc = downstream.siblings('.autoproc')
+
+            const clickTab = (apView) => {
+                let tab = autoproc.find('a[href="#tabs-' + pappid + '"]')
+                if (tab.length) {
+                    tab.trigger('click')
+                    $('html, body').animate({ scrollTop: tab.offset().top })
+                }
+            }
+
+            if (autoproc.is(':visible')) {
+                clickTab(this.ap)
+            } else {
+                ap.trigger('click', clickTab)
+            }
         },
 
         showAttachments: function(e) {
@@ -80,6 +104,10 @@ define(['backbone', 'marionette',
 
                 if (!this.getOption('mapLink')) {
                     links = links.slice(1)
+                }
+
+                if (this.getOption('upstreamLink')) {
+                    links.push('<a class="viewupstream button" href="#"><i class="fa fa-chevron-up"></i> View Upstream</a>')
                 }
 
                 this.ui.links.append(links.join(' '))
