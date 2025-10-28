@@ -1,0 +1,57 @@
+<h1 data-testid="ligand-header">View Ligand</h1>
+
+<p class="help">This page shows details for the selected ligand and a list of samples which make use of it</p>
+
+<div class="form">
+    <ul>
+        <li>
+            <span class="label">Name</span>
+            <span data-testid="ligand-name" class="NAME"><%-NAME%></span>
+        </li>
+        
+        <li>
+            <span class="label">SMILES Code</span>
+            <span data-testid="ligand-smiles" class="SMILES"><%-SMILES%></span>
+        </li>
+        
+        <li>
+            <span class="label">Library Name</span>
+            <span data-testid="ligand-library-name" class="LIBRARYNAME"><%-LIBRARYNAME%></span>
+        </li>
+
+        <li>
+            <span class="label">Library Batch No</span>
+            <span data-testid="ligand-library-batch" class="LIBRARYBATCHNUMBER"><%-LIBRARYBATCHNUMBER%></span>
+        </li>
+
+        <li>
+            <span class="label">Plate Barcode</span>
+            <span data-testid="ligand-plate-barcode" class="PLATEBARCODE"><%-PLATEBARCODE%></span>
+        </li>
+
+        <li>
+            <span class="label">Source Well</span>
+            <span data-testid="ligand-source-well" class="SOURCEWELL"><%-SOURCEWELL%></span>
+        </li>
+        
+        <li class="clearfix">
+            <label>
+                <span class="label">Associated PDB Files</span>
+                <span class="small">
+                    A PDB format file of the ligand.
+                    Multiple PDB files can be provided and the best match will be used for the downstream task.
+                </span>
+                <a href="#" data-testid="ligand-add-pdb-button" class="button add"><i class="fa fa-plus"></i> Add PDB File</a>
+            </label>
+            <span class="pdb floated">
+                <ul class="visits clearfix"></ul>
+            </span>
+        </li>
+        
+    </ul>
+    
+</div>
+
+<div class="conts"></div>
+<div class="samples"></div>
+<div class="datacollections"></div>
