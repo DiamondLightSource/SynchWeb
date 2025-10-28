@@ -298,30 +298,26 @@ define(['backbone', 'marionette', 'views/dialog',
         },
 
         updateIndexingMethod: function() {
-            if (this.ui.indexingMethod.val() == 'real_space_grid_search') {
-                const st = this.ui.ind.is(':checked')
-                if (st) {
-                    let eachHasCell = true
-                    this.distlview.children.each(function(v) {
-                        if (!v.ui.a.val() || !v.ui.b.val() || !v.ui.c.val() ||
-                                !v.ui.al.val() || !v.ui.be.val() || !v.ui.ga.val()) {
-                            v.ui.cell.show()
-                            eachHasCell = false
-                        }
+            if (this.ui.indexingMethod.val() === 'real_space_grid_search') {
+                if (this.ui.ind.is(':checked')) {
+                    let shouldAlert = true
+                    this.distlview.children.each((v) => {
+                        shouldAlert = this.checkIfUnitCellPopulated(v, shouldAlert)
                     })
-                    if (!eachHasCell) {
-                        app.alert({ message: 'Real Space Grid Search requires unit cell to be populated' })
-                        this.ui.indexingMethod.val('')
-                    }
                 } else {
-                    if (!this.ui.a.val() || !this.ui.b.val() || !this.ui.c.val() ||
-                            !this.ui.al.val() || !this.ui.be.val() || !this.ui.ga.val()) {
-                        app.alert({ message: 'Real Space Grid Search requires unit cell to be populated' })
-                        this.ui.indexingMethod.val('')
-                        this.ui.cell.show()
-                    }
+                    this.checkIfUnitCellPopulated(this, true)
                 }
             }
+        },
+
+        checkIfUnitCellPopulated: function(v, shouldAlert) {
+            let cellPopulated = v.ui.a.val() && v.ui.b.val() && v.ui.c.val() && v.ui.al.val() && v.ui.be.val() && v.ui.ga.val()
+            if (!cellPopulated) {
+                v.ui.cell.show()
+                this.ui.indexingMethod.val('')
+                if (shouldAlert) app.alert({ message: 'Real Space Grid Search requires unit cell to be populated' })
+            }
+            return cellPopulated
         },
 
         toggleIndividual: function(e) {
