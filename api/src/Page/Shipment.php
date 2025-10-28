@@ -3311,7 +3311,7 @@ class Shipment extends Page
             "contact_email" => trim($user["email"])
         );
         $shipment_data = array(
-            "shipment_reference" => isset($shipment["session_number"]) ? $shipment["PROP"] . '-' . $shipment["session_number"] : $shipment["PROP"],
+            "shipment_reference" => $shipment["PROP"] . '-' . ($shipment["session_number"] ?? 0),
             "external_id" => $shipment['SHIPPINGID'],
             "packages" => array_map(
                 function($dewar) {
