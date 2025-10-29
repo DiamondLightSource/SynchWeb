@@ -51,10 +51,10 @@ define([
                 this.ui.rstats.width(0.25*(this.options.holderWidth-14))
                 this.ui.plot.width(0.42*(this.options.holderWidth-14))
                 this.ui.plot.height(this.ui.plot.width()*0.41-80)
-                this.ui.rstats_div.height(this.ui.plot.width()*0.41-80)
+                this.ui.rstats_div.height(this.ui.plot.height())
             }
 
-            this.ui.blobs.css('min-height', this.ui.plot.width()*0.41-80)
+            this.ui.blobs.css('min-height', this.ui.plot.height())
             
             var data = [{ data: this.model.get('PLOTS').FVC, label: 'Rfree vs. Cycle' },
                         { data: this.model.get('PLOTS').RVC, label: 'R vs. Cycle' }]
@@ -63,8 +63,9 @@ define([
             
             const anodePeaks = this.model.get('ANODE_PEAKS');
             if (anodePeaks && anodePeaks.TABLE && anodePeaks.TABLE.length > 0) {
-                this.ui.plot_anode.width(0.42 * (this.options.holderWidth - 14))
-                this.ui.plot_anode.height(this.ui.plot.width() * 0.41 - 80)
+                this.ui.plot_anode.width(this.ui.plot.width())
+                this.ui.plot_anode.height(this.ui.plot.height())
+                this.ui.blobs.css('min-height', this.ui.plot.height() + this.ui.plot_anode.height())
 
                 var anode_data = [{ data: anodePeaks.PLOT, label: 'Peak Height (sig)' }]
                 var anode_pl = $.extend({}, utils.default_plot, { series: { lines: { show: true }}});
