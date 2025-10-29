@@ -106,6 +106,7 @@ define(['backbone', 'marionette',
 
         integrate: function(e) {
             e.preventDefault()
+            this._disableIntegrateButton()
 
             var s = this.collection.where({ selected: true })
 
@@ -195,7 +196,6 @@ define(['backbone', 'marionette',
 
                     self._enqueue({ PROCESSINGJOBID: reprocessing.get('PROCESSINGJOBID') })
                     app.message({ message: 'Reprocessing job successfully submitted'})
-                    self._disableIntegrateButton()
                 },
 
                 error: function() {

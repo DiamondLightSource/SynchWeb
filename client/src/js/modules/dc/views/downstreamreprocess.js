@@ -134,10 +134,10 @@ define(['backbone', 'marionette', 'views/dialog',
 
         submit: function(e) {
             e.preventDefault()
-            
+            this._disableIntegrateButton()
+
             this._enqueue({ RECIPE: this.model.get('PIPELINE'), DATACOLLECTIONID: this.model.get('ID'), SCALINGID: this.scalingid })
             app.message({ message: 'Downstream processing job successfully submitted'})
-            this._disableIntegrateButton()
             
         },
 

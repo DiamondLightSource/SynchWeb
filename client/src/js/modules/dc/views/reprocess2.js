@@ -306,6 +306,7 @@ define(['backbone', 'marionette', 'views/dialog',
 
         integrate: function(e) {
             e.preventDefault()
+            this._disableIntegrateButton()
             var s = this.collection.where({ selected: true })
 
             if (!s.length) {
@@ -407,7 +408,6 @@ define(['backbone', 'marionette', 'views/dialog',
                         self._enqueue({ PROCESSINGJOBID: rp.get('PROCESSINGJOBID') })
                     })
                     app.message({ message: jobs+' reprocessing job(s) successfully submitted'})
-                    self._disableIntegrateButton()
                 })
 
 
@@ -498,7 +498,6 @@ define(['backbone', 'marionette', 'views/dialog',
                         $.when.apply($, reqs).done(function() {
                             self._enqueue({ PROCESSINGJOBID: reprocessing.get('PROCESSINGJOBID') })
                             app.message({ message: '1 reprocessing job successfully submitted'})
-                            self._disableIntegrateButton()
                         })
                     },
 
