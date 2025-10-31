@@ -325,7 +325,7 @@ class Download extends Page
     {
         if (!$this->has_arg('cid'))
             $this->_error('No container id specified');
-        $rows = $this->db->pq("SELECT c.code, s.location, ct.capacity, ct.wellperrow,
+        $rows = $this->db->pq("SELECT c.code, s.location, ct.name, ct.capacity, ct.wellperrow,
                 bsp.posx, bsp.posy, si.imagefullpath, si.micronsperpixelx, si.micronsperpixely
                 FROM blsample s
                 INNER JOIN container c ON c.containerid = s.containerid
@@ -340,20 +340,29 @@ class Download extends Page
                 array($this->arg('cid')));
         $plate = $rows[0];
         $rowNames = range("A", "H");
+        $dropNames = range("a", "z");
+        // SWISSCI 3 Drop have drops a/c/d
+        if ($plate["NAME"] == "SWISSCI 3 Drop") {
+            $dropNames = array_merge(array("a"), range("c","z"));
+        }
         $dropsPerWell = $plate["CAPACITY"] / (count($rowNames) * $plate["WELLPERROW"]);
         $this->app->response->headers->set("Content-type", "application/vnd.ms-excel");
-        $this->_set_disposition_attachment($this->app->response, $plate["CODE"] . ".csv");
+        $this->_set_disposition_attachment($this->app->response, $plate["CODE"] . "_targets.csv");
         list($width, $height, $type, $attr) = getimagesize($plate['IMAGEFULLPATH']);
         foreach ($rows as $r) {
-            if (!$r["POSX"]) continue;
             $wellNumber = intval(($r["LOCATION"] - 1) / $dropsPerWell);  # 0 indexed
-	        $rowNumber = intval($wellNumber / $plate["WELLPERROW"]);  # 0 indexed
-	        $row = $rowNames[$rowNumber];
-	        $column = $wellNumber - ($rowNumber * $plate["WELLPERROW"]) + 1;
-	        $drop = intval($r["LOCATION"] - ($dropsPerWell * $wellNumber));
-	        $xval = ($r["POSX"] - $width/2) * $r["MICRONSPERPIXELX"];
-	        $yval = ($r["POSY"] - $height/2) * $r["MICRONSPERPIXELY"];
-	        print $row . $column . "d" . $drop . "," . $xval . "," . $yval . "\n";
+            $rowNumber = intval($wellNumber / $plate["WELLPERROW"]);  # 0 indexed
+            $row = $rowNames[$rowNumber];
+            $column = str_pad($wellNumber - ($rowNumber * $plate["WELLPERROW"]) + 1, 2, 0, STR_PAD_LEFT);  # pad with a zero if needed
+            $dropNumber = intval($r["LOCATION"] - ($dropsPerWell * $wellNumber));  # 1 indexed
+            $drop = $dropNames[$dropNumber-1];
+            if (!$r["POSX"]) {
+                print $row . $column . $drop . "\n";
+            } else {
+                $xval = round(($r["POSX"] - $width/2) * $r["MICRONSPERPIXELX"]); # integers
+                $yval = round(($height/2 - $r["POSY"]) * $r["MICRONSPERPIXELY"]); # integers
+                print $row . $column . $drop . "," . $xval . "," . $yval . "\n";
+            }
         }
     }
 
