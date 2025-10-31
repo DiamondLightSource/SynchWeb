@@ -356,13 +356,9 @@ class Download extends Page
             $column = str_pad($wellNumber - ($rowNumber * $plate["WELLPERROW"]) + 1, 2, 0, STR_PAD_LEFT);  # pad with a zero if needed
             $dropNumber = intval($r["LOCATION"] - ($dropsPerWell * $wellNumber));  # 1 indexed
             $drop = $dropNames[$dropNumber-1];
-            if (!$r["POSX"]) {
-                print $row . $column . $drop . "\n";
-            } else {
-                $xval = round(($r["POSX"] - $width/2) * $r["MICRONSPERPIXELX"]); # integers
-                $yval = round(($height/2 - $r["POSY"]) * $r["MICRONSPERPIXELY"]); # integers
-                print $row . $column . $drop . "," . $xval . "," . $yval . "\n";
-            }
+            $xval = $r["POSX"] ? round(($r["POSX"] - $width/2) * $r["MICRONSPERPIXELX"]) : ""; # integers
+            $yval = $r["POSY"] ? round(($height/2 - $r["POSY"]) * $r["MICRONSPERPIXELY"]) : ""; # integers
+            print $row . $column . $drop . "," . $xval . "," . $yval . "\n";
         }
     }
 
