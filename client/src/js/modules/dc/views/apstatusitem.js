@@ -52,9 +52,16 @@ define(['marionette', 'jquery'], function(Marionette, $) {
 
             if (this.getOption('showStrategies')) {
                 this.ui.strat.empty()
+                var allStrategies = []
                 _.each(res['screening'], function(sc, n) {
-                    this.ui.strat.append(n+': '+val[sc]+' ')
+                    var strats = {}
+                    _.each(sc, function(a) {
+                        if (!(a in strats)) strats[a] = 0
+                        strats[a]++
+                    })
+                    allStrategies.push(n+': '+_.map(strats, function(c, st) { return c > 1 ? '<span class="count">'+c+'x</span> '+val[st] : val[st]}).join(' '))
                 }, this)
+                this.ui.strat.append(allStrategies.join('<span class="separator">|</span>'))
             }
 
             if (this.getOption('showProcessing')) {

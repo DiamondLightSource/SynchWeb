@@ -1,0 +1,62 @@
+<h1 data-testid="new-ligand-header">New Ligand</h1>
+
+<form method="post" id="add_ligand" enctype="multipart/form-data">
+    
+    <div class="form">
+        <ul>
+            
+            <li>
+                <label>Name
+                </label>
+                <span class="name">
+                    <input data-testid="new-ligand-name" type="text" name="NAME" />
+                </span>
+            </li>
+            
+            <li>
+                <label>SMILES Code
+                </label>
+                <span class="SMILES"><input data-testid="new-ligand-smiles" type="text" name="SMILES" /></span>
+            </li>
+            
+            
+            <li>
+                <label>Library Name
+                </label>
+                <span class="LIBRARYNAME"><input data-testid="new-ligand-library-name" type="text" name="LIBRARYNAME" /></span>
+            </li>
+            
+            <li>
+                <label>Library Batch No
+                </label>
+                <span class="LIBRARYBATCHNUMBER"><input data-testid="new-ligand-library-batch" type="text" name="LIBRARYBATCHNUMBER" /></span>
+            </li>
+
+            <li>
+                <label>Plate Barcode
+                </label>
+                <span class="PLATEBARCODE"><input data-testid="new-ligand-plate-barcode" type="text" name="PLATEBARCODE" /></span>
+            </li>
+
+            <li>
+                <label>Source Well
+                </label>
+                <span class="SOURCEWELL"><input data-testid="new-ligand-source-well" type="text" name="SOURCEWELL" /></span>
+            </li>
+
+            <li>
+                <label>
+                    PDB File
+                    <span class="small">
+                        A PDB format file of the ligand.
+                        Multiple PDB files can be provided.
+                    </span>
+                </label>
+                <span>PDB files can be added on the next page</span>
+            </li>
+        </ul>
+        
+        <button name="submit" value="1" type="submit" class="button submit" data-testid="add-ligand">Add Ligand</button>
+    </div>
+    
+</form>

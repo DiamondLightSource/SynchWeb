@@ -9,15 +9,29 @@
             <th>Kappa</th>
             <th>Chi</th>
             <th>Phi</th>
+            <th>Space Group</th>
+            <th>A</th>
+            <th>B</th>
+            <th>C</th>
+            <th>α</th>
+            <th>β</th>
+            <th>γ</th>
         </tr>
     </thead>
     <tbody>
         <% _.each(STRATS, function(r, i) { %>
         <tr class="stratrow">
-            <td><%-r.COMMENTS %></td>
+            <td><%-r.SSWCOMMENTS %></td>
             <td><%-r.KAPPA %></td>
             <td><%-r.CHI %></td>
             <td><%-r.PHI %></td>
+            <td><%-r.SG %></td>
+            <td><%-r.A %></td>
+            <td><%-r.B %></td>
+            <td><%-r.C %></td>
+            <td><%-r.AL %></td>
+            <td><%-r.BE %></td>
+            <td><%-r.GA %></td>
         </tr>
         <% }) %>
     </tbody>
