@@ -32,7 +32,7 @@ define(['marionette',
 
     'collections/datacollections',
     'modules/dc/views/getdcview',
-    'modules/dc/views/reprocess2',
+    'modules/dc/views/reprocess',
     'views/dialog',
 
     'modules/imaging/collections/autoscoreschemas',
