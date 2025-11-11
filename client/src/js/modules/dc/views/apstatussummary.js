@@ -41,7 +41,7 @@ define(['marionette',
             e.preventDefault()
             
             if (app.dialog.currentView instanceof ReprocessView) app.dialog.currentView.collection.add(this.model)
-            else app.dialog.show(new ReprocessView({ model: this.model, visit: this.model.get('VISIT') }))
+            else app.dialog.show(new ReprocessView({ model: this.model, visit: this.column.get('visit') }))
         }
 
     })
@@ -99,7 +99,7 @@ define(['marionette',
             ]
 
             this.columns.push.apply(this.columns, [
-                { label: '', cell: RPCell, template: '<a href="#" class="reprocess button button-notext" title="Reprocess"><i class="fa fa-cog"></i> <span>Reprocess</span></a>', editable: false },
+                { label: '', cell: RPCell, template: '<a href="#" class="reprocess button button-notext" title="Reprocess"><i class="fa fa-cog"></i> <span>Reprocess</span></a>', editable: false, visit: this.model.get('VISIT') },
                 { label: '', cell: APCell, template: '<a href="/dc/visit/'+this.model.escape('VISIT')+'/id/<%-ID%>" class="button button-notext dll" title="Open data collection"><i class="fa fa-arrow-right"></i> <span>Open data collection</span></a>', editable: false },
             ])
 
