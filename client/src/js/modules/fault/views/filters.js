@@ -44,7 +44,7 @@ define(['marionette',
             }
 
             _.each(frags, function(v, f) {
-                url = url.replace(new RegExp('\\/'+f+'\\/\\w+'), '')
+                url = url.replace(new RegExp('\\/'+f+'\\/[\\w-]+'), '');
                 if (this.ui[v].val()) url += '/'+f+'/'+this.ui[v].val()
             }, this)
             
