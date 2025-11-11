@@ -19,11 +19,22 @@ define(['marionette',
 
         events: {
             'click .cells': 'sendCell',
+            'click .all': 'selectAll',
         },
 
         sendCell: function(e) {
             if (!this.aps.length) return
             this.trigger('set:cell', this.aps.at(0))
+        },
+
+        selectAll: function(e) {
+            e.preventDefault()
+
+            var si = parseInt(this.model.get('SI'))
+            var ni = parseInt(this.model.get('NUMIMG'))
+
+            this.setSelection(si, si+ni-1)
+            this.plotview.setSelection(si, si+ni-1)
         },
 
 
@@ -43,11 +54,13 @@ define(['marionette',
 
 
         setCell: function() {
+            let cells = 'N/A'
             if (this.aps.length) {
                 var e = this.aps.at(0)
                 var c = e.get('CELL')
-                this.ui.cells.text(c['CELL_A']+','+c['CELL_B']+','+c['CELL_C']+','+c['CELL_AL']+','+c['CELL_BE']+','+c['CELL_GA'])
-            } else this.ui.cells.text('N/A')
+                if (c && Object.keys(c).length) cells = c['CELL_A']+','+c['CELL_B']+','+c['CELL_C']+','+c['CELL_AL']+','+c['CELL_BE']+','+c['CELL_GA']
+            }
+            this.ui.cells.text(cells)
         },
 
 
