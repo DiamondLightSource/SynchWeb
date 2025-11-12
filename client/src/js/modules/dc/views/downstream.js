@@ -66,7 +66,7 @@ define(['backbone', 'marionette',
                 'Crank2': BigEP,
                 'AutoSHARP': BigEP,
                 'Shelxt': Shelxt,
-                'MetalId': MetalId,
+                'Metal Id': MetalId,
                 'LigandFit': LigandFit,
             }
             
