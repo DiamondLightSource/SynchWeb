@@ -33,7 +33,11 @@ define(['marionette'], function() {
 
         xhr.onload = function(e) {
             if (xhr.status == 0 || xhr.status != 200) {
-                self.onerror(xhr.status, e)
+                if (typeof self.onerror === 'function') {
+                    self.onerror(xhr.status, e)
+                } else {
+                    console.error('Image load error:', xhr.status, e)
+                }
                 return
             }
 

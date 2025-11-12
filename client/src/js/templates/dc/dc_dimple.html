@@ -12,23 +12,50 @@
 
     <div class="plot_dimple r"></div>
 
-    <table class="rstats">
-        <% if (STATS.length) { %>
-            <% _.each(STATS, function(r, i) { %>
+    <div class="rstats_div">
+        <table class="rstats">
+            <% if (STATS.length) { %>
+                <% _.each(STATS, function(r, i) { %>
+                <tr>
+                    <% _.each(r, function(j) { %>
+                    <td><%-j%></td>
+                    <% }) %>
+                </tr>
+                <% }) %>
+            <% } else { %>
+                <tr>
+                    <td>Refinement Stats</td>
+                </tr>
+                <tr>
+                    <td>No Stats Available</td>
+                </tr>
+            <% } %>
+        </table>
+    </div>
+</div>
+<br /><br />
+<div>
+    <% if (ANODE_PEAKS && ANODE_PEAKS.TABLE && ANODE_PEAKS.TABLE.length) { %>
+        <div class="plot_anode r"></div>
+        <div class="larger">Top 10 Anode Peaks</div>
+        <table class="rstats align_center">
+            <tr>
+                <td>X</td>
+                <td>Y</td>
+                <td>Z</td>
+                <td>Height (sig)</td>
+                <td>SOF</td>
+                <td colspan=2>Nearest Atom</td>
+            </tr>
+            <% _.each(ANODE_PEAKS.TABLE, function(r, i) { %>
             <tr>
                 <% _.each(r, function(j) { %>
                 <td><%-j%></td>
                 <% }) %>
             </tr>
             <% }) %>
-        <% } else { %>
-            <tr>
-                <td>Refinement Stats</td>
-            </tr>
-            <tr>
-                <td>No Stats Available</td>
-            </tr>
-        <% } %>
-    </table>
-    
+        </table>
+    <% } else { %>
+        <div class="larger">No Anode peaks found</div>
+    <% } %>
 </div>

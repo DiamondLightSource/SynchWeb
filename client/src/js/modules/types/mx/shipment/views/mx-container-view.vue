@@ -66,7 +66,8 @@
             <li>
               <span class="label">Owner</span>
               <base-input-select
-                v-model="container.OWNER"
+                v-model="container.OWNERID"
+                :initial-text="container.OWNER"
                 :options="users"
                 option-value-key="PERSONID"
                 :inline="true"
@@ -93,15 +94,6 @@
                 :to="`/containers/registry/${container.CONTAINERREGISTRYID}`"
                 class="tw-absolute top-5 tw-text-content-page-color"
               >[View]</router-link></span>
-            </li>
-            <li>
-              <span class="label">Barcode</span>
-              <base-input-text
-                v-model="container.BARCODE"
-                :inline="true"
-                initial-text="Click to edit"
-                @save="save('BARCODE')"
-              />
             </li>
             <li
               v-if="showParentContainer"

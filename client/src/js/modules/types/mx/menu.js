@@ -10,6 +10,7 @@ define([], function() {
             'containers/registry': 'Registered Containers',
             containers: 'Containers',
             proteins: 'Proteins',
+            ligands: 'Ligands',
             samples: 'Samples',
             'samples/groups': 'Sample Groups',
             stats: 'Statistics',

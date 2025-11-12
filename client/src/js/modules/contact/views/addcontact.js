@@ -68,6 +68,7 @@ define(['views/form',
             this.countries = new Countries()
             this.countries.state.pageSize = 9999
             this.users = new Users()
+            this.users.state.pageSize = 9999
             this.users.queryParams.login = 1
         },
 

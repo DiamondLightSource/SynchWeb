@@ -59,8 +59,9 @@ define(['marionette', 'utils/canvas', 'utils',
             this.listenTo(this.collection, 'change', this.drawStatus, this)
             this.ready = this.collection.fetch()
             
-            if (options.bl in app.config.pucks) {
-                this.positions = app.config.pucks[options.bl]
+            const bl_capacity = app.options.get('bl_capacity') || {}
+            if (options.bl in bl_capacity) {
+                this.positions = bl_capacity[options.bl]['pucks']
             } else this.positions = 10
             
             this.sc = 16

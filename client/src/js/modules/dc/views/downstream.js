@@ -10,18 +10,17 @@ define(['backbone', 'marionette',
     'modules/dc/views/shelxt',
     'modules/dc/views/metalid',
     'modules/dc/views/ligandfit',
-    'templates/dc/downstreamerror.html'
 
     ], function(Backbone, Marionette, TabView, DownStreams, DownstreamWrapper, 
         TableView, 
-        FastEP, DIMPLE, MrBUMP, BigEP, Shelxt, MetalId, LigandFit, downstreamerror) {
+        FastEP, DIMPLE, MrBUMP, BigEP, Shelxt, MetalId, LigandFit) {
 
     var dcPurgedProcessedData = "0"; // dataCollection.PURGEDPROCESSEDDATA via options from DC.js
 
     var DownstreamsCollection = Backbone.Collection.extend()
 
     var DownStreamError = Marionette.ItemView.extend({
-        template: downstreamerror
+        template: _.template('<p>This processing job failed: <%-PROCESS.PROCESSINGMESSAGE%></p>')
     })
 
     var DownStreamRunning = Marionette.ItemView.extend({
@@ -71,12 +70,17 @@ define(['backbone', 'marionette',
                 'LigandFit': LigandFit,
             }
             
-            if (model.get('PROCESS').PROCESSINGSTATUS != 1) {
+            if (model.get('PROCESS').PROCESSINGSTATUS == null) {
                 return DownstreamWrapper.extend({
                     links: false,
                     dcPurgedProcessedData,
-                    childView: model.get('PROCESS').PROCESSINGSTATUS == null
-                        ?  DownStreamRunning : DownStreamError
+                    childView: DownStreamRunning
+                })
+            } else if (model.get('PROCESS').PROCESSINGSTATUS != 1) {
+                return DownstreamWrapper.extend({
+                    mapLink: false,
+                    dcPurgedProcessedData,
+                    childView: DownStreamError
                 })
             }
 
@@ -108,6 +112,7 @@ define(['backbone', 'marionette',
                     }
                 },
                 DCID: this.getOption('DCID'),
+                upstreamLink: this.getOption('upstreamLink'),
             }
         },
 
@@ -130,6 +135,7 @@ define(['backbone', 'marionette',
                 downstreams: this.getOption('downstreams'),
                 DCID: this.getOption('id'),
                 mapButton: this.getOption('mapButton'),
+                upstreamLink: this.getOption('upstreamLink'),
             }
         },
 
@@ -177,7 +183,8 @@ define(['backbone', 'marionette',
                     downstreams: this.collection,
                     id: this.getOption('id'),
                     el: this.$el.find('.res'),
-                    holderWidth: this.$el.parent().width()
+                    holderWidth: this.$el.parent().width(),
+                    upstreamLink: this.getOption('upstreamLink'),
                 }))
             } else {
                 this.$el.addClass('ui-tabs')

@@ -167,15 +167,20 @@ define(['marionette',
       } else this.strat.$el.slideToggle()
     },
                             
-    loadAP: function(e) {
+    loadAP: function(e, callback) {
       if (!this.ap) {
         this.ap = new DCAutoIntegrationView({ 
-            id: this.model.get('ID'), 
-            dcPurgedProcessedData: this.model.get('PURGEDPROCESSEDDATA'),
-            el: this.$el.find('div.autoproc'),
-            parent: this.model
-          })
-      } else this.ap.$el.slideToggle()
+          id: this.model.get('ID'),
+          dcPurgedProcessedData: this.model.get('PURGEDPROCESSEDDATA'),
+          el: this.$el.find('div.autoproc'),
+          parent: this.model,
+          onReady: callback
+        })
+      } else {
+        this.ap.$el.slideToggle(() => {
+          if (callback) callback(this.ap);
+        });
+      }
     },
       
       
@@ -185,7 +190,8 @@ define(['marionette',
           id: this.model.get('ID'),
           dcPurgedProcessedData: this.model.get('PURGEDPROCESSEDDATA'),
           el: this.$el.find('div.downstream'),
-          holderWidth: this.$el.find('.holder').width() 
+          holderWidth: this.$el.find('.holder').width(),
+          upstreamLink: true,
         })
       } else this.dp.$el.slideToggle()
     },

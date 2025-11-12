@@ -1,7 +1,7 @@
-<h1><% if (APP_TYPE == 'xpdf') { %>Puck<% } else { %>Container<% } %> Allocation for <%-VISIT.VISIT%> on <%-VISIT.BL%> at <%-VISIT.ST%></h1>
+<h1><span class="pcs"></span> Allocation for <%-VISIT.VISIT%> on <%-VISIT.BL%> at <%-VISIT.ST%></h1>
 
-<p class="help">This page allows you to allocate samples from ISPyB to the beamline sample changer. Drag and drop <% if (APP_TYPE == 'xpdf') { %>pucks<% } else { %>containers<% } %> on to the locations on the beamline. Shipments and Dewars can be expanded by clicking on their titles</p>
-<p class="help">Uassign <% if (APP_TYPE == 'xpdf') { %>pucks<% } else { %>containers<% } %> by dragging them to any shipment listed under "Unassigned <% if (APP_TYPE == 'xpdf') { %>Pucks<% } else { %>Containers<% } %>". The <% if (APP_TYPE == 'xpdf') { %>puck<% } else { %>container<% } %> will still belong to its original shipment.</p>
+<p class="help">This page allows you to allocate samples from ISPyB to the beamline sample changer. Drag and drop <span class="pcs"></span>s on to the locations on the beamline. Shipments and Dewars can be expanded by clicking on their titles</p>
+<p class="help">Uassign <span class="pcs"></span>s by dragging them to any shipment listed under "Unassigned <span class="pcs"></span>s". The <span class="pcs"></span> will still belong to its original shipment.</p>
 
 <p class="ra">
    <a href="/dc/visit/<%-VISIT.VISIT%>" class="button"><i class="fa fa-search"></i> Data Collections</a>
@@ -10,13 +10,13 @@
 <div class="drag_container">
     
     <div class="c_holder">
-        <h1>Assigned <% if (APP_TYPE == 'xpdf') { %>Pucks<% } else { %>Containers<% } %>: <?php echo $bl ?> Sample Changer</h1>
+        <h1>Assigned <span class="pcs"></span>s: <%-VISIT.BL.toUpperCase()%> Sample Changer</h1>
         <div id="assigned"></div>
     </div>
     
     <div class="c_holder">
-        <div class="r"><a class="button" href="/containers/add/visit/<%-VISIT.VISIT%>" title="Click to create a new container"><i class="fa fa-plus"></i> Add New <% if (APP_TYPE == 'xpdf') { %>Puck<% } else { %>Container<% } %></a></div>
-        <h1>Unassigned <% if (APP_TYPE == 'xpdf') { %>Pucks<% } else { %>Containers<% } %></h1>
+        <div class="r"><a class="button" href="/containers/add/visit/<%-VISIT.VISIT%>" title="Click to create a new container"><i class="fa fa-plus"></i> Add New <span class="pcs"></span></a></div>
+        <h1>Unassigned <span class="pcs"></span>s</h1>
         <div class="page_wrap"></div>
         <div id="unassigned"></div>
     </div>

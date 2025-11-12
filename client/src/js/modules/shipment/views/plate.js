@@ -215,7 +215,7 @@ define(['marionette', 'backbone', 'utils', 'backbone-validation'], function(Mari
 
                         } else this.ctx.strokeStyle = '#ddd'
           
-                        this.ctx.rect(this.pt.get('drop_offset_x')+this.pt.get('offset_x')+row*(this.pt.get('well_width')+this.pt.get('well_pad'))+(j*this.pt.get('drop_widthpx')+this.pt.get('drop_pad')), this.pt.get('drop_offset_y')+this.pt.get('offset_y')+col*(this.pt.get('well_height')+this.pt.get('well_pad'))+(k*this.pt.get('drop_heightpx')+this.pt.get('drop_pad')), this.pt.get('drop_widthpx'), this.pt.get('drop_heightpx'))
+                        this.ctx.rect(this.pt.get('drop_offset_x_px')+this.pt.get('offset_x')+row*(this.pt.get('well_width')+this.pt.get('well_pad'))+(j*this.pt.get('drop_widthpx')+this.pt.get('drop_pad')), this.pt.get('drop_offset_y_px')+this.pt.get('offset_y')+col*(this.pt.get('well_height')+this.pt.get('well_pad'))+(k*this.pt.get('drop_heightpx')+this.pt.get('drop_pad')), this.pt.get('drop_widthpx'), this.pt.get('drop_heightpx'))
                             
 
                         // Highlight Hovered Sample
@@ -319,7 +319,7 @@ define(['marionette', 'backbone', 'utils', 'backbone-validation'], function(Mari
                             this.ctx.fillStyle = '#000'
                             this.ctx.font = "8px Arial"
                             this.ctx.lineWidth = 1
-                            this.ctx.fillText(sampleid,this.pt.get('drop_offset_x')+2+this.pt.get('offset_x')+row*(this.pt.get('well_width')+this.pt.get('well_pad'))+(j*this.pt.get('drop_widthpx')+this.pt.get('drop_pad')), this.pt.get('drop_offset_y')+10+this.pt.get('offset_y')+col*(this.pt.get('well_height')+this.pt.get('well_pad'))+(k*this.pt.get('drop_heightpx')+this.pt.get('drop_pad')));
+                            this.ctx.fillText(sampleid,this.pt.get('drop_offset_x_px')+2+this.pt.get('offset_x')+row*(this.pt.get('well_width')+this.pt.get('well_pad'))+(j*this.pt.get('drop_widthpx')+this.pt.get('drop_pad')), this.pt.get('drop_offset_y_px')+10+this.pt.get('offset_y')+col*(this.pt.get('well_height')+this.pt.get('well_pad'))+(k*this.pt.get('drop_heightpx')+this.pt.get('drop_pad')));
                         }
                     }
                 }
@@ -333,8 +333,8 @@ define(['marionette', 'backbone', 'utils', 'backbone-validation'], function(Mari
             var x = Math.floor((cur[0] - this.pt.get('offset_x'))/(this.pt.get('well_width')+this.pt.get('well_pad')))
             var y = Math.floor((cur[1] - this.pt.get('offset_y'))/(this.pt.get('well_height')+this.pt.get('well_pad')))
         
-            var wox = cur[0] - this.pt.get('drop_offset_x') - this.pt.get('offset_x') - this.pt.get('drop_pad') - x*(this.pt.get('well_width')+this.pt.get('well_pad'))
-            var woy = cur[1] - this.pt.get('drop_offset_y') - this.pt.get('offset_y') - this.pt.get('drop_pad') - y*(this.pt.get('well_height')+this.pt.get('well_pad'))
+            var wox = cur[0] - this.pt.get('drop_offset_x_px') - this.pt.get('offset_x') - this.pt.get('drop_pad') - x*(this.pt.get('well_width')+this.pt.get('well_pad'))
+            var woy = cur[1] - this.pt.get('drop_offset_y_px') - this.pt.get('offset_y') - this.pt.get('drop_pad') - y*(this.pt.get('well_height')+this.pt.get('well_pad'))
         
             if (wox > 0 && wox < this.pt.get('drop_per_well_x')*this.pt.get('drop_widthpx') && woy > 0 && woy < this.pt.get('drop_per_well_y')*this.pt.get('drop_heightpx')) {
                 var dx = Math.floor(wox / this.pt.get('drop_widthpx'))
