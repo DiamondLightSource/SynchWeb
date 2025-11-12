@@ -71,28 +71,10 @@ class MetalId extends DownstreamPlugin {
         );
     }
 
-
     function images($n = 0) {
         $blobs = $this->_get_blobs();
         if ($n < sizeof($blobs)) {
             return $blobs[$n]["FILEPATH"] . '/' . $blobs[$n]["VIEW1"];
-        }
-    }
-
-
-    function mapmodel($n = 0, $map = false) {
-        $pdb = $this->_get_attachments('final.pdb');
-        if (!$pdb) {
-            return;
-        }
-        if (true) {
-            $mtz = $this->_get_attachments('diff.map');
-            if (!$mtz) {
-                return;
-            }
-            return $mtz['FILE'];
-        } else {
-            return $pdb['FILE'];
         }
     }
 }
