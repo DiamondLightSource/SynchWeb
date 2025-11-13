@@ -3,7 +3,8 @@
 namespace SynchWeb\Controllers;
 
 use Exception;
-use JWT;
+use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
 use Slim\Slim;
 use SynchWeb\Model\User;
 
@@ -280,7 +281,7 @@ class AuthenticationController
 
             try
             {
-                $token = JWT::decode($jwt, $jwt_key, array('HS512'));
+                $token = JWT::decode($jwt, new Key($jwt_key, 'HS512'), array('HS512'));
                 $this->loginId = $token->data->login;
             }
             catch (\Exception $e)
