@@ -19,7 +19,7 @@ define(['marionette',
         },
 
         render: function() {
-            var filePath = this.model.get('FILEPATH')
+            var filePath = this.model.get('FILEPATH') || ''
             var displayedPath = filePath.split('/').length > 4 ? filePath.split('/').slice(0, 4).join('/') + '/...' : filePath
 
             this.$el.html(`
@@ -34,19 +34,19 @@ define(['marionette',
 
         copyPathToClipboard: function(e) {
             e.preventDefault()
-            var fullPath = this.model.get('FILEPATH')
+            var filePath = this.model.get('FILEPATH') || ''
             if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(fullPath).then(() => {
+                navigator.clipboard.writeText(filePath).then(() => {
                     var $icon = $(e.currentTarget).find('i')
                     $icon.removeClass('fa-clipboard').addClass('fa-check')
                     setTimeout(() => {
                         $icon.removeClass('fa-check').addClass('fa-clipboard')
                     }, 2000)
                 }).catch(err => {
-                    alert('Failed to copy path. Please try again or copy manually: ' + fullPath)
+                    alert('Failed to copy path. Please try again or copy manually: ' + filePath)
                 })
             } else {
-                alert('Full path: ' + fullPath)
+                alert('Full path: ' + filePath)
             }
         }
     })
@@ -65,9 +65,10 @@ define(['marionette',
             var iCatBaseUrl = this.column.escape('iCatUrl');
             var isIndustry = this.column.escape('isIndustryProposal').toLowerCase() === 'true';
             var isPurgedSession = this.column.escape('isPurgedSession').toLowerCase() === 'true';
+            var filePath = this.model.get('FILEPATH') || '';
 
             // Files with "visit_persist_storage_dir_segment" (config.php) in their path are assumed to exist permanently and ignore the BLSESSION purged value
-            var isPersistentFile = persistentStorageSegment ? this.model.get('FILEPATH').includes(persistentStorageSegment) :  false;
+            var isPersistentFile = persistentStorageSegment ? filePath.includes(persistentStorageSegment) : false;
             
             if (isPersistentFile == true | isPurgedSession == false) {
 
