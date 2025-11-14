@@ -247,7 +247,6 @@ class Download extends Page
     /**
      * Download a file to the browser
      * This function is used to download autoproc and phasing run attachments.
-     * It sets a maximum amount of memory for the download.
      * The $id is used as a prefix to the filename.
      *
      * @param integer $id One of AutoProcProgramId or PhasingProgramRunId
@@ -255,8 +254,6 @@ class Download extends Page
      */
     function _get_file($id, $file)
     {
-        // We don't want to allow unlimited file sizes
-        ini_set('memory_limit', '512M');
         $filesystem = new Filesystem();
 
         $filename = $file['FILEPATH'] . '/' . $file['FILENAME'];
@@ -265,18 +262,28 @@ class Download extends Page
         if ($filesystem->exists($filename)) {
             $response = new BinaryFileResponse($filename);
             $this->set_mime_content($response, $filename, $id);
-            $response->headers->set("Content-Length", filesize($filename));
         } elseif ($filesystem->exists($filename.'.gz')) {
             $filename = $filename.'.gz';
             if ($this->arg('download') == 1) {
                 // View log file, so unzip and serve
-                $response = new Response(readgzfile($filename));
+                $response = new StreamedResponse(function() use ($filename) {
+                    $fileHandle = gzopen($filename, 'rb');
+                    if ($fileHandle === false) {
+                        $this->_error("The file " . $filename . " couldn't be opened");
+                    }
+                    // Read the file in 8KB chunks and send them
+                    while (!gzeof($fileHandle)) {
+                        echo gzread($fileHandle, 8192);
+                        if (ob_get_level()) ob_flush();
+                        flush();
+                    }
+                    gzclose($fileHandle);
+                });
                 $this->set_mime_content($response, $file['FILENAME'], $id);
             } else {
                 // Download gzipped file
                 $response = new BinaryFileResponse($filename);
                 $this->set_mime_content($response, $filename, $id);
-                $response->headers->set("Content-Length", filesize($filename));
             }
         } else {
             $this->_error("No such file, the specified file " . $filename . " doesn't exist");
