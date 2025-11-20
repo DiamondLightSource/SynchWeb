@@ -44,12 +44,6 @@
   "config": {
     "platform": {
       "php": "7.3"
-    },
-    "audit": {
-      "ignore": [
-        "PKSA-4b9f-kpvb-8rtq",
-        "PKSA-2kqm-ps5x-s4f5"
-      ]
     }
   }
 }
