@@ -114,6 +114,11 @@ define(['backbone', 'marionette',
                 return
             }
 
+            if (s.length > 1 && this.ui.pipeline.val() == 'fast_dp') {
+                app.alert({ message: 'Fast DP can only integrate a single sweep' })
+                return
+            }
+
             var self = this
             var p = this.pipelines.findWhere({ VALUE: self.ui.pipeline.val() })
             var reprocessing = new Reprocessing({
@@ -283,7 +288,8 @@ define(['backbone', 'marionette',
                 this.$el.find('input[name='+f+']').val(ap.get('CELL')['CELL_'+k.toUpperCase()])
             }, this)
 
-            this.$el.find('select[name=sg]').val(ap.get('SG'))
+            let sg = ap.get('SG')?.replace(/\s/g, '') ?? "";
+            this.$el.find('select[name=sg]').val(sg)
         },
 
         onDestroy: function() {
