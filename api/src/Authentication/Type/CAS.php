@@ -27,7 +27,13 @@ class CAS extends AuthenticationParent implements AuthenticationInterface
         /**
          * @psalm-suppress UndefinedConstant define in CAS.php
          */
-        phpCAS::client(CAS_VERSION_2_0, $cas_url, 443, '/cas');
+        $protocol = 'http';
+        if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') {
+            $protocol = 'https';
+        }
+        $hostname = $_SERVER['HTTP_HOST'];
+        $service_base_url = $protocol . '://' . $hostname;
+        phpCAS::client(CAS_VERSION_2_0, $cas_url, 443, '/cas', $service_base_url);
         phpCAS::setCasServerCACert($cacert);
 
         try {
