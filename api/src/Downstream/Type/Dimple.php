@@ -22,22 +22,12 @@ class Dimple extends DownstreamPlugin {
         );
     }
 
-    # This will break if dimple is run more than once on the same scalingid
-    # TODO: Change structure of MXMRRun to link to autoprocprogram
-    # https://jira.diamond.ac.uk/browse/SCI-7941
     function _find_mrrun() {
-        if (!array_key_exists("scaling_id", $this->process['PARAMETERS'])) {
-            return;
-        }
-
         $mrrun = $this->db->pq(
-            "SELECT mxmrrunid, processingstatus, processingmessage, 
-            rvaluestart, rvalueend, rfreevaluestart, rfreevalueend
+            "SELECT m.mxmrrunid
             FROM mxmrrun m
-            INNER JOIN autoprocprogram app
-            ON m.autoprocprogramid = app.autoprocprogramid
-            WHERE autoprocscalingid=:1",
-            array($this->process['PARAMETERS']["scaling_id"])
+            WHERE m.autoprocprogramid=:1",
+            array($this->autoprocprogramid)
         );
 
         if (!sizeof($mrrun)) {
