@@ -40,10 +40,9 @@ class ShippingService
 
     function __construct()
     {
-        global $shipping_service_api_url;
         global $shipping_service_app_url;
-        $this->shipping_api_url = $shipping_service_api_url;
         $this->shipping_app_url = $shipping_service_app_url;
+        $this->shipping_api_url = $shipping_service_app_url . "/api";
     }
 
 
