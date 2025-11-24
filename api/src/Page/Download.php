@@ -268,8 +268,8 @@ class Download extends Page
             $response->headers->set("Content-Length", filesize($filename));
         } elseif ($filesystem->exists($filename.'.gz')) {
             $filename = $filename.'.gz';
-            if ($this->arg('download') == 1) {
-                // View log file, so unzip and serve
+            if ($this->has_arg('download') && $this->arg('download') < 3) {
+                // View/open file, so unzip and serve
                 $response = new Response(readgzfile($filename));
                 $this->set_mime_content($response, $file['FILENAME'], $id);
             } else {
@@ -549,21 +549,20 @@ class Download extends Page
 
         if (in_array($path_ext, array('html', 'htm'))) {
             $response->headers->set("Content-Type", "text/html");
-            $this->_set_disposition_inline($response);
         } elseif ($path_ext == 'pdf') {
             $response->headers->set("Content-Type", "application/pdf");
-            $this->_set_disposition_attachment($response, $saved_filename);
         } elseif ($path_ext == 'png') {
             $response->headers->set("Content-Type", "image/png");
-            $this->_set_disposition_attachment($response, $saved_filename);
         } elseif (in_array($path_ext, array('jpg', 'jpeg'))) {
             $response->headers->set("Content-Type", "image/jpeg");
-            $this->_set_disposition_attachment($response, $saved_filename);
-        } elseif (in_array($path_ext, array('log', 'txt', 'error', 'LP', 'json', 'lsa'))) {
+        } elseif (in_array($path_ext, array('log', 'txt', 'error', 'LP', 'json', 'lsa', 'lst'))) {
             $response->headers->set("Content-Type", "text/plain");
-            $this->_set_disposition_inline($response);
         } else {
             $response->headers->set("Content-Type", "application/octet-stream");
+        }
+        if ($this->has_arg('download') && $this->arg('download') < 3) {
+            $this->_set_disposition_inline($response);
+        } else {
             $this->_set_disposition_attachment($response, $saved_filename);
         }
     }

@@ -75,12 +75,13 @@ define(['marionette',
                 var baseDownloadUrl = `${app.apiurl}/download/${this.column.escape('urlRoot')}/attachments/${this.model.escape(this.column.get('idParam'))}`
                 
                 // Default behaviour for download btn
-                this.$el.html(`<a href="${baseDownloadUrl}/dl/2" class="button dl"><i class="fa fa-download"/> Download</a>`)
+                this.$el.html(`<a href="${baseDownloadUrl}/dl/3" class="button dl"><i class="fa fa-download"/> Download</a>`)
 
                 // Additional btns per filetype
                 switch (this.model.get('FILETYPE')) {
                     case 'Log':
                     case 'Logfile':
+                        this.$el.append(`<a class="dl button" href="${baseDownloadUrl}/dl/2"><i class="fa fa-file-text-o"/> Open</a>`)
                         this.$el.append(`<a class="vaplog button" href="${baseDownloadUrl}/dl/1"> <i class="fa fa-search"/> View </a>`);
                         break;
 
