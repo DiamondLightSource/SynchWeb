@@ -1,7 +1,8 @@
 <template>
   <div
     id="vue-header"
-    class="tw-flex tw-justify-between tw-items-center tw-h-10 tw-bg-header-background"
+    class="tw-flex tw-justify-between tw-items-center tw-h-10"
+    :class="getBackgroundClass"
   >
     <div class="">
       <router-link
@@ -48,6 +49,10 @@
           Login
         </p>
       </router-link>
+    </div>
+    <div v-if="isDevMode" class="tw-flex tw-items-center tw-justify-center tw-text-header-color">
+      <span class="fa fa-2x fa-exclamation-circle tw-mx-1"></span>
+      <p class="tw-hidden lg:tw-inline">Development Database</p>
     </div>
     <div
       class="tw-flex"
@@ -109,7 +114,13 @@ export default {
             else return (this.$store.getters['user/hasPermission'](item.permission))
           }, this)
           return menus
-        }
+        },
+        isDevMode() {
+            return this.$store.state.mode === 'development'
+        },
+        getBackgroundClass : function() {
+            return this.isDevMode ? 'tw-bg-header-background-dev' : 'tw-bg-header-background'
+        },
     },
     methods: {
       logout: function () {
