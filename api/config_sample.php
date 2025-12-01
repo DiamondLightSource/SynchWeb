@@ -9,12 +9,8 @@
     #   Values: dev | production
     $mode = 'dev';
 
-    # Dev and production database credentials, db = hostname/database
-    $creds = array(
-        'dev' => array('user' => 'user', 'pass' => 'pass', 'db' => 'localhost/ispyb'),
-        'production' => array('user' => 'user', 'pass' => 'pass', 'db' => 'localhost/ispyb')
-    );
-    $isb = $creds[$mode];
+    # Database credentials, db = hostname/database
+    $isb = array('user' => 'user', 'pass' => 'pass', 'db' => 'localhost/ispyb');
     $dbtype = 'mysql';
 
     # Encoded JWT key, used to sign and check validaty of jwt tokens
