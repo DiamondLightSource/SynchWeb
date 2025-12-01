@@ -95,7 +95,6 @@ module.exports = {
         'sidebar-mobile-hover-background': 'rgb(105,105,105)',
 // Header
         'header-background': '#112e4d',
-        'header-background-dev': '#2e4d11',
         'header-color': '#aaaaaa',
         'header-hover-color': '#ffffff',
 // Header Menu
@@ -103,7 +102,6 @@ module.exports = {
         'header-menu-hover': '#ffffff',
 // Header Breadcrumbs
         'header-bc-background': '#112e4d',
-        'header-bc-background-dev': '#2e4d11',
         'header-bc-color': '#dbdbdb',
         'header-bc-hover': '#ffffff',
 // Footer

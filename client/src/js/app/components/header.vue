@@ -1,8 +1,15 @@
 <template>
+  <div>
+  <div
+    v-if="isDevMode"
+    class="tw-flex tw-h-10 tw-items-center tw-bg-content-active"
+  >
+    <span class="fa fa-2x fa-exclamation-circle tw-mx-1"></span>
+    This application is running in development mode. Data will not be persisted.
+  </div>
   <div
     id="vue-header"
-    class="tw-flex tw-justify-between tw-items-center tw-h-10"
-    :class="getBackgroundClass"
+    class="tw-flex tw-justify-between tw-items-center tw-h-10 tw-bg-header-background"
   >
     <div class="">
       <router-link
@@ -50,10 +57,6 @@
         </p>
       </router-link>
     </div>
-    <div v-if="isDevMode" class="tw-flex tw-items-center tw-justify-center tw-text-header-color">
-      <span class="fa fa-2x fa-exclamation-circle tw-mx-1"></span>
-      <p class="tw-hidden lg:tw-inline">Development Database</p>
-    </div>
     <div
       class="tw-flex"
     >
@@ -76,6 +79,7 @@
         </div>
       </router-link>
     </div>
+  </div>
   </div>
 </template>
 
@@ -117,9 +121,6 @@ export default {
         },
         isDevMode() {
             return this.$store.state.mode === 'development'
-        },
-        getBackgroundClass : function() {
-            return this.isDevMode ? 'tw-bg-header-background-dev' : 'tw-bg-header-background'
         },
     },
     methods: {

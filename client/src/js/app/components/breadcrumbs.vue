@@ -1,6 +1,6 @@
 <template>
   <section class="bread">
-    <ul id="breadcrumbs" :class="getBackgroundClass">
+    <ul id="breadcrumbs">
       <li
         v-for="(item, index) in bc"
         :key="index"
@@ -30,21 +30,14 @@ export default {
             var title = this.bc.map( (item) => { return item.title} )
             document.title = 'ISPyB » ' + title.join(' » ')
         }
-    },
-    computed: {
-        isDevMode() {
-            return this.$store.state.mode === 'development'
-        },
-        getBackgroundClass : function() {
-            return this.isDevMode ? 'tw-bg-header-background-dev' : 'tw-bg-header-background'
-        },
-    },
+    }
 }
 </script>
 
 <style scoped>
 
 #breadcrumbs {
+    @apply tw-bg-header-bc-background;
     @apply tw-text-header-bc-color;
     @apply tw-p-1;
     @apply tw-text-xxs;
