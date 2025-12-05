@@ -352,6 +352,7 @@ define(['backbone', 'marionette', 'views/dialog',
 
         integrate: function(e) {
             e.preventDefault()
+            this._disableIntegrateButton()
             var s = this.collection.where({ selected: true })
 
             if (!s.length) {
@@ -449,10 +450,10 @@ define(['backbone', 'marionette', 'views/dialog',
                 }, this)
 
                 $.when.apply($, reqs).done(function() {
-                    app.message({ message: jobs+' reprocessing job(s) successfully submitted'})
                     _.each(rps, function(rp) {
                         self._enqueue({ PROCESSINGJOBID: rp.get('PROCESSINGJOBID') })
                     })
+                    app.message({ message: jobs+' reprocessing job(s) successfully submitted'})
                 })
 
 
@@ -541,9 +542,9 @@ define(['backbone', 'marionette', 'views/dialog',
                         reqs.push(reprocessingsweeps.save())
 
                         $.when.apply($, reqs).done(function() {
-                            app.message({ message: '1 reprocessing job successfully submitted'})
                             self._enqueue({ PROCESSINGJOBID: reprocessing.get('PROCESSINGJOBID') })
                         })
+                        app.message({ message: '1 reprocessing job successfully submitted'})
                     },
 
                     error: function() {
@@ -552,6 +553,15 @@ define(['backbone', 'marionette', 'views/dialog',
                 }))
 
             }
+        },
+
+
+        _disableIntegrateButton: function() {
+            var btn = $('.ui-dialog-buttonpane button:contains("Integrate")')
+            btn.button('disable').button('option', 'label', 'Submitted!')
+            setTimeout(function() {
+                btn.button('enable').button('option', 'label', 'Integrate')
+            }, 5000)
         },
 
 

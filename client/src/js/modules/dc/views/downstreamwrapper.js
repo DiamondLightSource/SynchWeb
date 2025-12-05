@@ -102,7 +102,10 @@ define(['backbone', 'marionette',
                     '<a class="dll button" href="'+app.apiurl+'/download/ap/archive/'+this.model.get('AID')+'"><i class="fa fa-cloud-download"></i> Download Zip</a>',
                 ]
 
-                if (!this.getOption('mapLink')) {
+                if (
+                    !this.getOption('mapLink') ||
+                    this.model.get('FEATURES')?.MAPMODEL?.[0] === 0
+                ) {
                     links = links.slice(1)
                 }
 
