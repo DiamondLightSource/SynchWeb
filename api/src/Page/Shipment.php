@@ -1017,6 +1017,7 @@ class Shipment extends Page
     function _create_dewars_shipment_request(
         array $dewars,
         string $proposal,
+        int $session_number,
         int $external_id,
         int $shipping_id,
         string $callback_url=""
@@ -1026,6 +1027,8 @@ class Shipment extends Page
         foreach (array_values($dewars) as $dew) {
             $package = [
                 "external_id" => (int) $dew['DEWARID'],
+                "container_name" => $dew['NAME'],
+                "serial_number" => $dew['MANUFACTURERSERIALNUMBER'],
                 "shippable_item_type" => "CRYOGENIC_DRY_SHIPPER_CASE",
                 "line_items" => [
                     [
@@ -1064,6 +1067,7 @@ class Shipment extends Page
         $protocol = isset($_SERVER["HTTPS"]) ? 'https' : 'http';
         $shipment_request_info = array(
             "proposal" => $proposal,
+            "session_number" => $session_number,
             "external_id" => $external_id,
             "origin_url" => "{$protocol}://{$_SERVER['SERVER_NAME']}{$server_port}/shipments/sid/{$shipping_id}",
             "packages" => $packages
@@ -1084,6 +1088,7 @@ class Shipment extends Page
 
         $dewars = [$dewar];
         $proposal = $dewar['PROPOSAL'];
+        $session_number = $dewar['VIS'];
         $external_id = (int) $dewar['DEWARID'];
         $shipping_id = (int) $dewar['SHIPPINGID'];
         $token = Utils::generateRandomMd5();
@@ -1093,7 +1098,7 @@ class Shipment extends Page
         );
 
         $callback_url = "/api/shipment/dewars/confirmdispatch/did/{$external_id}/token/{$token}";
-        $external_shipping_id = $this->_create_dewars_shipment_request($dewars, $proposal, $external_id, $shipping_id, $callback_url);
+        $external_shipping_id = $this->_create_dewars_shipment_request($dewars, $proposal, $session_number, $external_id, $shipping_id, $callback_url);
 
         $this->db->pq(
             "UPDATE dewar SET externalShippingIdFromSynchrotron=:1 WHERE dewarid=:2",
@@ -1111,11 +1116,7 @@ class Shipment extends Page
         global $facility_country;
         global $facility_phone;
         global $facility_contact;
-        global $shipping_service_api_url;
         global $facility_email;
-        if (!isset($shipping_service_api_url)) {
-            throw new Exception("Could not send request to shipping service: shipping_service_api_url not set");
-        }
 
         # Create shipment
         $shipment_data = array(
@@ -1138,7 +1139,12 @@ class Shipment extends Page
             "shipment_reference" =>  $dispatch_info['VISIT'],
             "external_id" => (int) $dispatch_info['DEWARID'],
             "journey_type" => ShippingService::JOURNEY_FROM_FACILITY,
-            "packages" => array(array("external_id" => (int) $dispatch_info['DEWARID']))
+            "packages" => array(
+                array(
+                    "external_id" => (int) $dispatch_info['DEWARID'],
+                    "container_name" => $dewar['NAME'],
+                )
+            )
         );
 
         # Split up address. Necessary as address is a single field in ispyb
@@ -1195,12 +1201,18 @@ class Shipment extends Page
         }
 
         $dew = $this->db->pq(
-            "SELECT d.dewarid, d.barcode, d.storagelocation, d.dewarstatus, d.externalShippingIdFromSynchrotron, s.shippingid, p.proposalcode, CONCAT(p.proposalcode, p.proposalnumber) as proposal, count(distinct c.containerId) as num_pucks, count(b.blsampleId) as num_samples
+            "SELECT d.dewarid, d.barcode, d.storagelocation, d.dewarstatus, d.externalShippingIdFromSynchrotron,
+            s.shippingid, p.proposalcode, CONCAT(p.proposalcode, p.proposalnumber) as proposal,
+            count(distinct c.containerId) as num_pucks, count(b.blsampleId) as num_samples,
+            ifnull(bls.visit_number, 0) as vis, IF(d.facilitycode, d.facilitycode, d.code) as name,
+            dr.manufacturerserialnumber
                 FROM dewar d 
                 INNER JOIN shipping s ON s.shippingid = d.shippingid 
                 INNER JOIN proposal p ON p.proposalid = s.proposalid
                 LEFT JOIN container c on c.dewarid = d.dewarid
                 LEFT JOIN BLSample b on b.containerId = c.containerId
+                LEFT JOIN blsession bls ON bls.sessionid = d.firstexperimentid
+                LEFT JOIN dewarregistry dr ON dr.dewarregistryid = d.dewarregistryid
                 WHERE d.dewarid=:1 and p.proposalid=:2",
             array($this->arg('DEWARID'), $this->proposalid)
         );
@@ -3308,10 +3320,15 @@ class Shipment extends Page
             "contact_email" => trim($user["email"])
         );
         $shipment_data = array(
-            "shipment_reference" => $shipment["PROP"],
+            "shipment_reference" => $shipment["PROP"] . '-' . ($shipment["session_number"] ?? 0),
             "external_id" => $shipment['SHIPPINGID'],
             "packages" => array_map(
-                function($dewar) {return array("external_id" => $dewar["DEWARID"]);},
+                function($dewar) {
+                    return array(
+                        "external_id" => $dewar["DEWARID"],
+                        "container_name" => $dewar["NAME"],
+                    );
+                },
                 $dewars
             )
         );
@@ -3365,6 +3382,7 @@ class Shipment extends Page
         $external_shipping_id = $this->_create_dewars_shipment_request(
             $dewars,
             $shipment['PROP'],
+            isset($shipment['session_number']) ? $shipment['session_number'] : 0,
             $shipping_id,
             $shipping_id,
             $callback_url
@@ -3409,14 +3427,24 @@ class Shipment extends Page
         $args = array_merge(array($ship['SHIPPINGID']), $this->arg('DEWARS'));
 
         $dewars = $this->db->pq(
-            "SELECT d.dewarid, d.weight, IF(d.facilitycode, d.facilitycode, d.code) as name, count(distinct c.containerId) as num_pucks, count(b.blsampleId) as num_samples
+            "SELECT d.dewarid, d.weight, IF(d.facilitycode, d.facilitycode, d.code) as name,
+            count(distinct c.containerId) as num_pucks, count(b.blsampleId) as num_samples,
+            bls.visit_number, dr.manufacturerserialnumber
             FROM dewar d
             LEFT JOIN container c on c.dewarid = d.dewarid
             LEFT JOIN BLSample b on b.containerId = c.containerId
+            LEFT JOIN blsession bls on bls.sessionid = d.firstexperimentid
+            LEFT JOIN dewarregistry dr on dr.dewarregistryid = d.dewarregistryid
             WHERE d.shippingid=:1 AND d.dewarid IN (:" . implode(',:', $ids) . ")
             GROUP BY d.dewarid",
             $args
         );
+
+        foreach ($dewars as $d) {
+            if ($d['VISIT_NUMBER']) {
+                $ship['session_number'] = $d['VISIT_NUMBER'];
+            }
+        }
 
         if (
             Utils::getValueOrDefault($use_shipping_service_incoming_shipments)
