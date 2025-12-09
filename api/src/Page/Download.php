@@ -256,6 +256,9 @@ class Download extends Page
      */
     function _get_file($id, $file)
     {
+        // Remove all buffers
+        while (ob_get_level() > 0) ob_end_clean();
+
         $filesystem = new Filesystem();
 
         $filename = $file['FILEPATH'] . '/' . $file['FILENAME'];
@@ -276,7 +279,6 @@ class Download extends Page
                     // Read the file in 8KB chunks and send them
                     while (!gzeof($fileHandle)) {
                         echo gzread($fileHandle, 8192);
-                        if (ob_get_level()) ob_flush();
                         flush();
                     }
                     gzclose($fileHandle);
