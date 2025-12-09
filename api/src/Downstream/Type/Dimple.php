@@ -22,22 +22,12 @@ class Dimple extends DownstreamPlugin {
         );
     }
 
-    # This will break if dimple is run more than once on the same scalingid
-    # TODO: Change structure of MXMRRun to link to autoprocprogram
-    # https://jira.diamond.ac.uk/browse/SCI-7941
     function _find_mrrun() {
-        if (!array_key_exists("scaling_id", $this->process['PARAMETERS'])) {
-            return;
-        }
-
         $mrrun = $this->db->pq(
-            "SELECT mxmrrunid, processingstatus, processingmessage, 
-            rvaluestart, rvalueend, rfreevaluestart, rfreevalueend
+            "SELECT m.mxmrrunid
             FROM mxmrrun m
-            INNER JOIN autoprocprogram app
-            ON m.autoprocprogramid = app.autoprocprogramid
-            WHERE autoprocscalingid=:1",
-            array($this->process['PARAMETERS']["scaling_id"])
+            WHERE m.autoprocprogramid=:1",
+            array($this->autoprocprogramid)
         );
 
         if (!sizeof($mrrun)) {
@@ -121,6 +111,7 @@ class Dimple extends DownstreamPlugin {
         }
 
         $dat['ANODE_PEAKS'] = $this->_get_anode_peaks($this->process['PARAMETERS']['scaling_id']);
+        $dat['ANODE_MODEL'] = $this->_get_anode_model();
 
         $results = new DownstreamResult($this);
         $results->data = $dat;
@@ -198,5 +189,13 @@ class Dimple extends DownstreamPlugin {
             array_push($plot, array($n+1, $blob['HEIGHT']));
         }
         return array('TABLE' => $peaks, 'PLOT' => $plot);
+    }
+
+    function _get_anode_model() {
+        $model = $this->_get_attachments('anode.html');
+        if ($model) {
+            return $model['AUTOPROCPROGRAMATTACHMENTID'];
+        }
+        return;
     }
 }

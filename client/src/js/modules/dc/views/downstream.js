@@ -8,11 +8,12 @@ define(['backbone', 'marionette',
     'modules/dc/views/mrbump',
     'modules/dc/views/bigep',
     'modules/dc/views/shelxt',
+    'modules/dc/views/metalid',
     'modules/dc/views/ligandfit',
 
     ], function(Backbone, Marionette, TabView, DownStreams, DownstreamWrapper, 
         TableView, 
-        FastEP, DIMPLE, MrBUMP, BigEP, Shelxt, LigandFit) {
+        FastEP, DIMPLE, MrBUMP, BigEP, Shelxt, MetalId, LigandFit) {
 
     var dcPurgedProcessedData = "0"; // dataCollection.PURGEDPROCESSEDDATA via options from DC.js
 
@@ -65,6 +66,7 @@ define(['backbone', 'marionette',
                 'Crank2': BigEP,
                 'AutoSHARP': BigEP,
                 'Shelxt': Shelxt,
+                'Metal Id': MetalId,
                 'LigandFit': LigandFit,
             }
             
