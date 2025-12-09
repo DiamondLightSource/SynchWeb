@@ -350,14 +350,17 @@ class Download extends Page
         $this->_set_disposition_attachment($this->app->response, $plate["CODE"] . "_targets.csv");
         list($width, $height, $type, $attr) = getimagesize($plate['IMAGEFULLPATH']);
         foreach ($rows as $r) {
+            if (!isset($r["POSX"]) || !isset($r["POSY"])) {
+                continue; # skip empty rows
+            }
             $wellNumber = intval(($r["LOCATION"] - 1) / $dropsPerWell);  # 0 indexed
             $rowNumber = intval($wellNumber / $plate["WELLPERROW"]);  # 0 indexed
             $row = $rowNames[$rowNumber];
             $column = str_pad($wellNumber - ($rowNumber * $plate["WELLPERROW"]) + 1, 2, 0, STR_PAD_LEFT);  # pad with a zero if needed
             $dropNumber = intval($r["LOCATION"] - ($dropsPerWell * $wellNumber));  # 1 indexed
             $drop = $dropNames[$dropNumber-1];
-            $xval = $r["POSX"] ? round(($r["POSX"] - $width/2) * $r["MICRONSPERPIXELX"]) : ""; # integers
-            $yval = $r["POSY"] ? round(($height/2 - $r["POSY"]) * $r["MICRONSPERPIXELY"]) : ""; # integers
+            $xval = round(($r["POSX"] - $width/2) * $r["MICRONSPERPIXELX"]); # integers
+            $yval = round(($height/2 - $r["POSY"]) * $r["MICRONSPERPIXELY"]); # integers
             print $row . $column . $drop . "," . $xval . "," . $yval . "\n";
         }
     }
