@@ -23,12 +23,19 @@ define(['backbone',
         className: 'content',
         template: template,
         
+        templateHelpers: function() {
+            return {
+                APIURL: app.apiurl,
+            }
+        },
+
         regions: {
             wrap: '.wrapper',
         },
         
         events: {
             'click a.dll': utils.signHandler,
+            'click a.csv': 'downloadCSV',
             'change @ui.pipeline': 'changePipeline',
             'change @ui.sg': 'changeSpaceGroup',
             'change @ui.minres': 'changeResolution',
@@ -54,6 +61,37 @@ define(['backbone',
         
         initialize: function(options) {
             this.visit = options.model.get('VISIT')
+        },
+
+        downloadCSV: function(e) {
+            e.preventDefault()
+
+            let a = e.target
+            while (a && a.tagName !== 'A') a = a.parentNode
+            if (!a) return
+
+            const originalHref = a.href
+            const url = new URL(originalHref)
+
+            const skip = ['currentPage', 'pageSize', 'totalPages', 'totalRecords', 'sortKey', 'order']
+
+            for (const [key, val] of Object.entries(this.collection.queryParams)) {
+                if (skip.includes(key)) continue
+                if (val == null || typeof val === 'function' || typeof val === 'object') continue
+                url.searchParams.set(key, val)
+            }
+
+            if (this.collection.state.sortKey) {
+                url.searchParams.set('sort_by', this.collection.state.sortKey)
+                url.searchParams.set('order', this.collection.state.order === 1 ? 'desc' : 'asc')
+            }
+            url.searchParams.set('per_page', 9999)
+
+            a.href = url.pathname + url.search
+
+            utils.signHandler(e)
+
+            a.href = originalHref
         },
 
         updateData: function() {

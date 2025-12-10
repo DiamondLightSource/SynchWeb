@@ -87,7 +87,7 @@ class Download extends Page
         if ($filesystem->exists($data)) {
             $response = new BinaryFileResponse($data);
             $response->headers->set("Content-Type", "application/octet-stream");
-            $this->_set_disposition_attachment($response, $this->arg('visit') . '_download.zip');
+            Utils::setDispositionAttachment($response, $this->arg('visit') . '_download.zip');
             $response->send();
         } else
             $this->_error('There doesnt seem to be a data archive available for this visit');
@@ -309,7 +309,7 @@ class Download extends Page
                 WHERE dcg.sessionid=:1 ORDER BY dc.starttime", array($vis['SESSIONID']));
 
         $this->app->response->headers->set("Content-type", "application/vnd.ms-excel");
-        $this->_set_disposition_attachment($this->app->response, $vis['ST'] . "_" . $vis['BEAMLINENAME'] . "_" . $this->arg('visit') . ".csv");
+        Utils::setDispositionAttachment($this->app->response, $vis['ST'] . "_" . $vis['BEAMLINENAME'] . "_" . $this->arg('visit') . ".csv");
         print "Image prefix,Beamline,Run no,Start Time,Sample Name,Protein Acronym,# images, Wavelength (angstrom), Distance (mm), Exp. Time (sec), Phi start (deg), Phi range (deg), Xbeam (mm), Ybeam (mm), Detector resol. (angstrom), Comments\n";
         foreach ($rows as $r) {
             $r['COMMENTS'] = '"' . $r['COMMENTS'] . '"';
@@ -561,24 +561,11 @@ class Download extends Page
             $response->headers->set("Content-Type", "application/octet-stream");
         }
         if ($this->has_arg('download') && $this->arg('download') < 3) {
-            $this->_set_disposition_inline($response);
+            Utils::setDispositionInline($response);
         } else {
-            $this->_set_disposition_attachment($response, $saved_filename);
+            Utils::setDispositionAttachment($response, $saved_filename);
         }
     }
-
-    function _set_disposition_attachment($response, $filename) {
-        $response->headers->set("Content-Disposition",
-            (new ResponseHeaderBag())->makeDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT, $filename)
-        );
-    }
-
-    function _set_disposition_inline($response) {
-        $response->headers->set("Content-Disposition",
-        (new ResponseHeaderBag())->makeDisposition(ResponseHeaderBag::DISPOSITION_INLINE, '')
-        );
-    }
-
 
     # ------------------------------------------------------------------------
     # Download Data
@@ -609,7 +596,7 @@ class Download extends Page
         if ($filesystem->exists($data)) {
             $response = new BinaryFileResponse($data);
             $response->headers->set("Content-Type", "application/octet-stream");
-            $this->_set_disposition_attachment($response, $this->arg('id') . '_download.zip');
+            Utils::setDispositionAttachment($response, $this->arg('id') . '_download.zip');
             $response->send();
         } else {
             error_log("Download file " . $data . " not found");
