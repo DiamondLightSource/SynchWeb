@@ -105,7 +105,7 @@ define(['marionette',
                 edit.create('ACRONYM', 'text')
             }
 
-            this.dc.show(new DCView({ model: this.model, collection: this.dcs, params: { visit: null }, noPageUrl: true, noFilterUrl: true, noSearchUrl: true }))
+            this.dc.show(new DCView({ model: this.model, collection: this.dcs, params: { visit: null, pjid: this.model.get('PROJECTID') }, noPageUrl: true, noFilterUrl: true, noSearchUrl: true }))
             this.smp.show(new SampleList({ collection: this.samples, noPageUrl: true, noFilterUrl: true, noSearchUrl: true }))
             this.prt.show(new ProteinList({ collection: this.proteins, noPageUrl: true, noSearchUrl: true }))
             

@@ -69,7 +69,13 @@ function(Marionette,
         var ids = this.collection
             .filter(m => m.get('TYPE') === 'data' || m.get('TYPE') === 'grid')
             .map(m => m.get('ID'));
-        if (ids.length) this.imagestatuses.fetch({ data: { ids:  ids }, type: 'POST' })
+        var data = { ids: ids }
+        var params = this.getOption('params') || {};
+        if (params.pjid != null) {
+            data.pjid = params.pjid
+        }
+        if (!ids.length) return
+        this.imagestatuses.fetch({ data: data, type: 'POST' })
         if (this.getOption('apStatus')) this.apstatuses.fetch({ data: { ids: ids }, type: 'POST' })
         if (this.getOption('apMessageStatus')) this.apmessagestatuses.fetch({ data: { ids: ids }, type: 'POST' })
     },

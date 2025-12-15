@@ -1106,8 +1106,10 @@ class DC extends Page
             return;
         }
 
-        array_push($ids, $this->proposalid);
-        $where .= ' AND p.proposalid=:'.sizeof($ids);
+        if (!$this->has_arg('pjid')) {
+            array_push($ids, $this->proposalid);
+            $where .= ' AND p.proposalid=:'.sizeof($ids);
+        }
 
         $dct = $this->db->pq("SELECT CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) as vis, dc.datacollectionid as id, dc.startimagenumber, dc.filetemplate, dc.xtalsnapshotfullpath1 as x1, dc.xtalsnapshotfullpath2 as x2, dc.xtalsnapshotfullpath3 as x3, dc.xtalsnapshotfullpath4 as x4,dc.imageprefix as imp, dc.datacollectionnumber as run, dc.imagedirectory as dir, s.visit_number
                 FROM datacollection dc
