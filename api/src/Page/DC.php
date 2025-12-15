@@ -1091,11 +1091,12 @@ class DC extends Page
 
         $where = array();
         $ids = array();
+        $args = array($this->proposalid);
         if ($this->has_arg('ids')) {
             if (is_array($this->arg('ids'))) {
                 foreach ($this->arg('ids') as $i) {
                     array_push($ids, $i);
-                    array_push($where, 'dc.datacollectionid=:' . sizeof($ids));
+                    array_push($where, 'dc.datacollectionid=:' . (sizeof($ids)+1));
                 }
             }
         }
@@ -1106,11 +1107,14 @@ class DC extends Page
             return;
         }
 
+        $args = array_merge($args, $ids);
+
         $dct = $this->db->pq("SELECT CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) as vis, dc.datacollectionid as id, dc.startimagenumber, dc.filetemplate, dc.xtalsnapshotfullpath1 as x1, dc.xtalsnapshotfullpath2 as x2, dc.xtalsnapshotfullpath3 as x3, dc.xtalsnapshotfullpath4 as x4,dc.imageprefix as imp, dc.datacollectionnumber as run, dc.imagedirectory as dir, s.visit_number
-                FROM datacollection dc 
+                FROM datacollection dc
                 INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
                 INNER JOIN blsession s ON s.sessionid = dcg.sessionid
-                INNER JOIN proposal p ON p.proposalid = s.proposalid WHERE $where", $ids);
+                INNER JOIN proposal p ON p.proposalid = s.proposalid
+                WHERE p.proposalid=:1 AND $where", $args);
 
         $this->profile('dc query');
 
