@@ -1,4 +1,12 @@
 <template>
+  <div>
+  <div
+    v-if="isDevMode"
+    class="tw-flex tw-h-10 tw-items-center tw-bg-content-active"
+  >
+    <span class="fa fa-2x fa-exclamation-circle tw-mx-1"></span>
+    This application is running in development mode. Data will not be persisted.
+  </div>
   <div
     id="vue-header"
     class="tw-flex tw-justify-between tw-items-center tw-h-10 tw-bg-header-background"
@@ -72,6 +80,7 @@
       </router-link>
     </div>
   </div>
+  </div>
 </template>
 
 <script>
@@ -109,7 +118,10 @@ export default {
             else return (this.$store.getters['user/hasPermission'](item.permission))
           }, this)
           return menus
-        }
+        },
+        isDevMode() {
+            return this.$store.state.mode === 'development'
+        },
     },
     methods: {
       logout: function () {

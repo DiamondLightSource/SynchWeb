@@ -35,6 +35,7 @@ class Download extends Page
 
         'ppl' => '\w+',
         'aid' => '\w+',
+        'cid' => '\d+',
 
         'filetype' => '\w+',
         'blsampleid' => '\d+',
@@ -49,6 +50,7 @@ class Download extends Page
     public static $dispatch = array(
         array('/plots', 'get', '_auto_processing_plots'),
         array('/csv/visit/:visit', 'get', '_csv_report'),
+        array('/csv/container/:cid', 'get', '_dispensing_csv'),
         array('/sign', 'post', '_sign_url'),
         array('/data/visit/:visit', 'get', '_download_visit'),
         array('/attachments', 'get', '_get_attachments'),
@@ -247,7 +249,6 @@ class Download extends Page
     /**
      * Download a file to the browser
      * This function is used to download autoproc and phasing run attachments.
-     * It sets a maximum amount of memory for the download.
      * The $id is used as a prefix to the filename.
      *
      * @param integer $id One of AutoProcProgramId or PhasingProgramRunId
@@ -255,8 +256,9 @@ class Download extends Page
      */
     function _get_file($id, $file)
     {
-        // We don't want to allow unlimited file sizes
-        ini_set('memory_limit', '512M');
+        // Remove all buffers
+        while (ob_get_level() > 0) ob_end_clean();
+
         $filesystem = new Filesystem();
 
         $filename = $file['FILEPATH'] . '/' . $file['FILENAME'];
@@ -265,18 +267,27 @@ class Download extends Page
         if ($filesystem->exists($filename)) {
             $response = new BinaryFileResponse($filename);
             $this->set_mime_content($response, $filename, $id);
-            $response->headers->set("Content-Length", filesize($filename));
         } elseif ($filesystem->exists($filename.'.gz')) {
             $filename = $filename.'.gz';
             if ($this->has_arg('download') && $this->arg('download') < 3) {
-                // View/open file, so unzip and serve
-                $response = new Response(readgzfile($filename));
+                // View log file, so unzip and serve
+                $response = new StreamedResponse(function() use ($filename) {
+                    $fileHandle = gzopen($filename, 'rb');
+                    if ($fileHandle === false) {
+                        $this->_error("The file " . $filename . " couldn't be opened");
+                    }
+                    // Read the file in 8KB chunks and send them
+                    while (!gzeof($fileHandle)) {
+                        echo gzread($fileHandle, 8192);
+                        flush();
+                    }
+                    gzclose($fileHandle);
+                });
                 $this->set_mime_content($response, $file['FILENAME'], $id);
             } else {
                 // Download gzipped file
                 $response = new BinaryFileResponse($filename);
                 $this->set_mime_content($response, $filename, $id);
-                $response->headers->set("Content-Length", filesize($filename));
             }
         } else {
             $this->_error("No such file, the specified file " . $filename . " doesn't exist");
@@ -314,6 +325,52 @@ class Download extends Page
         foreach ($rows as $r) {
             $r['COMMENTS'] = '"' . $r['COMMENTS'] . '"';
             print implode(',', array_values($r)) . "\n";
+        }
+    }
+
+    # ------------------------------------------------------------------------
+    # CSV Report of dispensing positions for a plate
+    function _dispensing_csv()
+    {
+        if (!$this->has_arg('cid'))
+            $this->_error('No container id specified');
+        $rows = $this->db->pq("SELECT c.code, s.location, ct.name, ct.capacity, ct.wellperrow,
+                bsp.posx, bsp.posy, si.imagefullpath, si.micronsperpixelx, si.micronsperpixely
+                FROM blsample s
+                INNER JOIN container c ON c.containerid = s.containerid
+                INNER JOIN blsampleimage si ON si.blsampleid = s.blsampleid
+                LEFT OUTER JOIN containertype ct ON (c.containertypeid IS NOT NULL AND c.containertypeid = ct.containertypeid) OR (c.containertypeid IS NULL AND c.containertype = ct.name)
+                LEFT OUTER JOIN
+                    (SELECT * FROM blsampleposition bsp1 WHERE bsp1.blsamplepositionid =
+                        (SELECT MAX(blsamplepositionid) FROM blsampleposition bsp2 WHERE bsp2.blsampleid = bsp1.blsampleid AND bsp2.positiontype='dispensing')
+                    ) bsp ON bsp.blsampleid = s.blsampleid
+                WHERE c.containerid=:1
+                ORDER BY s.location+0",
+                array($this->arg('cid')));
+        $plate = $rows[0];
+        $rowNames = range("A", "H");
+        $dropNames = range("a", "z");
+        // SWISSCI 3 Drop have drops a/c/d
+        if ($plate["NAME"] == "SWISSCI 3 Drop") {
+            $dropNames = array_merge(array("a"), range("c","z"));
+        }
+        $dropsPerWell = $plate["CAPACITY"] / (count($rowNames) * $plate["WELLPERROW"]);
+        $this->app->response->headers->set("Content-type", "text/csv");
+        $this->_set_disposition_attachment($this->app->response, $plate["CODE"] . "_targets.csv");
+        list($width, $height, $type, $attr) = getimagesize($plate['IMAGEFULLPATH']);
+        foreach ($rows as $r) {
+            if (!isset($r["POSX"]) || !isset($r["POSY"])) {
+                continue; # skip empty rows
+            }
+            $wellNumber = intval(($r["LOCATION"] - 1) / $dropsPerWell);  # 0 indexed
+            $rowNumber = intval($wellNumber / $plate["WELLPERROW"]);  # 0 indexed
+            $row = $rowNames[$rowNumber];
+            $column = str_pad($wellNumber - ($rowNumber * $plate["WELLPERROW"]) + 1, 2, 0, STR_PAD_LEFT);  # pad with a zero if needed
+            $dropNumber = intval($r["LOCATION"] - ($dropsPerWell * $wellNumber));  # 1 indexed
+            $drop = $dropNames[$dropNumber-1];
+            $xval = round(($r["POSX"] - $width/2) * $r["MICRONSPERPIXELX"]); # integers
+            $yval = round(($height/2 - $r["POSY"]) * $r["MICRONSPERPIXELY"]); # integers
+            print $row . $column . $drop . "," . $xval . "," . $yval . "\n";
         }
     }
 

@@ -18,31 +18,6 @@ module.exports = (env, argv) => ({
     path: path.resolve(__dirname, 'dist', gitHash),
     publicPath: path.join('/dist', gitHash, '/'),
   },
-  devServer: {
-    static: __dirname,
-    host: (env && env.host) || 'localhost',
-    port: (env && env.port) || 9000,
-    https: true,
-    historyApiFallback: {
-      index: '/dist/'+gitHash+'/index.html',
-      // Allow parsing urls with dots in parameters (e.g. unit cell search)
-      disableDotRule: true
-    },
-    proxy: [{
-        context: ['/api'],
-        // Change this target to where SynchWeb server is running
-        target: (env && env.proxy && env.proxy.target) || 'http://127.0.0.1',
-        // Intercept the request and add auth header
-        onProxyReq: function(proxyReq, req) {
-          if (req.headers.authorization) {
-            proxyReq.setHeader('Authorization', req.headers.authorization);
-          }
-        },
-        secure: env && env.proxy && env.proxy.secure && JSON.parse(env.proxy.secure)
-      },
-    ],
-    hot: true
-  },
   optimization: {
     splitChunks: {
       chunks: 'all',
