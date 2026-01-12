@@ -1277,6 +1277,29 @@ li:last-child .visit_users {
             background-color: #a087eb;
         }
     }
+
+    &.data_collection_group {
+        background: $content-group-background;
+
+        > ul > li {
+            background: $content-group-background-shade;
+
+            &:before {
+                background: $content-group-background-dark;
+            }
+        }
+
+        > h1 .button {
+            border-color: $content-group-button-border;
+            background: linear-gradient($content-group-button-light, $content-group-button-dark);
+
+            &:hover {
+                background: linear-gradient($content-group-button-dark, $content-group-button-light);
+            }
+        }
+    }
+
+
     /* Postcss - not working here - move to separate declaration below */
     // > ul {
     //     @extend .ul;

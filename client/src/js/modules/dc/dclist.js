@@ -66,12 +66,27 @@ function(Marionette,
       this.listenTo(this.collection, 'sync', this._onSync, this)
       this._onSync()
     },
-                                                        
+
     _onSync: function() {
-        var ids = this.collection.pluck('ID')
-        this.imagestatuses.fetch({ data: { ids:  ids }, type: 'POST' })
-        if (this.getOption('apStatus')) this.apstatuses.fetch({ data: { ids: ids }, type: 'POST' })
-        if (this.getOption('apMessageStatus')) this.apmessagestatuses.fetch({ data: { ids: ids }, type: 'POST' })
+        var ids = this.collection
+            .filter(m => m.get('TYPE') === 'data' || m.get('TYPE') === 'grid')
+            .map(m => m.get('ID'));
+        var data = { ids: ids }
+        var params = this.getOption('params') || {};
+        if (params.pjid != null) {
+            data.pjid = params.pjid
+        }
+        if (!ids.length) return
+        this.imagestatuses.fetch({ data: data, type: 'POST' })
+        var dcids = this.collection
+            .filter(m => (m.get('DCC') == 1 && m.get('TYPE') === 'data') || m.get('TYPE') === 'grid')
+            .map(m => m.get('ID'));
+        var dcg = this.collection
+            .filter(m => m.get('DCC') > 1 && m.get('TYPE') === 'data')
+            .map(m => m.get('DCG'));
+        var dcgdata = { ids: dcids, dcg: dcg }
+        if (this.getOption('apStatus')) this.apstatuses.fetch({ data: dcgdata, type: 'POST' })
+        if (this.getOption('apMessageStatus')) this.apmessagestatuses.fetch({ data: dcgdata, type: 'POST' })
     },
                                                           
     getChildView: function(item) {

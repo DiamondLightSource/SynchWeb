@@ -45,6 +45,7 @@ define(['marionette',
       this.showStrategies = true
       this.showProcessing = true
       this.setProcessingVars()
+      this.numimg = this.model.get('DCC') == 1
     },
 
     setProcessingVars: function() {
@@ -65,7 +66,7 @@ define(['marionette',
       //var h = $(window).width() > 800 ? w : (w*1.65)
       //this.$el.find('.distl,.diffraction,.snapshots').height(h)
         
-      if (this.getOption('plotView')) this.plotview = new (this.getOption('plotView'))({ parent: this.model, el: this.$el.find('.distl') })
+      if (this.getOption('plotView')) this.plotview = new (this.getOption('plotView'))({ parent: this.model, el: this.$el.find('.distl'), numimg: this.numimg })
 
       Backbone.Validation.unbind(this)
       Backbone.Validation.bind(this)
@@ -79,7 +80,7 @@ define(['marionette',
           this.ui.dp.hide();
       }
 
-      this.apstatus = new (this.getOption('apStatusItem'))({ ID: this.model.get('ID'), showStrategies: this.showStrategies, showProcessing: this.showProcessing, statuses: this.getOption('apstatuses'), el: this.$el })
+      this.apstatus = new (this.getOption('apStatusItem'))({ ID: this.model.get('ID'), DCG: this.model.get('DCG'), showStrategies: this.showStrategies, showProcessing: this.showProcessing, statuses: this.getOption('apstatuses'), el: this.$el })
       this.listenTo(this.apstatus, 'status', this.updateAP, this)
       this.apmessagestatus = new (this.getOption('apMessageStatusItem'))({ ID: this.model.get('ID'), statuses: this.getOption('apmessagestatuses'), el: this.$el })
 
@@ -157,7 +158,7 @@ define(['marionette',
       
     showDistl: function(e) {
       e.preventDefault()
-      app.dialog.show(new DialogView({ title: 'Per-image Analysis Plot', view: new DCDISTLView({ parent: this.model }), autoSize: true }))
+      app.dialog.show(new DialogView({ title: 'Per-image Analysis Plot', view: new DCDISTLView({ parent: this.model, numimg: this.numimg }), autoSize: true }))
     },
     
     loadStrategies: function(e) {
@@ -171,6 +172,7 @@ define(['marionette',
       if (!this.ap) {
         this.ap = new DCAutoIntegrationView({ 
           id: this.model.get('ID'),
+          dcc: this.model.get('DCC'),
           dcPurgedProcessedData: this.model.get('PURGEDPROCESSEDDATA'),
           el: this.$el.find('div.autoproc'),
           parent: this.model,
@@ -188,6 +190,7 @@ define(['marionette',
       if (!this.dp) {
         this.dp = new DCDownstreamView({ 
           id: this.model.get('ID'),
+          dcc: this.model.get('DCC'),
           dcPurgedProcessedData: this.model.get('PURGEDPROCESSEDDATA'),
           el: this.$el.find('div.downstream'),
           holderWidth: this.$el.find('.holder').width(),
