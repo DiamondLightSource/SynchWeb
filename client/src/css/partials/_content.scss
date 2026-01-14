@@ -1280,6 +1280,14 @@ li:last-child .visit_users {
 
     &.data_collection_group {
         background: $content-group-background;
+        border: 1px solid $content-group-border;
+
+        /* The "Stack" Effect */
+        box-shadow:
+            4px 4px 0 0 $content-group-background,  /* Layer 1 Spacer */
+            4px 4px 0 1px $content-group-border, /* Layer 1 Border */
+            8px 8px 0 0 $content-group-background,  /* Layer 2 Spacer */
+            8px 8px 0 1px $content-group-border; /* Layer 2 Border */
 
         > ul > li {
             background: $content-group-background-shade;
