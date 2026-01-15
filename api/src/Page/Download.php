@@ -356,7 +356,7 @@ class Download extends Page
         }
         $dropsPerWell = $plate["CAPACITY"] / (count($rowNames) * $plate["WELLPERROW"]);
         $this->app->response->headers->set("Content-type", "text/csv");
-        $this->_set_disposition_attachment($this->app->response, $plate["CODE"] . "_targets.csv");
+        Utils::setDispositionAttachment($this->app->response, $plate["CODE"] . "_targets.csv");
         list($width, $height, $type, $attr) = getimagesize($plate['IMAGEFULLPATH']);
         foreach ($rows as $r) {
             if (!isset($r["POSX"]) || !isset($r["POSY"])) {
