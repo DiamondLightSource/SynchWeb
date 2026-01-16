@@ -50,10 +50,14 @@ define(['backbone', 'backbone-validation', 'luxon'], function(Backbone, BackBone
       
     addDate: function() {
         var { DateTime } = luxon
-        
-        this.set('ENISO', DateTime.fromISO(this.get('ENISO'), { zone: this.dateTimeZone }))
-        this.set('STISO', DateTime.fromISO(this.get('STISO'), { zone: this.dateTimeZone }))
-        this.set('LEN', Number(this.get('ENISO').diff(this.get('STISO'))/(3600*1000)).toFixed(2))
+
+        var start = DateTime.fromISO(this.get('STISO'), { zone: this.dateTimeZone })
+        var end   = DateTime.fromISO(this.get('ENISO'), { zone: this.dateTimeZone })
+        var hours = end.diff(start, 'hours').hours.toFixed(2)
+
+        this.set('ENISO', end)
+        this.set('STISO', start)
+        this.set('LEN', hours)
         this.set('VISITDETAIL', this.get('VISIT')+' ('+this.get('BL')+': '+this.get('ST')+')')
     },
 
