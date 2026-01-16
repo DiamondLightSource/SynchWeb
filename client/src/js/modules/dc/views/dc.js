@@ -163,13 +163,18 @@ define(['marionette',
     
     loadStrategies: function(e) {
       if (!this.strat) {
+        $('body').addClass('cursor-loading')
         this.strat = new DCAutoIndexingView({ id: this.model.get('ID') , el: this.$el.find('div.strategies', this.$el) })
         this.strat.render()
+        this.listenToOnce(this.strat.collection, 'sync', () => {
+          $('body').removeClass('cursor-loading')
+        })
       } else this.strat.$el.slideToggle()
     },
                             
     loadAP: function(e, callback) {
       if (!this.ap) {
+        $('body').addClass('cursor-loading')
         this.ap = new DCAutoIntegrationView({ 
           id: this.model.get('ID'),
           dcc: this.model.get('DCC'),
@@ -177,6 +182,9 @@ define(['marionette',
           el: this.$el.find('div.autoproc'),
           parent: this.model,
           onReady: callback
+        })
+        this.listenToOnce(this.ap.collection, 'sync', () => {
+          $('body').removeClass('cursor-loading')
         })
       } else {
         this.ap.$el.slideToggle(() => {
@@ -188,6 +196,7 @@ define(['marionette',
       
     loadDP: function(e) {
       if (!this.dp) {
+        $('body').addClass('cursor-loading')
         this.dp = new DCDownstreamView({ 
           id: this.model.get('ID'),
           dcc: this.model.get('DCC'),
@@ -195,6 +204,9 @@ define(['marionette',
           el: this.$el.find('div.downstream'),
           holderWidth: this.$el.find('.holder').width(),
           upstreamLink: true,
+        })
+        this.listenToOnce(this.dp.collection, 'sync', () => {
+          $('body').removeClass('cursor-loading')
         })
       } else this.dp.$el.slideToggle()
     },
