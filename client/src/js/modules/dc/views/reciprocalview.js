@@ -1,8 +1,8 @@
 define(['marionette', 
     'collections/attachments',
-    'uglymol', 'gzip',  
+    'uglymol',
     'templates/dc/mapmodelview.html',
-    "./uglymolhelper"], function(Marionette, Attachments, Uglymol, zlib,
+    "./uglymolhelper"], function(Marionette, Attachments, Uglymol,
         template, defaultViewerOptions) {
 
     return Marionette.LayoutView.extend({
@@ -23,7 +23,6 @@ define(['marionette',
             res: 'select[name=residue]',
         },
         
-
         loadData: function() {
             if (!this.attachments.length) {
                 this.ui.hud.text('No reciprocal space data for this datacollection')
@@ -32,14 +31,14 @@ define(['marionette',
 
             var xhr = this.xhrWithStatus('Downloading Reciprocal Space Data')
             var self = this
-            
-            xhr.onload = function() {
-                var gunzip = new zlib.Zlib.Gunzip(new Uint8Array(this.response))
-                var plain = gunzip.decompress()
-                var url = URL.createObjectURL(new Blob([plain], {type: 'text'}))
+
+            xhr.onload = async function () {
+                const ds = new DecompressionStream('gzip')
+                const stream = new Response(this.response).body.pipeThrough(ds)
+                const plain = await new Response(stream).arrayBuffer()
+                const url = URL.createObjectURL(new Blob([plain], {type: 'text'}))
                 self.viewer.load_data(url)
             }
-          
 
             var attachment = this.attachments.at(0)
             xhr.open('GET', app.apiurl+'/download/attachment/id/'+this.model.get('ID')+'/aid/'+attachment.get('DATACOLLECTIONFILEATTACHMENTID'))

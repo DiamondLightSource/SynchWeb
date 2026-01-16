@@ -66,10 +66,6 @@ module.exports = (env, argv) => ({
       // heatmap in npm has dependency on canvas/node-gyp... so use old one for now
       heatmap: 'vendor/hmap',
 
-      // gunzip is actually the zlib library
-      // https://npm.taobao.org/package/zlibjs
-      gzip: 'zlibjs/bin/gunzip.min',
-
       markdown: 'markdown/lib/markdown',
 
       // Vue packages from npm (vee-validate requires promise polyfill - also npm)
