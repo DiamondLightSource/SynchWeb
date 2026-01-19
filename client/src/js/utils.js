@@ -202,7 +202,8 @@ define(['backbone',
         utils.sign({
             url: url,
             callback: function(resp) {
-                window.location = url+'?token='+resp.token
+                const separator = url.includes('?') ? '&' : '?'
+                window.location = url + separator + 'token=' + resp.token
             }
         })
     },

@@ -1,6 +1,4 @@
 define(['marionette',
-        //'modules/dc/views/imagestatuscollection',
-        //'modules/dc/views/apstatuscollection',
         'modules/dc/collections/imagestatuses',
         'modules/dc/collections/apstatuses',
         'modules/dc/collections/apmessagestatuses',
@@ -68,8 +66,16 @@ function(Marionette,
     },
                                                         
     _onSync: function() {
-        var ids = this.collection.pluck('ID')
-        this.imagestatuses.fetch({ data: { ids:  ids }, type: 'POST' })
+        var ids = this.collection
+            .filter(m => m.get('TYPE') === 'data' || m.get('TYPE') === 'grid')
+            .map(m => m.get('ID'));
+        var data = { ids: ids }
+        var params = this.getOption('params') || {};
+        if (params.pjid != null) {
+            data.pjid = params.pjid
+        }
+        if (!ids.length) return
+        this.imagestatuses.fetch({ data: data, type: 'POST' })
         if (this.getOption('apStatus')) this.apstatuses.fetch({ data: { ids: ids }, type: 'POST' })
         if (this.getOption('apMessageStatus')) this.apmessagestatuses.fetch({ data: { ids: ids }, type: 'POST' })
     },
