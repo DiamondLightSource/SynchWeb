@@ -18,7 +18,7 @@ define(['marionette',
   GetView,
   Sample, Samples, 
   Protein, Proteins,
-  Ligand, Ligands
+  Ligand, Ligands,
   Crystal, Crystals,
   Instance,
   ProposalLookup) {
