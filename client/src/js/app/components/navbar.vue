@@ -21,9 +21,9 @@
     <router-link
       to=""
       class="tw-relative navbar-item"
-      @mouseover.native="showProposalMenu=true"
+      @mouseover.native="handleMouseOver"
       @mouseleave.native="showProposalMenu=false"
-      @click.native="showProposalMenu=false"
+      @click.native="handleClick"
     >
       <p class="tw-text-xs">
         <i
@@ -152,9 +152,10 @@ export default {
             showHelpMenu: false,
             // If hover over proposal menu flag
             showProposalMenu: false,
+            lastHoverOpenAt: 0,
+            hoverGraceTimeMs: 100,
         }
     },
-
     computed: {
         proposal: function() {
             return this.$store.getters['proposal/currentProposal']
@@ -198,6 +199,23 @@ export default {
             if (e.target.tagName === 'A') {
                 e.stopPropagation()
             }
+        },
+
+        handleMouseOver() {
+            if (!this.showProposalMenu) {
+                this.lastHoverOpenAt = Date.now()
+            }
+            this.showProposalMenu = true
+        },
+
+        handleClick() {
+            // If the menu was opened by a very recent hover, ignore the click that would close it.
+            if ((Date.now() - this.lastHoverOpenAt) < this.hoverGraceTimeMs) {
+                return
+            }
+            // Otherwise toggle as normal
+            this.showProposalMenu = !this.showProposalMenu
+
         },
     }
 }

@@ -37,12 +37,6 @@ export default {
 <style scoped>
 
 #breadcrumbs {
-    /* background: #474747;
-    color: #dbdbdb;
-    font-size: 10px;
-    list-style-type: none;
-    padding: 5px 5px;
-    clear: both */
     @apply tw-bg-header-bc-background;
     @apply tw-text-header-bc-color;
     @apply tw-p-1;

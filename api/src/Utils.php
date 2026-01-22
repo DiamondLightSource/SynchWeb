@@ -2,6 +2,7 @@
 
 namespace SynchWeb;
 
+use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use InvalidArgumentException;
 
 class Utils
@@ -51,5 +52,18 @@ class Utils
         // Removes search parameter from URL and returns encoded URL
         $redirect_url = preg_replace('/(&|\?)'.preg_quote($param).'=[^&]*$/', '', $url);
         return preg_replace('/(&|\?)'.preg_quote($param).'=[^&]*&/', '$1', $redirect_url);
+    }
+
+    public static function setDispositionAttachment($response, $filename)
+    {
+        $response->headers->set('Content-Disposition',
+            (new ResponseHeaderBag())->makeDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT, $filename)
+        );
+    }
+
+    public static function setDispositionInline($response) {
+        $response->headers->set("Content-Disposition",
+            (new ResponseHeaderBag())->makeDisposition(ResponseHeaderBag::DISPOSITION_INLINE, '')
+        );
     }
 }

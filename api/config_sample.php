@@ -10,7 +10,7 @@
     $mode = 'dev';
 
     # Database credentials, db = hostname/database
-    $isb  = array('user' => 'user', 'pass' => 'pass', 'db' => 'localhost/ispyb');
+    $isb = array('user' => 'user', 'pass' => 'pass', 'db' => 'localhost/ispyb');
     $dbtype = 'mysql';
 
     # Encoded JWT key, used to sign and check validaty of jwt tokens

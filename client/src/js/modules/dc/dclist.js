@@ -1,6 +1,4 @@
 define(['marionette',
-        //'modules/dc/views/imagestatuscollection',
-        //'modules/dc/views/apstatuscollection',
         'modules/dc/collections/imagestatuses',
         'modules/dc/collections/apstatuses',
         'modules/dc/collections/apmessagestatuses',

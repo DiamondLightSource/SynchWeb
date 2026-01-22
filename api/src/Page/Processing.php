@@ -4,11 +4,12 @@ namespace SynchWeb\Page;
 
 use SynchWeb\Page;
 use SynchWeb\Downstream\DownstreamProcessing;
+use SynchWeb\Utils;
 
 class Processing extends Page {
     public static $dispatch = array(
         array('/:id(/dcg/:dcg)', 'get', '_results'),
-        array('/visit/:visit', 'get', '_results_for_visit'),
+        array('/visit/:visit(/csv/:csv)', 'get', '_results_for_visit'),
         array('/status', 'post', '_statuses'),
 
         array('/messages/status', 'post', '_ap_message_status'),
@@ -44,6 +45,7 @@ class Processing extends Page {
         'cloudrunid' => '(\w|\-)+',
         'AUTOPROCPROGRAMATTACHMENTID' => '\d+',
         'DATACOLLECTIONFILEATTACHMENTID' => '\d+',
+        'csv' => '\d+',
     );
 
     /**
@@ -487,12 +489,11 @@ class Processing extends Page {
         $jobs = $this->db->pq(
             "SELECT dc.datacollectionid as id,
                 CONCAT(dc.imageprefix, '_', dc.datacollectionnumber) as prefix,
-                ".self::EVTOA."/dc.wavelength as energy,
-                dc.resolution,
                 smp.name as sample,
                 smp.blsampleid,
+                ".self::EVTOA."/dc.wavelength as energy,
+                dc.resolution,
                 app.processingprograms as pipeline,
-                app.autoprocprogramid as aid,
                 REPLACE(ap.spacegroup,' ','') as sg,
                 ap.refinedcell_a as cell_a,
                 ap.refinedcell_b as cell_b,
@@ -500,12 +501,12 @@ class Processing extends Page {
                 ap.refinedcell_alpha as cell_al,
                 ap.refinedcell_beta as cell_be,
                 ap.refinedcell_gamma as cell_ga,
-                apssover.resolutionlimithigh as overallrhigh,
                 apssover.resolutionlimitlow as overallrlow,
-                apssinner.resolutionlimithigh as innerrhigh,
+                apssover.resolutionlimithigh as overallrhigh,
                 apssinner.resolutionlimitlow as innerrlow,
-                apssouter.resolutionlimithigh as outerrhigh,
+                apssinner.resolutionlimithigh as innerrhigh,
                 apssouter.resolutionlimitlow as outerrlow,
+                apssouter.resolutionlimithigh as outerrhigh,
                 apssover.completeness as overallcompleteness,
                 apssinner.completeness as innercompleteness,
                 apssouter.completeness as outercompleteness,
@@ -514,7 +515,8 @@ class Processing extends Page {
                 apssouter.anomalouscompleteness as anomoutercompleteness,
                 apssinner.rmeasalliplusiminus as innerrmeas,
                 apssouter.cchalf as outercchalf,
-                apssinner.ccanomalous as innerccanom
+                apssinner.ccanomalous as innerccanom,
+                app.autoprocprogramid as aid
                 FROM datacollection dc
                 LEFT OUTER JOIN blsample smp ON dc.blsampleid = smp.blsampleid
                 INNER JOIN processingjob pj ON dc.datacollectionid = pj.datacollectionid
@@ -545,12 +547,14 @@ class Processing extends Page {
         $data = array_slice($data, $start, $pp);
 
         // Add classes to highlight fields in red/yellow/green
-        foreach ($data as &$d) {
-            foreach (array('OVERALL', 'INNER', 'OUTER') as $s) {
-                $c = $d[$s.'COMPLETENESS'];
-                $d[$s.'COMPLETENESSCLASS'] = $c > 95 ? 'active' : ($c > 80 ? 'minor' : 'inactive');
-                $c = $d['ANOM'.$s.'COMPLETENESS'];
-                $d['ANOM'.$s.'COMPLETENESSCLASS'] = $c > 95 ? 'active' : ($c > 80 ? 'minor' : 'inactive');
+        if (!$this->has_arg('csv')) {
+            foreach ($data as &$d) {
+                foreach (array('OVERALL', 'INNER', 'OUTER') as $s) {
+                    $c = $d[$s.'COMPLETENESS'];
+                    $d[$s.'COMPLETENESSCLASS'] = $c > 95 ? 'active' : ($c > 80 ? 'minor' : 'inactive');
+                    $c = $d['ANOM'.$s.'COMPLETENESS'];
+                    $d['ANOM'.$s.'COMPLETENESSCLASS'] = $c > 95 ? 'active' : ($c > 80 ? 'minor' : 'inactive');
+                }
             }
         }
 
@@ -572,13 +576,23 @@ class Processing extends Page {
         foreach ($nf as $nff => $cols) {
             foreach ($cols as $c) {
                 foreach ($data as &$d) {
-                    $d[$c] = number_format($d[$c], $nff);
+                    $d[$c] = number_format($d[$c], $nff, ".", "");
                 }
             }
         }
 
-        $this->_output(array('total' => $tot, 'data' => $data));
-
+        if ($this->has_arg('csv')) {
+            $this->app->response->headers->set("Content-type", "text/csv");
+            Utils::setDispositionAttachment($this->app->response, $this->arg('visit') . "_summary.csv");
+            if (!empty($data)) {
+                print implode(',', array_keys($data[0])) . "\n";
+            }
+            foreach ($data as $r) {
+                print implode(',', array_values($r)) . "\n";
+            }
+        } else {
+            $this->_output(array('total' => $tot, 'data' => $data));
+        }
     }
 
     /**
