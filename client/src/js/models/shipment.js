@@ -11,6 +11,7 @@ define(['backbone'], function (Backbone) {
       SHIPPINGNAME: {
         required: true,
         pattern: 'wwsdash',
+        msg: 'The Shipment Name is required',
       },
 
       'FCODES[]': {
@@ -18,8 +19,14 @@ define(['backbone'], function (Backbone) {
         pattern: 'fcode',
       },
 
+      SAFETYLEVEL: {
+        required: true,
+        msg: 'The Safety Level field is required',
+      },
+
       DYNAMIC: {
         required: true,
+        msg: 'The Scheduling field is required',
       },
 
       FIRSTEXPERIMENTID: {
@@ -50,10 +57,11 @@ define(['backbone'], function (Backbone) {
 
       SENDINGLABCONTACTID: {
         required: true,
+        msg: 'The Outgoing Lab Contact field is required',
       },
 
       RETURNLABCONTACTID: {
-        required: true,
+        required: false,
       },
 
       DELIVERYAGENT_AGENTCODE: {
