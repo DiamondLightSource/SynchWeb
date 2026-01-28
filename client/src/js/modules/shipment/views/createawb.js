@@ -468,6 +468,14 @@ define(['backbone',
                 return
             }
 
+            const ss_url = app.options.get("shipping_service_app_url_incoming")
+            const externalid = this.shipment.get('EXTERNALSHIPPINGIDTOSYNCHROTRON')
+            if (externalid && ss_url) {
+                const link = ss_url+'/shipment-requests/'+externalid+'/incoming'
+                window.location.href = link
+                return
+            }
+
             var prod = null
             if (
                 (
