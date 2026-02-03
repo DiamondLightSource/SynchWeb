@@ -751,8 +751,8 @@ export default {
         this.NAME = ''
         this.BARCODE = ''
         this.CONTAINERREGISTRYID = ''
-        this.PARENTCONTAINERID = ''
-        this.PARENTCONTAINERLOCATION = ''
+        this.PARENTCONTAINERID = null
+        this.PARENTCONTAINERLOCATION = null
         // Trigger default setting of UDC fields if selected
         this.selectQueueForUDC(this.AUTOMATED)
 
