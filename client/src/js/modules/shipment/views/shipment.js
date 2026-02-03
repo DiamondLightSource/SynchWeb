@@ -49,6 +49,8 @@ define(['marionette',
             'click #add_dewar': 'addDewar',
             'click a.send': 'sendShipment',
             'click a.pdf': utils.signHandler,
+            'click a.labels': 'printLabels',
+            'click a.awb': 'createAWB',
             'click a.cancel_pickup': 'cancelPickup',
             'click a.ready': 'markAsReady',
         },
@@ -61,7 +63,6 @@ define(['marionette',
             sent: '.sent',
             booking: '.booking',
             dhlmessage: '.dhlmessage',
-            buttons: '.buttons',
         },
 
 
@@ -102,13 +103,31 @@ define(['marionette',
             })
         },
 
+        printLabels: function(e) {
+            e.preventDefault()
+            const errors = this.model.validate(this.model.attributes)
+            if (errors) {
+                app.alert({ message: 'Cannot print labels: ' + Object.values(errors)[0] })
+            } else {
+                utils.signHandler(e)
+            }
+        },
+
+        createAWB: function(e) {
+            const errors = this.model.validate(this.model.attributes)
+            if (errors) {
+                e.preventDefault()
+                app.alert({ message: 'Cannot create air waybill: ' + Object.values(errors)[0] })
+            }
+        },
+
         sendShipment: function(e) {
             e.preventDefault()
             var self = this
             Backbone.ajax({
                 url: app.apiurl+'/shipment/send/'+this.model.get('SHIPPINGID'),
                 success: function() {
-                    self.model.set({ SHIPPINGSTATUS: 'send to DLS' })
+                    self.model.set({ SHIPPINGSTATUS: 'sent to facility' })
                     app.alert({ className: 'message notify', message: 'Shipment successfully marked as sent' })
                     self.render()
                 },
@@ -209,11 +228,6 @@ define(['marionette',
         },
 
         showButtons: function() {
-            if (this.model.get('LCOUT') && this.model.get('SAFETYLEVEL')) {
-                this.ui.buttons.show()
-            } else {
-                this.ui.buttons.hide()
-            }
             const status = this.model.get('SHIPPINGSTATUS')
             const proc = this.model.get('PROCESSING')
             if ((status === 'opened' || status === 'awb created' || status === 'pickup booked') && proc == 0) {
@@ -242,7 +256,7 @@ define(['marionette',
                     this.ui.booking.html('<a class="button" href="#"><i class="fa fa-credit-card"></i> Create Air Waybill - Disabled</a>')
                 } else if (externalid && ss_url) {
                     const link = ss_url+'/shipment-requests/'+externalid+'/incoming'
-                    this.ui.booking.html('<a class="button shipping-service" href="'+link+'"><i class="fa fa-print"></i> Manage shipment booking</a>')
+                    this.ui.booking.html('<a class="button shipping-service" href="'+link+'"><i class="fa fa-print"></i> Manage Shipment Booking</a>')
                 } else {
                     this.ui.booking.html('<a class="button awb" href="/shipments/awb/sid/'+shippingid+'"><i class="fa fa-credit-card"></i> Create DHL Air Waybill</a>')
                 }
@@ -257,13 +271,12 @@ define(['marionette',
                 const safetylevel = this.model.get('SAFETYLEVEL')
                 const country = this.model.get('COUNTRY')
                 const courier = this.model.get('DELIVERYAGENT_AGENTNAME')
-                const lcout = this.model.get('LCOUT')
                 const fac_country_nde = app.options.get('facility_courier_countries_nde')
                 const fac_country_link = app.options.get('facility_courier_countries_link')
                 const fac_country = app.options.get('facility_courier_countries')
-                if (!lcout || !safetylevel) {
-                    this.ui.dhlmessage.html('<p class="message notify">Set an Outgoing Lab Contact and Safety Level in order to manage shipping.</p>')
-                } else if (label == '1') {
+                const ss_url = app.options.get("shipping_service_app_url_incoming")
+                const externalid = this.model.get('EXTERNALSHIPPINGIDTOSYNCHROTRON')
+                if (label == '1') {
                     this.ui.dhlmessage.html('<p class="message notify">You can print your Air Waybill by clicking &quot;Print Air Waybill&quot; below.</p>')
                 } else if (safetylevel && safetylevel == "Red") {
                     this.ui.dhlmessage.html('<p class="message alert">Shipping of red samples is not available through this application.</p>')
@@ -273,6 +286,8 @@ define(['marionette',
                     this.ui.dhlmessage.html('<p class="message alert">International shipping is not available through this application. If you&apos;re arranging your own shipping, enter your tracking numbers below after booking and include printed return labels in the dewar case.</p>')
                 } else if (courier && courier.toLowerCase().trim() != 'dhl') {
                     this.ui.dhlmessage.html('<p class="message alert">Shipping through this application is only available using DHL.</p>')
+                } else if (externalid && ss_url) {
+                    this.ui.dhlmessage.html('<p class="message notify">You can now manage your shipment with DHL using &quot;Manage Shipment Booking&quot; below.</p>')
                 } else {
                     this.ui.dhlmessage.html('<p class="message notify">You can now book your shipment with DHL using &quot;Create Air Waybill&quot; below.</p>')
                 }
