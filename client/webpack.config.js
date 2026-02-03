@@ -76,7 +76,6 @@ module.exports = (env, argv) => ({
       vue: 'vue/dist/vue.min',
       veevalidate: 'vee-validate/dist/vee-validate.min',
       luxon: 'luxon',
-      formatDate: 'date-fns/format',
 
       js: path.resolve(__dirname, 'src/js'),
       css: path.resolve(__dirname, 'src/css'),
