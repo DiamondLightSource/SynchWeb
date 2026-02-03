@@ -1029,11 +1029,11 @@ define(['marionette',
             if (options.o.get('DISPENSEX') && options.o.get('DISPENSEY')) {
                 var disx = parseInt(options.o.get('DISPENSEX'))
                 var disy = parseInt(options.o.get('DISPENSEY'))
-                this.ctx.strokeStyle = 'white'
+                this.ctx.strokeStyle = 'deeppink'
                 this.ctx.beginPath()
                 this.ctx.arc(disx, disy, 50, 0, 2*Math.PI)
                 this.ctx.stroke()
-                this.ctx.fillStyle = 'white'
+                this.ctx.fillStyle = 'deeppink'
                 this.ctx.fillText('D',disx-5*m, disy+5*m)
                 this.ctx.closePath()
             }
