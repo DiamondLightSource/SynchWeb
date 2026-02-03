@@ -468,6 +468,14 @@ define(['backbone',
                 return
             }
 
+            const ss_url = app.options.get("shipping_service_app_url_incoming")
+            const externalid = this.shipment.get('EXTERNALSHIPPINGIDTOSYNCHROTRON')
+            if (externalid && ss_url) {
+                const link = ss_url+'/shipment-requests/'+externalid+'/incoming'
+                window.location.assign(link)
+                return
+            }
+
             var prod = null
             if (
                 (
@@ -510,7 +518,7 @@ define(['backbone',
                 },
                 success: function(resp) {
                     if (
-                        app.options.get("shipping_service_app_url_incoming")
+                        ss_url
                         && (Number(self.terms.get('ACCEPTED')) === 1) // terms.ACCEPTED could be undefined, 1, or "1"
                         && app.options.get("facility_courier_countries").includes(country)
                     ) {
@@ -521,9 +529,7 @@ define(['backbone',
                                 app.alert({message: "Error performing redirect: external shipping id is null"})
                                 return;
                             }
-                            window.location.assign(
-                                `${app.options.get("shipping_service_app_url")}/shipment-requests/${external_id}/incoming`
-                            )
+                            window.location.assign(`${ss_url}/shipment-requests/${external_id}/incoming`)
                         })
                     } else {
                         app.message({ message: 'Air Waybill Successfully Created'})

@@ -3451,6 +3451,10 @@ class Shipment extends Page
             && in_array($this->arg('COUNTRY'), $facility_courier_countries)
             && Utils::getValueOrDefault($use_shipping_service_redirect_incoming_shipments)
         ) {
+            if ($ship['EXTERNALSHIPPINGIDTOSYNCHROTRON']) {
+                $this->_error("Shipping service error: Booking already exists");
+                return;
+            }
             try {
                 $this->_create_shipment_shipment_request($ship, $dewars);
                 $this->_output(array('EXTERNAL' => "1"));
