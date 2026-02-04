@@ -153,6 +153,7 @@ class Shipment extends Page
         'AWBURL' => '[\w\:\/\.\-]+',
         'PROPOSALTYPE' => '\w+',
         'pickup_confirmation_code' => '\w+',
+        'status' => '\w+',
 
         'manifest' => '\d',
         'currentuser' => '\d',
@@ -209,7 +210,7 @@ class Shipment extends Page
         array('/dewars/transfer', 'post', '_transfer_dewar'),
         array('/dewars/dispatch', 'post', '_dispatch_dewar'),
         array('/dewars/confirmdispatch/did/:did/token/:TOKEN', 'post', '_dispatch_dewar_confirmation'),
-        array('/dewars/confirmpickup/sid/:sid/token/:TOKEN', 'post', '_pickup_dewar_confirmation'),
+        array('/dewars/confirmpickup/sid/:sid/token/:TOKEN', 'post', '_incoming_shipment_confirmation'),
 
         array('/dewars/tracking(/:DEWARID)', 'get', '_get_dewar_tracking'),
 
@@ -1486,15 +1487,26 @@ class Shipment extends Page
         $this->_output(1);
     }
 
-    function _pickup_dewar_confirmation()
+    function _incoming_shipment_confirmation()
     {
         if (!$this->has_arg('sid'))
             $this->_error('No shipment specified');
         if (!$this->has_arg('TOKEN'))
             $this->_error('No token specified');
-        if (!$this->has_arg('tracking_number'))
-            $this->_error('No tracking number specified');
+        if (!$this->has_arg('status'))
+            $this->_error('No status specified');
 
+        if ($this->arg('status') === 'CREATED') {
+            $this->_cancel_pickup_dewar_confirmation();
+        } else if ($this->arg('status') === 'BOOKED' || $this->arg('status') === 'PENDING') {
+            $this->_pickup_dewar_confirmation();
+        } else {
+            $this->_error('Invalid status');
+        }
+    }
+
+    function _pickup_dewar_confirmation()
+    {
         // Check token against each dewar
         $dewars = $this->db->pq(
             "SELECT d.dewarid,
@@ -1504,29 +1516,42 @@ class Shipment extends Page
             array($this->arg('sid'))
         );
 
+        if ($this->arg('status') === 'BOOKED') {
+            if (!$this->has_arg('tracking_number'))
+                $this->_error('No tracking number specified');
+            $tracking = $this->arg('tracking_number');
+            $status = 'awb created';
+        } else if ($this->arg('status') === 'PENDING') {
+            $tracking = '';
+            $status = 'awb requested';
+        } else {
+            $this->_error('Invalid status');
+        }
+
+
         foreach ($dewars as $dew) {
             if ($this->arg('TOKEN') !== $dew['TOKEN']) {
                 $this->_error('Incorrect token');
             }
         }
 
-        $this->db->pq("UPDATE shipping set shippingstatus='awb created' WHERE shippingid=:1", array($this->arg('sid')));
+        $this->db->pq("UPDATE shipping set shippingstatus=:1 WHERE shippingid=:2", array($status, $this->arg('sid')));
 
         foreach ($dewars as $dew) {
             // Update the dewar status and storage location
             $this->db->pq(
                 "UPDATE dewar
-                set dewarstatus='awb created', storagelocation='off-site', trackingnumbertosynchrotron=:2
+                set dewarstatus=:2, storagelocation='off-site', trackingnumbertosynchrotron=:3
                 WHERE dewarid=:1",
-                array($dew['DEWARID'], $this->arg('tracking_number'))
+                array($dew['DEWARID'], $status, $tracking)
             );
 
             // Update dewar transport history
             $this->db->pq(
                 "INSERT INTO dewartransporthistory (dewartransporthistoryid,dewarid,dewarstatus,storagelocation,arrivaldate)
-                VALUES (s_dewartransporthistory.nextval,:1,'awb created','off-site',CURRENT_TIMESTAMP)
+                VALUES (s_dewartransporthistory.nextval,:1,:2,'off-site',CURRENT_TIMESTAMP)
                 RETURNING dewartransporthistoryid INTO :id",
-                array($dew['DEWARID'])
+                array($dew['DEWARID'], $status)
             );
         }
 
@@ -1546,6 +1571,41 @@ class Shipment extends Page
                     array($dew['DEWARID'])
                 );
             }
+        }
+
+        $this->_output(1);
+    }
+
+    function _cancel_pickup_dewar_confirmation()
+    {
+        // Check token against each dewar
+        $dewars = $this->db->pq(
+            "SELECT d.dewarid, json_unquote(json_extract(d.extra, '$.token')) as token, storagelocation
+                FROM dewar d
+                WHERE d.shippingid=:1",
+            array($this->arg('sid'))
+        );
+
+        foreach ($dewars as $dew) {
+            if ($this->arg('TOKEN') !== $dew['TOKEN']) {
+                $this->_error('Incorrect token');
+            }
+        }
+
+        $this->db->pq("UPDATE shipping set shippingstatus='pickup cancelled' WHERE shippingid=:1", array($this->arg('sid')));
+
+        foreach ($dewars as $dew) {
+            // Update the dewar status
+            $this->db->pq("UPDATE dewar set dewarstatus='pickup cancelled' WHERE dewarid=:1", array($dew['DEWARID']));
+
+            // Update dewar transport history
+            $loc = Utils::getValueOrDefault($dew['STORAGELOCATION'], '');
+            $this->db->pq(
+                "INSERT INTO dewartransporthistory (dewartransporthistoryid,dewarid,dewarstatus,storagelocation,arrivaldate)
+                VALUES (s_dewartransporthistory.nextval,:1,'pickup cancelled',:2,CURRENT_TIMESTAMP)
+                RETURNING dewartransporthistoryid INTO :id",
+                array($dew['DEWARID'], $loc)
+            );
         }
 
         $this->_output(1);
