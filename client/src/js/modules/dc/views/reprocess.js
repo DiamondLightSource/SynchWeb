@@ -267,6 +267,7 @@ define(['backbone', 'marionette', 'views/dialog',
             al: 'input[name=alpha]',
             be: 'input[name=beta]',
             ga: 'input[name=gamma]',
+            fields: 'input, select',
         },
 
         buttons: {
@@ -281,6 +282,8 @@ define(['backbone', 'marionette', 'views/dialog',
             'change @ui.pipeline': 'updatePipeline',
             'change @ui.indexingMethod': 'updateIndexingMethod',
             'click a.multicrystal': 'closeDialog',
+            'input @ui.fields': 'onFieldChanged',
+            'change @ui.fields': 'onFieldChanged',
         },
 
         templateHelpers: function() {
@@ -556,12 +559,24 @@ define(['backbone', 'marionette', 'views/dialog',
         },
 
 
+        onFieldChanged: function() {
+            this._enableIntegrateButton();
+        },
+
+
         _disableIntegrateButton: function() {
             var btn = $('.ui-dialog-buttonpane button:contains("Integrate")')
-            btn.button('disable').button('option', 'label', 'Submitted!')
-            setTimeout(function() {
-                btn.button('enable').button('option', 'label', 'Integrate')
+            btn.addClass('submitted').button('disable').button('option', 'label', 'Submitted!')
+            this.resetTimeout = setTimeout(() => {
+                this._enableIntegrateButton()
             }, 5000)
+        },
+
+
+        _enableIntegrateButton: function() {
+            var btn = $('.ui-dialog-buttonpane button.submitted')
+            btn.removeClass('submitted').button('enable').button('option', 'label', 'Integrate')
+            clearTimeout(this.resetTimeout);
         },
 
 
