@@ -356,6 +356,13 @@
     # - These are show on the beamline status and active datacollection lists
     $webcams = array('i03' => array('1.2.3.4'),
                      );
+    # Allow overriding of default resolution (480x270) and fps (5) or any other URL parameters
+    $webcamParameters = array(
+        '1.2.3.4' => array(
+            'resolution' => '480x360',
+            'fps' => 1,
+        ),
+    );
 
     # On-axis viewing (OAV) camera addresses
     # - Shown on beamline status page for staff, for remote debugging
