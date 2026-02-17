@@ -8,14 +8,14 @@ use SynchWeb\Utils;
 
 class Processing extends Page {
     public static $dispatch = array(
-        array('/:id', 'get', '_results'),
+        array('/:id(/dcg/:dcg)', 'get', '_results'),
         array('/visit/:visit(/csv/:csv)', 'get', '_results_for_visit'),
         array('/status', 'post', '_statuses'),
 
         array('/messages/status', 'post', '_ap_message_status'),
         array('/messages', 'get', '_ap_message'),
 
-        array('/downstream/:id', 'get', '_downstream'),
+        array('/downstream/:id(/dcg/:dcg)', 'get', '_downstream'),
         array('/downstream/images/:aid(/n/:n)', 'get', '_downstream_images'),
         array('/downstream/mapmodel/:aid(/n/:n)', 'get', '_downstream_mapmodel'),
         array('/multiplex_jobs/groups/:blSampleGroupId', 'get', '_get_latest_multiplex_job_result'),
@@ -26,6 +26,7 @@ class Processing extends Page {
     public static $arg_list = array(
         'id' => '\d+',
         'ids' => '\d+',
+        'dcg' => '\d+',
         'visit' => '\w+\d+-\d+',
         'map' => '\d+',
         'n' => '\d+',
@@ -217,7 +218,7 @@ class Processing extends Page {
 
         $processings = $this->db->union(
             array(
-                "SELECT app.autoprocprogramid, dc.datacollectionid, app.processingprograms, app.processingstatus as status, 'autoproc' as type
+                "SELECT app.autoprocprogramid, dc.datacollectionid, dc.datacollectiongroupid, app.processingprograms, app.processingstatus as status, 'autoproc' as type
                 FROM datacollection dc 
                 INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
                 INNER JOIN blsession s ON s.sessionid = dcg.sessionid 
@@ -227,7 +228,7 @@ class Processing extends Page {
                 WHERE $where
                     AND app.processingprograms NOT IN ('$filter')
                     AND app.processingprograms NOT IN ('$screening_filter')",
-                "SELECT app.autoprocprogramid, dc.datacollectionid, app.processingprograms, app.processingstatus as status, 'downstream' as type
+                "SELECT app.autoprocprogramid, dc.datacollectionid, dc.datacollectiongroupid, app.processingprograms, app.processingstatus as status, 'downstream' as type
                 FROM datacollection dc 
                 INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
                 INNER JOIN blsession s ON s.sessionid = dcg.sessionid 
@@ -239,7 +240,7 @@ class Processing extends Page {
                     AND api.autoprocintegrationid IS NULL
                     AND app.processingprograms NOT IN ('$filter')
                     AND app.processingprograms NOT IN ('$screening_filter')",
-                "SELECT app.autoprocprogramid, dc.datacollectionid, app.processingprograms, app.processingstatus as status, 'screening' as type
+                "SELECT app.autoprocprogramid, dc.datacollectionid, dc.datacollectiongroupid, app.processingprograms, app.processingstatus as status, 'screening' as type
                 FROM datacollection dc
                 INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
                 INNER JOIN blsession s ON s.sessionid = dcg.sessionid
@@ -256,33 +257,35 @@ class Processing extends Page {
         );
 
         $statuses = array();
-        foreach ($processings as $p) {
-            if (!array_key_exists($p['DATACOLLECTIONID'], $statuses)) {
-                $statuses[$p['DATACOLLECTIONID']] = array();
-            }
-            if (
-                !array_key_exists($p['TYPE'], $statuses[$p['DATACOLLECTIONID']])
-            ) {
-                $statuses[$p['DATACOLLECTIONID']][$p["TYPE"]] = array();
-            }
+        foreach ($ids as $id) {
+            $statuses[$id] = array();
+            foreach ($processings as $p) {
+                if ($p['DATACOLLECTIONID'] === $id || $p['DATACOLLECTIONGROUPID'] === $id) {
+                    if (
+                        !array_key_exists($p['TYPE'], $statuses[$id])
+                    ) {
+                        $statuses[$id][$p["TYPE"]] = array();
+                    }
 
-            if (
-                !array_key_exists(
-                    $p['PROCESSINGPROGRAMS'],
-                    $statuses[$p['DATACOLLECTIONID']][$p['TYPE']]
-                )
-            ) {
-                $statuses[$p['DATACOLLECTIONID']][$p["TYPE"]][
-                    $p['PROCESSINGPROGRAMS']
-                ] = array();
-            }
+                    if (
+                        !array_key_exists(
+                            $p['PROCESSINGPROGRAMS'],
+                            $statuses[$id][$p['TYPE']]
+                        )
+                    ) {
+                        $statuses[$id][$p["TYPE"]][
+                            $p['PROCESSINGPROGRAMS']
+                        ] = array();
+                    }
 
-            array_push(
-                $statuses[$p['DATACOLLECTIONID']][$p['TYPE']][
-                    $p['PROCESSINGPROGRAMS']
-                ],
-                $this->_map_status($p['STATUS'])
-            );
+                    array_push(
+                        $statuses[$id][$p['TYPE']][
+                            $p['PROCESSINGPROGRAMS']
+                        ],
+                        $this->_map_status($p['STATUS'])
+                    );
+                }
+            }
         }
 
         return $statuses;
@@ -296,6 +299,14 @@ class Processing extends Page {
                 foreach ($this->arg('ids') as $i) {
                     array_push($ids, $i);
                     array_push($where, 'dc.datacollectionid=:' . sizeof($ids));
+                }
+            }
+        }
+        if ($this->has_arg('dcg')) {
+            if (is_array($this->arg('dcg'))) {
+                foreach ($this->arg('dcg') as $i) {
+                    array_push($ids, $i);
+                    array_push($where, 'dc.datacollectiongroupid=:' . sizeof($ids));
                 }
             }
         }
@@ -590,14 +601,33 @@ class Processing extends Page {
      * @param integer $id DataCollectionId
      */
     function _results($id) {
+
+        if ($this->has_arg('dcg') && $this->arg('dcg') == 1) {
+            $where = array();
+            $dcs = $this->db->pq("SELECT datacollectionid FROM datacollection dc
+                WHERE datacollectiongroupid = (
+                    SELECT datacollectiongroupId
+                    FROM datacollection
+                    WHERE datacollectionid = :1
+                )", array($id));
+            $args = array();
+            foreach ($dcs as $i) {
+                array_push($args, $i['DATACOLLECTIONID']);
+                array_push($where, 'api.datacollectionid=:' . sizeof($args));
+            }
+            $whereClause = '(' . implode(' OR ', $where) . ')';
+        } else {
+            $whereClause = "api.datacollectionid=:1";
+            $args = array($id);
+        }
+
         $processing_job_query = $this->_autoprocessing_query_builder(
-            "api.datacollectionid = :1 AND app.processingstatus IS NOT NULL",
+            $whereClause . " AND app.processingstatus IS NOT NULL",
             "GROUP BY app.autoprocprogramid, apss.autoprocscalingstatisticsid",
             "ORDER BY apss.scalingstatisticstype DESC");
-        $rows = $this->db->pq($processing_job_query, array($id));
+        $rows = $this->db->pq($processing_job_query, $args);
 
-        $whereClause = "api.datacollectionid=:1";
-        $messages = $this->_generate_auto_program_messages($whereClause, "", array($id));
+        $messages = $this->_generate_auto_program_messages($whereClause, "", $args);
 
         $output = $this->_format_auto_processing_result($rows, $messages);
 
@@ -611,28 +641,10 @@ class Processing extends Page {
         if (!($this->has_arg('visit') || $this->has_arg('prop'))) {
             $this->_error('No visit or proposal specified');
         }
-        $where = 'WHERE s.proposalid=:1';
-        $args = array($this->proposalid);
 
-        $wids = array();
-        if ($this->has_arg('ids')) {
-            if (is_array($this->arg('ids'))) {
-                foreach ($this->arg('ids') as $i) {
-                    array_push(
-                        $wids,
-                        'dc.datacollectionid=:' . (sizeof($args) + 1)
-                    );
-                    array_push($args, $i);
-                }
-            }
-        }
-
-        if (!sizeof($wids)) {
-            $this->_output(array());
-            return;
-        }
-
-        $where .= ' AND (' . implode(' OR ', $wids) . ')';
+        list($where, $args) = $this->_get_ids();
+        array_push($args, $this->proposalid);
+        $where .= ' AND s.proposalid=:' . sizeof($args);
 
         $rows = $this->db->union(
             array(
@@ -643,7 +655,7 @@ class Processing extends Page {
             INNER JOIN datacollection dc ON dc.datacollectionid = api.datacollectionid
             INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
             INNER JOIN blsession s ON s.sessionid = dcg.sessionid
-            $where
+            WHERE $where
             GROUP BY dc.datacollectionid",
                 "SELECT app.autoprocprogramid, dc.datacollectionid as id, SUM(IF(appm.severity = 'ERROR', 1, 0)) as errors, SUM(IF(appm.severity = 'WARNING', 1, 0)) as warnings, SUM(IF(appm.severity = 'INFO', 1, 0)) as infos
             FROM autoprocprogrammessage appm
@@ -652,7 +664,7 @@ class Processing extends Page {
             INNER JOIN datacollection dc ON dc.datacollectionid = pj.datacollectionid
             INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
             INNER JOIN blsession s ON s.sessionid = dcg.sessionid
-            $where
+            WHERE $where
             GROUP BY dc.datacollectionid
         ",
             ),
@@ -673,6 +685,7 @@ class Processing extends Page {
         }
         if (
             !$this->has_arg('id') &&
+            !$this->has_arg('dcg') &&
             !$this->has_arg('AUTOPROCPROGRAMMESSAGEID')
         ) {
             $this->_error('No datacollection or message specified');
@@ -682,14 +695,18 @@ class Processing extends Page {
         $args = array($this->proposalid);
 
         if ($this->has_arg('AUTOPROCPROGRAMMESSAGEID')) {
-            $where .=
-                ' AND appm.autoprocprogrammessageid=:' . (sizeof($args) + 1);
             array_push($args, $this->arg('AUTOPROCPROGRAMMESSAGEID'));
+            $where .= ' AND appm.autoprocprogrammessageid=:' . sizeof($args);
         }
 
         if ($this->has_arg('id')) {
-            $where .= ' AND dc.datacollectionid=:2';
             array_push($args, $this->arg('id'));
+            $where .= ' AND dc.datacollectionid=:' . sizeof($args);
+        }
+
+        if ($this->has_arg('dcg')) {
+            array_push($args, $this->arg('dcg'));
+            $where .= ' AND dc.datacollectiongroupid=:' . sizeof($args);
         }
 
         $rows = $this->db->union(
@@ -736,8 +753,23 @@ class Processing extends Page {
         $args = array($this->proposalid);
 
         if ($dcid) {
-            $where .= ' AND dc.datacollectionid=:' . (sizeof($args) + 1);
-            array_push($args, $dcid);
+            if ($this->has_arg('dcg') && $this->arg('dcg') == 1) {
+                $whereClause = array();
+                $dcs = $this->db->pq('SELECT datacollectionid FROM datacollection dc
+                    WHERE datacollectiongroupid = (
+                        SELECT datacollectiongroupId
+                        FROM datacollection
+                        WHERE datacollectionid = :1
+                    )', array($dcid));
+                foreach ($dcs as $i) {
+                    array_push($args, $i['DATACOLLECTIONID']);
+                    array_push($whereClause, 'dc.datacollectionid=:' . sizeof($args));
+                }
+                $where .= ' AND (' . implode(' OR ', $whereClause) . ')';
+            } else {
+                array_push($args, $dcid);
+                $where .= ' AND dc.datacollectionid=:' . sizeof($args);
+            }
         }
 
         if ($aid) {
@@ -798,14 +830,33 @@ class Processing extends Page {
     function _downstream($id) {
         $downstreams = $this->_get_downstreams($id);
 
+        if ($this->has_arg('dcg') && $this->arg('dcg') == 1) {
+            $where = array();
+            $dcs = $this->db->pq("SELECT datacollectionid FROM datacollection dc
+                WHERE datacollectiongroupid = (
+                    SELECT datacollectiongroupId
+                    FROM datacollection
+                    WHERE datacollectionid = :1
+                )", array($id));
+            $args = array();
+            foreach ($dcs as $i) {
+                array_push($args, $i['DATACOLLECTIONID']);
+                array_push($where, 'pj.datacollectionid=:' . sizeof($args));
+            }
+            $whereClause = '(' . implode(' OR ', $where) . ')';
+        } else {
+            $whereClause = "pj.datacollectionid=:1";
+            $args = array($id);
+        }
+
         $msg_tmp = $this->db->pq(
             "SELECT app.autoprocprogramid, appm.recordtimestamp, appm.severity, appm.message, appm.description
                 FROM autoprocprogrammessage appm
                 INNER JOIN autoprocprogram app ON app.autoprocprogramid = appm.autoprocprogramid
                 INNER JOIN processingjob pj ON app.processingjobid = pj.processingjobid
                 LEFT OUTER JOIN autoprocintegration api ON api.autoprocprogramid = app.autoprocprogramid
-                WHERE pj.datacollectionid =:1 AND api.autoprocintegrationid IS NULL",
-            array($id)
+                WHERE $whereClause AND api.autoprocintegrationid IS NULL",
+            $args
         );
 
         $messages = array();

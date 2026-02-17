@@ -46,6 +46,13 @@ define(['marionette',
     var DCBaseView = Marionette.LayoutView.extend({
         titleView: DCTitleBase,
         fullPath: false,
+        serializeData: function () {
+            var data = this.model.toJSON();
+            data.min = data.DCC > 1 ? 'Min ' : '';
+            data.max = data.DCC > 1 ? 'Max ' : '';
+            data.tot = data.DCC > 1 ? 'Total ' : '';
+            return data;
+        },
 
         modelEvents: {
             'change': 'updateInPlace',
@@ -82,10 +89,15 @@ define(['marionette',
                 this.$el.find('li.group').show()
                 this.$el.find('.dcglink').show()
                 this.$el.find('.dclink').hide()
+                this.$el.find('.reprocess').hide()
+                if (this.model.get('TYPE') == 'data') {
+                    this.$el.children('.data_collection').addClass('data_collection_group')
+                }
             } else {
                 this.$el.find('li.group').hide()
                 this.$el.find('.dcglink').hide()
                 this.$el.find('.dclink').show()
+                this.$el.find('.reprocess').show()
             }
 
             return value
@@ -171,7 +183,7 @@ define(['marionette',
             this.titleView.render()
 
             var vis_link =this.getOption('templateHelpers')()['VIS_LINK']
-            this.ui.ul.prepend('<li data-testid="dc-group" class="group">Group: <a href="/dc/visit/'+vis_link+'/dcg/'+this.model.escape('DCG')+'"><span class="DCC">'+this.model.escape('DCC')+'</span> Data Collections</a></li>')
+            this.ui.ul.prepend('<li data-testid="dc-group" class="group">Group: <b><a href="/dc/visit/'+vis_link+'/dcg/'+this.model.escape('DCG')+'"><span class="DCC">'+this.model.escape('DCC')+'</span> Data Collections</a></b></li>')
             this.ui.ul.prepend('<li data-testid="dc-sample" class="sample"><span class="wrap">Sample: <a href="/samples/sid/'+this.model.escape('BLSAMPLEID')+'">'+this.model.escape('SAMPLE')+'</a></span></li>')
             
             this.updateBLSAMPLEID()

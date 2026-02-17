@@ -42,8 +42,9 @@ define(['marionette', 'modules/dc/models/distl', 'utils',
       initialize: function(options) {
           var pm = options.parent
                                                
-          this.model = new DCDISTLModel({ id: pm.get('ID'), nimg: pm.get('NUMIMG'), pm: pm })
-          this.model.fetch()
+          const dcg = pm.get('DCC') > 1 ? 1 : 0
+          this.model = new DCDISTLModel({ id: pm.get('ID'), nimg: pm.get('NUMIMG'), pm: pm, dcg: dcg })
+          this.model.fetch({ data: { dcg: dcg }})
           this.$el.css('opacity', 0)
           //this.listenTo(app, 'window:scroll', this.lazyLoad, this)
       },

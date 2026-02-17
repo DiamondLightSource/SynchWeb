@@ -144,6 +144,11 @@
 
 }
 
+body.cursor-loading,
+body.cursor-loading * {
+  cursor: wait !important;
+}
+
 .loading-container {
     min-height: 450px;
     position: relative;

@@ -163,7 +163,7 @@ define(['backbone', 'marionette',
         
         initialize: function(options) {
             dcPurgedProcessedData = options.dcPurgedProcessedData;
-            this.collection = new DownStreams(null, { id: options.id })
+            this.collection = new DownStreams(null, { id: options.id, dcc: options.dcc })
             this.collection.fetch().done(this.render.bind(this))
         },
         
