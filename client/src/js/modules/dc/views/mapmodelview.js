@@ -1,11 +1,11 @@
 define(['marionette', 
-    'uglymol', 'gzip', 
+    'uglymol',
     'modules/dc/collections/downstreams', 
     'modules/dc/collections/dimplepeaks', 
     'modules/dc/views/dimplepeaktable', 
     'templates/dc/mapmodelview.html',
     "./uglymolhelper"
-    ], function(Marionette, Uglymol, zlib,
+    ], function(Marionette, Uglymol,
         DownStreams, DIMPLEPeaks, DIMPLEPeakTable,  template, defaultViewerOptions) {
 
     return Marionette.LayoutView.extend({
@@ -42,14 +42,15 @@ define(['marionette',
         doLoadMaps: function(id, cb) {
             var self = this
             var xhr = this.xhrWithStatus('Downloading Map '+id)
-            xhr.onload = function() {
+            xhr.onload = async function() {
                 if (xhr.status == 0 || xhr.status != 200) {
                     this.onerror(xhr.status)
 
                 } else {
-                    var gunzip = new zlib.Zlib.Gunzip(new Uint8Array(this.response))
-                    var plain = gunzip.decompress()
-                    self.viewer.load_map_from_buffer(plain.buffer, { format: 'ccp4', diff_map: id == 2 })
+                    const ds = new DecompressionStream('gzip')
+                    const stream = new Response(this.response).body.pipeThrough(ds)
+                    const plain = await new Response(stream).arrayBuffer()
+                    self.viewer.load_map_from_buffer(plain, { format: 'ccp4', diff_map: id == 2 })
                 }
                 
                 self.mapsLoaded++
