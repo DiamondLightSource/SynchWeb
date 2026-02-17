@@ -2607,8 +2607,8 @@ class Shipment extends Page
         $tem = $this->has_arg('STORAGETEMPERATURE') ? $this->arg('STORAGETEMPERATURE') : null;
 
         $crid = $this->has_arg('CONTAINERREGISTRYID') ? $this->arg('CONTAINERREGISTRYID') : null;
-        $pcid = $this->has_arg('PARENTCONTAINERID') ? $this->arg('PARENTCONTAINERID') : null;
-        $pcl = $this->has_arg('PARENTCONTAINERLOCATION') ? $this->arg('PARENTCONTAINERLOCATION') : null;
+        $pcid = $this->argIfNotEmptyString('PARENTCONTAINERID');
+        $pcl = $this->argIfNotEmptyString('PARENTCONTAINERLOCATION');
 
         $pipeline = $this->has_arg('PROCESSINGPIPELINEID') ? $this->arg('PROCESSINGPIPELINEID') : null;
         $source = $this->has_arg('SOURCE') ? $this->arg('SOURCE') : null;
@@ -2640,7 +2640,7 @@ class Shipment extends Page
             if ($e->getCode() == 1062) {
                  $this->_error('Barcode is not unique. Please enter a different barcode.', 409);
             } else {
-                $this->_error('An unexpected error occurred.', 500);
+                $this->_error('An unexpected error occurred: ' . $e->getMessage(), 500);
             }
         }
     }
@@ -3451,6 +3451,10 @@ class Shipment extends Page
             && in_array($this->arg('COUNTRY'), $facility_courier_countries)
             && Utils::getValueOrDefault($use_shipping_service_redirect_incoming_shipments)
         ) {
+            if ($ship['EXTERNALSHIPPINGIDTOSYNCHROTRON']) {
+                $this->_error("Shipping service error: Booking already exists");
+                return;
+            }
             try {
                 $this->_create_shipment_shipment_request($ship, $dewars);
                 $this->_output(array('EXTERNAL' => "1"));

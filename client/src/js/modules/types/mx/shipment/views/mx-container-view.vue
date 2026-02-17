@@ -288,7 +288,6 @@
 </template>
 
 <script>
-import formatDate from 'date-fns-tz/format'
 import { ValidationObserver, ValidationProvider }  from 'vee-validate'
 
 import ContainerHistory from 'modules/shipment/collections/containerhistory'
@@ -546,7 +545,7 @@ export default {
         const response = await this.toggleContainerQueue(true, this.containerId)
         this.$emit('update-container-state', {
           CONTAINERQUEUEID: response.get('CONTAINERQUEUEID'),
-          QUEUEDTIMESTAMP: formatDate(new Date(), 'dd-MM-yyyy HH:mm')
+          QUEUEDTIMESTAMP: new Date().toLocaleString()
         })
         this.$nextTick(() => {
           this.loadContainerData()
