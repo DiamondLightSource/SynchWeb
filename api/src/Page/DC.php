@@ -400,7 +400,7 @@ class DC extends Page
         }
 
         # Data collection group
-        if ($this->has_arg('dcg') || $this->has_arg('PROCESSINGJOBID')) {
+        if ($this->has_arg('dcg') || $this->has_arg('PROCESSINGJOBID') || $this->has_arg('id')) {
             $fields = "count(distinct dca.datacollectionfileattachmentid) as dcac,
                     if(dca.fileType='recip',1,0) as recip,
                     count(distinct dcc.datacollectioncommentid) as dccc,
