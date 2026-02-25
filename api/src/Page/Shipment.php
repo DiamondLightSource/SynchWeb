@@ -316,7 +316,7 @@ class Shipment extends Page
         $tot = $this->db->pq("SELECT count(distinct s.shippingid) as tot 
                 FROM proposal p 
               INNER JOIN shipping s ON p.proposalid = s.proposalid 
-              LEFT OUTER JOIN labcontact c ON s.sendinglabcontactid = c.labcontactid 
+              LEFT OUTER JOIN labcontact lc ON s.sendinglabcontactid = lc.labcontactid
               LEFT OUTER JOIN labcontact c2 ON s.returnlabcontactid = c2.labcontactid 
               LEFT OUTER JOIN dewar d ON d.shippingid = s.shippingid 
               WHERE $where", $args);
@@ -348,8 +348,10 @@ class Shipment extends Page
                 TO_CHAR(s.deliveryagent_deliverydate, 'DD-MM-YYYY') as deliveryagent_deliverydate,
                 s.safetylevel,
                 count(d.dewarid) as dcount,
+                SUM(IFNULL(c.puckcount, 0)) as pcount,
+                SUM(IFNULL(c.platecount, 0)) as plcount,
                 s.sendinglabcontactid,
-                c.cardname as lcout,
+                lc.cardname as lcout,
                 c2.cardname as lcret,
                 s.returnlabcontactid,
                 s.shippingid,
@@ -392,14 +394,21 @@ class Shipment extends Page
             LEFT OUTER JOIN dewar d ON d.shippingid = s.shippingid
             LEFT OUTER JOIN blsession b ON b.sessionid = d.firstexperimentid
             LEFT OUTER JOIN couriertermsaccepted cta ON cta.shippingid = s.shippingid
-            LEFT OUTER JOIN labcontact c ON c.labcontactid = s.sendinglabcontactid
-            LEFT OUTER JOIN person pe ON c.personid = pe.personid
+            LEFT OUTER JOIN labcontact lc ON lc.labcontactid = s.sendinglabcontactid
+            LEFT OUTER JOIN person pe ON lc.personid = pe.personid
             LEFT OUTER JOIN laboratory l ON l.laboratoryid = pe.laboratoryid
             LEFT OUTER JOIN person pe2 ON pe2.personid = s.deliveryagent_flightcodepersonid
+            LEFT OUTER JOIN (
+                SELECT dewarid,
+                COUNT(IF(capacity < 25, 1, NULL)) as puckcount,
+                COUNT(IF(capacity >= 25, 1, NULL)) as platecount
+                FROM container
+                GROUP BY dewarid
+            ) c ON c.dewarid = d.dewarid
             WHERE $where
             GROUP BY
                 s.sendinglabcontactid, s.returnlabcontactid, s.deliveryagent_agentname, s.deliveryagent_agentcode,
-                s.deliveryagent_shippingdate, s.deliveryagent_deliverydate, s.safetylevel, c.cardname, c2.cardname,
+                s.deliveryagent_shippingdate, s.deliveryagent_deliverydate, s.safetylevel, lc.cardname, c2.cardname,
                 s.shippingid, s.shippingname, s.shippingstatus,TO_CHAR(s.creationdate, 'DD-MM-YYYY'),
                 s.isstorageshipping, s.shippingtype, s.comments, s.creationdate
             ORDER BY $order",
