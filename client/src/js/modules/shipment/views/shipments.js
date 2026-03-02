@@ -72,11 +72,9 @@ define(['marionette',
     onRender: function() {
       if (app.proposal && app.proposal.get('ACTIVE') != 1) this.ui.add.hide()
 
-      if (app.proposal.get("TYPES").includes("em")) {
+      if (app.proposal.get("TYPES").includes("em") && "em" in app.options.get("redirects")) {
         this.ui.ebicBanner.show();
-        if (app.options.get("redirects").includes("em")) {
         this.ui.ebicLink.prop("href", `${app.options.get("redirects").em }/proposals/${app.proposal.get("PROPOSAL")}`);
-        }
       }
       this.wrap.show(this.table)
     }
