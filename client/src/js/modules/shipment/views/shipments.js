@@ -40,10 +40,12 @@ define(['marionette',
     
   return Marionette.LayoutView.extend({
     className: 'content',
-    template: '<div><h1>Shipments</h1><p class="help">This page shows a list of shipments associated with the currently selected proposal</p><p class="help">In order to register your samples you need to create a shipment. Shipments contain dewars, dewars contain containers, and containers individual samples. These can be created sequentially by viewing a particular shipment</p><div class="ra"><a class="button add" href="/shipments/add" data-testid="add-shipment-button"><i class="fa fa-plus"></i> Add Shipment</a></div><div class="wrapper"></div></div>',
+    template: '<div><h1>Shipments</h1><div id="ebic-banner" class="tw-hidden tw-my-4 tw-p-4 tw-bg-content-active tw-rounded tw-flex tw-justify-between"> <p class="tw-text-md"> eBIC is switching to SCAUP for shipments. <a id="ebic-link" href="">Click here to select a session and create a new shipment.</a></p></div><p class="help">This page shows a list of shipments associated with the currently selected proposal</p><p class="help">In order to register your samples you need to create a shipment. Shipments contain dewars, dewars contain containers, and containers individual samples. These can be created sequentially by viewing a particular shipment</p><div class="ra"><a class="button add" href="/shipments/add" data-testid="add-shipment-button"><i class="fa fa-plus"></i> Add Shipment</a></div><div class="wrapper"></div></div>',
     regions: { 'wrap': '.wrapper' },
     ui: {
       add: 'a.add',
+      ebicBanner: 'div#ebic-banner',
+      ebicLink: 'a#ebic-link'
     },
     
     initialize: function(options) {
@@ -70,6 +72,10 @@ define(['marionette',
     onRender: function() {
       if (app.proposal && app.proposal.get('ACTIVE') != 1) this.ui.add.hide()
 
+      if (app.proposal.get("TYPES").includes("em") && "em" in app.options.get("redirects")) {
+        this.ui.ebicBanner.show();
+        this.ui.ebicLink.prop("href", `${app.options.get("redirects").em }/proposals/${app.proposal.get("PROPOSAL")}`);
+      }
       this.wrap.show(this.table)
     }
   })
