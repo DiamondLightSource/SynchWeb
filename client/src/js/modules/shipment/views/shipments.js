@@ -74,7 +74,9 @@ define(['marionette',
 
       if (app.proposal.get("TYPES").includes("em")) {
         this.ui.ebicBanner.show();
+        if (app.options.get("redirects").includes("em")) {
         this.ui.ebicLink.prop("href", `${app.options.get("redirects").em }/proposals/${app.proposal.get("PROPOSAL")}`);
+        }
       }
       this.wrap.show(this.table)
     }
