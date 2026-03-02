@@ -46,6 +46,7 @@ define(['marionette',
       xrcholder: '.holder h1.xrc',
       apholder: '.holder h1.ap',
       gridsize: '.gridsize',
+      gridsize2: '.gridsize2',
     },
 
     toggleZoom: function(e) {
@@ -126,9 +127,8 @@ define(['marionette',
         if (this.ui.bx.text) this.ui.by.text((gi.get('DY_MM')*1000).toFixed(0))
 
         if (gi.get('STEPS_Y') > 10 && this.ui.zoom.show) this.ui.zoom.show()
-        var gridsize = gi.get('STEPS_X') + ' x ' + gi.get('STEPS_Y')
-        if (gi.get('STEPS_Z')) { gridsize += ' x ' + gi.get('STEPS_Z') }
-        this.ui.gridsize.html(gridsize)
+        this.ui.gridsize.html(gi.get('STEPS_X') + ' x ' + gi.get('STEPS_Y'))
+        if (gi.get('STEPS_Z')) { this.ui.gridsize2.html(' x ' + gi.get('STEPS_Z')) }
     },
 
     checkXRCandAP: function() {
