@@ -16,23 +16,27 @@
     </div>
     
     <ul class="clearfix">
-        <li data-testid="dc-flux">Flux: <%-parseFloat(FLUX).toExponential(2)%></li>
-        <li data-testid="dc-axis-start">&<%-ROTATIONAXIS%>; Start: <%-AXISSTART%>&deg;</li>
-        <li data-testid="dc-axis-osc">&<%-ROTATIONAXIS%>; Osc: <%-AXISRANGE%>&deg;</li>
-        <li data-testid="dc-axis-overlap">&<%-ROTATIONAXIS%>; Overlap: <%-OVERLAP%>&deg;</li>
-        <li data-testid="dc-no-of-images">No. Images: <%-NUMIMG%></li>
-        <% if (SI != 1 ) { %> <li data-testid="dc-first-image">First Image: <%-SI%></li><% } %>
-        <% if ((KAPPA && KAPPA !=0) || (PHI && PHI != 0) || (CHISTART && CHISTART !=0)) { %><li data-testid="dc-kappa-phi-chi"><% if (KAPPA != null) { %>&kappa;: <%-KAPPA%>&deg;<% } %> <% if (PHI != null) { %>&phi;: <%-PHI%>&deg;<% } %> <% if (CHISTART != null) { %>&chi;: <%-CHISTART%>&deg;<% } %></li><% } %>
-        <li data-testid="dc-resolution">Resolution: <%-RESOLUTION%>&#197;</li>
-        <li data-testid="dc-wavelength">Wavelength: <%-WAVELENGTH%>&#197; (<%-ENERGY%>eV)</li>
-        <li data-testid="dc-exposure-time">Exposure: <%-EXPOSURETIME%>s</li>
-        <%if (DCC > 1 && TOTALDOSE > 0) { %>
-            <li data-testid="dc-dose">Total Dose:  <%-TOTALDOSE%>MGy</li>
-        <% } else if (DCC == 1 && TOTALABSDOSE) { %>
-            <li data-testid="dc-dose">Dose:  <%-TOTALABSDOSE%>MGy</li>
+        <li data-testid="dc-flux"><%- max %>Flux: <%-parseFloat(FLUX).toExponential(2)%></li>
+        <li data-testid="dc-axis-start"><%- min %>&<%-ROTATIONAXIS%>; Start: <%-AXISSTART%>&deg;</li>
+        <li data-testid="dc-axis-osc"><%- min %>&<%-ROTATIONAXIS%>; Osc: <%-AXISRANGE%>&deg;</li>
+        <li data-testid="dc-axis-overlap"><%- min %>&<%-ROTATIONAXIS%>; Overlap: <%-OVERLAP%>&deg;</li>
+        <li data-testid="dc-no-of-images"><%- tot %>Images: <%-NUMIMG%></li>
+        <% if (SI != 1 ) { %> <li data-testid="dc-first-image"><%- min %>First Image: <%-SI%></li><% } %>
+        <% if ((KAPPA && KAPPA !=0) || (PHI && PHI != 0) || (CHISTART && CHISTART !=0)) { %>
+            <li data-testid="dc-kappa-phi-chi">
+            <% if (KAPPA != null) { %><%- min %>&kappa;: <%-KAPPA%>&deg;<% } %>
+            <% if (PHI != null) { %><%- min %>&phi;: <%-PHI%>&deg;<% } %>
+            <% if (CHISTART != null) { %><%- min %>&chi;: <%-CHISTART%>&deg;<% } %>
+            </li>
         <% } %>
-        <li data-testid="dc-transmission">Transmission: <%-TRANSMISSION%>%</li>
-        <li data-testid="dc-beam-size">Beamsize: <%-BSX%>x<%-BSY%>&mu;m</li>
+        <li data-testid="dc-resolution"><%- max %>Detector Resolution: <%-RESOLUTION%>&#197;</li>
+        <li data-testid="dc-wavelength"><%- min %>Wavelength: <%-WAVELENGTH%>&#197; (<%-ENERGY%>eV)</li>
+        <li data-testid="dc-exposure-time"><%- min %>Exposure: <%-EXPOSURETIME%>s</li>
+        <%if (TOTALDOSE > 0) { %>
+            <li data-testid="dc-dose"><%- tot %>Dose: <%-TOTALDOSE%>MGy</li>
+        <% } %>
+        <li data-testid="dc-transmission"><%- min %>Transmission: <%-TRANSMISSION%>%</li>
+        <li data-testid="dc-beam-size"><%- min %>Beamsize: <%-BSX%>x<%-BSY%>&mu;m</li>
         <li data-testid="dc-type">Type: <% if (DCT) print(DCT) %></li>
         <li data-testid="dc-comment" class="comment">Comment: <span class="COMMENTS"><%-COMMENTS%></span></li>
         <% if (!STATE) { %><li data-testid="dc-status">Status: <span class="b">Stopped</span></li><% } %>

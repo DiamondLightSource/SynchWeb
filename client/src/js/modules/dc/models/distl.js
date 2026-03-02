@@ -16,6 +16,7 @@ define(['backbone'], function(Backbone){
     initialize: function(options) {
       this.nimg = options.nimg
       this.pm = options.pm
+      this.dcg = options.dcg
       this.bind('sync', this.poll, this)
       this.refresh_thread = null
       this.running = true
@@ -39,7 +40,11 @@ define(['backbone'], function(Backbone){
           if (this.nimg == _.last(d[0])[0]) refresh = false
         }
         if (this.pm.get('AGE') > 15) refresh = false
-        if (refresh) this.refresh_thread = setTimeout(this.fetch.bind(this), 10000)
+        if (refresh) {
+          this.refresh_thread = setTimeout(() => {
+            this.fetch({ data: { dcg: this.dcg } });
+          }, 10000);
+        }
       }
     },
   })

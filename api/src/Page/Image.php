@@ -309,7 +309,7 @@ class Image extends Page
         # ------------------------------------------------------------------------
         # Forward beamline webcams
         function _forward_webcam() {
-            global $webcams;
+            global $webcams, $webcamParameters;
             
             if (!array_key_exists($this->arg('bl'), $webcams)) return;
             
@@ -327,9 +327,18 @@ class Image extends Page
             
             while (@ob_end_clean());
             header('content-type: multipart/x-mixed-replace; boundary=myboundary');
+
+            $params = array(
+                'fps' => 5,
+                'resolution' => '480x270',
+            );
+            if (isset($webcamParameters[$img])) {
+                $params = array_merge($params, $webcamParameters[$img]);
+            }
+            $url = 'http://' . $img . '/axis-cgi/mjpg/video.cgi?' . http_build_query($params);
             
             $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL, 'http://'.$img.'/axis-cgi/mjpg/video.cgi?fps=5&resolution=CIF&resolution=480x270');
+            curl_setopt($ch, CURLOPT_URL, $url);
             curl_setopt($ch, CURLOPT_HEADER, 0);
             curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_ANY);
             $im = curl_exec($ch);

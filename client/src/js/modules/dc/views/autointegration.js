@@ -135,7 +135,7 @@ define(['marionette',
         
         initialize: function(options) {
             dcPurgedProcessedData = options.dcPurgedProcessedData;
-            this.collection = new AutoIntegrations(null, { id: options.id })
+            this.collection = new AutoIntegrations(null, { id: options.id, dcc: options.dcc })
             this.collection.fetch().done(this.render.bind(this))
         },
 

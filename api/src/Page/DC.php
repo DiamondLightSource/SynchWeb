@@ -400,7 +400,7 @@ class DC extends Page
         }
 
         # Data collection group
-        if ($this->has_arg('dcg') || $this->has_arg('PROCESSINGJOBID')) {
+        if ($this->has_arg('dcg') || $this->has_arg('PROCESSINGJOBID') || $this->has_arg('id')) {
             $fields = "count(distinct dca.datacollectionfileattachmentid) as dcac,
                     if(dca.fileType='recip',1,0) as recip,
                     count(distinct dcc.datacollectioncommentid) as dccc,
@@ -458,8 +458,7 @@ class DC extends Page
                     dc.c2lens,
                     dc.objaperture,
                     dc.magnification,
-                    dose.total as totaldose,
-                    CAST(dc.totalabsorbeddose AS DECIMAL(5, 2)) as totalabsdose,
+                    dc.totalabsorbeddose as totaldose,
                     d.detectorpixelsizehorizontal,
                     d.detectorpixelsizevertical,
                     d.detectormanufacturer,
@@ -483,8 +482,8 @@ class DC extends Page
                     dc.phaseplate,
                     ses.beamlinename as bl,
                     dc.blsubsampleid,
-                    d.numberofpixelsx as detectornumberofpixelsx,
-                    d.numberofpixelsy as detectornumberofpixelsy,
+                    IF(dc.detectorMode = 'ROI', d.numberofroipixelsx, d.numberofpixelsx) as detectornumberofpixelsx,
+                    IF(dc.detectorMode = 'ROI', d.numberofroipixelsy, d.numberofpixelsy) as detectornumberofpixelsy,
                     ses.archived,
                     ses.purgedProcessedData,
                     IFNULL(dc.rotationaxis, 'Omega') as rotationaxis,
@@ -539,6 +538,12 @@ class DC extends Page
                 array_push($args, $this->arg('dcg'));
             }
         } else {
+            $groupby = 'GROUP BY dc.datacollectiongroupid';
+            $numimgs = 'totals.numimg';
+            if ($this->has_arg('expandgroups')) {
+                $groupby = 'GROUP BY dc.datacollectionid';
+                $numimgs = 'dc.numberofimages as numimg';
+            }
             $fields = "count(distinct dca.datacollectionfileattachmentid) as dcac,
                     if(dca.fileType='recip',1,0) as recip,
                     count(distinct dcc.datacollectioncommentid) as dccc,
@@ -569,7 +574,7 @@ class DC extends Page
                     min(dc.resolution) as resolution,
                     min(dc.exposuretime) as exposuretime,
                     min(dc.axisstart) as axisstart,
-                    min(dc.numberofimages) as numimg,
+                    $numimgs,
                     TO_CHAR(min(dc.starttime), 'DD-MM-YYYY HH24:MI:SS') as st,
                     min(dc.transmission) as transmission,
                     min(dc.axisrange) as axisrange,
@@ -596,12 +601,11 @@ class DC extends Page
                     max(dc.c2lens) as c2lens,
                     max(dc.objaperture) as objaperture,
                     max(dc.magnification) as magnification,
-                    dose.total as totaldose,
-                    CAST(dc.totalabsorbeddose AS DECIMAL(5, 2)) as totalabsdose,
-                    max(d.detectormanufacturer) as detectormanufacturer,
-                    max(d.detectormodel) as detectormodel,
+                    totals.totaldose as totaldose,
                     max(d.detectorpixelsizehorizontal) as detectorpixelsizehorizontal,
                     max(d.detectorpixelsizevertical) as detectorpixelsizevertical,
+                    max(d.detectormanufacturer) as detectormanufacturer,
+                    max(d.detectormodel) as detectormodel,
                     max(TIMESTAMPDIFF('MINUTE', dc.starttime, CURRENT_TIMESTAMP)) as age,
                     max(dc.numberofpasses) as numberofpasses,
                     max(dc.c1aperture) as c1aperture,
@@ -621,16 +625,12 @@ class DC extends Page
                     max(dc.phaseplate) as phaseplate,
                     max(ses.beamlinename) as bl,
                     max(dc.blsubsampleid) as blsubsampleid,
-                    max(d.numberofpixelsx) as detectornumberofpixelsx,
-                    max(d.numberofpixelsy) as detectornumberofpixelsy,
+                    IF(dc.detectorMode = 'ROI', max(d.numberofroipixelsx), max(d.numberofpixelsx)) as detectornumberofpixelsx,
+                    IF(dc.detectorMode = 'ROI', max(d.numberofroipixelsy), max(d.numberofpixelsy)) as detectornumberofpixelsy,
                     max(ses.archived) as archived,
                     max(ses.purgedProcessedData) as purgedProcessedData,
                     IFNULL(max(dc.rotationaxis), 'Omega') as rotationaxis,
-                    dc.detector2theta";
-            $groupby = "GROUP BY dc.datacollectiongroupid";
-            if ($this->has_arg('expandgroups')) {
-                $groupby = "GROUP BY dc.datacollectionid";
-            }
+                    min(dc.detector2theta) as detector2theta";
         }
 
         // We don't want to remove duplicates, since if two counts are equal, one might go uncounted
@@ -687,8 +687,8 @@ class DC extends Page
                 FROM datacollection dc
                 INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
                 INNER JOIN (
-                    select datacollectiongroupid, sum(totalabsorbeddose) as total from datacollection group by datacollectiongroupid) dose
-                    ON dc.datacollectiongroupid = dose.datacollectiongroupid
+                    select datacollectiongroupid, sum(totalabsorbeddose) as totaldose, sum(numberofimages) as numimg from datacollection group by datacollectiongroupid) totals
+                    ON dc.datacollectiongroupid = totals.datacollectiongroupid
                 INNER JOIN blsession ses ON ses.sessionid = dcg.sessionid
                 LEFT OUTER JOIN experimenttype et on dcg.experimenttypeid = et.experimenttypeid
                 $sample_joins[0]
@@ -772,7 +772,6 @@ class DC extends Page
                     0,
                     0,
                     '',
-                    0,
                     0,
                     0,
                     0,
@@ -879,7 +878,6 @@ class DC extends Page
                 0,
                 0,
                 0,
-                0,
                 ses.beamlinename as bl,
                 xrf.blsubsampleid,
                 '',
@@ -966,7 +964,6 @@ class DC extends Page
                 0,
                 0,
                 '',
-                0,
                 0,
                 0,
                 0,
@@ -1441,45 +1438,40 @@ class DC extends Page
     function _image_qi($id)
     {
         session_write_close();
-        $iqs = array(array(), array(), array(), array(), array());
+        $iqs = array(array(), array(), array(), array());
+        $args = array($id);
+        $offset = 0;
+        $offsets = array($id => 0);
+        if ($this->has_arg('dcg') && $this->arg('dcg') == 1) {
+            $dcs = $this->db->pq("SELECT datacollectionid, numberofimages
+                FROM datacollection dc
+                WHERE datacollectiongroupid = (
+                    SELECT dataCollectionGroupId
+                    FROM DataCollection
+                    WHERE dataCollectionId = :1
+                )
+                ORDER BY datacollectionid ASC", $args);
+            $args = array();
+            foreach ($dcs as $i => $id) {
+                array_push($args, $id['DATACOLLECTIONID']);
+                $offsets[$id['DATACOLLECTIONID']] = $offset;
+                $offset += $id['NUMBEROFIMAGES'];
+            }
+        }
 
-        #$this->db->set_debug(True);
+        $dcids = implode(', ', $args);
 
-        $where = $id;
-        $args = array();
-        /*
-         $dcg = $this->db->pq("SELECT datacollectiongroupid as dcg FROM datacollection WHERE datacollectionid=:1", array($id));
-         if (!sizeof($dcg)) $this->error('No such data collection');
-         $dcids = $this->db->pq("SELECT datacollectionid as id FROM datacollection WHERE datacollectiongroupid=:1", array($dcg[0]['DCG']));
-         $where = array();
-         $args = array();
-         foreach ($dcids as $i => $id) {
-         //array_push($where, ':'.($i+1));
-         array_push($where, $id['ID']);
-         //array_push($args, $id['ID']);
-         }
-         $where = implode($where, ', ');
-         */
-
-        /*$tot = $this->db->pq("SELECT count(im.imagenumber) as tot 
-         FROM image im 
-         INNER JOIN imagequalityindicators imq ON imq.imageid = im.imageid AND (im.datacollectionid IN ($where))
-         ORDER BY imagenumber", $args);
-         $int = intval($tot[0]['TOT'] / 250);
-         array_push($args, $int);*/
-
-        #im.datacollectionid=:1 
-        $imqs = $this->db->pq("SELECT imq.imagenumber as nim, imq.method2res as res, imq.spottotal as s, imq.totalintegratedsignal, imq.goodbraggcandidates as b, imq.dozor_score as d
+        $imqs = $this->db->pq("SELECT imq.datacollectionid, imq.imagenumber, imq.method2res, imq.spottotal, imq.totalintegratedsignal, imq.goodbraggcandidates
                 FROM imagequalityindicators imq 
-                WHERE imq.datacollectionid IN ($where)
-                ORDER BY imq.imagenumber", $args);
+                WHERE imq.datacollectionid IN ($dcids)
+                ORDER BY imq.datacollectionid asc, imq.imagenumber asc", array());
 
         foreach ($imqs as $imq) {
-            array_push($iqs[0], array(intval($imq['NIM']), $this->_null_or($imq['S'], 'int')));
-            array_push($iqs[1], array(intval($imq['NIM']), $this->_null_or($imq['B'], 'int')));
-            array_push($iqs[2], array(intval($imq['NIM']), $this->_null_or($imq['RES'], 'float')));
-            array_push($iqs[3], array(intval($imq['NIM']), $this->_null_or($imq['TOTALINTEGRATEDSIGNAL'], 'float')));
-            array_push($iqs[4], array(intval($imq['NIM']), $this->_null_or($imq['D'], 'float')));
+            $globalImageNumber = $imq['IMAGENUMBER'] + $offsets[$imq['DATACOLLECTIONID']];
+            array_push($iqs[0], array($globalImageNumber, $this->_null_or($imq['SPOTTOTAL'], 'int')));
+            array_push($iqs[1], array($globalImageNumber, $this->_null_or($imq['GOODBRAGGCANDIDATES'], 'int')));
+            array_push($iqs[2], array($globalImageNumber, $this->_null_or($imq['METHOD2RES'], 'float')));
+            array_push($iqs[3], array($globalImageNumber, $this->_null_or($imq['TOTALINTEGRATEDSIGNAL'], 'float')));
         }
 
         $this->_output($iqs);
