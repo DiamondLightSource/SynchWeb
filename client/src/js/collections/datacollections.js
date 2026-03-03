@@ -1,8 +1,15 @@
-define(['underscore', 'backbone', 'backbone.paginator', 'models/datacollection'], function(_, Backbone, PageableCollection, dc) {
+define(['underscore', 'backbone', 'backbone.paginator', 'utils', 'models/datacollection'],
+function(_, Backbone, PageableCollection, utils, dc) {
   return PageableCollection.extend({
     model: dc,
     mode: 'server',
     url: '/dc',
+
+    queryParams: {
+        expandgroups: function () {
+            return utils.getLocalStorage('expandgroups') === '1' ? 1 : null
+        }
+    },
                                       
     state: {
       pageSize: 15,

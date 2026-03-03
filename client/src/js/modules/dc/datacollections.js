@@ -1,5 +1,6 @@
 define(['marionette',
         'views/pages',
+        'utils',
     
         'modules/dc/dclist',
         'modules/dc/views/samplechanger',
@@ -16,7 +17,7 @@ define(['marionette',
 
         'templates/dc/dclist.html',
         ],
-function(Marionette, Pages, DCListView,
+function(Marionette, Pages, utils, DCListView,
          SampleChanger, StatusView, Search, Filter, DialogView, QueueBuilderView, UserView, DewarsView,
          ReprocessOverview,
          template) {
@@ -42,6 +43,7 @@ function(Marionette, Pages, DCListView,
 
     ui: {
         ar: 'input[name=autorefresh]',
+        expand: 'input[name=expand]',
     },
       
     events: {
@@ -52,12 +54,22 @@ function(Marionette, Pages, DCListView,
       'mouseout a.dewars': 'hideDewars',
       'click a.refresh': 'refreshDCs',
       'click @ui.ar': 'setAutoRefresh',
+      'click @ui.expand': 'setExpandGroups',
       'click a.rpo': 'showReprocess',
     },
 
     setAutoRefresh: function(e) {
         if (this.ui.ar.is(':checked')) this.collection.run()
         else this.collection.stop()
+    },
+
+    setExpandGroups: function(e) {
+        if (this.ui.expand.is(':checked')) {
+            utils.setLocalStorage('expandgroups', '1')
+        } else {
+            utils.setLocalStorage('expandgroups', '0')
+        }
+        this.collection.fetch({ reset: true })
     },
 
     refreshDCs: function(e) {
@@ -141,6 +153,8 @@ function(Marionette, Pages, DCListView,
     },
                                       
     onRender: function() {    
+        const expandgroups = utils.getLocalStorage('expandgroups') === '1'
+        this.ui.expand.prop('checked', expandgroups)
         this.data_collections.show(this.dclist)
         this.pages.show(this.paginator)
         this.pages2.show(this.paginator2)
