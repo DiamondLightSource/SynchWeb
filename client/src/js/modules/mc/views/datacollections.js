@@ -62,6 +62,8 @@ define(['backbone', 'marionette',
             'click .integrate': 'integrate',
             'click button.opt': 'toggleOpts',
             'change @ui.pipeline': 'updatePipeline',
+            'input @ui.fields': 'onFieldChanged',
+            'change @ui.fields': 'onFieldChanged',
         },
 
         ui: {
@@ -73,6 +75,8 @@ define(['backbone', 'marionette',
             opts: 'div.options',
             sm: 'input[name=sm]',
             sg: 'select[name=sg]',
+            integrateBtn: 'button.integrate',
+            fields: 'input, select',
         },
 
         templateHelpers: function() {
@@ -211,13 +215,23 @@ define(['backbone', 'marionette',
         },
 
 
+        onFieldChanged: function() {
+            this._enableIntegrateButton();
+        },
+
+
         _disableIntegrateButton: function() {
-            var btn = $('button.integrate')
-            var btnHtml = btn.html()
-            btn.prop('disabled', true).html('<i class="fa fa-check"></i> Submitted!');
-            setTimeout(function() {
-                btn.prop('disabled', false).html(btnHtml);
+            this.btnHtml = this.ui.integrateBtn.html()
+            this.ui.integrateBtn.prop('disabled', true).html('<i class="fa fa-check"></i> Submitted!');
+            this.resetTimeout = setTimeout(() => {
+                this._enableIntegrateButton()
             }, 5000)
+        },
+
+
+        _enableIntegrateButton: function() {
+            this.ui.integrateBtn.prop('disabled', false).html(this.btnHtml);
+            clearTimeout(this.resetTimeout);
         },
 
 
@@ -252,6 +266,7 @@ define(['backbone', 'marionette',
         },
                                           
         onRender: function() {
+            this.btnHtml = this.ui.integrateBtn.html()
             this.pages.show(this.paginator)
             this.srch.show(this.search)
             this.ui.opts.hide()
