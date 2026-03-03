@@ -157,7 +157,6 @@ import Visits from 'collections/visits'
 import Beamlines from 'collections/bls'
 import FilterPills from 'app/components/filter-pills.vue'
 import CalendarDayEvents from 'modules/calendar/views/components/calendar-day-events.vue'
-import { DateTime } from 'luxon'
 
 export default {
   name: 'CalendarView',
@@ -220,9 +219,9 @@ export default {
   },
   mounted() {
     const dateTime = this.todayDate
-    this.currentMonth = dateTime.month - 1
-    this.currentDay = dateTime.day
-    this.currentYear = dateTime.year
+    this.currentMonth = dateTime.getMonth()
+    this.currentDay = dateTime.getDate()
+    this.currentYear = dateTime.getFullYear()
     this.fetchBeamlinesByType()
     this.fetchVisitsCalendar()
   },
@@ -330,19 +329,16 @@ export default {
       }, {})
     },
     isToday(date) {
-      const { month, day, year } = this.todayDate
-      return date === day && month - 1 === this.currentMonth && year === this.currentYear
+      const today = this.todayDate
+      return (
+        date === today.getDate() &&
+        this.currentMonth === today.getMonth() &&
+        this.currentYear === today.getFullYear()
+      )
     },
     isPastDate(date) {
-      const dateItem = DateTime.fromObject({
-        year: this.currentYear,
-        month: this.currentMonth + 1,
-        day: date,
-        zone: this.timezone
-      })
-
+      const dateItem = new Date(this.currentYear, this.currentMonth, date);
       return dateItem < this.todayDate
-
     },
     onHover(ref, addHover) {
       const hoveredRef = this.$refs[ref][0].$el
@@ -409,7 +405,9 @@ export default {
       return this.appOption['timezone']
     },
     todayDate() {
-      return DateTime.local().setZone(this.timezone)
+      const d = new Date()
+      d.setHours(0, 0, 0, 0)
+      return d
     },
     currentSelectedMonth() {
       return this.months[this.currentMonth]
@@ -439,20 +437,12 @@ export default {
       return this.currentYear + 1
     },
     daysInMonth() {
-      return DateTime.fromObject({
-        year: this.currentYear,
-        month: this.currentMonth + 1,
-        day: 1,
-        zone: this.timezone
-      }).daysInMonth
+      return new Date(this.currentYear, this.currentMonth + 1, 0).getDate()
     },
     startDayOfMonth() {
-      return DateTime.fromObject({
-        year: this.currentYear,
-        month: this.currentMonth + 1,
-        day: 1,
-        zone: this.timezone
-      }).weekday - 1
+      const dateItem = new Date(this.currentYear, this.currentMonth, 1)
+      const day = dateItem.getDay()
+      return (day === 0) ? 6 : day - 1
     },
     sortedVisitsByDay() {
       return Array(this.daysInMonth).fill('').reduce((acc, curr, index) => {

@@ -11,7 +11,8 @@ module.exports = {
     'backbone/model-defaults': 0, // widely abused issue - so unlikely to be addressed without considerable effort
     'backbone/collection-model': 0, // ditto
     'backbone/defaults-on-top': 0, // ditto
-    'backbone/initialize-on-top': 0 // ditto
+    'backbone/initialize-on-top': 0, // ditto
+    'backbone/no-silent': 0
     },
     env: {
     es6: true,
