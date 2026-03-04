@@ -449,8 +449,8 @@ export default {
         const number = index + 1
 
         acc[number] = this.visits.filter(visit => {
-          const { year, month, day } = visit['STISO']
-          return year === this.currentYear && month - 1 === this.currentMonth && day === number
+          const date = new Date(visit['STISO'])
+          return date.getFullYear() === this.currentYear && date.getMonth() === this.currentMonth && date.getDate() === number
         })
 
         return acc
