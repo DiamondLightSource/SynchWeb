@@ -1212,6 +1212,46 @@ class DC extends Page
         $this->db->close();
 
         $data = array(array(), array());
+
+        # pymca
+        $results = str_replace('.mca', '.results.dat', preg_replace('/(data\/\d\d\d\d\/\w\w\d+-\d+)/', '\1/processed/pymca', $info['DIR']));
+
+        $el_to_en = json_decode(file_get_contents('tables/energies.json'), true);
+        $elements = array();
+        $el_no_match = array();
+        $max_counts = 0;
+        $line_number = 0;
+        $max_elements = 5;
+        $compton_cutoff = $info['ENERGY'] - 1100;
+
+        if (file_exists($results)) {
+            $dat = explode("\n", file_get_contents($results));
+            foreach ($dat as $d) {
+                if (empty($d) || strpos($d, '#') === 0) {
+                    if (str_contains($d, 'COMPTON_CUTOFF_EV')) {
+                        $parts = explode(':', $d);
+                        $compton_cutoff = floatval(trim($parts[1]));
+                    }
+                    continue;
+                }
+                if ($line_number < $max_elements) {
+                    $l = explode(' ', $d);
+                    if ($line_number == 0) {
+                        $max_counts = floatval($l[1]);
+                    }
+                    if (array_key_exists($l[0], $el_to_en)) {
+                        $els = $el_to_en[$l[0]];
+                        $elements[$l[0]] = array(array_map('floatval', $els), floatval($l[1]), floatval($l[2]));
+                    } else {
+                        array_push($el_no_match, $l[0]);
+                    }
+                    $line_number++;
+                } else {
+                    break;
+                }
+            }
+        }
+
         if (file_exists($info['DAT'])) {
             $dat = explode("\n", file_get_contents($info['DAT']));
 
@@ -1220,7 +1260,7 @@ class DC extends Page
                     list($e, $v) = preg_split('/\s+/', trim($d));
                     if ($i % 2 == 1) {
                         if (floatval($e) <= $info['ENERGY']) {
-                            if (floatval($e) > ($info['ENERGY'] - 1100))
+                            if (floatval($e) > $compton_cutoff)
                                 array_push($data[1], array(floatval($e), floatval($v)));
                             else
                                 array_push($data[0], array(floatval($e), floatval($v)));
@@ -1230,31 +1270,6 @@ class DC extends Page
             }
         }
 
-
-        # pymca
-        $results = str_replace('.mca', '.results.dat', preg_replace('/(data\/\d\d\d\d\/\w\w\d+-\d+)/', '\1/processed/pymca', $info['DIR']));
-
-        $el_to_en = json_decode(file_get_contents('tables/energies.json'), true);
-        $elements = array();
-        $el_no_match = array();
-        $max_counts = 0;
-
-        if (file_exists($results)) {
-            $dat = explode("\n", file_get_contents($results));
-            foreach ($dat as $i => $d) {
-                if ($i < 5) {
-                    $l = explode(' ', $d);
-                    if ($i == 0)
-                        $max_counts = floatval($l[1]);
-                    if (array_key_exists($l[0], $el_to_en)) {
-                        $els = $el_to_en[$l[0]];
-                        if (($els[sizeof($els) - 1] * 1000) < ($info['ENERGY'] - 1000))
-                            $elements[$l[0]] = array(array_map('floatval', $els), floatval($l[1]), floatval($l[2]));
-                    } else
-                        array_push($el_no_match, $l[0]);
-                }
-            }
-        }
         array_push($data, $elements);
         array_push($data, $el_no_match);
         array_push($data, $max_counts);
