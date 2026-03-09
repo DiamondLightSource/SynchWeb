@@ -1229,7 +1229,7 @@ class DC extends Page
             foreach ($dat as $d) {
                 if (empty($d) || strpos($d, '#') === 0) {
                     if (str_contains($d, 'COMPTON_CUTOFF_EV')) {
-                        $parts = explode(':', $d);
+                        $parts = explode('COMPTON_CUTOFF_EV', $d);
                         $compton_cutoff = floatval(trim($parts[1]));
                     }
                     continue;
