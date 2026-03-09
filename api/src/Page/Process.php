@@ -435,9 +435,15 @@ class Process extends Page
         $status = $this->has_arg('pipelinestatus') ? $this->arg('pipelinestatus') : null;
         $category = $this->has_arg('category') ? $this->arg('category') : null;
 
+        // allow more than one status
         if ($status) {
-            $where .= ' AND pp.pipelinestatus=:'.(sizeof($args)+1);
-            array_push($args, $this->arg('pipelinestatus'));
+            $status_queries = array();
+            $status_array = is_array($status) ? $status : array($status);
+            foreach ($status_array as $s) {
+                array_push($args, $s);
+                array_push($status_queries, 'pp.pipelinestatus=:' . count($args));
+            }
+            $where .= ' AND (' . implode(' OR ', $status_queries) . ')';
         }
         if ($category) {
             $where .= ' AND ppc.name=:'.(sizeof($args)+1);
