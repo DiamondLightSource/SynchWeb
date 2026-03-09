@@ -32,7 +32,7 @@ class Processing extends Page {
         'n' => '\d+',
         'sampleGroupId' => '\d+',
         'resultCount' => '\d+',
-        'pipeline' => '[\w\s\+]+',
+        'pipeline' => '\d+',
         'spacegroup' => '(\w|\s|\-|\/)+',
         'resolution' => '[\d\.]+',
         'completeness' => '[\d\.]+',
@@ -403,7 +403,7 @@ class Processing extends Page {
 
         if ($this->has_arg('pipeline')) {
             $st = sizeof($args);
-            $where .= " AND app.processingprograms = :" . ($st + 1);
+            $where .= " AND app.processingpipelineid = :" . ($st + 1);
             array_push($args, $this->arg('pipeline'));
         }
 
