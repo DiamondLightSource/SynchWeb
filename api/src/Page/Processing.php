@@ -648,32 +648,53 @@ class Processing extends Page {
 
         $rows = $this->db->union(
             array(
-                "SELECT app.autoprocprogramid, dc.datacollectionid as id, SUM(IF(appm.severity = 'ERROR', 1, 0)) as errors, SUM(IF(appm.severity = 'WARNING', 1, 0)) as warnings, SUM(IF(appm.severity = 'INFO', 1, 0)) as infos
+                "SELECT DISTINCT dc.datacollectionid as id, dc.datacollectiongroupid as dcg, appm.autoprocprogrammessageid, appm.severity
             FROM autoprocprogrammessage appm
             INNER JOIN autoprocprogram app ON app.autoprocprogramid = appm.autoprocprogramid
             INNER JOIN autoprocintegration api ON api.autoprocprogramid = app.autoprocprogramid
             INNER JOIN datacollection dc ON dc.datacollectionid = api.datacollectionid
             INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
             INNER JOIN blsession s ON s.sessionid = dcg.sessionid
-            WHERE $where
-            GROUP BY dc.datacollectionid",
-                "SELECT app.autoprocprogramid, dc.datacollectionid as id, SUM(IF(appm.severity = 'ERROR', 1, 0)) as errors, SUM(IF(appm.severity = 'WARNING', 1, 0)) as warnings, SUM(IF(appm.severity = 'INFO', 1, 0)) as infos
+            WHERE $where",
+                "SELECT DISTINCT dc.datacollectionid as id, dc.datacollectiongroupid as dcg, appm.autoprocprogrammessageid, appm.severity
             FROM autoprocprogrammessage appm
             INNER JOIN autoprocprogram app ON app.autoprocprogramid = appm.autoprocprogramid
             INNER JOIN processingjob pj ON pj.processingjobid = app.processingjobid
             INNER JOIN datacollection dc ON dc.datacollectionid = pj.datacollectionid
             INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
             INNER JOIN blsession s ON s.sessionid = dcg.sessionid
-            WHERE $where
-            GROUP BY dc.datacollectionid
-        ",
+            WHERE $where",
             ),
             $args,
             false,
-            "SELECT autoprocprogramid, id, sum(errors) as errors, sum(warnings) as warnings, sum(infos) as infos FROM (:QUERY) inq GROUP BY id"
+            "SELECT id, dcg, SUM(IF(severity = 'ERROR', 1, 0)) as errors, SUM(IF(severity = 'WARNING', 1, 0)) as warnings, SUM(IF(severity = 'INFO', 1, 0)) as infos FROM (:QUERY) inq GROUP BY id"
         );
 
-        $this->_output($rows);
+        $ids  = $this->has_arg('ids') ? (array)$this->arg('ids') : array();
+        $dcgs = $this->has_arg('dcg') ? (array)$this->arg('dcg') : array();
+        $grouped = array();
+
+        foreach ($rows as $row) {
+            if (in_array($row['ID'], $ids)) {
+                $groupKey = "ID_" . $row['ID'];
+                unset($row['DCG']);
+            } else if (in_array($row['DCG'], $dcgs)) {
+                $groupKey = "DCG_" . $row['DCG'];
+                unset($row['ID']);
+            } else {
+                continue;
+            }
+
+            if (!isset($grouped[$groupKey])) {
+                $grouped[$groupKey] = $row;
+            } else {
+                $grouped[$groupKey]['ERRORS'] += $row['ERRORS'];
+                $grouped[$groupKey]['WARNINGS'] += $row['WARNINGS'];
+                $grouped[$groupKey]['INFOS'] += $row['INFOS'];
+            }
+        }
+
+        $this->_output(array_values($grouped));
     }
 
     /**
