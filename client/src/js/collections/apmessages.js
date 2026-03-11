@@ -6,7 +6,7 @@ define(['backbone.paginator', 'models/apmessage'], function(PageableCollection, 
         url: '/processing/messages',
 
         state: {
-            pageSize: 15,
+            pageSize: 9999,
         },
     })
 })

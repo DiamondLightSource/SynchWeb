@@ -13,7 +13,10 @@ define(['marionette', 'jquery'], function(Marionette, $) {
         },
         
         getModel: function() {
-            var m = this.getOption('statuses').findWhere({ ID: this.getOption('ID') })
+            var m = this.getOption('statuses').find(m =>
+                m.get('ID') === this.getOption('ID') ||
+                m.get('DCG') === this.getOption('DCG')
+            )
             if (m != this.model) {
                 this.undelegateEvents()
                 this.model = m
