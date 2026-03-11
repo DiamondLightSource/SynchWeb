@@ -1180,11 +1180,11 @@ class Shipment extends Page
     function _dispatch_dewar()
     {
         global $facility_country;
-        global $facility_courier_countries;
+        global $facility_courier_countries, $facility_courier_countries_nde;
         global $dispatch_email;
         global $dispatch_email_regex;
         global $dispatch_email_intl;
-        global $use_shipping_service;
+        global $use_shipping_service, $use_shipping_service_nde;
         global $shipping_service_links_in_emails;
         global $use_shipping_service_redirect;
         global $shipping_service_app_url;
@@ -1266,7 +1266,10 @@ class Shipment extends Page
         $data = $this->args;
         $data['TERMSACCEPTED'] = $terms_accepted;
 
-        if (Utils::getValueOrDefault($use_shipping_service) && in_array($country, $facility_courier_countries)) {
+        $domestic = in_array($country, $facility_courier_countries);
+        $nde = $use_shipping_service_nde && in_array($country, $facility_courier_countries_nde);
+
+        if (Utils::getValueOrDefault($use_shipping_service) && ($domestic || $nde)) {
             if ($terms_accepted) {
                 if (Utils::getValueOrDefault($use_shipping_service_redirect)) {
                     try {
@@ -1300,7 +1303,7 @@ class Shipment extends Page
         # Prepare e-mail response for dispatch request
         $use_dispatch_lite_template = (
             Utils::getValueOrDefault($use_shipping_service)
-            && in_array($country, $facility_courier_countries)
+            && ($domestic || $nde)
             && $terms_accepted
             && Utils::getValueOrDefault($use_shipping_service_redirect)
         );
