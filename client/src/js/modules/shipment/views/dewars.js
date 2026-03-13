@@ -147,6 +147,8 @@ define(['marionette', 'backbone',
             if (app.options.get('shipping_service_app_url') && this.model.get('EXTERNALSHIPPINGIDFROMSYNCHROTRON')) {
                 let link = app.options.get('shipping_service_app_url')+'/shipment-requests/'+this.model.get('EXTERNALSHIPPINGIDFROMSYNCHROTRON')+'/outgoing'
                 this.ui.ssd.attr('href', link)
+                this.ui.dispatch.hide()
+                this.ui.transfer.hide()
             } else {
                 this.ui.ssd.hide()
             }
