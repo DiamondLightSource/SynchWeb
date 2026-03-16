@@ -9,27 +9,36 @@ class UAS
 
     function __construct($user=null, $pass=null) {
         global $uas_url, $vmxi_user, $vmxi_pass;
+        global $uas_auth,
+               $mxautocollect_srv_acc_username,
+               $mxautocollect_srv_acc_password;
 
         $this->url = $uas_url;
-
-        $cas = new CAS();
-
-        if ($user && $pass) $cas->authenticate($user, $pass);
-        else $cas->authenticate($vmxi_user, $vmxi_pass);
-
-        $st = $cas->service($this->url.'/uas/login/cas');
-
-        $uas = $this->_curl(array(
-            'URL' => $this->url.'/uas/login/cas?ticket='.$st,
-            'HEADER' => 1,
-            'GET' => 1,
-        ));
-
+        $this->uas_auth = $uas_auth;
         $this->session = null;
-        foreach (explode("\n", $uas) as $line) {
-            if (preg_match('/^Set-Cookie: JSESSIONID=(\w+);/', $line, $mat)) {
-                $this->session = $mat[1];
+
+        if ($this->uas_auth == 'CAS') {
+            $cas = new CAS();
+
+            if ($user && $pass) $cas->authenticate($user, $pass);
+            else $cas->authenticate($vmxi_user, $vmxi_pass);
+
+            $st = $cas->service($this->url . '/uas/login/cas');
+
+            $uas = $this->_curl(array(
+                'URL' => $this->url . '/uas/login/cas?ticket=' . $st,
+                'HEADER' => 1,
+                'GET' => 1,
+            ));
+
+            foreach (explode("\n", $uas) as $line) {
+                if (preg_match('/^Set-Cookie: JSESSIONID=(\w+);/', $line, $mat)) {
+                    $this->session = $mat[1];
+                }
             }
+        } elseif ($this->uas_auth == 'BASIC') {
+            $this->user = $mxautocollect_srv_acc_username;
+            $this->pass = $mxautocollect_srv_acc_password;
         }
 
         // print_r(array('sess', $this->session));
@@ -44,7 +53,6 @@ class UAS
             'HEADERS' => array(
                 'Content-type: application/json',
                 'Accept: application/json',
-                'Cookie: JSESSIONID='.$this->session,
             ),
         ));
 
@@ -69,7 +77,6 @@ class UAS
             'HEADERS' => array(
                 'Content-type: application/json',
                 'Accept: application/json',
-                'Cookie: JSESSIONID='.$this->session,
             ),
         ));
 
@@ -92,7 +99,6 @@ class UAS
             'HEADERS' => array(
                 'Content-type: application/json',
                 'Accept: application/json',
-                'Cookie: JSESSIONID='.$this->session,
             ),
         ));
 
@@ -106,7 +112,6 @@ class UAS
             'HEADERS' => array(
                 'Content-type: application/json',
                 'Accept: application/json',
-                'Cookie: JSESSIONID='.$this->session,
             ),
         ));
 
@@ -120,6 +125,8 @@ class UAS
 
 
     function _curl($options) {
+        if ($this->uas_auth == 'CAS') $options['HEADERS'][] = 'Cookie: JSESSIONID=' . $this->session;
+
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $options['URL']);
         curl_setopt($ch, CURLOPT_HEADER, array_key_exists('HEADER', $options) ? 1 : 0);
@@ -130,6 +137,16 @@ class UAS
         if (array_key_exists('FIELDS', $options)) curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($options['FIELDS']));
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLINFO_HEADER_OUT, true);
+
+        if (
+            ($this->uas_auth == 'BASIC') &&
+            (strlen($this->user) != 0) &&
+            (strlen($this->pass) != 0)
+        ) {
+            curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+            curl_setopt($ch, CURLOPT_USERNAME, $this->user);
+            curl_setopt($ch, CURLOPT_PASSWORD, $this->pass);
+        }
 
         // if (array_key_exists('FIELDS', $options)) print_r(array('body', json_encode($options['FIELDS'])));
 
