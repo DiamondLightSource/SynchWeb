@@ -62,7 +62,7 @@ class UAS
             $resp = json_decode($resp);
         } else {
             error_log("UAS::create_session error from UAS, code: " . $this->code);
-            error_log(print_r($resp), true);
+            error_log(print_r($resp, true));
         }
 
         return array('code' => $this->code, 'resp' => $resp);
@@ -82,7 +82,7 @@ class UAS
 
         if ($this->code != 200) {
             error_log("UAS::update_session error from UAS, code: " . $this->code);
-            error_log(print_r($resp), true);
+            error_log(print_r($resp, true));
         }
 
         // print_r(array($resp));
