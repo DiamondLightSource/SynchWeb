@@ -119,11 +119,7 @@ define(['marionette', 'views/form',
         },
 
         success: function() {
-            if (
-                app.options.get("shipping_service_app_url")
-                && (Number(this.terms.get('ACCEPTED')) === 1) // terms.ACCEPTED could be undefined, 1, or "1"
-                && app.options.get("facility_courier_countries").includes(this.dispatchCountry)
-            ) {
+            if (this.usingShippingService()) {
                 this.getOption('dewar').fetch().done((dewar) => {
                     const external_id = dewar.EXTERNALSHIPPINGIDFROMSYNCHROTRON;
                     if (external_id === null){
@@ -289,19 +285,27 @@ define(['marionette', 'views/form',
                 this.ui.facc.show()
             }
 
-            if (
-                this.terms.get("ACCEPTED")
-                && app.options.get("shipping_service_app_url")
-                && app.options.get("facility_courier_countries").includes(this.dispatchCountry)
-            ){
-                this.disableValidation()
-                this.ui.dispatchDetails.hide()
-                this.ui.submit.text("Proceed")
-                this.ui.shippingadvice.html("<mark>On clicking 'Proceed' you will be redirected to the new Diamond shipping service to book the shipment. Please ensure all stages of the form are completed.</mark><br /><br />")
+            if (this.usingShippingService()) {
+                this.useShortFormForShippingService()
             } else {
                 this.ui.submit.text("Request Dewar Dispatch")
                 this.ui.shippingadvice.html("")
             }
+        },
+
+        usingShippingService: function() {
+            const domestic = app.options.get("facility_courier_countries").includes(this.ui.country.val())
+            const nde = app.options.get("use_shipping_service_nde") && app.options.get("facility_courier_countries_nde").includes(this.ui.country.val())
+            return this.terms.get("ACCEPTED")
+                && app.options.get("shipping_service_app_url")
+                && (domestic || nde)
+        },
+
+        useShortFormForShippingService: function() {
+            this.disableValidation()
+            this.ui.dispatchDetails.hide()
+            this.ui.submit.text("Proceed")
+            this.ui.shippingadvice.html("<mark>On clicking 'Proceed' you will be redirected to the new Diamond shipping service to book the shipment. Please ensure all stages of the form are completed.</mark><br /><br />")
         },
 
         enableValidation: function() {
@@ -358,14 +362,8 @@ define(['marionette', 'views/form',
             this.ui.courierDetails.hide()
             this.ui.facilityCourier.show()
             this.model.courierDetailsRequired = false
-            if (
-                app.options.get("shipping_service_app_url")
-                && app.options.get("facility_courier_countries").includes(this.ui.country.val())
-            ){
-                this.disableValidation()
-                this.ui.dispatchDetails.hide()
-                this.ui.submit.text("Proceed")
-                this.ui.shippingadvice.html("<mark>On clicking 'Proceed' you will be redirected to the new Diamond shipping service to book the shipment. Please ensure all stages of the form are completed.</mark><br /><br />")
+            if (this.usingShippingService()) {
+                this.useShortFormForShippingService()
             }
         },
 

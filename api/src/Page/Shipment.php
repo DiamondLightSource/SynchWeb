@@ -209,7 +209,7 @@ class Shipment extends Page
 
         array('/dewars/transfer', 'post', '_transfer_dewar'),
         array('/dewars/dispatch', 'post', '_dispatch_dewar'),
-        array('/dewars/confirmdispatch/did/:did/token/:TOKEN', 'post', '_dispatch_dewar_confirmation'),
+        array('/dewars/confirmdispatch/did/:did/token/:TOKEN', 'post', '_outgoing_shipment_confirmation'),
         array('/dewars/confirmpickup/sid/:sid/token/:TOKEN', 'post', '_incoming_shipment_confirmation'),
 
         array('/dewars/tracking(/:DEWARID)', 'get', '_get_dewar_tracking'),
@@ -1180,11 +1180,11 @@ class Shipment extends Page
     function _dispatch_dewar()
     {
         global $facility_country;
-        global $facility_courier_countries;
+        global $facility_courier_countries, $facility_courier_countries_nde;
         global $dispatch_email;
         global $dispatch_email_regex;
         global $dispatch_email_intl;
-        global $use_shipping_service;
+        global $use_shipping_service, $use_shipping_service_nde;
         global $shipping_service_links_in_emails;
         global $use_shipping_service_redirect;
         global $shipping_service_app_url;
@@ -1266,7 +1266,10 @@ class Shipment extends Page
         $data = $this->args;
         $data['TERMSACCEPTED'] = $terms_accepted;
 
-        if (Utils::getValueOrDefault($use_shipping_service) && in_array($country, $facility_courier_countries)) {
+        $domestic = in_array($country, $facility_courier_countries);
+        $nde = $use_shipping_service_nde && in_array($country, $facility_courier_countries_nde);
+
+        if (Utils::getValueOrDefault($use_shipping_service) && ($domestic || $nde)) {
             if ($terms_accepted) {
                 if (Utils::getValueOrDefault($use_shipping_service_redirect)) {
                     try {
@@ -1300,7 +1303,7 @@ class Shipment extends Page
         # Prepare e-mail response for dispatch request
         $use_dispatch_lite_template = (
             Utils::getValueOrDefault($use_shipping_service)
-            && in_array($country, $facility_courier_countries)
+            && ($domestic || $nde)
             && $terms_accepted
             && Utils::getValueOrDefault($use_shipping_service_redirect)
         );
@@ -1389,15 +1392,29 @@ class Shipment extends Page
         }
     }
 
+    function _outgoing_shipment_confirmation()
+    {
+        if (!$this->has_arg('did'))
+            $this->_error('No dewar specified');
+        if (!$this->has_arg('TOKEN'))
+            $this->_error('No token specified');
+        if (!$this->has_arg('status'))
+            $this->_error('No status specified');
+
+        if ($this->arg('status') === 'CREATED') {
+            $this->_cancel_dispatch_dewar_confirmation();
+        } else if ($this->arg('status') === 'BOOKED' || $this->arg('status') === 'PENDING') {
+            $this->_dispatch_dewar_confirmation();
+        } else {
+            $this->_error('Invalid status');
+        }
+    }
 
     function _dispatch_dewar_confirmation()
     {
         global $dispatch_email;
         global $dispatch_email_regex;
         global $shipping_service_app_url;
-
-        if (!$this->has_arg('did'))
-            $this->_error('No dewar specified');
 
         # Check token against dewar given
         $dew = $this->db->pq(
@@ -1420,7 +1437,18 @@ class Shipment extends Page
             $this->_error('Incorrect token');
         }
 
-        # Prepare e-mail to stores
+        if ($this->arg('status') === 'BOOKED') {
+            if (!$this->has_arg('tracking_number'))
+                $this->_error('No tracking number specified');
+            $tracking = $this->arg('tracking_number');
+            $status = 'dispatch-booked';
+        } else if ($this->arg('status') === 'PENDING') {
+            $tracking = '';
+            $status = 'dispatch-requested';
+        } else {
+            $this->_error('Invalid status');
+        }
+
         $data = $this->args;
         if (!array_key_exists('prop', $data))
             $data['prop'] = $dew['PROPOSAL'];
@@ -1434,54 +1462,89 @@ class Shipment extends Page
             $data['LOCATION'] = $dew['STORAGELOCATION'];
         if (!array_key_exists('EMAILADDRESS', $data))
             $data['EMAILADDRESS'] = $dew['EMAILADDRESS'];;
-        if (!array_key_exists('tracking_number', $data))
-            $data['tracking_number'] = $dew['TRACKINGNUMBERFROMSYNCHROTRON'];
-        $subject_line = '*** Dispatch requested for Dewar ' . $dew['BARCODE'] . ' from ' . $data['LOCATION'] . ' ***';
-        $email_template = 'dewar-dispatch-lite';
-        $email = new Email($email_template, $subject_line);
-        $email->data = $data;
 
-        // If a local contact is given, try to find their email address
-        // First try LDAP, if unsuccessful look at the ISPyB person record for a matching staff user
-        $local_contact = $this->has_arg('LOCALCONTACT') ? $this->args['LOCALCONTACT'] : '';
-        if ($local_contact) {
-            $this->args['LCEMAIL'] = $this->_get_email_fn($local_contact);
-            if (!$this->args['LCEMAIL']) {
-                $this->args['LCEMAIL'] = $this->_get_ispyb_email_fn($local_contact);
-            }
-        }
+        if ($this->arg('status') === 'BOOKED') {
+            # Prepare e-mail to stores
+            $subject_line = '*** Dispatch requested for Dewar ' . $dew['BARCODE'] . ' from ' . $data['LOCATION'] . ' ***';
+            $email_template = 'dewar-dispatch-lite';
+            $email = new Email($email_template, $subject_line);
+            $email->data = $data;
 
-        $recpts = $dispatch_email;
-        if ($data['EMAILADDRESS']) $recpts .= ', ' . $data['EMAILADDRESS'];
-        $local_contact_email = $this->has_arg('LCEMAIL') ? $this->args['LCEMAIL'] : '';
-        if ($local_contact_email) $recpts .= ', ' . $local_contact_email;
-
-        if (!is_null($dispatch_email_regex)) {
-            foreach ($dispatch_email_regex as $address => $pattern) {
-                if (preg_match($pattern, $data['BARCODE'])) {
-                    $recpts .= ', ' . $address;
+            // If a local contact is given, try to find their email address
+            // First try LDAP, if unsuccessful look at the ISPyB person record for a matching staff user
+            $local_contact = $this->has_arg('LOCALCONTACT') ? $this->args['LOCALCONTACT'] : '';
+            if ($local_contact) {
+                $this->args['LCEMAIL'] = $this->_get_email_fn($local_contact);
+                if (!$this->args['LCEMAIL']) {
+                    $this->args['LCEMAIL'] = $this->_get_ispyb_email_fn($local_contact);
                 }
             }
-        }
 
-        $email->send($recpts);
+            $recpts = $dispatch_email;
+            if ($data['EMAILADDRESS']) $recpts .= ', ' . $data['EMAILADDRESS'];
+            $local_contact_email = $this->has_arg('LCEMAIL') ? $this->args['LCEMAIL'] : '';
+            if ($local_contact_email) $recpts .= ', ' . $local_contact_email;
+
+            if (!is_null($dispatch_email_regex)) {
+                foreach ($dispatch_email_regex as $address => $pattern) {
+                    if (preg_match($pattern, $data['BARCODE'])) {
+                        $recpts .= ', ' . $address;
+                    }
+                }
+            }
+
+            $email->send($recpts);
+        }
 
         // Also update the dewar status and storage location to keep it in sync with history...
         $this->db->pq(
             "UPDATE dewar
-            set dewarstatus='dispatch-requested', storagelocation=lower(:2), trackingnumberfromsynchrotron=:3
-            WHERE dewarid=:1",
-            array($dew['DEWARID'], $data['LOCATION'], $data['tracking_number'])
+            set dewarstatus=:1, storagelocation=lower(:2), trackingnumberfromsynchrotron=:3
+            WHERE dewarid=:4",
+            array($status, $data['LOCATION'], $tracking, $dew['DEWARID'])
         );
 
-        $this->db->pq("UPDATE shipping set shippingstatus='dispatch-requested' WHERE shippingid=:1", array($dew['SHIPPINGID']));
+        $this->db->pq("UPDATE shipping set shippingstatus=:1 WHERE shippingid=:2", array($status, $dew['SHIPPINGID']));
 
         // Update dewar transport history with provided location.
         $this->db->pq(
             "INSERT INTO dewartransporthistory (dewartransporthistoryid,dewarid,dewarstatus,storagelocation,arrivaldate)
-            VALUES (s_dewartransporthistory.nextval,:1,'dispatch-requested',:2,CURRENT_TIMESTAMP)
+            VALUES (s_dewartransporthistory.nextval,:1,:2,:3,CURRENT_TIMESTAMP)
             RETURNING dewartransporthistoryid INTO :id",
-            array($dew['DEWARID'], $data['LOCATION'])
+            array($dew['DEWARID'], $status, $data['LOCATION'])
+        );
+
+        $this->_output(1);
+    }
+
+    function _cancel_dispatch_dewar_confirmation()
+    {
+        // Check token against dewar
+        $dew = $this->db->pq(
+            "SELECT d.dewarid, d.shippingid, json_unquote(json_extract(d.extra, '$.token')) as token, storagelocation
+                FROM dewar d
+                WHERE d.dewarid=:1",
+            array($this->arg('did'))
+        );
+
+        $dew = $dew[0];
+
+        if (!$this->has_arg('TOKEN') || $this->arg('TOKEN') !== $dew['TOKEN']) {
+            $this->_error('Incorrect token');
+        }
+
+        $this->db->pq("UPDATE shipping set shippingstatus='dispatch request cancelled' WHERE shippingid=:1", array($dew['SHIPPINGID']));
+
+        // Update the dewar status
+        $this->db->pq("UPDATE dewar set dewarstatus='dispatch request cancelled' WHERE dewarid=:1", array($dew['DEWARID']));
+
+        // Update dewar transport history
+        $loc = Utils::getValueOrDefault($dew['STORAGELOCATION'], '');
+        $this->db->pq(
+            "INSERT INTO dewartransporthistory (dewartransporthistoryid,dewarid,dewarstatus,storagelocation,arrivaldate)
+            VALUES (s_dewartransporthistory.nextval,:1,'dispatch request cancelled',:2,CURRENT_TIMESTAMP)
+            RETURNING dewartransporthistoryid INTO :id",
+            array($dew['DEWARID'], $loc)
         );
 
         $this->_output(1);
