@@ -32,7 +32,7 @@ define(['marionette', 'views/form',
             this.ui.select.html('<option value="!">Please select one</option>'+this.getOption('dewars').opts({ empty: true }))
         },
     })
-            
+
     var FCodes = Marionette.CollectionView.extend({
         tagName: 'span',
         className: 'fcodes',
@@ -42,6 +42,28 @@ define(['marionette', 'views/form',
                 dewars: this.getOption('dewars')
             }
         }
+    })
+
+    /*
+     T&C Dialog
+    */
+    var Terms = Backbone.Model.extend({
+        idAttribute: 'SHIPPINGID',
+        urlRoot: '/shipment/terms',
+    })
+
+    var TCDialog = DialogView.extend({
+        template: _.template('<%=TERMS%>'),
+        title: 'Terms & Conditions',
+        buttons: {
+            'Accept': 'accept',
+            'Cancel': 'closeDialog',
+        },
+
+        accept: function() {
+            this.trigger('terms:accepted')
+            this.closeDialog()
+        },
     })
             
             
@@ -57,7 +79,7 @@ define(['marionette', 'views/form',
 
         events: {
             'change @ui.dewars': 'updateFCodes',
-            'change @ui.lcret': 'getlcdetails',
+            'change @ui.lcout': 'getlcdetails',
             'change select[name^=FCODES]': 'checkFCodes',
             'change @ui.name': 'checkFCodes',
             'click a.add_lc': 'addLC',
@@ -66,11 +88,11 @@ define(['marionette', 'views/form',
             'change @ui.longwavelengthsel': 'updateLongWavelength',
             'change @ui.extrasupportsel': 'updateExtraSupport',
             'change @ui.onsiteusersel': 'updateOnsiteUser',
+            'click @ui.facc': 'showTerms',
         },
         
         ui: {
             dewars: 'input[name=DEWARS]',
-            lcret: 'select[name=RETURNLABCONTACTID]',
             lcout: 'select[name=SENDINGLABCONTACTID]',
             first: 'select[name=FIRSTEXPERIMENTID]',
             name: 'input[name=SHIPPINGNAME]',
@@ -86,8 +108,30 @@ define(['marionette', 'views/form',
             longwavelengthli: '.longwavelength',
             extrasupportsel: 'select[name=EXTRASUPPORTYESNO]',
             onsiteusersel: 'select[name=ONSITEUSERYESNO]',
+            accountnumber: 'input[name=DELIVERYAGENT_AGENTCODE]',
+            couriername: 'input[name=DELIVERYAGENT_AGENTNAME]',
+            facc: 'a.facc',
+            nofacc: '.nofacc',
+            accmsg: '.accmsg',
         },
         
+        showTerms: function() {
+            var terms = new TCDialog({ model: this.terms })
+            this.listenTo(terms, 'terms:accepted', this.termsAccepted, this)
+            if (!this.terms.get('ACCEPTED')) app.dialog.show(terms)
+            return false
+        },
+
+        termsAccepted: function() {
+            this.ui.accountnumber.hide()
+            this.ui.facc.hide()
+            this.ui.nofacc.hide()
+            this.ui.accmsg.text('Paid for by Facility')
+            this.model.set({ TERMSACCEPTED: 1 })
+            this.ui.accountnumber.val('')
+            this.ui.couriername.val('')
+        },
+
         addLC: function(e) {
             e.preventDefault()
             app.dialog.show(new DialogView({ title: 'Add Home Lab Contact', className: 'content', view: new AddContactView({ dialog: true }), autoSize: true }))
@@ -241,6 +285,9 @@ define(['marionette', 'views/form',
             this.$el.find(".remoteormailin").hide()
             
             this.checkFCodes()
+
+            this.terms = new Terms()
+            this.terms.fetch()
         },
 
         onShow: function() {
@@ -257,7 +304,6 @@ define(['marionette', 'views/form',
         },
         
         updateContacts: function() {
-            this.ui.lcret.html(this.contacts.opts())
             this.ui.lcout.html(this.contacts.opts())
             this.getlcdetails()
         },
@@ -266,11 +312,34 @@ define(['marionette', 'views/form',
          Get Courier details from selected lab contact
         */
         getlcdetails: function() {
-            var lc = this.contacts.findWhere({ LABCONTACTID: this.ui.lcret.val() })
+            var lc = this.contacts.findWhere({ LABCONTACTID: this.ui.lcout.val() })
             console.log(lc)
             if (lc) {
-                this.$el.find('input[name=DELIVERYAGENT_AGENTNAME]').val(lc.get('DEFAULTCOURRIERCOMPANY'))
-                this.$el.find('input[name=DELIVERYAGENT_AGENTCODE]').val(lc.get('COURIERACCOUNT'))
+                this.ui.couriername.val(lc.get('DEFAULTCOURRIERCOMPANY'))
+                this.ui.accountnumber.val(lc.get('COURIERACCOUNT'))
+            }
+            this.showHideFacilityAccountButton()
+        },
+
+        showHideFacilityAccountButton: function() {
+            const industrial_codes = app.options.get('industrial_prop_codes')
+            const industrial_visit = industrial_codes.includes(app.prop.slice(0,2))
+
+            const lc = this.contacts.findWhere({ LABCONTACTID: this.ui.lcout.val() })
+            const countryOk = app.options.get('facility_courier_countries').indexOf(lc.get('COUNTRY')) > -1 || app.options.get('facility_courier_countries_nde').indexOf(lc.get('COUNTRY')) > -1
+
+            const usingFacilityAccount = this.model.get('TERMSACCEPTED') === 1
+
+            if (countryOk && !industrial_visit && !usingFacilityAccount) {
+                this.ui.facc.show()
+            } else {
+                this.ui.facc.hide()
+            }
+            if (!countryOk) {
+                this.ui.nofacc.show()
+                this.ui.accountnumber.show()
+                this.ui.accmsg.text('')
+                this.model.set({ TERMSACCEPTED: 0 })
             }
         },
         

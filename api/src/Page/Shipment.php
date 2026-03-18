@@ -86,6 +86,7 @@ class Shipment extends Page
         'DELIVERYAGENT_AGENTCODE' => '[\w\-]+',
         'DELIVERYAGENT_FLIGHTCODE' => '\d*',
         'SAFETYLEVEL' => '\w+',
+        'TERMSACCEPTED' => '\d',
         //   'DEWARS' => '\d+',
         //'FIRSTEXPERIMENTID' => '\w+\d+-\d+',
 
@@ -247,7 +248,7 @@ class Shipment extends Page
         array('/cache/:name', 'get', '_get_session_cache'),
 
 
-        array('/terms/:sid', 'get', '_get_terms'),
+        array('/terms(/:sid)', 'get', '_get_terms'),
         array('/terms/:sid', 'patch', '_accept_terms'),
 
         array('/awb/:sid', 'post', '_create_awb'),
@@ -2136,13 +2137,12 @@ class Shipment extends Page
     function _get_terms()
     {
         global $dhl_terms;
+        $terms = array();
 
         if (!$this->has_arg('prop'))
             $this->_error('No proposal specified');
-        if (!$this->has_arg('sid'))
-            $this->_error('No shipment specified');
-
-        $terms = $this->db->pq("SELECT p.givenname, p.familyname, TO_CHAR(cta.timestamp, 'HH24:MI DD-MM-YYYY') as timestamp, 1 as accepted
+        if ($this->has_arg('sid'))
+            $terms = $this->db->pq("SELECT p.givenname, p.familyname, TO_CHAR(cta.timestamp, 'HH24:MI DD-MM-YYYY') as timestamp, 1 as accepted
                 FROM couriertermsaccepted cta
                 INNER JOIN person p ON p.personid = cta.personid
                 WHERE cta.proposalid=:1 AND cta.shippingid=:2", array($this->proposalid, $this->arg('sid')));
@@ -3172,6 +3172,8 @@ class Shipment extends Page
         $sd = $this->has_arg('DELIVERYAGENT_SHIPPINGDATE') ? $this->arg('DELIVERYAGENT_SHIPPINGDATE') : '';
         $dd = $this->has_arg('DELIVERYAGENT_DELIVERYDATE') ? $this->arg('DELIVERYAGENT_DELIVERYDATE') : '';
         $com = $this->has_arg('COMMENTS') ? $this->arg('COMMENTS') : '';
+        $lcout = $this->has_arg('SENDINGLABCONTACTID') ? $this->arg('SENDINGLABCONTACTID') : null;
+        $lcret = $this->has_arg('RETURNLABCONTACTID') ? $this->arg('RETURNLABCONTACTID') : $lcout;
 
         $rt = $this->has_arg('READYBYTIME') ? $this->arg('READYBYTIME') : null;
         $ct = $this->has_arg('CLOSETIME') ? $this->arg('CLOSETIME') : null;
@@ -3245,7 +3247,7 @@ class Shipment extends Page
         $this->db->pq(
             "INSERT INTO shipping (shippingid, proposalid, shippingname, deliveryagent_agentname, deliveryagent_agentcode, deliveryagent_shippingdate, deliveryagent_deliverydate, bltimestamp, creationdate, comments, sendinglabcontactid, returnlabcontactid, shippingstatus, safetylevel, readybytime, closetime, physicallocation, source)
         VALUES (s_shipping.nextval,:1,:2,:3,:4,TO_DATE(:5,'DD-MM-YYYY'), TO_DATE(:6,'DD-MM-YYYY'),CURRENT_TIMESTAMP,CURRENT_TIMESTAMP,:7,:8,:9,'opened',:10, :11, :12, :13, IFNULL(:14,CURRENT_USER)) RETURNING shippingid INTO :id",
-            array($this->proposalid, $this->arg('SHIPPINGNAME'), $an, $ac, $sd, $dd, $com, $this->arg('SENDINGLABCONTACTID'), $this->arg('RETURNLABCONTACTID'), $this->arg('SAFETYLEVEL'), $rt, $ct, $loc, $source)
+            array($this->proposalid, $this->arg('SHIPPINGNAME'), $an, $ac, $sd, $dd, $com, $lcout, $lcret, $this->arg('SAFETYLEVEL'), $rt, $ct, $loc, $source)
         );
 
         $sid = $this->db->id();
@@ -3290,6 +3292,11 @@ class Shipment extends Page
                     $this->db->pq("UPDATE dewar set barcode=:1 WHERE dewarid=:2", array($this->arg('prop') . $vis . '-' . str_pad($id, 7, '0', STR_PAD_LEFT), $id));
                 }
             }
+        }
+
+        if ($this->has_arg('TERMSACCEPTED') && $this->arg('TERMSACCEPTED') == 1) {
+            $this->set_arg('sid', $sid);
+            $this->_accept_terms();
         }
 
         $this->_output(array('SHIPPINGID' => $sid));

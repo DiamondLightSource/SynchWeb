@@ -41,54 +41,54 @@
                 <span class="label">Safety Level</span>
                 <span class="SAFETYLEVEL"><%-SAFETYLEVEL%></span>
             </li>
-            <% if (!EXTERNALSHIPPINGIDTOSYNCHROTRON || !app.options.get("shipping_service_app_url_incoming")) { %>
-            <li>
+
+            <li class="courierfields">
                 <span class="label">Courier</span>
                 <span class="DELIVERYAGENT_AGENTNAME"><%-DELIVERYAGENT_AGENTNAME%></span>
             </li>
 
-            <li>
+            <li class="courierfields">
                 <span class="label">Courier Account No.</span>
                 <span class="DELIVERYAGENT_AGENTCODE"><%-DELIVERYAGENT_AGENTCODE%></span>
             </li>
 
-            <li>
+            <li class="courierfields">
                 <span class="label">Shipping Date</span>
                 <span class="DELIVERYAGENT_SHIPPINGDATE"><%-DELIVERYAGENT_SHIPPINGDATE%></span>
             </li>
 
-            <li>
+            <li class="courierfields">
                 <span class="label">Shipping Air Waybill</span>
                 <span class="DELIVERYAGENT_FLIGHTCODE"><%-DELIVERYAGENT_FLIGHTCODE%></span>
             </li>
 
-            <li>
+            <li class="courierfields">
                 <span class="label">Shipping Pickup Location</span>
                 <span class="PHYSICALLOCATION"><%-PHYSICALLOCATION%></span>
             </li>
 
-            <li>
+            <li class="courierfields">
                 <span class="label">Shipping Ready By</span>
                 <span class="READYBYTIME"><%-READYBYTIME%></span>
             </li>
 
-            <li>
+            <li class="courierfields">
                 <span class="label">Shipping Close Time</span>
                 <span class="CLOSETIME"><%-CLOSETIME%></span>
             </li>
 
             <% if (DELIVERYAGENT_PICKUPCONFIRMATION) { %>
-            <li>
+            <li class="courierfields">
                 <span class="label">Shipping Pickup Confirmed</span>
                 Yes - Confirmation Number: <span class="DELIVERYAGENT_PICKUPCONFIRMATION"><%-DELIVERYAGENT_PICKUPCONFIRMATION%></span>
                 <a href="#" class="button cancel_pickup"><i class="fa fa-times"></i> Cancel</a>
             </li>
-            <li>
+            <li class="courierfields">
                 <span class="label">Shipping Confirmed Ready By</span>
                 <span class="DELIVERYAGENT_READYBYTIME"><%-DELIVERYAGENT_READYBYTIME%></span>
             </li>
 
-            <li>
+            <li class="courierfields">
                 <span class="label">Shipping Confirmed Call In</span>
                 <span class="DELIVERYAGENT_CALLINTIME"><%-DELIVERYAGENT_CALLINTIME%></span>
             </li>
@@ -98,7 +98,7 @@
                 <span class="label">Estimated Delivery Date</span>
                 <span class="DELIVERYAGENT_DELIVERYDATE"><%-DELIVERYAGENT_DELIVERYDATE%></span>
             </li>
-            <% } %>
+
             <%
                 REMOTEORMAILIN=(typeof REMOTEORMAILIN !== 'undefined')? REMOTEORMAILIN : null;
                 SESSIONLENGTH=(typeof SESSIONLENGTH !== 'undefined')? SESSIONLENGTH : null;
