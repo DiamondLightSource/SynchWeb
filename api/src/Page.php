@@ -654,6 +654,11 @@ class Page
         return $this->has_arg($key) && $this->arg($key) !== '' ? $this->arg($key) : null;
     }
 
+    function set_arg($key, $value)
+    {
+        $this->args[$key] = $value;
+    }
+
     # ------------------------------------------------------------------------
     # Misc Helpers
 
