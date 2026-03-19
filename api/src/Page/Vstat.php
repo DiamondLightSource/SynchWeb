@@ -52,6 +52,7 @@ class Vstat extends Page
     function _visit_breakdown()
     {
         ini_set('memory_limit', '512M');
+        global $beam_mode_pv, $beam_mode_pv_beam_on_values;
 
         if ($this->has_arg('visit')) {
             $info = $this->_check_visit();
@@ -341,36 +342,35 @@ class Vstat extends Page
         }
 
         // Beam status 
-        $bs = $this->_get_archive('CS-CS-MSTAT-01:MODE', strtotime($info['ST']), strtotime($info['EN']));
+        $bs = $this->_get_archive($beam_mode_pv, strtotime($info['ST']), strtotime($info['EN']));
 
 
         $lastv = 0;
-        $ex = 3600 * 1000;
         $st = $this->jst($info['ST']);
 
         foreach ($bs as $i => $b) {
-            $v = $b[1] != 4;
-            $c = $b[0] * 1000;
+            $v = !in_array($b[1], $beam_mode_pv_beam_on_values);
+            $c = max($b[0] * 1000, $st);
 
-            if (($v != $lastv) && $v) {
-                $st = $c;
+            if ($v != $lastv) {
+                if ($v) {
+                    $st = $c;
+                } else {
+                    array_push($data, array('data' => array(
+                        array($st, 5, $st),
+                        array($c, 5, $st)
+                    ), 'color' => 'black', 'status' => ' Beam Dump', 'type' => 'nobeam'));
+                }
+
+                $lastv = $v;
             }
-
-            if ($lastv && ($v != $lastv)) {
-                array_push($data, array('data' => array(
-                    array($st + $ex, 5, $st + $ex),
-                    array($c + $ex, 5, $st + $ex)
-                ), 'color' => 'black', 'status' => ' Beam Dump', 'type' => 'nobeam'));
-            }
-
-            $lastv = $v;
         }
 
         // in case visit ends with no beam
-        if ($lastv && $this->jst($info['EN']) > $st + $ex) {
+        if ($lastv && $this->jst($info['EN']) > $st) {
             array_push($data, array('data' => array(
-                array($st + $ex, 5, $st + $ex),
-                array($this->jst($info['EN']), 5, $st + $ex)
+                array($st, 5, $st),
+                array($this->jst($info['EN']), 5, $st)
             ), 'color' => 'black', 'status' => ' Beam Dump', 'type' => 'nobeam'));
         }
 
@@ -396,6 +396,7 @@ class Vstat extends Page
 
     function _pies()
     {
+        global $beam_mode_pv, $beam_mode_pv_beam_on_values;
         $args = array($this->proposalid);
         $where = ' WHERE p.proposalid=:1';
 
@@ -484,30 +485,28 @@ class Vstat extends Page
                 $d['FAULT'] = 0;
 
             // Beam status
-            $bs = $this->_get_archive('CS-CS-MSTAT-01:MODE', strtotime($d['ST']), strtotime($d['EN']));
+            $bs = $this->_get_archive($beam_mode_pv, strtotime($d['ST']), strtotime($d['EN']));
 
             $lastv = 0;
-            $ex = 3600 * 1000;
             $st = $this->jst($d['ST']);
             $total_no_beam = 0;
             foreach ($bs as $i => $b) {
-                $v = $b[1] != 4;
-                $c = $b[0] * 1000;
+                $v = !in_array($b[1], $beam_mode_pv_beam_on_values);
+                $c = max($b[0] * 1000, $st);
 
-                if (($v != $lastv) && $v) {
-                    $st = $c;
+                if ($v != $lastv) {
+                    if ($v) {
+                        $st = $c;
+                    } else {
+                        $total_no_beam += ($c - $st) / 1000;
+                    }
+                    $lastv = $v;
                 }
-
-                if ($lastv && ($v != $lastv)) {
-                    $total_no_beam += ($c - $st) / 1000;
-                }
-
-                $lastv = $v;
             }
 
             // in case visit ends with no beam
-            if ($lastv && $this->jst($d['EN']) > ($ex + $st)) {
-                $total_no_beam += ($this->jst($d['EN']) - ($ex + $st)) / 1000;
+            if ($lastv && $this->jst($d['EN']) > $st) {
+                $total_no_beam += ($this->jst($d['EN']) - $st) / 1000;
             }
 
             $d['NOBEAM'] = $total_no_beam / 3600;
@@ -725,7 +724,7 @@ class Vstat extends Page
         {
             if ($type['name'] == $bl)
             {
-                $logbook = $type['logbook'];
+                $logbook = $type['logbook'] ?? null;
                 break;
             }
         }
