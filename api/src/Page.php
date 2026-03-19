@@ -935,7 +935,7 @@ class Page
             {
                 $vs = $vals[$i];
                 $v = $vs->val;
-                $t = $vs->secs - 3600;
+                $t = $vs->secs;
                 $inputTZ = new \DateTimeZone($timezone);
                 $transitions = $inputTZ->getTransitions($t, $t);
                 if ($transitions[0]['isdst'])
