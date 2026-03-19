@@ -987,8 +987,6 @@ class DC extends Page
             $sample_joins[2]
             $extj[2]
             WHERE $sess[2] $where3
-                 
-                   
             ORDER BY sta DESC, id DESC";
 
         $dcs = $this->db->paginate($q, $args);
@@ -1003,7 +1001,7 @@ class DC extends Page
                 $dc['VIS'] = $this->arg('prop') . '-' . $dc['VN'];
 
             foreach (array('X1', 'X2', 'X3', 'X4') as $x) {
-                $dc[$x] = file_exists($dc[$x]) || file_exists($dc[$x].'.gz') ? 1 : 0;
+                $dc[$x] = @file_exists($dc[$x]) || @file_exists($dc[$x].'.gz') ? 1 : 0;
             }
 
             // Data collections
@@ -1127,7 +1125,7 @@ class DC extends Page
             $sn = 0;
             $images = array();
             foreach (array('X1', 'X2', 'X3', 'X4') as $j => $im) {
-                $exists = file_exists($dc[$im]) || file_exists($dc[$im].'.gz');
+                $exists = @file_exists($dc[$im]) || @file_exists($dc[$im].'.gz');
                 array_push($images, $exists ? 1 : 0);
                 if ($im == 'X1' && $exists)
                     $sn = 1;
@@ -1142,7 +1140,7 @@ class DC extends Page
 
             $this->profile('diffraction image');
             $die = 0;
-            if (file_exists($di))
+            if (@file_exists($di))
                 $die = 1;
             if ($this->staff && $this->has_arg('debug'))
                 $debug['diffraction_thumb'] = array('file' => $di, 'exists' => file_exists($di) ? 1 : 0);
@@ -1170,7 +1168,7 @@ class DC extends Page
         $ch = str_replace('.png', '', $info[0]['PTH']);
 
         $data = array(array(), array(), array());
-        if (file_exists($ch)) {
+        if (@file_exists($ch)) {
             $dat = explode("\n", file_get_contents($ch));
 
             foreach ($dat as $i => $d) {
@@ -1212,7 +1210,7 @@ class DC extends Page
         $this->db->close();
 
         $data = array(array(), array());
-        if (file_exists($info['DAT'])) {
+        if (@file_exists($info['DAT'])) {
             $dat = explode("\n", file_get_contents($info['DAT']));
 
             foreach ($dat as $i => $d) {
@@ -1239,7 +1237,7 @@ class DC extends Page
         $el_no_match = array();
         $max_counts = 0;
 
-        if (file_exists($results)) {
+        if (@file_exists($results)) {
             $dat = explode("\n", file_get_contents($results));
             foreach ($dat as $i => $d) {
                 if ($i < 5) {
@@ -1654,9 +1652,9 @@ class DC extends Page
         $file = $info['FILEPATH'] . '/' . $info['FILENAME'];
 
         $rows = array();
-        if (file_exists($file)) {
+        if (@file_exists($file)) {
             $log = file_get_contents($file);
-        } elseif (file_exists($file.'.gz')) {
+        } elseif (@file_exists($file.'.gz')) {
             $log = gzdecode(file_get_contents($file.'.gz'));
         }
         if (isset($log)) {
@@ -1823,7 +1821,7 @@ class DC extends Page
         $pth = $info['DATFULLPATH'] ? $info['DATFULLPATH'] : str_replace($info['VISIT'], $info['VISIT'] . '/.ispyb', $this->ads($info['DIR']) . $info['IMP'] . '/' . $info['SCAN'] . '.dat');
 
         $data = array();
-        if (file_exists($pth) && is_readable(($pth))) {
+        if (@file_exists($pth) && is_readable(($pth))) {
             $dat = explode("\n", file_get_contents($pth));
 
             foreach ($dat as $i => $d) {
