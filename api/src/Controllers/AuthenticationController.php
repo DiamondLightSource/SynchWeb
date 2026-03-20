@@ -281,7 +281,7 @@ class AuthenticationController
 
             try
             {
-                $token = JWT::decode($jwt, new Key($jwt_key, 'HS512'), array('HS512'));
+                $token = JWT::decode($jwt, new Key($jwt_key, 'HS512'));
                 $this->loginId = $token->data->login;
             }
             catch (\Exception $e)
