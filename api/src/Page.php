@@ -966,7 +966,7 @@ class Page
         if (array_key_exists('HEADERS', $options)) {
             curl_setopt($ch, CURLOPT_HTTPHEADER, $options['HEADERS']);
         }
-        $headers = getallheaders();
+        $headers = \getallheaders();
         if (array_key_exists('Authorization', $headers) && array_key_exists('jwt', $options))
         {
             curl_setopt($ch, CURLOPT_HTTPHEADER, array('Authorization: ' . $headers['Authorization']));

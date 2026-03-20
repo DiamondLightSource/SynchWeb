@@ -268,7 +268,7 @@ class AuthenticationController
     {
         global $jwt_key;
 
-        $headers = getallheaders();
+        $headers = \getallheaders();
         $auth_header = '';
         if (array_key_exists('Authorization', $headers))
         {
@@ -281,7 +281,7 @@ class AuthenticationController
 
             try
             {
-                $token = JWT::decode($jwt, new Key($jwt_key, 'HS512'), array('HS512'));
+                $token = JWT::decode($jwt, new Key($jwt_key, 'HS512'));
                 $this->loginId = $token->data->login;
             }
             catch (\Exception $e)

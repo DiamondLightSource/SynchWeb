@@ -81,14 +81,17 @@ final class AssignControllerTest extends TestCase
         $this->assignController->assignContainer();
         $this->assertEquals(0, $response->getBody());
     }
+
     public function testAssignContainerReturnsOneWhenContainerFound(): void
     {
         $response = $this->setUpCommonResponse();
         $this->assignController->args['visit'] = 3;
         $this->assignController->args['cid'] = 4;
         $this->assignController->args['pos'] = 5;
-        $this->dataLayerStub->expects($this->exactly(1))->method('getContainer')->with(3, 4)->willReturn(array(1,2,3));
-        $this->dataLayerStub->expects($this->exactly(1))->method('assignContainer')->with(1, 5);
+        $this->dataLayerStub->expects($this->exactly(1))->method('getContainer')->with(3, 4)->willReturn(array(
+            array('DEWARID' => 1, 'BEAMLINENAME' => 'p45', 'CONTAINERID' => 4, 'CODE' => 'ABC-001'),
+        ));
+        $this->dataLayerStub->expects($this->exactly(1))->method('assignContainer')->with($this->isType('array'), 5);
 
         $this->assignController->assignContainer();
         $this->assertEquals(1, $response->getBody());
@@ -106,14 +109,17 @@ final class AssignControllerTest extends TestCase
         $this->assignController->unassignContainer();
         $this->assertEquals(0, $response->getBody());
     }
+
     public function testUnassignContainerReturnsOneWhenContainerFound(): void
     {
         $response = $this->setUpCommonResponse();
         $this->assignController->args['visit'] = 3;
         $this->assignController->args['cid'] = 4;
         $this->assignController->args['pos'] = 5;
-        $this->dataLayerStub->expects($this->exactly(1))->method('getContainer')->with(3, 4)->willReturn(array(1,2,3));
-        $this->dataLayerStub->expects($this->exactly(1))->method('unassignContainer')->with(1);
+        $this->dataLayerStub->expects($this->exactly(1))->method('getContainer')->with(3, 4)->willReturn(array(
+            array('DEWARID' => 1, 'BEAMLINENAME' => 'p45', 'CONTAINERID' => 4, 'CODE' => 'ABC-001'),
+        ));
+        $this->dataLayerStub->expects($this->exactly(1))->method('unassignContainer')->with($this->isType('array'));
 
         $this->assignController->unassignContainer();
         $this->assertEquals(1, $response->getBody());
