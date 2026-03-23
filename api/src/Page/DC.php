@@ -1286,7 +1286,7 @@ class DC extends Page
                 dc.imageprefix as imp, dc.comments as dcc, dc.blsampleid as sid,
                 sl.spacegroup as sg, sl.unitcell_a as a, sl.unitcell_b as b, sl.unitcell_c as c, sl.unitcell_alpha as al, sl.unitcell_beta as be, sl.unitcell_gamma as ga,
                 det.numberofpixelsx, det.detectorpixelsizehorizontal,
-                CONCAT(IF(sssw.comments, sssw.comments, IF(ssw.comments, ssw.comments, s.shortcomments)), ' Wedge', IFNULL(ssw.wedgenumber, '')) as com
+                CONCAT(IF(sssw.comments is not null, sssw.comments, IF(ssw.comments is not null, ssw.comments, s.shortcomments)), ' Wedge ', IFNULL(ssw.wedgenumber, '')) as com
                 FROM screeningstrategy st 
                 INNER JOIN screeningoutput so on st.screeningoutputid = so.screeningoutputid 
                 INNER JOIN screening s on so.screeningid = s.screeningid 
@@ -1296,142 +1296,42 @@ class DC extends Page
                 INNER JOIN datacollection dc on s.datacollectionid = dc.datacollectionid
                 LEFT OUTER JOIN detector det ON dc.detectorid = det.detectorid
                 WHERE s.datacollectionid = :1 
-                ORDER BY s.shortcomments, ssw.wedgenumber", array($id));
+                ORDER BY s.screeningid, com, ssw.wedgenumber", array($id));
 
-
+        $nf = array(1 => array('TRAN', 'ATRAN'), 2 => array('A', 'B', 'C', 'AL', 'BE', 'GA', 'OSCRAN', 'RES', 'RANKRES'), 4 => array('TIME'));
         $output = array();
-        foreach ($rows as $r) {
-            if (!array_key_exists($r['PROGRAMVERSION'], $output))
-                $output[$r['PROGRAMVERSION']] = array('CELL' => array(), 'STRATS' => array());
-        }
-
-        $nf = array('A', 'B', 'C', 'AL', 'BE', 'GA');
         foreach ($rows as &$r) {
+            $t = $r['PROGRAMVERSION'];
+            if (!array_key_exists($t, $output))
+                $output[$t] = array('CELL' => array(), 'STRATS' => array());
+
+            $r['ATRAN'] = $r['TRAN'] / 100.0 * $r['DCTRN'];
+            foreach ($nf as $nff => $cols) {
+                foreach ($cols as $c) {
+                    $r[$c] = number_format($r[$c], $nff);
+                }
+            }
+
             $is_align = false;
             foreach ($strat_align as $sa) {
                 if (!$is_align)
-                    $is_align = strpos($r['PROGRAMVERSION'], $sa) !== false;
+                    $is_align = strpos($t, $sa) !== false;
             }
 
-            if ($is_align) {
+            if (!$is_align) {
                 foreach ($r as $k => &$v) {
-                    if (in_array($k, $nf)) {
-                        $v = number_format(floatval($v), 2);
-                    }
-                }
-                array_push($output[$r['PROGRAMVERSION']]['STRATS'], $r);
-            } else {
-
-                $t = $r['PROGRAMVERSION'];
-
-                foreach ($r as $k => &$v) {
-                    if (in_array($k, $nf)) {
-                        $v = number_format(floatval($v), 2);
+                    if (in_array($k, array('SG', 'A', 'B', 'C', 'AL', 'BE', 'GA'))) {
                         $output[$t]['CELL'][$k] = $v;
                         unset($r[$k]);
                     }
-
-                    if ($k == 'TRAN')
-                        $v = number_format($v, 1);
-                    if ($k == 'TIME')
-                        $v = number_format($v, 3);
-                    if ($k == 'OSCRAN')
-                        $v = number_format($v, 2);
-                    if ($k == 'RES')
-                        $v = number_format($v, 2);
-                    if ($k == 'RANKRES')
-                        $v = number_format($v, 2);
                 }
-
-                $output[$t]['CELL']['SG'] = $r['SG'];
-                unset($r['SG']);
-
-                $r['COM'] = str_replace('EDNA', '', $r['COM']);
-                $r['COM'] = str_replace('Mosflm ', '', $r['COM']);
-
-                $r['VPATH'] = join('/', array_slice(explode('/', $r['IMD']), 0, 6));
-                list(,, $r['BL']) = explode('/', $r['IMD']);
-
-                # we dont actually use this in the display view maybe Deprecate?
-                # detector diameter in mm
-                if ($r['DETECTORPIXELSIZEHORIZONTAL'] && $r['NUMBEROFPIXELSX']) {
-                    $diam = $r['DETECTORPIXELSIZEHORIZONTAL'] * $r['NUMBEROFPIXELSX'] * 1000;
-                } else {
-                    // drop back to pilatus 6m diameter
-                    $diam = 415;
-                }
-
-                $r['DIST'] = $this->_r_to_dist($diam, $r['LAM'], $r['RES']);
-                $r['ATRAN'] = round($r['TRAN'] / 100.0 * $r['DCTRN'], 1);
-                list($r['NTRAN'], $r['NEXP']) = $this->_norm_et($r['ATRAN'], $r['TIME']);
-                $r['AP'] = $this->_get_ap($r['DCC']);
-
-                array_push($output[$t]['STRATS'], $r);
             }
+
+            array_push($output[$t]['STRATS'], $r);
         }
 
         $this->_output(array(sizeof($rows), $output));
     }
-
-    # ------------------------------------------------------------------------        
-    # Normalise transmission fo 25hz data collection
-    function _norm_et($t, $e)
-    {
-        if ($t < 100 && $e > 0.04) {
-            $f = $e / 0.04;
-            $maxe = 0.04;
-            $maxt = ($e / 0.04) * $t;
-
-            if ($maxt > 100) {
-                $maxe *= $maxt / 100;
-                $maxt = 100;
-            }
-            return array(number_format($maxt, 1), number_format($maxe, 3));
-        } else {
-            return array($t, $e);
-        }
-    }
-
-    # ------------------------------------------------------------------------        
-    # Convert resolution to detector distance
-    function _r_to_dist($diam, $lambda, $r)
-    {
-        $result = 0;
-        try {
-            $b = $lambda / (2 * $r);
-            $d = 2 * asin($b);
-            $f = 2 * tan($d);
-            $result = number_format($diam / $f, 2);
-        } catch (\Exception $e) {
-            error_log('Error converting resolution to distance, lambda=' . $lambda . ' r=' . $r . ' Exception: ' . $e->getMessage());
-        }
-        return $result;
-    }
-
-    # ------------------------------------------------------------------------        
-    # Work out which aperture is selected
-    function _get_ap($com)
-    {
-        $aps = array(
-            'Aperture: Large' => 'LARGE_APERTURE',
-            'Aperture: Medium' => 'MEDIUM_APERTURE',
-            'Aperture: Small' => 'SMALL_APERTURE',
-            'Aperture: 10' => 'In_10',
-            'Aperture: 20' => 'In_20',
-            'Aperture: 30' => 'In_30',
-            'Aperture: 50' => 'In_50',
-            'Aperture: 70' => 'In_70'
-        );
-
-        $app = '';
-        foreach ($aps as $k => $v) {
-            if (strpos($com, $k) !== False)
-                $app = $v;
-        }
-
-        return $app;
-    }
-
 
     # ------------------------------------------------------------------------
     # Image quality indicators from distl
