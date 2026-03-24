@@ -84,6 +84,8 @@ class AuthenticationController
             {
                 $this->returnResponse(200, $this->generateJwtToken($userId));
             }
+        } else if ($userId === null) {
+            $this->returnError(403, 'User not recognised');
         }
         $this->returnError(400, 'No previous session');
     }
@@ -358,7 +360,7 @@ class AuthenticationController
 
         if ($cas_sso) {
             header('Location: ' . $this->authenticateByType()->authorise());
-            $this->returnResponse(302, array('status' => "Redirecting to CAS"));
+            $this->returnResponse(302, array('status' => "Redirecting to provider"));
         } else {
             $this->returnError(501, "SSO not configured");
         }
@@ -379,7 +381,7 @@ class AuthenticationController
             }
             $this->returnResponse(200, $this->generateJwtToken($fedid));
         } else {
-            $this->returnError(401, 'Invalid Credentials');
+            $this->returnError(403, 'User not recognised');
         }
     }
 
