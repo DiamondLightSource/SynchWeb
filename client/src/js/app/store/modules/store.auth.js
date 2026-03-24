@@ -125,7 +125,7 @@ const auth = {
           },
           error: function(req, status, error) {
             commit('authError')
-            reject(error)
+            reject(req)
           }, 
           complete: function() {
             commit('loading', false, { root: true })
