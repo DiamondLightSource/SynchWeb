@@ -49,6 +49,9 @@
 
     <div class="srch"></div>
     <div class="filter type"></div>
+    <% if (!IS_DCG && !IS_PJ && !IS_SINGLE) { %>
+    <label class="r flex aic gap2">Expand groups <input type="checkbox" name="expand" class="toggle-input"></label>
+    <% } %>
 
     <div class="page_wrap one"></div>    
     <div class="data_collections" data-testid="dc-data-collections"></div>

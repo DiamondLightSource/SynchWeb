@@ -6,12 +6,14 @@ define(['backbone',
     'utils/table',
     'utils/kvcollection',
     'collections/spacegroups',
+    'collections/processingpipelines',
     'templates/dc/summary.html'], 
     function(Backbone, Marionette, Backgrid, TableView,
         utils,
         table,
         KVCollection,
         Spacegroups,
+        ProcessingPipelines,
         template) {
 
     var Pipelines = Backbone.Collection.extend(_.extend({
@@ -186,19 +188,20 @@ define(['backbone',
             this.updateData()
         },
 
+        updatePipelines: function() {
+            this.ui.pipeline.html('<option value="">All pipelines</option>'+this.processing_pipelines.opts())
+        },
+
         onRender: function() {
             this.showSpaceGroups()
 
-            this.pipelines = new Pipelines([
-                { NAME: 'Any', VALUE: '' },
-                { NAME: 'Xia2 DIALS', VALUE: 'xia2 dials' },
-                { NAME: 'Xia2 3dii', VALUE: 'xia2 3dii' },
-                { NAME: 'Fast DP', VALUE: 'fast_dp' },
-                { NAME: 'autoPROC', VALUE: 'autoPROC' },
-                { NAME: 'autoPROC+STARANISO', VALUE: 'autoPROC+STARANISO' },
-            ])
-
-            this.ui.pipeline.html(this.pipelines.opts())
+            this.processing_pipelines = new ProcessingPipelines()
+            this.processing_pipelines.fetch({
+                data: {
+                    category: 'processing',
+                    pipelinestatus: ['automatic', 'optional'],
+                }
+            }).done(this.updatePipelines.bind(this));
 
             var columns = [
                 { label: '', cell: table.TemplateCell, editable: false, template: '<a href="/dc/visit/'+this.visit+'/id/<%-ID%>" class="button button-notext"><i class="fa fa-search"></i> <span>View Data Collection</span></a>' },

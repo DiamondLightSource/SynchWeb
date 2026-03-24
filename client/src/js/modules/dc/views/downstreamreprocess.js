@@ -74,6 +74,7 @@ define(['backbone', 'marionette', 'views/dialog',
         ui: {
             pipeline: 'select[name=pipeline]',
             warning: '#warning',
+            fields: 'input, select',
         },
 
         buttons: {
@@ -87,6 +88,8 @@ define(['backbone', 'marionette', 'views/dialog',
 
         events: {
             'change @ui.pipeline': 'updatePipeline',
+            'input @ui.fields': 'onFieldChanged',
+            'change @ui.fields': 'onFieldChanged',
         },
 
         templateHelpers: function() {
@@ -144,12 +147,22 @@ define(['backbone', 'marionette', 'views/dialog',
             
         },
 
+        onFieldChanged: function() {
+            this._enableIntegrateButton();
+        },
+
         _disableIntegrateButton: function() {
             var btn = $('.ui-dialog-buttonpane button:contains("Submit")')
-            btn.button('disable').button('option', 'label', 'Submitted!')
-            setTimeout(function() {
-                btn.button('enable').button('option', 'label', 'Submit')
+            btn.addClass('submitted').button('disable').button('option', 'label', 'Submitted!')
+            this.resetTimeout = setTimeout(() => {
+                this._enableIntegrateButton()
             }, 5000)
+        },
+
+        _enableIntegrateButton: function() {
+            var btn = $('.ui-dialog-buttonpane button.submitted')
+            btn.removeClass('submitted').button('enable').button('option', 'label', 'Submit')
+            clearTimeout(this.resetTimeout);
         },
 
         _enqueue: function(options) {

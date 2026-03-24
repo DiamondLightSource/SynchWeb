@@ -221,6 +221,14 @@ define(['backbone',
         return array
     },
 
+    setLocalStorage: function(key, value) {
+        localStorage.setItem(key, value);
+    },
+
+    getLocalStorage: function(key) {
+        const value = localStorage.getItem(key);
+        return value ? value : "";
+    },
 
     jsonError: function(model, xhr, status) {
         var json = {}
