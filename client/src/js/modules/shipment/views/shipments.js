@@ -49,11 +49,12 @@ define(['marionette',
     initialize: function(options) {
       var columns = [{ name: 'SHIPPINGNAME', label: 'Name', cell: 'string', editable: false },
                      { name: 'DEWARS', label: 'Dewar(s)', cell: 'string', editable: false },
+                     { name: 'PCOUNT', label: '# Pucks', cell: 'string', editable: false },
+                     { name: 'PLCOUNT', label: '# Plates', cell: 'string', editable: false },
                      { name: 'CREATED', label: 'Creation Date', cell: 'string', editable: false },
                      { name: 'VISIT', label: 'Visit', cell: 'string', editable: false },
                      { name: 'CONTACTS', label: 'Lab Contact', cell: ContactCell, editable: false },
                      { name: 'SHIPPINGSTATUS', label: 'Status', cell: 'string', editable: false },
-                     { name: 'DCOUNT', label: '# Comp', cell: 'string', editable: false },
                      { name: 'COMMENTS', label: 'Comments', cell: 'string', editable: false },
                      ]
         

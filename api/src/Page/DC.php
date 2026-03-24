@@ -400,7 +400,7 @@ class DC extends Page
         }
 
         # Data collection group
-        if ($this->has_arg('dcg') || $this->has_arg('PROCESSINGJOBID') || $this->has_arg('id')) {
+        if ($this->has_arg('dcg') || $this->has_arg('PROCESSINGJOBID') || ($this->has_arg('id') && !$this->has_arg('t'))) {
             $fields = "count(distinct dca.datacollectionfileattachmentid) as dcac,
                     if(dca.fileType='recip',1,0) as recip,
                     count(distinct dcc.datacollectioncommentid) as dccc,
@@ -1248,8 +1248,7 @@ class DC extends Page
                         $max_counts = floatval($l[1]);
                     if (array_key_exists($l[0], $el_to_en)) {
                         $els = $el_to_en[$l[0]];
-                        if (($els[sizeof($els) - 1] * 1000) < ($info['ENERGY'] - 1000))
-                            $elements[$l[0]] = array(array_map('floatval', $els), floatval($l[1]), floatval($l[2]));
+                        $elements[$l[0]] = array(array_map('floatval', $els), floatval($l[1]), floatval($l[2]));
                     } else
                         array_push($el_no_match, $l[0]);
                 }
