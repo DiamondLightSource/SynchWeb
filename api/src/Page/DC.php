@@ -747,7 +747,7 @@ class DC extends Page
                 'mca' as type,
                 'A' as imp,
                 1 as run,
-                'A' as filetemplate,
+                '' as filetemplate,
                 xrf.xfefluorescencespectrumid as id,
                 1 as ni,
                 xrf.filename as dir,
