@@ -132,8 +132,13 @@ class OIDC extends AuthenticationParent implements AuthenticationInterface
             'samesite' => 'Strict'
         );
 
-        setcookie($cookie_key, $token, $cookieOpts);
-        return $this->getUser($token);
+        $user = $this->getUser($token);
+
+        if ($user) {
+            setcookie($cookie_key, $token, $cookieOpts);
+        }
+
+        return $user;
     }
 
     function logout()

@@ -159,7 +159,7 @@ final class AuthenticationControllerTest extends TestCase
         });
 
         $this->assertContains('Content-Type: application/json', Output::$headers);
-        $this->assertContains('X-PHP-Response-Code: 401', Output::$headers);
+        $this->assertContains('X-PHP-Response-Code: 403', Output::$headers);
     }
 
     public function testCodeAuthenticationWhenGetValidFedIdReturnsSuccess(): void

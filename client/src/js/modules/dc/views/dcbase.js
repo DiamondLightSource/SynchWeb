@@ -87,6 +87,7 @@ define(['marionette',
             console.log('updateDCC', this.ui.dcglink, this.model)
             if (this.model.get('DCC') > 1) {
                 this.$el.find('li.group').show()
+                this.$el.find('.gridsize2').show()
                 this.$el.find('.dcglink').show()
                 this.$el.find('.dclink').hide()
                 this.$el.find('.reprocess').hide()
@@ -95,6 +96,7 @@ define(['marionette',
                 }
             } else {
                 this.$el.find('li.group').hide()
+                this.$el.find('.gridsize2').hide()
                 this.$el.find('.dcglink').hide()
                 this.$el.find('.dclink').show()
                 this.$el.find('.reprocess').show()
