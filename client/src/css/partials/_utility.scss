@@ -275,3 +275,44 @@ ul.ui-autocomplete {
         }
     }
 }
+
+.aic {
+    align-items: center;
+}
+
+.gap2 {
+    gap: 2px;
+}
+
+.toggle-input {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 40px;
+    height: 22px;
+    background: #ccc;
+    border-radius: 20px;
+    position: relative;
+    cursor: pointer;
+    transition: background 0.3s;
+    outline: none;
+}
+
+.toggle-input::before {
+    content: "";
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    top: 1px;
+    left: 1px;
+    background: white;
+    transition: transform 0.3s;
+}
+
+.toggle-input:checked {
+    background: #4CAF50;
+}
+
+.toggle-input:checked::before {
+    transform: translateX(18px);
+}

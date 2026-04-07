@@ -63,6 +63,7 @@ define(['marionette',
             sent: '.sent',
             booking: '.booking',
             dhlmessage: '.dhlmessage',
+            courierfields: '.courierfields',
         },
 
 
@@ -403,6 +404,13 @@ define(['marionette',
                 self.edit.create('SENDINGLABCONTACTID', 'select', { data: self.contacts.kv() })
                 self.edit.create('RETURNLABCONTACTID', 'select', { data: self.contacts.kv() })
             })
+
+            const externalid = this.model.get('EXTERNALSHIPPINGIDTOSYNCHROTRON')
+            const termsaccepted = this.model.get('TERMSACCEPTED') == 1
+            const ss_url = app.options.get("shipping_service_app_url_incoming")
+            if (ss_url && (externalid || termsaccepted)) {
+                this.ui.courierfields.hide()
+            }
         },
         
     })

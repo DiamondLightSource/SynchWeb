@@ -199,7 +199,7 @@ export default {
             .dispatch("auth/getToken", token)
             .then(() => this.$router.push(actualRedirectUrl))
             .catch((e) => {
-              if (e === "Forbidden") {
+              if (e.status === 403) {
                 this.authError = "not-recognised";
               }
             });

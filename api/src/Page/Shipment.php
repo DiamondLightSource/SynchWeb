@@ -86,6 +86,7 @@ class Shipment extends Page
         'DELIVERYAGENT_AGENTCODE' => '[\w\-]+',
         'DELIVERYAGENT_FLIGHTCODE' => '\d*',
         'SAFETYLEVEL' => '\w+',
+        'TERMSACCEPTED' => '\d',
         //   'DEWARS' => '\d+',
         //'FIRSTEXPERIMENTID' => '\w+\d+-\d+',
 
@@ -209,7 +210,7 @@ class Shipment extends Page
 
         array('/dewars/transfer', 'post', '_transfer_dewar'),
         array('/dewars/dispatch', 'post', '_dispatch_dewar'),
-        array('/dewars/confirmdispatch/did/:did/token/:TOKEN', 'post', '_dispatch_dewar_confirmation'),
+        array('/dewars/confirmdispatch/did/:did/token/:TOKEN', 'post', '_outgoing_shipment_confirmation'),
         array('/dewars/confirmpickup/sid/:sid/token/:TOKEN', 'post', '_incoming_shipment_confirmation'),
 
         array('/dewars/tracking(/:DEWARID)', 'get', '_get_dewar_tracking'),
@@ -247,7 +248,7 @@ class Shipment extends Page
         array('/cache/:name', 'get', '_get_session_cache'),
 
 
-        array('/terms/:sid', 'get', '_get_terms'),
+        array('/terms(/:sid)', 'get', '_get_terms'),
         array('/terms/:sid', 'patch', '_accept_terms'),
 
         array('/awb/:sid', 'post', '_create_awb'),
@@ -317,7 +318,7 @@ class Shipment extends Page
         $tot = $this->db->pq("SELECT count(distinct s.shippingid) as tot 
                 FROM proposal p 
               INNER JOIN shipping s ON p.proposalid = s.proposalid 
-              LEFT OUTER JOIN labcontact c ON s.sendinglabcontactid = c.labcontactid 
+              LEFT OUTER JOIN labcontact lc ON s.sendinglabcontactid = lc.labcontactid
               LEFT OUTER JOIN labcontact c2 ON s.returnlabcontactid = c2.labcontactid 
               LEFT OUTER JOIN dewar d ON d.shippingid = s.shippingid 
               WHERE $where", $args);
@@ -349,8 +350,10 @@ class Shipment extends Page
                 TO_CHAR(s.deliveryagent_deliverydate, 'DD-MM-YYYY') as deliveryagent_deliverydate,
                 s.safetylevel,
                 count(d.dewarid) as dcount,
+                SUM(IFNULL(c.puckcount, 0)) as pcount,
+                SUM(IFNULL(c.platecount, 0)) as plcount,
                 s.sendinglabcontactid,
-                c.cardname as lcout,
+                lc.cardname as lcout,
                 c2.cardname as lcret,
                 s.returnlabcontactid,
                 s.shippingid,
@@ -393,14 +396,21 @@ class Shipment extends Page
             LEFT OUTER JOIN dewar d ON d.shippingid = s.shippingid
             LEFT OUTER JOIN blsession b ON b.sessionid = d.firstexperimentid
             LEFT OUTER JOIN couriertermsaccepted cta ON cta.shippingid = s.shippingid
-            LEFT OUTER JOIN labcontact c ON c.labcontactid = s.sendinglabcontactid
-            LEFT OUTER JOIN person pe ON c.personid = pe.personid
+            LEFT OUTER JOIN labcontact lc ON lc.labcontactid = s.sendinglabcontactid
+            LEFT OUTER JOIN person pe ON lc.personid = pe.personid
             LEFT OUTER JOIN laboratory l ON l.laboratoryid = pe.laboratoryid
             LEFT OUTER JOIN person pe2 ON pe2.personid = s.deliveryagent_flightcodepersonid
+            LEFT OUTER JOIN (
+                SELECT dewarid,
+                COUNT(IF(capacity < 25, 1, NULL)) as puckcount,
+                COUNT(IF(capacity >= 25, 1, NULL)) as platecount
+                FROM container
+                GROUP BY dewarid
+            ) c ON c.dewarid = d.dewarid
             WHERE $where
             GROUP BY
                 s.sendinglabcontactid, s.returnlabcontactid, s.deliveryagent_agentname, s.deliveryagent_agentcode,
-                s.deliveryagent_shippingdate, s.deliveryagent_deliverydate, s.safetylevel, c.cardname, c2.cardname,
+                s.deliveryagent_shippingdate, s.deliveryagent_deliverydate, s.safetylevel, lc.cardname, c2.cardname,
                 s.shippingid, s.shippingname, s.shippingstatus,TO_CHAR(s.creationdate, 'DD-MM-YYYY'),
                 s.isstorageshipping, s.shippingtype, s.comments, s.creationdate
             ORDER BY $order",
@@ -1180,11 +1190,11 @@ class Shipment extends Page
     function _dispatch_dewar()
     {
         global $facility_country;
-        global $facility_courier_countries;
+        global $facility_courier_countries, $facility_courier_countries_nde;
         global $dispatch_email;
         global $dispatch_email_regex;
         global $dispatch_email_intl;
-        global $use_shipping_service;
+        global $use_shipping_service, $use_shipping_service_nde;
         global $shipping_service_links_in_emails;
         global $use_shipping_service_redirect;
         global $shipping_service_app_url;
@@ -1266,7 +1276,10 @@ class Shipment extends Page
         $data = $this->args;
         $data['TERMSACCEPTED'] = $terms_accepted;
 
-        if (Utils::getValueOrDefault($use_shipping_service) && in_array($country, $facility_courier_countries)) {
+        $domestic = in_array($country, $facility_courier_countries);
+        $nde = $use_shipping_service_nde && in_array($country, $facility_courier_countries_nde);
+
+        if (Utils::getValueOrDefault($use_shipping_service) && ($domestic || $nde)) {
             if ($terms_accepted) {
                 if (Utils::getValueOrDefault($use_shipping_service_redirect)) {
                     try {
@@ -1300,7 +1313,7 @@ class Shipment extends Page
         # Prepare e-mail response for dispatch request
         $use_dispatch_lite_template = (
             Utils::getValueOrDefault($use_shipping_service)
-            && in_array($country, $facility_courier_countries)
+            && ($domestic || $nde)
             && $terms_accepted
             && Utils::getValueOrDefault($use_shipping_service_redirect)
         );
@@ -1389,15 +1402,29 @@ class Shipment extends Page
         }
     }
 
+    function _outgoing_shipment_confirmation()
+    {
+        if (!$this->has_arg('did'))
+            $this->_error('No dewar specified');
+        if (!$this->has_arg('TOKEN'))
+            $this->_error('No token specified');
+        if (!$this->has_arg('status'))
+            $this->_error('No status specified');
+
+        if ($this->arg('status') === 'CREATED') {
+            $this->_cancel_dispatch_dewar_confirmation();
+        } else if ($this->arg('status') === 'BOOKED' || $this->arg('status') === 'PENDING') {
+            $this->_dispatch_dewar_confirmation();
+        } else {
+            $this->_error('Invalid status');
+        }
+    }
 
     function _dispatch_dewar_confirmation()
     {
         global $dispatch_email;
         global $dispatch_email_regex;
         global $shipping_service_app_url;
-
-        if (!$this->has_arg('did'))
-            $this->_error('No dewar specified');
 
         # Check token against dewar given
         $dew = $this->db->pq(
@@ -1420,7 +1447,18 @@ class Shipment extends Page
             $this->_error('Incorrect token');
         }
 
-        # Prepare e-mail to stores
+        if ($this->arg('status') === 'BOOKED') {
+            if (!$this->has_arg('tracking_number'))
+                $this->_error('No tracking number specified');
+            $tracking = $this->arg('tracking_number');
+            $status = 'dispatch-booked';
+        } else if ($this->arg('status') === 'PENDING') {
+            $tracking = '';
+            $status = 'dispatch-requested';
+        } else {
+            $this->_error('Invalid status');
+        }
+
         $data = $this->args;
         if (!array_key_exists('prop', $data))
             $data['prop'] = $dew['PROPOSAL'];
@@ -1434,54 +1472,89 @@ class Shipment extends Page
             $data['LOCATION'] = $dew['STORAGELOCATION'];
         if (!array_key_exists('EMAILADDRESS', $data))
             $data['EMAILADDRESS'] = $dew['EMAILADDRESS'];;
-        if (!array_key_exists('tracking_number', $data))
-            $data['tracking_number'] = $dew['TRACKINGNUMBERFROMSYNCHROTRON'];
-        $subject_line = '*** Dispatch requested for Dewar ' . $dew['BARCODE'] . ' from ' . $data['LOCATION'] . ' ***';
-        $email_template = 'dewar-dispatch-lite';
-        $email = new Email($email_template, $subject_line);
-        $email->data = $data;
 
-        // If a local contact is given, try to find their email address
-        // First try LDAP, if unsuccessful look at the ISPyB person record for a matching staff user
-        $local_contact = $this->has_arg('LOCALCONTACT') ? $this->args['LOCALCONTACT'] : '';
-        if ($local_contact) {
-            $this->args['LCEMAIL'] = $this->_get_email_fn($local_contact);
-            if (!$this->args['LCEMAIL']) {
-                $this->args['LCEMAIL'] = $this->_get_ispyb_email_fn($local_contact);
-            }
-        }
+        if ($this->arg('status') === 'BOOKED') {
+            # Prepare e-mail to stores
+            $subject_line = '*** Dispatch requested for Dewar ' . $dew['BARCODE'] . ' from ' . $data['LOCATION'] . ' ***';
+            $email_template = 'dewar-dispatch-lite';
+            $email = new Email($email_template, $subject_line);
+            $email->data = $data;
 
-        $recpts = $dispatch_email;
-        if ($data['EMAILADDRESS']) $recpts .= ', ' . $data['EMAILADDRESS'];
-        $local_contact_email = $this->has_arg('LCEMAIL') ? $this->args['LCEMAIL'] : '';
-        if ($local_contact_email) $recpts .= ', ' . $local_contact_email;
-
-        if (!is_null($dispatch_email_regex)) {
-            foreach ($dispatch_email_regex as $address => $pattern) {
-                if (preg_match($pattern, $data['BARCODE'])) {
-                    $recpts .= ', ' . $address;
+            // If a local contact is given, try to find their email address
+            // First try LDAP, if unsuccessful look at the ISPyB person record for a matching staff user
+            $local_contact = $this->has_arg('LOCALCONTACT') ? $this->args['LOCALCONTACT'] : '';
+            if ($local_contact) {
+                $this->args['LCEMAIL'] = $this->_get_email_fn($local_contact);
+                if (!$this->args['LCEMAIL']) {
+                    $this->args['LCEMAIL'] = $this->_get_ispyb_email_fn($local_contact);
                 }
             }
-        }
 
-        $email->send($recpts);
+            $recpts = $dispatch_email;
+            if ($data['EMAILADDRESS']) $recpts .= ', ' . $data['EMAILADDRESS'];
+            $local_contact_email = $this->has_arg('LCEMAIL') ? $this->args['LCEMAIL'] : '';
+            if ($local_contact_email) $recpts .= ', ' . $local_contact_email;
+
+            if (!is_null($dispatch_email_regex)) {
+                foreach ($dispatch_email_regex as $address => $pattern) {
+                    if (preg_match($pattern, $data['BARCODE'])) {
+                        $recpts .= ', ' . $address;
+                    }
+                }
+            }
+
+            $email->send($recpts);
+        }
 
         // Also update the dewar status and storage location to keep it in sync with history...
         $this->db->pq(
             "UPDATE dewar
-            set dewarstatus='dispatch-requested', storagelocation=lower(:2), trackingnumberfromsynchrotron=:3
-            WHERE dewarid=:1",
-            array($dew['DEWARID'], $data['LOCATION'], $data['tracking_number'])
+            set dewarstatus=:1, storagelocation=lower(:2), trackingnumberfromsynchrotron=:3
+            WHERE dewarid=:4",
+            array($status, $data['LOCATION'], $tracking, $dew['DEWARID'])
         );
 
-        $this->db->pq("UPDATE shipping set shippingstatus='dispatch-requested' WHERE shippingid=:1", array($dew['SHIPPINGID']));
+        $this->db->pq("UPDATE shipping set shippingstatus=:1 WHERE shippingid=:2", array($status, $dew['SHIPPINGID']));
 
         // Update dewar transport history with provided location.
         $this->db->pq(
             "INSERT INTO dewartransporthistory (dewartransporthistoryid,dewarid,dewarstatus,storagelocation,arrivaldate)
-            VALUES (s_dewartransporthistory.nextval,:1,'dispatch-requested',:2,CURRENT_TIMESTAMP)
+            VALUES (s_dewartransporthistory.nextval,:1,:2,:3,CURRENT_TIMESTAMP)
             RETURNING dewartransporthistoryid INTO :id",
-            array($dew['DEWARID'], $data['LOCATION'])
+            array($dew['DEWARID'], $status, $data['LOCATION'])
+        );
+
+        $this->_output(1);
+    }
+
+    function _cancel_dispatch_dewar_confirmation()
+    {
+        // Check token against dewar
+        $dew = $this->db->pq(
+            "SELECT d.dewarid, d.shippingid, json_unquote(json_extract(d.extra, '$.token')) as token, storagelocation
+                FROM dewar d
+                WHERE d.dewarid=:1",
+            array($this->arg('did'))
+        );
+
+        $dew = $dew[0];
+
+        if (!$this->has_arg('TOKEN') || $this->arg('TOKEN') !== $dew['TOKEN']) {
+            $this->_error('Incorrect token');
+        }
+
+        $this->db->pq("UPDATE shipping set shippingstatus='dispatch request cancelled' WHERE shippingid=:1", array($dew['SHIPPINGID']));
+
+        // Update the dewar status
+        $this->db->pq("UPDATE dewar set dewarstatus='dispatch request cancelled' WHERE dewarid=:1", array($dew['DEWARID']));
+
+        // Update dewar transport history
+        $loc = Utils::getValueOrDefault($dew['STORAGELOCATION'], '');
+        $this->db->pq(
+            "INSERT INTO dewartransporthistory (dewartransporthistoryid,dewarid,dewarstatus,storagelocation,arrivaldate)
+            VALUES (s_dewartransporthistory.nextval,:1,'dispatch request cancelled',:2,CURRENT_TIMESTAMP)
+            RETURNING dewartransporthistoryid INTO :id",
+            array($dew['DEWARID'], $loc)
         );
 
         $this->_output(1);
@@ -2136,13 +2209,12 @@ class Shipment extends Page
     function _get_terms()
     {
         global $dhl_terms;
+        $terms = array();
 
         if (!$this->has_arg('prop'))
             $this->_error('No proposal specified');
-        if (!$this->has_arg('sid'))
-            $this->_error('No shipment specified');
-
-        $terms = $this->db->pq("SELECT p.givenname, p.familyname, TO_CHAR(cta.timestamp, 'HH24:MI DD-MM-YYYY') as timestamp, 1 as accepted
+        if ($this->has_arg('sid'))
+            $terms = $this->db->pq("SELECT p.givenname, p.familyname, TO_CHAR(cta.timestamp, 'HH24:MI DD-MM-YYYY') as timestamp, 1 as accepted
                 FROM couriertermsaccepted cta
                 INNER JOIN person p ON p.personid = cta.personid
                 WHERE cta.proposalid=:1 AND cta.shippingid=:2", array($this->proposalid, $this->arg('sid')));
@@ -3172,6 +3244,8 @@ class Shipment extends Page
         $sd = $this->has_arg('DELIVERYAGENT_SHIPPINGDATE') ? $this->arg('DELIVERYAGENT_SHIPPINGDATE') : '';
         $dd = $this->has_arg('DELIVERYAGENT_DELIVERYDATE') ? $this->arg('DELIVERYAGENT_DELIVERYDATE') : '';
         $com = $this->has_arg('COMMENTS') ? $this->arg('COMMENTS') : '';
+        $lcout = $this->has_arg('SENDINGLABCONTACTID') ? $this->arg('SENDINGLABCONTACTID') : null;
+        $lcret = $this->has_arg('RETURNLABCONTACTID') ? $this->arg('RETURNLABCONTACTID') : $lcout;
 
         $rt = $this->has_arg('READYBYTIME') ? $this->arg('READYBYTIME') : null;
         $ct = $this->has_arg('CLOSETIME') ? $this->arg('CLOSETIME') : null;
@@ -3245,7 +3319,7 @@ class Shipment extends Page
         $this->db->pq(
             "INSERT INTO shipping (shippingid, proposalid, shippingname, deliveryagent_agentname, deliveryagent_agentcode, deliveryagent_shippingdate, deliveryagent_deliverydate, bltimestamp, creationdate, comments, sendinglabcontactid, returnlabcontactid, shippingstatus, safetylevel, readybytime, closetime, physicallocation, source)
         VALUES (s_shipping.nextval,:1,:2,:3,:4,TO_DATE(:5,'DD-MM-YYYY'), TO_DATE(:6,'DD-MM-YYYY'),CURRENT_TIMESTAMP,CURRENT_TIMESTAMP,:7,:8,:9,'opened',:10, :11, :12, :13, IFNULL(:14,CURRENT_USER)) RETURNING shippingid INTO :id",
-            array($this->proposalid, $this->arg('SHIPPINGNAME'), $an, $ac, $sd, $dd, $com, $this->arg('SENDINGLABCONTACTID'), $this->arg('RETURNLABCONTACTID'), $this->arg('SAFETYLEVEL'), $rt, $ct, $loc, $source)
+            array($this->proposalid, $this->arg('SHIPPINGNAME'), $an, $ac, $sd, $dd, $com, $lcout, $lcret, $this->arg('SAFETYLEVEL'), $rt, $ct, $loc, $source)
         );
 
         $sid = $this->db->id();
@@ -3290,6 +3364,11 @@ class Shipment extends Page
                     $this->db->pq("UPDATE dewar set barcode=:1 WHERE dewarid=:2", array($this->arg('prop') . $vis . '-' . str_pad($id, 7, '0', STR_PAD_LEFT), $id));
                 }
             }
+        }
+
+        if ($this->has_arg('TERMSACCEPTED') && $this->arg('TERMSACCEPTED') == 1) {
+            $this->set_arg('sid', $sid);
+            $this->_accept_terms();
         }
 
         $this->_output(array('SHIPPINGID' => $sid));
