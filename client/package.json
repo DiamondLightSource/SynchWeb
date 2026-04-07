@@ -66,7 +66,7 @@
     "backgrid-paginator": "0.3.9",
     "backgrid-select-all": "0.3.5",
     "ci": "^2.2.0",
-    "csv-file-validator": "^1.7.4",
+    "csv-file-validator": "^1.10.2",
     "d3-scale": "^3.2.3",
     "d3-scale-chromatic": "^2.0.0",
     "d3-selection": "^2.0.0",

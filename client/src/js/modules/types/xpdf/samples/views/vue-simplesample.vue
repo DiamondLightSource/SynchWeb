@@ -287,6 +287,10 @@
                 inputName: 'acronym',
                 required: true,
                 requiredError,
+                unique: true,
+                uniqueError: function(headerName, rowNumber){
+                    return `${headerName} is not unique in row ${rowNumber}`
+                },
                 headerError
             },
             {
@@ -385,8 +389,6 @@
                 csvData: [],
                 csvErrors: [],
                 commaInComments: false,
-                duplicateAcronym: false,
-                duplicateAcronymRows: [],
                 proteinid: null,
                 externalid: null,
                 sampleGroupCollection: null,
@@ -700,8 +702,6 @@
             setCSVFile: function(event){
                 this.csvData = []
                 this.csvErrors = []
-                this.duplicateAcronym = false
-                this.duplicateAcronymRows = []
 
                 if(event.target.files.length === 0){
                     this.fileValid = false
@@ -729,9 +729,6 @@
                                 self.csvErrors.push("Only headers have been submitted, please add some sample information")
                             }
 
-                            if(self.duplicateAcronym)
-                                self.csvErrors = self.csvErrors.concat(self.duplicateAcronymRows)
-
                             if(self.csvErrors.length === 0)
                                 self.fileValid = true
                             else {
@@ -758,44 +755,8 @@
                     self.commaInComments = false;
                     var newLineSplit = e.target.result.split("\n")
                     newLineSplit.forEach(function(row){
-                        var cells = row.split(',')
-                        if(cells.length > 5){
-                            self.commaInComments = true
-                            ready = true
-                        }
+                        if(row.split(',').length > 5) self.commaInComments = true
                     })
-
-                    // Display duplicate acronyms and the row they are on (only in file duplicates, not against database)
-                    // Hopefully this issue gets implemented then we can remove all this. https://github.com/shystruk/csv-file-validator/issues/20
-                    var acronyms = []
-                    var acronymIndex = 5
-
-                    for(var i=0; i<newLineSplit.length; i++){
-                        var cells = newLineSplit[i].split(',')
-
-                        for(var j=0; j<cells.length; j++){
-                            // if first row check which column is the Acronym
-                            if(i === 0){
-                                if(cells[j] === 'Acronym'){
-                                    acronymIndex = j
-                                    break
-                                }
-                            }
-                            // ignore any non acronym columns
-                            if(j !== acronymIndex) break
-
-                            for(let k=0; k < acronyms.length; k++){
-                                if(acronyms[k] === cells[j]){
-                                    var currentRow = i
-                                    self.duplicateAcronym = true
-                                    self.duplicateAcronymRows.push(cells[j] + ' is a duplicate acronym on row ' + ++currentRow)
-                                    break
-                                }
-                            }
-
-                            acronyms[i] = cells[acronymIndex]
-                        }
-                    }
 
                     // Remove all leading and trailing white space
                     // Also clean up trailing commas on each row to ensure new line works as expected
@@ -803,13 +764,11 @@
                     newLineSplit.forEach(function(row){
                         var cells = row.split(',')
                         cells.forEach(function(cell, index){
-                            i = index + 1
                             trimmed += cell.trim()
-                            if(cells.length !== i){
+                            if(cells.length !== index + 1){
                                 trimmed += ','
                             } else {
-                                if(trimmed.endsWith(','))
-                                    trimmed = trimmed.substring(0, trimmed.length-1)
+                                if(trimmed.endsWith(',')) trimmed = trimmed.slice(0, -1)
                                 trimmed += "\n"
                             }
                         })
