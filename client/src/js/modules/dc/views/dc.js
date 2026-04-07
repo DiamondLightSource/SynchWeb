@@ -82,7 +82,7 @@ define(['marionette',
 
       this.apstatus = new (this.getOption('apStatusItem'))({ ID: this.model.get('ID'), DCG: this.model.get('DCG'), showStrategies: this.showStrategies, showProcessing: this.showProcessing, statuses: this.getOption('apstatuses'), el: this.$el })
       this.listenTo(this.apstatus, 'status', this.updateAP, this)
-      this.apmessagestatus = new (this.getOption('apMessageStatusItem'))({ ID: this.model.get('ID'), statuses: this.getOption('apmessagestatuses'), el: this.$el })
+      this.apmessagestatus = new (this.getOption('apMessageStatusItem'))({ ID: this.model.get('ID'), DCG: this.model.get('DCG'), statuses: this.getOption('apmessagestatuses'), el: this.$el })
 
       this.updateInPlace(true)
     },
