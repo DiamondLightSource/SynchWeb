@@ -34,7 +34,7 @@
               v-for="csvError in csvErrors"
               style="color:red; font-size:medium"
             >
-              {{ csvError }}
+              {{ csvError.message }}
             </li>
           </ul>
           <ul>
@@ -279,6 +279,7 @@
     const headerError = (headerName) => {
         return `Please add a column header for ${headerName}`
     }
+    let acronymTracker = []
 
     const csvConfig = {
         headers: [
@@ -287,6 +288,10 @@
                 inputName: 'acronym',
                 required: true,
                 requiredError,
+                unique: true,
+                uniqueError: function(headerName, rowNumber) {
+                    return `${headerName} is not unique in row ${rowNumber}`;
+                },
                 headerError
             },
             {
@@ -385,8 +390,6 @@
                 csvData: [],
                 csvErrors: [],
                 commaInComments: false,
-                duplicateAcronym: false,
-                duplicateAcronymRows: [],
                 proteinid: null,
                 externalid: null,
                 sampleGroupCollection: null,
@@ -700,8 +703,6 @@
             setCSVFile: function(event){
                 this.csvData = []
                 this.csvErrors = []
-                this.duplicateAcronym = false
-                this.duplicateAcronymRows = []
 
                 if(event.target.files.length === 0){
                     this.fileValid = false
@@ -712,38 +713,35 @@
                 this.csvFile = event.target.files[0]
                 var self = this
                 var ready = false
+                const fileInput = event && event.target
 
                 // callback function to make sure we have finished trimming white space from uploaded file
                 // before passing it through the CSVFileValidator
                 var check = function(){
                     if(ready === true){
+                        acronymTracker = []
                         CSVFileValidator(self.csvFile, csvConfig)
                         .then(csvData => {
                             self.csvData = csvData.data
-                            self.csvErrors = csvData.inValidMessages
+                            self.csvErrors = csvData.inValidData
 
                             if(self.commaInComments)
-                                self.csvErrors.push("Column count is greater than expected, you likely have a comma in a comment. Please remove any additional commas")
+                                self.csvErrors.push({ message: "Column count is greater than expected, you likely have a comma in a comment. Please remove any additional commas" })
 
                             if(self.csvData.length < 1 && self.csvErrors.length === 0){
-                                self.csvErrors.push("Only headers have been submitted, please add some sample information")
+                                self.csvErrors.push({ message: "Only headers have been submitted, please add some sample information" })
                             }
 
-                            if(self.duplicateAcronym)
-                                self.csvErrors = self.csvErrors.concat(self.duplicateAcronymRows)
-
-                            if(self.csvErrors.length === 0)
-                                self.fileValid = true
-                            else {
-                                self.fileValid = false
-                                event.target.value = ''
+                            self.fileValid = self.csvErrors.length === 0
+                            if (!self.fileValid && fileInput) {
+                                fileInput.value = ''
                             }
 
                             console.log(csvData.data)
-                            console.log(csvData.inValidMessages)
+                            console.log(csvData.inValidData)
                         })
                     } else {
-                        setTimeout(check, 1000)
+                        setTimeout(check, 100)
                     }
                 }
                 check()
@@ -758,44 +756,8 @@
                     self.commaInComments = false;
                     var newLineSplit = e.target.result.split("\n")
                     newLineSplit.forEach(function(row){
-                        var cells = row.split(',')
-                        if(cells.length > 5){
-                            self.commaInComments = true
-                            ready = true
-                        }
+                        if(row.split(',').length > 5) self.commaInComments = true
                     })
-
-                    // Display duplicate acronyms and the row they are on (only in file duplicates, not against database)
-                    // Hopefully this issue gets implemented then we can remove all this. https://github.com/shystruk/csv-file-validator/issues/20
-                    var acronyms = []
-                    var acronymIndex = 5
-
-                    for(var i=0; i<newLineSplit.length; i++){
-                        var cells = newLineSplit[i].split(',')
-
-                        for(var j=0; j<cells.length; j++){
-                            // if first row check which column is the Acronym
-                            if(i === 0){
-                                if(cells[j] === 'Acronym'){
-                                    acronymIndex = j
-                                    break
-                                }
-                            }
-                            // ignore any non acronym columns
-                            if(j !== acronymIndex) break
-
-                            for(let k=0; k < acronyms.length; k++){
-                                if(acronyms[k] === cells[j]){
-                                    var currentRow = i
-                                    self.duplicateAcronym = true
-                                    self.duplicateAcronymRows.push(cells[j] + ' is a duplicate acronym on row ' + ++currentRow)
-                                    break
-                                }
-                            }
-
-                            acronyms[i] = cells[acronymIndex]
-                        }
-                    }
 
                     // Remove all leading and trailing white space
                     // Also clean up trailing commas on each row to ensure new line works as expected
@@ -803,13 +765,11 @@
                     newLineSplit.forEach(function(row){
                         var cells = row.split(',')
                         cells.forEach(function(cell, index){
-                            i = index + 1
                             trimmed += cell.trim()
-                            if(cells.length !== i){
+                            if(cells.length !== index + 1){
                                 trimmed += ','
                             } else {
-                                if(trimmed.endsWith(','))
-                                    trimmed = trimmed.substring(0, trimmed.length-1)
+                                if(trimmed.endsWith(',')) trimmed = trimmed.slice(0, -1)
                                 trimmed += "\n"
                             }
                         })

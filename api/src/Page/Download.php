@@ -155,6 +155,7 @@ class Download extends Page
                     // If we are looking for a specific plot (by attachment id) then OK...
                     if ($this->has_arg('aid')) {
                         $r['PLOTLY'] = true;
+                        error_log('LIMS-2148 - Plotly used for autoprocprogramattachmentid ' . $this->arg('aid'));
                     } else {
                         // ..if not, we should remove this from the list of returned plots
                         // Autoprocessing results use the same bespoke format for charts
