@@ -279,7 +279,6 @@
     const headerError = (headerName) => {
         return `Please add a column header for ${headerName}`
     }
-    let acronymTracker = []
 
     const csvConfig = {
         headers: [
@@ -719,7 +718,6 @@
                 // before passing it through the CSVFileValidator
                 var check = function(){
                     if(ready === true){
-                        acronymTracker = []
                         CSVFileValidator(self.csvFile, csvConfig)
                         .then(csvData => {
                             self.csvData = csvData.data
