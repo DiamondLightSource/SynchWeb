@@ -285,8 +285,6 @@ const store = new Vuex.Store({
         url: app.apiurl + url,
         type: 'POST',
         data,
-        ...others,
-
         success: function(response) {
           commit('notifications/addNotification', {
             title: 'Action Successful',
@@ -306,6 +304,7 @@ const store = new Vuex.Store({
             root: true
           })
         },
+        ...others,
       })
     },
     // update data to the backend that is not attached to any model
@@ -315,8 +314,6 @@ const store = new Vuex.Store({
         url: app.apiurl + url,
         type,
         data,
-        ...others,
-
         success: function(response) {
           commit('notifications/addNotification', {
             title: 'Update Successful',
@@ -336,6 +333,7 @@ const store = new Vuex.Store({
             root: true
           })
         },
+        ...others,
       })
     },
     // delete data from the backend that is not attached to any model
