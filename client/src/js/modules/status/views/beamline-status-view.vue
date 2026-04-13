@@ -186,7 +186,7 @@ export default {
     }
   },
   mounted() {
-    if (this.$route.params.bl === 'i02') {
+    if (this.$route.params.bl === 'i02-1') {
       this.webcams.push({
         alt: 'webcam3',
         url: '#'
