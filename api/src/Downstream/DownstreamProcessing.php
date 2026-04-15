@@ -181,28 +181,35 @@ abstract class DownstreamPlugin implements DownstreamPluginInterface {
         return array($plts, $stats);
     }
 
-    function _lookup_autoproc($aid, $scalingid = null) {
-        if ($aid) {
-            $where = 'app.autoprocprogramid=:1';
-            $args = array($aid);
-        }
-
-        if ($scalingid) {
-            $where = 'aps.autoprocscalingid=:1';
-            $args = array($scalingid);
-        }
-
+    function _lookup_autoproc_from_scalingid() {
         $app = $this->db->pq(
             "SELECT app.autoprocprogramid, app.processingprograms
             FROM autoprocscaling aps
             INNER JOIN autoproc ap ON ap.autoprocid = aps.autoprocid
             INNER JOIN autoprocprogram app ON app.autoprocprogramid = ap.autoprocprogramid
-            WHERE $where",
-            $args
+            WHERE aps.autoprocscalingid=:1",
+            array($this->process['PARAMETERS']['scaling_id'])
         );
 
         if (sizeof($app)) {
             return $app[0];
+        }
+    }
+
+    function _lookup_parent_autoproc() {
+        global $max_appid_without_parent;
+        $parent = $this->db->pq(
+            "SELECT app2.autoprocprogramid, app2.processingprograms
+            FROM autoprocprogram app
+            INNER JOIN autoprocprogram app2 ON app.parentautoprocprogramid = app2.autoprocprogramid
+            WHERE app.autoprocprogramid=:1",
+            array($this->autoprocprogramid)
+        );
+
+        if (sizeof($parent)) {
+            return $parent[0];
+        } else if (!$max_appid_without_parent || (int)$this->autoprocprogramid < $max_appid_without_parent) {
+            return $this->_lookup_autoproc_from_scalingid();
         }
     }
 

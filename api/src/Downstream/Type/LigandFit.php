@@ -57,13 +57,10 @@ class LigandFit extends DownstreamPlugin {
         $dat['SOLUTIONS'] = json_decode($json_data);
         $dat['PARENTAUTOPROCPROGRAM'] = $this->process['PROCESSINGCOMMENTS'];
         
-        $integrator = $this->_lookup_autoproc(
-            null,
-            $this->process['PARAMETERS']['scaling_id']
-        );
-        if ($integrator) {
-            $dat['PARENTAUTOPROCPROGRAM'] .= ' (' . $integrator['PROCESSINGPROGRAMS'] . ')';
-            $dat['PARENTAUTOPROCPROGRAMID'] = $integrator['AUTOPROCPROGRAMID'];
+        $parent = $this->_lookup_parent_autoproc();
+        if ($parent) {
+            $dat['PARENTAUTOPROCPROGRAM'] .= ' (' . $parent['PROCESSINGPROGRAMS'] . ')';
+            $dat['PARENTAUTOPROCPROGRAMID'] = $parent['AUTOPROCPROGRAMID'];
         }
 
         $results = new DownstreamResult($this);

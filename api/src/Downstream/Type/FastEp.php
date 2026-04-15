@@ -10,19 +10,18 @@ class FastEp extends DownstreamPlugin {
     var $has_mapmodel = array(1, 1);
 
     function results() {
+        global $max_appid_without_parent;
         $dat = array(
             'FOM' => 'sad.lst file not found',
             'CC' => 'sad.lst file not found',
             'ATOMS' => array(array('sad_fa.pdb file not found'))
         );
 
-        $integrator = $this->_lookup_autoproc(
-            null,
-            $this->process['PARAMETERS']['scaling_id']
-        );
-        if ($integrator) {
-            $dat['PARENTAUTOPROCPROGRAM'] = $integrator['PROCESSINGPROGRAMS'];
-            $dat['PARENTAUTOPROCPROGRAMID'] = $integrator['AUTOPROCPROGRAMID'];
+        $parent = $this->_lookup_parent_autoproc();
+
+        if ($parent) {
+            $dat['PARENTAUTOPROCPROGRAM'] = $parent['PROCESSINGPROGRAMS'];
+            $dat['PARENTAUTOPROCPROGRAMID'] = $parent['AUTOPROCPROGRAMID'];
         }
 
         $ats = array();
