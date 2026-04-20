@@ -214,41 +214,50 @@
             </li>
 
             <li>
-                <label>Outgoing Lab Contact
-                    <span class="small">Lab contact for outgoing transport | <a class="add_lc" href="/contact/add">Add</a></span>
+                <label>Lab Contact
+                    <span class="small">Lab contact for shipment | <a class="add_lc" href="/contact/add">Add</a></span>
                 </label>
                 <select name="SENDINGLABCONTACTID" data-testid="add-shipment-outgoing-lc"></select>
             </li>
 
-            <li>
-                <label>Return Lab Contact
-                    <span class="small">Lab contact for return transport | <a class="add_lc" href="/contact/add">Add</a></span>
+            <li class="align-top">
+                <label>Courier Account Number
+                    <span class="small">Courier account number for return shipment</span>
                 </label>
-                <select name="RETURNLABCONTACTID" data-testid="add-shipment-return-lc"></select>
+                <input type="text" name="DELIVERYAGENT_AGENTCODE" data-testid="add-shipment-account" />
+                <a href="#" class="facc button" data-testid="add-shipment-use-facility-courier"><i class="fa fa-envelope"></i> Use Facility Account</a>
+                <span class="accmsg"></span>
             </li>
 
-            <li>
+            <li class="nofacc">
+                <label>Courier Name
+                    <span class="small">Courier name for the return shipment</span>
+                </label>
+                <input type="text" name="DELIVERYAGENT_AGENTNAME"  data-testid="add-shipment-courier"/>
+            </li>
+
+            <li class="nofacc">
                 <label>Shipping Date
                     <span class="small">Date shipment will leave lab / be picked up</span>
                 </label>
                 <input class="half" type="text" name="DELIVERYAGENT_SHIPPINGDATE" data-testid="add-shipment-date" />
             </li>
 
-            <li>
+            <li class="nofacc">
                 <label>Pickup Location
                     <span class="small">Location where shipment can be picked up from. i.e. Reception</span>
                 </label>
                 <input class="half" type="text" name="PHYSICALLOCATION" data-testid="add-shipment-location" />
             </li>
 
-            <li>
+            <li class="nofacc">
                 <label>Ready by Time
                     <span class="small">Time shipment will be ready for pickup</span>
                 </label>
                 <input class="half" type="text" name="READYBYTIME" data-testid="add-shipment-ready-time" />
             </li>
 
-            <li>
+            <li class="nofacc">
                 <label>Close Time
                     <span class="small">Time after which shipment cannot be picked up</span>
                 </label>
@@ -256,25 +265,11 @@
             </li>
 
 
-            <li>
+            <li class="nofacc">
                 <label>Delivery Date
                     <span class="small">Estimated date of delivery at facility</span>
                 </label>
                 <input class="half" type="text" name="DELIVERYAGENT_DELIVERYDATE"  data-testid="add-shipment-delivery-date"/>
-            </li>
-
-            <li>
-                <label>Courier Name
-                    <span class="small">Courier name for the return shipment</span>
-                </label>
-                <input type="text" name="DELIVERYAGENT_AGENTNAME"  data-testid="add-shipment-courier"/>
-            </li>
-
-            <li>
-                <label>Courier Account Number
-                    <span class="small">Courier account number for return shipment</span>
-                </label>
-                <input type="text" name="DELIVERYAGENT_AGENTCODE" data-testid="add-shipment-account" />
             </li>
 
             <li>Please define all pucks and samples, and ensure you have attached all the labels, before dispatch.</li>
