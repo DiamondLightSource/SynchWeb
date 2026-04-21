@@ -440,6 +440,9 @@
         ),
     );
 
+    # Set the first AutoProcProgram row with parentAutoProcProgramId not null
+    #$max_appid_without_parent = 123456789;
+
 
     # Add a button to upload file to CCP4 cloud
     #$ccp4_cloud_upload_url = 'https://data.cloud.ccp4.ac.uk/api/data/<%=USERNAME%>/<%=FACILITYNAME%>/<%=IMAGEPREFIX%>_<%=DATACOLLECTIONNUMBER%>/upload';
