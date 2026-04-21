@@ -75,6 +75,9 @@
 
     # URL to access the PV archiver
     $archive_url = '';
+    # PV to check for beam / no beam, and values that correspond to beam
+    $beam_mode_pv = 'CS-CS-MSTAT-01:MODE';
+    $beam_mode_pv_beam_on_values = array(4, 5);
 
     # URL to access elog logbook
     $elog_base_url = '';
