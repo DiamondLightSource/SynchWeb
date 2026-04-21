@@ -1,5 +1,29 @@
 
 <h2><%-TYPE%></h2>
+
+<%
+    var showUnitCell = CELL && (CELL.SG || CELL.A || CELL.B || CELL.C || CELL.AL || CELL.BE || CELL.GA)
+    var showChi = _.some(STRATS, function(r) {
+        return r.CHI && parseFloat(r.CHI) !== 0
+    })
+    var showPhi = _.some(STRATS, function(r) {
+        return r.PHI && parseFloat(r.PHI) !== 0
+    })
+    var showKappa = _.some(STRATS, function(r) {
+        return r.KAPPA && parseFloat(r.KAPPA) !== 0
+    })
+    var showRankingRes = _.some(STRATS, function(r) {
+        return r.RANKRES && parseFloat(r.RANKRES) !== 0
+    })
+
+    var displayAxis = "Axis"
+    if (STRATS && STRATS.length > 0 && STRATS[0].ROTATIONAXIS) {
+        var raw = STRATS[0].ROTATIONAXIS
+        displayAxis = raw.charAt(0).toUpperCase() + raw.slice(1)
+    }
+%>
+
+<% if (showUnitCell) { %>
 <p class="r">
     <a class="view button" title="Lookup Unit Cell" href="/cell/a/<%-CELL.A%>/b/<%-CELL.B%>/c/<%-CELL.C%>/al/<%-CELL.AL%>/be/<%-CELL.BE%>/ga/<%-CELL.GA%>"><i class="fa fa-search"></i> Lookup Cell</a>
 </p>
@@ -28,18 +52,20 @@
         </tr>
     </tbody>
 </table>
-
+<% } %>
 
 <table class="reflow strat">
     <thead>
         <tr class="stratrow">
             <th>Strategy</th>
             <th>Description</th>
-            <th>Axis</th>
-            <th>Axis Start</th>
-            <th>Axis Osc</th>
+            <th><%- displayAxis %> Start (°)</th>
+            <th><%- displayAxis %> Osc (°)</th>
+            <% if (showChi) { %> <th>Chi (°)</th> <% } %>
+            <% if (showPhi) { %> <th>Phi (°)</th> <% } %>
+            <% if (showKappa) { %> <th>Kappa (°)</th> <% } %>
             <th>Res (&#197;)</th>
-            <th>Ranking Res (&#197;)</th>
+            <% if (showRankingRes) { %> <th>Ranking Res (&#197;)</th> <% } %>
             <th>Rel Trn (%)</th>
             <th>Abs Trn (%)</th>
             <th>Exposure (s)</th>
@@ -51,11 +77,13 @@
     <tr class="stratrow" draggable="true" sid="<%-i%>">
         <td><%-r.COM%></td>
         <td><%-r.COMMENTS%></td>
-        <td><%-r.ROTATIONAXIS%></td>
         <td><%-r.ST%></td>
         <td><%-r.OSCRAN%></td>
+        <% if (showChi) { %> <td><%-r.CHI%></td> <% } %>
+        <% if (showPhi) { %> <td><%-r.PHI%></td> <% } %>
+        <% if (showKappa) { %> <td><%-r.KAPPA%></td> <% } %>
         <td><%-r.RES%></td>
-        <td><%-r.RANKRES%></td>
+        <% if (showRankingRes) { %> <td><%-r.RANKRES%></td> <% } %>
         <td><%-r.TRAN%></td>
         <td><%-r.ATRAN%></td>
         <td><%-r.TIME%></td>
