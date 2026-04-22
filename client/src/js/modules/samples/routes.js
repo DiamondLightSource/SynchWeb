@@ -58,6 +58,10 @@ app.addInitializer(function() {
     app.navigate('/ligands/lid/'+lid)
   })
 
+  app.on('ligands:viewall', function(lid) {
+    app.navigate('/ligands')
+  })
+
   app.on('phases:view', function(pid) {
     app.navigate('/phases/pid/'+pid)
   })
