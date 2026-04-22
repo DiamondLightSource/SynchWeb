@@ -2098,7 +2098,7 @@ class Sample extends Page
         $libbatch = $this->has_arg('LIBRARYBATCHNUMBER') ? $this->arg('LIBRARYBATCHNUMBER') : null;
         $barcode = $this->has_arg('PLATEBARCODE') ? $this->arg('PLATEBARCODE') : null;
 
-        $json = $this->request['json'];
+        $json = $this->request['json'] ?? null;
         if ($json && is_array($json)) {
 
             foreach ($json as $row) {
