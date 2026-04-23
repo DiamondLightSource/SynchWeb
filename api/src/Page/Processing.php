@@ -799,7 +799,7 @@ class Processing extends Page {
         }
 
         $downstreams = $this->db->pq(
-            "SELECT app.autoprocprogramid, app.processingprograms, pj.automatic, 
+            "SELECT app.autoprocprogramid, app.processingprograms, pj.automatic, pj.datacollectionid as dcid,
                     app.processingstatus, app.processingmessage,
                     app.processingstarttime, app.processingendtime, pj.recipe, pj.comments as processingcomments,
                     dc.imageprefix as dcimageprefix, dc.imagedirectory as dcimagedirectory, 
