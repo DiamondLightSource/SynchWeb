@@ -58,7 +58,7 @@ app.addInitializer(function() {
     app.navigate('/ligands/lid/'+lid)
   })
 
-  app.on('ligands:viewall', function(lid) {
+  app.on('ligands:viewall', function() {
     app.navigate('/ligands')
   })
 

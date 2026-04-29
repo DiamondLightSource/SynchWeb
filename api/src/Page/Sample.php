@@ -2113,7 +2113,7 @@ class Sample extends Page
             if (!$this->has_arg('NAME'))
                 $this->_error('No ligand name');
 
-            $smiles = $this->has_arg('SMILES') ? $this->arg('SMILES') : '';
+            $smiles = $this->has_arg('SMILES') ? $this->arg('SMILES') : null;
             $well = $this->has_arg('SOURCEWELL') ? $this->arg('SOURCEWELL') : null;
 
             array_push($ligs, array($this->proposalid, $this->arg('NAME'), $smiles, $libname, $libbatch, $barcode, $well));

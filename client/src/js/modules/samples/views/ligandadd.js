@@ -56,7 +56,6 @@ define(['marionette',
                         seen = new Set()
                     }
                     const header = h.trim().toUpperCase()
-                    console.log(i, header, seen)
                     // Exact matches
                     if (header === 'NAME') {
                         seen.add('NAME')
@@ -97,7 +96,6 @@ define(['marionette',
                     for (let i = 0; i < results.data.length; i++) {
                         let rowdata = results.data[i]
                         let rownum = i+2
-                        console.log(rowdata)
                         if (!rowdata.NAME) {
                             app.alert({ message: 'Invalid CSV: row '+rownum+' has no NAME value' })
                             valid = false
