@@ -288,6 +288,7 @@ class DownstreamResult {
         $resp['TYPE'] = $this->friendlyname;
         $resp['PROCESS'] = $this->process;
         $resp['MESSAGES'] = $this->process['MESSAGES'];
+        $resp['DCID'] = $this->process['DCID'];
         $resp['FEATURES'] = array(
             'MAPMODEL' => $this->has_mapmodel,
             'IMAGES' => $this->has_images,
