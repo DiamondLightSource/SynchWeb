@@ -9,7 +9,7 @@ define(['backbone.paginator', 'models/detector', 'utils/kvcollection'], function
         valueAttribute: 'DETECTORID',
 
         state: {
-            pageSize: 5,
+            pageSize: 9999,
         },
 
         parseState: function(r, q, state, options) {
