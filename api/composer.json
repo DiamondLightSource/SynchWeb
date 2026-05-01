@@ -15,19 +15,18 @@
   ],
   "require": {
     "apereo/phpcas": "1.6.1",
-    "ezyang/htmlpurifier": "4.12.0",
+    "ezyang/htmlpurifier": "^4.12.0",
     "firebase/php-jwt": "^6.0.0",
-    "jdorn/sql-formatter": "1.2.9",
-    "mpdf/mpdf": "8.1.2",
-    "ralouphie/getallheaders": "2.0.5",
-    "slim/slim": "2.6.2",
-    "php-amqplib/php-amqplib": "^2.0",
+    "jdorn/sql-formatter": "^1.2.9",
+    "mpdf/mpdf": "^8.1.2",
+    "slim/slim": "^2.6.2",
+    "php-amqplib/php-amqplib": "^3.0",
     "symfony/http-foundation": "^5.4",
     "symfony/filesystem": "^5.4",
     "mpdf/qrcode": "^1.2",
     "mtcmedia/dhl-api": "dev-master#9b4b6315",
-    "maennchen/zipstream-php": "2.1.0",
-    "phpseclib/bcmath_compat": "^2.0"
+    "maennchen/zipstream-php": "^2.1.0",
+    "ext-bcmath": "*"
   },
   "autoload": {
     "psr-4": {
@@ -39,11 +38,11 @@
     "phpunit/phpunit": "^9",
     "php-mock/php-mock-phpunit": "^2.6",
     "mockery/mockery": "^1.5",
-    "vimeo/psalm": "^4.27"
+    "vimeo/psalm": "^5.0"
   },
   "config": {
     "platform": {
-      "php": "7.3"
+      "php": "7.4.33"
     },
     "audit": {
       "ignore": ["PKSA-y2cr-5h3j-g3ys"]

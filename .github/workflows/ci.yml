@@ -27,13 +27,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Setup PHP 7.3
+      - name: Setup PHP 7.4
         uses: shivammathur/setup-php@v2
         with:
-          php-version: 7.3
-          tools: psalm:4
+          php-version: 7.4
+          tools: psalm:5
           # Added extensions and coverage here so they are ready for the native run
-          extensions: mysqli, zip, xdebug
+          extensions: mysqli, zip, xdebug, bcmath
           coverage: xdebug
 
       - name: Validate composer.json and composer.lock
@@ -59,7 +59,7 @@ jobs:
           XDEBUG_MODE: coverage
 
       - name: Run Psalm
-        run: psalm --output-format=github
+        run: vendor/bin/psalm --output-format=github
 
   js_build:
     name: JavaScript build, test and lint

@@ -133,15 +133,17 @@
                 />
               </validation-provider>
             </li>
-            <li v-if="container.PIPELINE">
+            <li>
               <span class="label">Priority Processing</span>
               <base-input-select
-                v-model="container.PIPELINE"
-                name="PIPELINE"
+                v-model="container.PROCESSINGPIPELINEID"
+                :initial-text="container.PIPELINE ? container.PIPELINE : 'Click to edit'"
+                name="PROCESSINGPIPELINEID"
                 :options="processingPipelines"
-                option-value-key="PROCESSINGPIPELINEID"
                 :inline="true"
+                option-value-key="PROCESSINGPIPELINEID"
                 option-text-key="NAME"
+                @save="save('PROCESSINGPIPELINEID')"
               />
             </li>
 

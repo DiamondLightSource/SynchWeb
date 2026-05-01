@@ -940,7 +940,7 @@ class Page
             {
                 $vs = $vals[$i];
                 $v = $vs->val;
-                $t = $vs->secs - 3600;
+                $t = $vs->secs;
                 $inputTZ = new \DateTimeZone($timezone);
                 $transitions = $inputTZ->getTransitions($t, $t);
                 if ($transitions[0]['isdst'])
@@ -971,7 +971,7 @@ class Page
         if (array_key_exists('HEADERS', $options)) {
             curl_setopt($ch, CURLOPT_HTTPHEADER, $options['HEADERS']);
         }
-        $headers = getallheaders();
+        $headers = \getallheaders();
         if (array_key_exists('Authorization', $headers) && array_key_exists('jwt', $options))
         {
             curl_setopt($ch, CURLOPT_HTTPHEADER, array('Authorization: ' . $headers['Authorization']));

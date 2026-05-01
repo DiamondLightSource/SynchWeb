@@ -27,13 +27,10 @@ class MetalId extends DownstreamPlugin {
         $dat['BLOBS'] = sizeof($blobs);
         $dat['PEAKS'] = $peaks;
 
-        $integrator = $this->_lookup_autoproc(
-            null,
-            $this->process['PARAMETERS']['scaling_id']
-        );
-        if ($integrator) {
-            $dat['PARENTAUTOPROCPROGRAM'] = $integrator['PROCESSINGPROGRAMS'];
-            $dat['PARENTAUTOPROCPROGRAMID'] = $integrator['AUTOPROCPROGRAMID'];
+        $parent = $this->_lookup_parent_autoproc();
+        if ($parent) {
+            $dat['PARENTAUTOPROCPROGRAM'] = $parent['PROCESSINGPROGRAMS'];
+            $dat['PARENTAUTOPROCPROGRAMID'] = $parent['AUTOPROCPROGRAMID'];
         }
 
         $results = new DownstreamResult($this);

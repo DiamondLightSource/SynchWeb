@@ -351,7 +351,7 @@ class Download extends Page
         $rowNames = range("A", "H");
         $dropNames = range("a", "z");
         // SWISSCI 3 Drop have drops a/c/d
-        if ($plate["NAME"] == "SWISSCI 3 Drop") {
+        if ($plate["NAME"] == "SWISSCI 3 Drop" || $plate["NAME"] == "MRC 2 Drop") {
             $dropNames = array_merge(array("a"), range("c","z"));
         }
         $dropsPerWell = $plate["CAPACITY"] / (count($rowNames) * $plate["WELLPERROW"]);
