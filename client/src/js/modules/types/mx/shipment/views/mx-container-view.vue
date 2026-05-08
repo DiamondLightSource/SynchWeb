@@ -375,11 +375,9 @@ export default {
       sampleLocation: 0,
 
       containers: [],
-      containersCollection: null,
       shipments: [],
       shipmentsCollection: null,
       dewars: [],
-      dewarsCollection: null,
       selectedDewarId: null,
       selectedShipmentId: null,
       shippingSafetyLevel: null,
@@ -393,7 +391,6 @@ export default {
     prevNextTargetLinks() {
       return _.chain(this.siblingContainers)
       .map(sib => ({ value: sib.CONTAINERID, text: sib.NAME }))
-      .sortBy((c) => c.text)
       .value();
     },
   },
@@ -592,42 +589,11 @@ export default {
      */
     async fetchSiblingContainers() {
       var result;
-
-      if (this.containersCollection?.length>0) {
-        // ! if ContainersCollection exists then filter it instead rather than re-fetching.
-        // !! WARNING -  THis assumes that containersCollection has ALL containers of the dewar
-        result = _.filter(this.containersCollection,  (c) => 
-          c.DEWARID === this.container.DEWARID
-        );
-
-      } else {
-        result = new Containers();
-        result.dewarID = this.container.DEWARID;
-        await result.fetch();
-      }
-
+      result = new Containers(null, { state: { pageSize: 9999 } });
+      result.setSorting('NAME');
+      result.dewarID = this.container.DEWARID;
+      await result.fetch();
       this.siblingContainers = result.toJSON();
-    },
-    
-    async fetchContainers() {
-      this.containersCollection = new Containers(null, { state: { pageSize: 9999 } })
-      this.containersCollection.queryParams.did = this.containersSamplesGroupData.dewarId
-
-      const result = await this.$store.dispatch('getCollection', this.containersCollection)
-      this.containers = result.toJSON().map(container => ({
-        value: container.CONTAINERID,
-        text: container.NAME
-      }))
-    },
-    async fetchDewars() {
-      this.dewarsCollection = new Dewars(null, { state: { pageSize: 9999 } })
-      this.dewarsCollection.queryParams.sid = this.containersSamplesGroupData.shipmentId
-
-      const result = await this.$store.dispatch('getCollection', this.dewarsCollection)
-      this.dewars = result.toJSON().map(dewar => ({
-        value: dewar.DEWARID,
-        text: dewar.CODE
-      }))
     },
     async fetchShipments() {
       this.shipmentsCollection = new Shipments(null, { state: { pageSize: 9999 } })
@@ -637,15 +603,6 @@ export default {
         value: shipment.SHIPPINGID,
         text: shipment.SHIPPINGNAME
       }))
-    },
-    async updateContainerSampleGroupsData(newData) {
-      if (newData.shipmentId !== null) {
-        await this.fetchDewars()
-      }
-
-      if (newData.dewarId !== null) {
-        await this.fetchContainers()
-      }
     },
     async onUpdateSamples() {
       this.disableUpdateSamples = true

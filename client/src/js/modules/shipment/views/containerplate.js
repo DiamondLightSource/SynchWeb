@@ -7,6 +7,7 @@ define(['marionette',
     'collections/samples',
     'collections/subsamples',
     'collections/ligands',
+    'collections/containers',
 
     'modules/shipment/collections/containerhistory',
 
@@ -57,6 +58,7 @@ define(['marionette',
     Samples,
     Subsamples,
     Ligands,
+    Containers,
 
     ContainerHistory,
 
@@ -273,6 +275,10 @@ define(['marionette',
             schemaspan: '.schemaspan',
             class: 'select[name=class]',
             heatmap: '.heatmap-canvas',
+
+            currentIdx: '.currentIdx',
+            prev: '.prev',
+            next: '.next',
         },
 
         events: {
@@ -308,6 +314,8 @@ define(['marionette',
             'change @ui.class': 'setAutoStatus',
 
             'change @ui.schema': 'selectSchema',
+            'click @ui.prev': 'goToPrevContainer',
+            'click @ui.next': 'goToNextContainer',
         },
 
         modelEvents: {
@@ -686,6 +694,8 @@ define(['marionette',
         initialize: function(options) {
             this.isPlaying = false
             this.playthread = null
+            this.nextContainer = null;
+            this.prevContainer = null;
 
             this.samples = new Samples(null, { state: {pageSize: 9999} })
             this.samples.queryParams.cid = options.model.get('CONTAINERID')
@@ -746,11 +756,59 @@ define(['marionette',
             this.touchstartX = 0;
             this.touchstartY = 0;
 
+            this.siblingContainers = new Containers(null, { state: { pageSize: 9999 }})
+            this.siblingContainers.setSorting('NAME')
+            this.siblingContainers.dewarID = this.model.get('DEWARID')
+            this.siblingContainers.fetch().done(this.updateSiblingContainers.bind(this))
+
             Backbone.Validation.bind(this)
         },
 
         updatePipelines: function() {
             this.ui.pipeline.html('<option value="">All pipelines</option>'+this.processing_pipelines.opts())
+        },
+
+        updateSiblingContainers: function() {
+            let foundCurrent = false;
+            this.siblingContainers.each((container, index) => {
+                let idx = index+1
+                if (foundCurrent && !this.nextContainer) {
+                    this.nextContainer = container;
+                }
+                if (container.get('CONTAINERID') === this.model.get('CONTAINERID')) {
+                    foundCurrent = true;
+                    this.ui.currentIdx.html(idx + " of " + this.siblingContainers.length)
+                    if (idx === this.siblingContainers.length) {
+                        this.ui.next.removeClass('primary').addClass('disabled')
+                    }
+                    if (idx === 1) {
+                        this.ui.prev.removeClass('primary').addClass('disabled')
+                    }
+                }
+                if (!foundCurrent) {
+                    this.prevContainer = container;
+                }
+            })
+            if (this.prevContainer) {
+                this.ui.prev.attr('title', this.prevContainer.get('NAME'))
+            }
+            if (this.nextContainer) {
+                this.ui.next.attr('title', this.nextContainer.get('NAME'))
+            }
+        },
+
+        goToPrevContainer: function() {
+            if (this.prevContainer) {
+                const cid = this.prevContainer.get('CONTAINERID')
+                app.trigger('container:show', cid)
+            }
+        },
+
+        goToNextContainer: function() {
+            if (this.nextContainer) {
+                const cid = this.nextContainer.get('CONTAINERID')
+                app.trigger('container:show', cid)
+            }
         },
 
         updateSchemas: function() {
