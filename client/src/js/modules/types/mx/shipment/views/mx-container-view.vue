@@ -588,8 +588,7 @@ export default {
      * Also tracks the index of the current Container
      */
     async fetchSiblingContainers() {
-      var result;
-      result = new Containers(null, { state: { pageSize: 9999 } });
+      let result = new Containers(null, { state: { pageSize: 9999 } });
       result.setSorting('NAME');
       result.dewarID = this.container.DEWARID;
       await result.fetch();
