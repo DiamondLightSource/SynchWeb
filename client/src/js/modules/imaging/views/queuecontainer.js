@@ -704,23 +704,36 @@ define(['marionette',
 
             var p = this.plans.findWhere({ DIFFRACTIONPLANID: this.ui.preset.val() })
             if (p) {
-                self.ui.applyall.html('Applying...').prop('disabled', true)
-                var promises = await this.applyModel(p, false)
 
-                const updateButtonAfterProcessing = () => {
-                    self.ui.applyall.html('<i class="fa fa-file-text-o"></i> Apply to All').prop('disabled', false)
+                var updateParams = {
+                    EXPERIMENTKIND: p.get('EXPERIMENTKIND')
                 }
 
-                if (promises && promises.length > 0) {
-                    Promise.allSettled(promises)
-                    .then(updateButtonAfterProcessing)
-                    .catch(error => {
-                        console.error("Error after promises settled: ", error);
-                        updateButtonAfterProcessing()
-                    })
-                } else {
-                     updateButtonAfterProcessing()
-                }
+                var fields = [
+                    'REQUIREDRESOLUTION', 'PREFERREDBEAMSIZEX', 'PREFERREDBEAMSIZEY',
+                    'EXPOSURETIME', 'BOXSIZEX', 'BOXSIZEY', 'AXISSTART', 'AXISRANGE',
+                    'NUMBEROFIMAGES', 'TRANSMISSION', 'ENERGY', 'MONOCHROMATOR'
+                ]
+
+                fields.forEach(function(k) {
+                    if (p.get(k) !== null && p.get(k) !== undefined) {
+                        updateParams[k] = p.get(k)
+                    }
+                })
+
+                Backbone.ajax({
+                    url: app.apiurl+'/sample/sub/cid/'+this.model.get('CONTAINERID'),
+                    method: 'POST',
+                    data: updateParams,
+                    success: function(json) {
+                        self.refreshSubSamples()
+                        app.message({ message: 'Applied preset to ' + json.TOTAL_UPDATED + ' samples' })
+                    },
+                    error: function() {
+                        app.alert({ message: 'Something went wrong applying to all' })
+                    }
+                })
+
             }
         },
 

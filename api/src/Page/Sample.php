@@ -177,6 +177,7 @@ class Sample extends Page
         array('/sub/:ssid', 'get', '_get_sub_sample'),
         array('/sub/:ssid', 'patch', '_update_sub_sample'),
         array('/sub/:ssid', 'put', '_update_sub_sample_full'),
+        array('/sub/cid/:cid', 'post', '_update_container_sub_samples'),
         array('/sub', 'post', '_add_sub_sample'),
         array('/sub/:ssid', 'delete', '_delete_sub_sample'),
         array('/sub/queue/cid/:cid', 'post', '_queue_all_sub_samples'),
@@ -638,13 +639,39 @@ class Sample extends Page
 
         $this->db->wait_rep_sync(false);
 
-        $ret = array();
-        foreach ($subs as $sub) {
-            array_push($ret, array(
-                'BLSUBSAMPLEID' => $sub['BLSUBSAMPLEID'], 
-                'CONTAINERQUEUESAMPLEID' => $this->_do_pre_q_sample(array('BLSUBSAMPLEID' => $sub['BLSUBSAMPLEID']))));
+        if (!sizeof($subs))
+            $this->_error('No subsamples found');
+
+        $sub_ids = array_column($subs, 'BLSUBSAMPLEID');
+        $placeholders = implode(',', array_fill(0, count($sub_ids), '?'));
+        if ($this->has_arg('UNQUEUE')) {
+            $this->db->pq("DELETE FROM containerqueuesample
+                            WHERE containerqueueid IS NULL
+                            AND blsubsampleid IN ($placeholders)", $sub_ids);
+
+            $ret = array_map(function($id) {
+                return array('BLSUBSAMPLEID' => $id, 'CONTAINERQUEUESAMPLEID' => null);
+            }, $sub_ids);
+
+        } else {
+            $this->db->pq("INSERT INTO containerqueuesample (blsubsampleid)
+                SELECT ss.blsubsampleid
+                FROM blsubsample ss
+                INNER JOIN blsample s ON s.blsampleid = ss.blsampleid
+                INNER JOIN container c ON c.containerid = s.containerid
+                INNER JOIN dewar d ON d.dewarid = c.dewarid
+                INNER JOIN shipping sh ON sh.shippingid = d.shippingid
+                WHERE sh.proposalid = ?
+                AND ss.blsubsampleid IN ($placeholders)",
+                array_merge(array($this->proposalid), $sub_ids));
+
+            $ret = $this->db->pq("SELECT blsubsampleid, containerqueuesampleid
+                FROM containerqueuesample
+                WHERE blsubsampleid IN ($placeholders)
+                AND containerqueueid IS NULL", $sub_ids);
         }
         $this->_output($ret);
+
     }
 
     function _sub_samples()
@@ -959,6 +986,59 @@ class Sample extends Page
         }
     }
 
+
+    function _update_container_sub_samples()
+    {
+        if (!$this->arg('cid'))
+            $this->_error('No container specified');
+
+        if (!$this->arg('EXPERIMENTKIND'))
+            $this->_error('No experiment kind provided');
+
+        $rows = $this->db->pq("SELECT DISTINCT ss.diffractionplanid
+            FROM blsubsample ss
+            INNER JOIN blsample s ON s.blsampleid = ss.blsampleid
+            INNER JOIN diffractionplan dp ON dp.diffractionplanid = ss.diffractionplanid
+            INNER JOIN containerqueuesample cqs ON cqs.blsubsampleid = ss.blsubsampleid
+            WHERE s.containerid=:1
+            AND dp.experimentkind=:2
+            AND ss.diffractionplanid IS NOT NULL
+            AND cqs.containerqueuesampleid IS NOT NULL
+            AND cqs.containerqueueid IS NULL",
+            array($this->arg('cid'), $this->arg('EXPERIMENTKIND')));
+
+        if (!sizeof($rows)) {
+            $this->_output(array('TOTAL_UPDATED' => 0));
+            return;
+        }
+
+        $all_ids = array_column($rows, 'DIFFRACTIONPLANID');
+        $set_args = array();
+        foreach (array(
+            'REQUIREDRESOLUTION', 'EXPERIMENTKIND', 'PREFERREDBEAMSIZEX', 'PREFERREDBEAMSIZEY',
+            'EXPOSURETIME', 'BOXSIZEX', 'BOXSIZEY', 'AXISSTART', 'AXISRANGE', 'NUMBEROFIMAGES',
+            'TRANSMISSION', 'ENERGY', 'MONOCHROMATOR'
+        ) as $f) {
+            array_push($set_args, $this->has_arg($f) ? $this->arg($f) : null);
+        }
+
+        $chunks = array_chunk($all_ids, 100);
+        $total_updated = 0;
+
+        foreach ($chunks as $chunk) {
+            $id_list = implode(',', $chunk);
+
+            $this->db->pq("UPDATE diffractionplan
+                SET requiredresolution=:1, experimentkind=:2, preferredbeamsizex=:3, preferredbeamsizey=:4,
+                    exposuretime=:5, boxsizex=:6, boxsizey=:7, axisstart=:8, axisrange=:9,
+                    numberofimages=:10, transmission=:11, energy=:12, monochromator=:13
+                WHERE diffractionplanid IN ($id_list)", $set_args);
+
+            $total_updated += sizeof($chunk);
+        }
+
+        $this->_output(array('TOTAL_UPDATED' => $total_updated));
+    }
 
 
     function _add_sub_sample()
