@@ -538,10 +538,11 @@ class Shipment extends Page
                 $email_location = $dewar_complete_email_locations[$last_location];
                 $send_return_email = preg_match($email_location, strtolower($this->arg('LOCATION')));
             }
-            // If dewar status is dispatch-requested - don't change it.
+            // If dewar status is dispatch-requested or dispatch-booked - don't change it.
             // This way the dewar can be moved between storage locations and keep the record that a user requested the dispatch
             // Default status is 'at-facility'
-            $dewarstatus = strtolower($dew['DEWARSTATUS']) == 'dispatch-requested' ? 'dispatch-requested' : 'at facility';
+            $status = strtolower($dew['DEWARSTATUS']);
+            $dewarstatus = ($status == 'dispatch-requested' || $status == 'dispatch-booked') ? $status : 'at facility';
             $dewarlocation = $this->arg('LOCATION');
 
         } else {

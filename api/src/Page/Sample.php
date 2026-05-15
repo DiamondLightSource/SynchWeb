@@ -1966,15 +1966,19 @@ class Sample extends Page
             array_push($args, $this->arg('lid'));
         }
 
-        $tot = $this->db->pq("SELECT count(distinct l.ligandid) as tot FROM ligand l INNER JOIN proposal p ON p.proposalid = l.proposalid WHERE $where", $args);
-        $tot = intval($tot[0]['TOT']);
-
         if ($this->has_arg('s')) {
             $st = sizeof($args) + 1;
-            $where .= " AND l.name LIKE CONCAT('%',:" . $st . ", '%')";
-            array_push($args, $this->arg('s'));
+            $where .= " AND (
+                l.name LIKE CONCAT('%',:" . $st . ", '%')
+                OR l.libraryname LIKE CONCAT('%',:" . ($st + 1) . ", '%')
+                OR l.librarybatchnumber LIKE CONCAT('%',:" . ($st + 2) . ", '%')
+                OR l.platebarcode LIKE CONCAT('%',:" . ($st + 3) . ", '%')
+            )";
+            array_push($args, $this->arg('s'), $this->arg('s'), $this->arg('s'), $this->arg('s'));
         }
 
+        $tot = $this->db->pq("SELECT count(distinct l.ligandid) as tot FROM ligand l WHERE $where", $args);
+        $tot = intval($tot[0]['TOT']);
 
         $start = 0;
         $pp = $this->has_arg('per_page') ? $this->arg('per_page') : 15;
@@ -1990,12 +1994,18 @@ class Sample extends Page
         array_push($args, $end);
 
         $order = 'l.ligandid DESC';
-
         $group = 'l.ligandid';
 
         if ($this->has_arg('sort_by')) {
             $cols = array(
                 'NAME' => 'l.name',
+                'SMILES' => 'l.smiles',
+                'LIBRARYNAME' => 'l.libraryname',
+                'LIBRARYBATCHNUMBER' => 'l.librarybatchnumber',
+                'PLATEBARCODE' => 'l.platebarcode',
+                'SOURCEWELL' => 'l.sourcewell',
+                'SCOUNT' => 'scount',
+                'DCOUNT' => 'dcount',
             );
             $dir = $this->has_arg('order') ? ($this->arg('order') == 'asc' ? 'ASC' : 'DESC') : 'ASC';
             if (array_key_exists($this->arg('sort_by'), $cols))
@@ -2006,7 +2016,6 @@ class Sample extends Page
                                 COUNT(DISTINCT dc.datacollectionid) AS dcount,
                                 COUNT(DISTINCT b.blsampleid) AS scount
                                 FROM ligand l
-                                INNER JOIN proposal p ON p.proposalid = l.proposalid
                                 LEFT OUTER JOIN ligand_has_pdb lhp ON lhp.ligandid = l.ligandid
                                 LEFT OUTER JOIN blsample_has_ligand bhl ON bhl.ligandid = l.ligandid
                                 LEFT OUTER JOIN blsample b ON b.blsampleid = bhl.blsampleid
@@ -2081,29 +2090,51 @@ class Sample extends Page
     {
         if (!$this->has_arg('prop'))
             $this->_error('No proposal specified');
-        if (!$this->has_arg('NAME'))
-            $this->_error('No ligand name');
 
-        $smiles = $this->has_arg('SMILES') ? $this->arg('SMILES') : '';
+        $ligs = array();
+        $lids = array();
+
         $libname = $this->has_arg('LIBRARYNAME') ? $this->arg('LIBRARYNAME') : null;
         $libbatch = $this->has_arg('LIBRARYBATCHNUMBER') ? $this->arg('LIBRARYBATCHNUMBER') : null;
         $barcode = $this->has_arg('PLATEBARCODE') ? $this->arg('PLATEBARCODE') : null;
-        $well = $this->has_arg('SOURCEWELL') ? $this->arg('SOURCEWELL') : null;
 
-        $chk = $this->db->pq("SELECT name FROM ligand
-              WHERE proposalid=:1 AND name=:2", array($this->proposalid, $this->arg('NAME')));
-        if (sizeof($chk))
-            $this->_error('That ligand name already exists in this proposal');
+        $json = $this->request['json'] ?? null;
+        if ($json && is_array($json)) {
 
-        $this->db->pq(
-            'INSERT INTO ligand (proposalid,name,smiles,libraryname,librarybatchnumber,platebarcode,sourcewell)
-              VALUES (:1,:2,:3,:4,:5,:6,:7) RETURNING ligandid INTO :id',
-            array($this->proposalid, $this->arg('NAME'), $smiles, $libname, $libbatch, $barcode, $well)
-        );
+            foreach ($json as $row) {
+                if (isset($row->NAME)) {
+                    $name = $row->NAME;
+                    $smiles = isset($row->SMILES) ? $row->SMILES : null;
+                    $well = isset($row->SOURCEWELL) ? $row->SOURCEWELL : null;
+                    array_push($ligs, array($this->proposalid, $name, $smiles, $libname, $libbatch, $barcode, $well));
+                }
+            }
+        } else {
+            if (!$this->has_arg('NAME'))
+                $this->_error('No ligand name');
 
-        $lid = $this->db->id();
+            $smiles = $this->has_arg('SMILES') ? $this->arg('SMILES') : null;
+            $well = $this->has_arg('SOURCEWELL') ? $this->arg('SOURCEWELL') : null;
 
-        $this->_output(array('LIGANDID' => $lid));
+            array_push($ligs, array($this->proposalid, $this->arg('NAME'), $smiles, $libname, $libbatch, $barcode, $well));
+
+            $chk = $this->db->pq("SELECT name FROM ligand
+                  WHERE proposalid=:1 AND name=:2", array($this->proposalid, $this->arg('NAME')));
+            if (sizeof($chk))
+                $this->_error('That ligand name already exists in this proposal');
+        }
+
+        foreach ($ligs as $lig) {
+            $this->db->pq(
+                'INSERT INTO ligand (proposalid,name,smiles,libraryname,librarybatchnumber,platebarcode,sourcewell)
+                VALUES (:1,:2,:3,:4,:5,:6,:7) RETURNING ligandid INTO :id',
+                $lig
+            );
+
+            array_push($lids, $this->db->id());
+        }
+
+        $this->_output(array('LIGANDIDS' => $lids));
     }
 
     # ------------------------------------------------------------------------
