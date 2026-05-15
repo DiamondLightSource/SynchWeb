@@ -12,7 +12,7 @@ class BigEPPhasing extends DownstreamPlugin {
     function results() {
         $dat = array();
 
-        if (array_key_exists('program_id', $this->process['PARAMETERS'])) {
+        if (array_key_exists('scaling_id', $this->process['PARAMETERS'])) {
             $parent = $this->_lookup_parent_autoproc();
             if ($parent) {
                 $dat['PARENTAUTOPROCPROGRAM'] = $parent['PROCESSINGPROGRAMS'];
