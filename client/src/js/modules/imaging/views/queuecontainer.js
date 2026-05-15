@@ -683,7 +683,7 @@ define(['marionette',
                     app.message({ message: 'Container Successfully Unqueued' })
                     self.ui.unqueuebutton.hide()
                     self.ui.queuebutton.show()
-                    self.model.set('CONTAINERQUEUEID', null)
+                    self.model.set('CONTAINERQUEUEID', null, { silent: true })
                 },
                 error: function() {
                     app.alert({ message: 'Something went wrong unqueuing this container' })
@@ -790,17 +790,7 @@ define(['marionette',
                 return
             }
 
-            // need to validate all models here again in case they haven't been rendered
-            this.qsubsamples.fullCollection.each(function(qs) {
-                if (qs.get('_valid') !== undefined) return
-
-                const expcell = new ExperimentCell({model: qs, column: {beamlinesetups: this.beamlinesetups}});
-                const val = expcell.checkIsValid();
-                console.log({ experimentCell: val })
-            }, this)
-
             var invalid = this.typeselector.shadowCollection.where({ '_valid': false })
-            console.log('queue', invalid, invalid.length > 0)
             if (invalid.length > 0) {
                 app.alert({ message: 'There are '+invalid.length+' sub samples with invalid experimental plans, please either correct or remove these from the queue' })
                 var inv = this.typeselector.collection.findWhere({ id: 'invalid' })
@@ -817,7 +807,7 @@ define(['marionette',
                         app.message({ message: 'Container Successfully Queued' })
                         self.ui.unqueuebutton.show()
                         self.ui.queuebutton.hide()
-                        self.model.set('CONTAINERQUEUEID', json.CONTAINERQUEUEID)
+                        self.model.set('CONTAINERQUEUEID', json.CONTAINERQUEUEID, { silent: true })
                     },
                     error: function() {
                         app.alert({ message: 'Something went wrong queuing this container' })
