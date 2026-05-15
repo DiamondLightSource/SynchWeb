@@ -643,32 +643,42 @@ class Sample extends Page
             $this->_error('No subsamples found');
 
         $sub_ids = array_column($subs, 'BLSUBSAMPLEID');
-        $placeholders = implode(',', array_fill(0, count($sub_ids), '?'));
+        $chunks = array_chunk($sub_ids, 500);
+        $ret = array();
+
         if ($this->has_arg('UNQUEUE')) {
-            $this->db->pq("DELETE FROM containerqueuesample
-                            WHERE containerqueueid IS NULL
-                            AND blsubsampleid IN ($placeholders)", $sub_ids);
+            foreach ($chunks as $chunk) {
+                $placeholders = implode(',', array_fill(0, count($chunk), '?'));
+                $this->db->pq("DELETE FROM containerqueuesample
+                    WHERE containerqueueid IS NULL
+                    AND blsubsampleid IN ($placeholders)", $chunk);
+            }
 
             $ret = array_map(function($id) {
                 return array('BLSUBSAMPLEID' => $id, 'CONTAINERQUEUESAMPLEID' => null);
             }, $sub_ids);
 
         } else {
-            $this->db->pq("INSERT INTO containerqueuesample (blsubsampleid)
-                SELECT ss.blsubsampleid
-                FROM blsubsample ss
-                INNER JOIN blsample s ON s.blsampleid = ss.blsampleid
-                INNER JOIN container c ON c.containerid = s.containerid
-                INNER JOIN dewar d ON d.dewarid = c.dewarid
-                INNER JOIN shipping sh ON sh.shippingid = d.shippingid
-                WHERE sh.proposalid = ?
-                AND ss.blsubsampleid IN ($placeholders)",
-                array_merge(array($this->proposalid), $sub_ids));
+            foreach ($chunks as $chunk) {
+                $placeholders = implode(',', array_fill(0, count($chunk), '?'));
+                $this->db->pq("INSERT INTO containerqueuesample (blsubsampleid)
+                    SELECT ss.blsubsampleid
+                    FROM blsubsample ss
+                    INNER JOIN blsample s ON s.blsampleid = ss.blsampleid
+                    INNER JOIN container c ON c.containerid = s.containerid
+                    INNER JOIN dewar d ON d.dewarid = c.dewarid
+                    INNER JOIN shipping sh ON sh.shippingid = d.shippingid
+                    WHERE sh.proposalid = ?
+                    AND ss.blsubsampleid IN ($placeholders)",
+                    array_merge(array($this->proposalid), $chunk));
 
-            $ret = $this->db->pq("SELECT blsubsampleid, containerqueuesampleid
-                FROM containerqueuesample
-                WHERE blsubsampleid IN ($placeholders)
-                AND containerqueueid IS NULL", $sub_ids);
+                $chunk_ret = $this->db->pq("SELECT blsubsampleid, containerqueuesampleid
+                    FROM containerqueuesample
+                    WHERE blsubsampleid IN ($placeholders)
+                    AND containerqueueid IS NULL", $chunk);
+
+                $ret = array_merge($ret, $chunk_ret);
+            }
         }
         $this->_output($ret);
 
@@ -1022,7 +1032,7 @@ class Sample extends Page
             array_push($set_args, $this->has_arg($f) ? $this->arg($f) : null);
         }
 
-        $chunks = array_chunk($all_ids, 100);
+        $chunks = array_chunk($all_ids, 500);
         $total_updated = 0;
 
         foreach ($chunks as $chunk) {
