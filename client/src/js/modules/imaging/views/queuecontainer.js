@@ -709,7 +709,7 @@ define(['marionette',
                     EXPERIMENTKIND: p.get('EXPERIMENTKIND')
                 }
 
-                var fields = [
+                const fields = [
                     'REQUIREDRESOLUTION', 'PREFERREDBEAMSIZEX', 'PREFERREDBEAMSIZEY',
                     'EXPOSURETIME', 'BOXSIZEX', 'BOXSIZEY', 'AXISSTART', 'AXISRANGE',
                     'NUMBEROFIMAGES', 'TRANSMISSION', 'ENERGY', 'MONOCHROMATOR'
