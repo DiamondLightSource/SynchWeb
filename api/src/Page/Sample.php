@@ -1036,13 +1036,22 @@ class Sample extends Page
         $total_updated = 0;
 
         foreach ($chunks as $chunk) {
-            $id_list = implode(',', $chunk);
+            $start_index = sizeof($set_args) + 1;
+            $placeholders = array();
+
+            foreach ($chunk as $index => $id) {
+                array_push($placeholders, ':' . ($start_index + $index));
+            }
+
+            $id_placeholders_list = implode(',', $placeholders);
+
+            $combined_args = array_merge($set_args, $chunk);
 
             $this->db->pq("UPDATE diffractionplan
                 SET requiredresolution=:1, experimentkind=:2, preferredbeamsizex=:3, preferredbeamsizey=:4,
                     exposuretime=:5, boxsizex=:6, boxsizey=:7, axisstart=:8, axisrange=:9,
                     numberofimages=:10, transmission=:11, energy=:12, monochromator=:13
-                WHERE diffractionplanid IN ($id_list)", $set_args);
+                WHERE diffractionplanid IN ($id_placeholders_list)", $combined_args);
 
             $total_updated += sizeof($chunk);
         }
