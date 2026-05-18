@@ -80,16 +80,3 @@ export default {
   },
 };
 </script>
-  
-  <style scoped>
-.btn-group {
-  @apply tw-px-4;
-  @apply tw-py-2;
-  @apply tw-flex;
-  @apply tw-flex-row;
-  @apply tw-gap-2;
-  @apply tw-items-center;
-  @apply tw-border;
-  @apply tw-rounded;
-}
-</style>
