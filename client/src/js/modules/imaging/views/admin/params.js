@@ -180,6 +180,11 @@ define(['marionette',
 
 
     var DetectorsLimitsCellStatic = Backgrid.Cell.extend({
+        initialize: function(options) {
+            Backgrid.Cell.prototype.initialize.apply(this, arguments)
+            this.listenTo(this.model, 'sync change', this.render)
+        },
+
         render: function() {
             this.$el.empty()
             if (!this.model.isNew()) {
@@ -238,9 +243,17 @@ define(['marionette',
             console.log('model changed', arguments)
             // Changed Attributes are not being detected correctly.
             // Therefore we can crudely set all parameters to enforce a PATCH request
-            if (!m.isNew()) m.save(_.clone(m.attributes), { patch: true })
-        },
 
+            if (!m.isNew()) {
+                m.save(_.clone(m.attributes), {
+                    patch: true,
+                    wait: true,
+                    success: function() {
+                        m.fetch()
+                    }
+                });
+            }
+        },
 
 
         onRender: function() {

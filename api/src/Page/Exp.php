@@ -141,7 +141,7 @@ class Exp extends Page
             array('/plans/detectors/:DATACOLLECTIONPLANHASDETECTORID', 'patch', '_dp_update_detector'),
             array('/plans/detectors/:DATACOLLECTIONPLANHASDETECTORID', 'delete', '_dp_remove_detector'),
 
-            array('/setup', 'get', '_get_beamline_setups'),
+            array('/setup(/:BEAMLINESETUPID)', 'get', '_get_beamline_setups'),
             array('/setup', 'post', '_add_beamline_setup'),
             array('/setup/:BEAMLINESETUPID', 'patch', '_update_beamline_setup'),
 
@@ -164,7 +164,7 @@ class Exp extends Page
             array_push($args, $this->arg('BEAMLINENAME'));
         }
 
-        $tot = $this->db->pq("SELECT count(d.detectorid) as tot
+        $tot = $this->db->pq("SELECT count(distinct d.detectorid) as tot
             FROM detector d
             LEFT OUTER JOIN beamlinesetup bls ON bls.detectorid = d.detectorid
             WHERE $where", $args);
@@ -177,10 +177,24 @@ class Exp extends Page
             'd.detectorid ASC'
         );
 
-        $rows = $this->db->paginate("SELECT d.detectorid, d.detectortype, d.detectormanufacturer, d.detectorserialnumber, d.sensorthickness, d.detectormodel, d.detectorpixelsizehorizontal, d.detectorpixelsizevertical, d.detectordistancemin, d.detectordistancemax, d.density, d.composition, concat(d.detectormanufacturer,' ',d.detectormodel, ' (',d.detectortype,')') as description, d.detectormaxresolution, d.detectorminresolution, count(distinct dc.datacollectionid) as dcs, count(distinct bls.beamlinesetupid) as blsetups, (SELECT count(distinct dphd.detectorid) FROM DataCollectionPlan_has_Detector dphd WHERE dphd.detectorid = d.detectorid) as dps, GROUP_CONCAT(distinct bls.beamlinename) as beamlines, d.numberofpixelsx, d.numberofpixelsy, d.detectorrollmin, d.detectorrollmax
+        $rows = $this->db->paginate("SELECT d.detectorid, d.detectortype, d.detectormanufacturer, d.detectorserialnumber, d.sensorthickness, d.detectormodel, d.detectorpixelsizehorizontal, d.detectorpixelsizevertical, d.detectordistancemin, d.detectordistancemax, d.density, d.composition, d.detectormaxresolution, d.detectorminresolution, d.numberofpixelsx, d.numberofpixelsy, d.detectorrollmin, d.detectorrollmax,
+            concat(d.detectormanufacturer,' ',d.detectormodel, ' (', ifnull(d.detectortype, ''), ')') as description,
+            count(distinct bls.beamlinesetupid) as blsetups,
+            GROUP_CONCAT(distinct bls.beamlinename) as beamlines,
+            COALESCE(datacollections.dcs, 0) as dcs,
+            COALESCE(datacollectionplans.dps, 0) as dps
             FROM detector d
-            LEFT OUTER JOIN datacollection dc ON dc.detectorid = d.detectorid
             LEFT OUTER JOIN beamlinesetup bls ON bls.detectorid = d.detectorid
+            LEFT JOIN (
+                SELECT detectorid, COUNT(datacollectionid) as dcs
+                FROM datacollection
+                GROUP BY detectorid
+            ) datacollections ON datacollections.detectorid = d.detectorid
+            LEFT JOIN (
+                SELECT detectorid, COUNT(DISTINCT detectorid) as dps
+                FROM DataCollectionPlan_has_Detector
+                GROUP BY detectorid
+            ) datacollectionplans ON datacollectionplans.detectorid = d.detectorid
             WHERE $where
             GROUP BY d.detectorid
             ORDER BY $order", $args);

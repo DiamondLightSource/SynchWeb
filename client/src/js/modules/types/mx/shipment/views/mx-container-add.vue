@@ -264,32 +264,36 @@
 
             <validation-provider
               tag="div"
+              v-slot="{ errors }"
               class="tw-mb-2 tw-py-2"
-              rules="required"
+              :rules="(plateType === 'plate' && !ownerEmail) ? 'required|excluded:' + PERSONID : 'required'"
               name="owner"
+              vid="owner"
             >
               <base-input-select
                 dataTestId="add-container-owner"
                 v-model="PERSONID"
-                outer-class="tw-flex tw-w-full tw-items-center"
+                outer-class="tw-flex tw-w-full"
                 label="Owner"
                 description="This user will be emailed with container updates. Check your email is up to date!"
                 name="PERSONID"
                 :options="users"
                 option-value-key="PERSONID"
                 option-text-key="FULLNAME"
+                :error-message="errors[0]"
+                :quiet="!ownerEmail"
               >
-                <template #error-msg>
-                  <span
-                    v-show="!ownerEmail"
-                    class="emsg tw-bg-content-light-background tw-text-xxs tw-ml-1 tw-p-1 tw-h-6"
-                  >Please update your email address by clicking view</span>
-                </template>
                 <template #actions>
                   <a
                     :href="`/contacts/user/${PERSONID}`"
-                    class="button edit_user tw-w-16 tw-text-center tw-h-6 tw-text-xxs"
+                    class="button edit_user tw-w-16 tw-text-center tw-h-6 tw-text-xxs tw-ml-2"
                   ><i class="fa fa-search" /> View</a>
+                  <span
+                    v-show="!ownerEmail"
+                    class="emsg tw-bg-content-light-background tw-text-xxs tw-ml-1 tw-p-1 tw-h-6"
+                  >
+                    Click View to update your email address
+                  </span>
                 </template>
               </base-input-select>
             </validation-provider>
@@ -358,7 +362,10 @@
               v-show="error.length > 0"
               class="tw-black"
             >
-              {{ error[0] }}
+              {{ (index === 'owner' && !ownerEmail)
+                ? 'The selected owner has no email address. Please update it by clicking View.'
+                : error[0]
+              }}
             </p>
           </div>
         </div>

@@ -75,6 +75,9 @@
 
     # URL to access the PV archiver
     $archive_url = '';
+    # PV to check for beam / no beam, and values that correspond to beam
+    $beam_mode_pv = 'CS-CS-MSTAT-01:MODE';
+    $beam_mode_pv_beam_on_values = array(4, 5);
 
     # URL to access elog logbook
     $elog_base_url = '';
@@ -261,6 +264,7 @@
 
     # Shipping service details
     $use_shipping_service = null;
+    $use_shipping_service_nde = False;
     $use_shipping_service_incoming_shipments = null;
     $use_shipping_service_redirect = null;
     $use_shipping_service_redirect_incoming_shipments = null;
@@ -438,6 +442,9 @@
             array('NAME' => 'MrBUMP', 'VALUE' => 'trigger-mrbump'),
         ),
     );
+
+    # Set the first AutoProcProgram row with parentAutoProcProgramId not null
+    #$max_appid_without_parent = 123456789;
 
 
     # Add a button to upload file to CCP4 cloud

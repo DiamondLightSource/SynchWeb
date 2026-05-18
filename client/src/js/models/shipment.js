@@ -97,7 +97,11 @@ define(['backbone'], function (Backbone) {
 
       EXTRASUPPORTREQUIREMENT: {
         required: false
-      }
+      },
+
+      TERMSACCEPTED: {
+        required: false
+      },
 
     },
 

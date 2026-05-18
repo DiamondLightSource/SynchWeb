@@ -12,15 +12,11 @@ class BigEPPhasing extends DownstreamPlugin {
     function results() {
         $dat = array();
 
-        if (array_key_exists('program_id', $this->process['PARAMETERS'])) {
-            $integrator = $this->_lookup_autoproc(
-                $this->process['PARAMETERS']['program_id']
-            );
-            if ($integrator) {
-                $dat['PARENTAUTOPROCPROGRAM'] =
-                    $integrator['PROCESSINGPROGRAMS'];
-                $dat['PARENTAUTOPROCPROGRAMID'] =
-                    $integrator['AUTOPROCPROGRAMID'];
+        if (array_key_exists('scaling_id', $this->process['PARAMETERS'])) {
+            $parent = $this->_lookup_parent_autoproc();
+            if ($parent) {
+                $dat['PARENTAUTOPROCPROGRAM'] = $parent['PROCESSINGPROGRAMS'];
+                $dat['PARENTAUTOPROCPROGRAMID'] = $parent['AUTOPROCPROGRAMID'];
             }
         }
 

@@ -288,8 +288,13 @@
                 required: true,
                 requiredError,
                 unique: true,
+<<<<<<< improvement/LIMS-2015/update-js-libraries
                 uniqueError: function(headerName, rowNumber) {
                     return `${headerName} is not unique in row ${rowNumber}`;
+=======
+                uniqueError: function(headerName, rowNumber){
+                    return `${headerName} is not unique in row ${rowNumber}`
+>>>>>>> master
                 },
                 headerError
             },
@@ -730,9 +735,17 @@
                                 self.csvErrors.push({ message: "Only headers have been submitted, please add some sample information" })
                             }
 
+<<<<<<< improvement/LIMS-2015/update-js-libraries
                             self.fileValid = self.csvErrors.length === 0
                             if (!self.fileValid && fileInput) {
                                 fileInput.value = ''
+=======
+                            if(self.csvErrors.length === 0)
+                                self.fileValid = true
+                            else {
+                                self.fileValid = false
+                                event.target.value = ''
+>>>>>>> master
                             }
 
                             console.log(csvData.data)
