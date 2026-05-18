@@ -196,8 +196,6 @@ export default {
       // Chart area
       this.graphic = svg.append('g')
       this.labels = svg.append('g')
-      // The 'this' keyword gets bound to the d3 selection in 'on' method
-      let self = this
       // Draw circles for each sample location
       this.graphic.selectAll('.sample-cell')
           .data(this.preparedData)
@@ -211,32 +209,25 @@ export default {
           .style('stroke', '#666')
           .style('stroke-width', 4)
           .style("pointer-events","visible") // Required to capture mouse events on non-fill shapes
-          .on("click", function() {
-            let cellData = d3Select(this).data()[0]
-            self.onCellClicked(cellData)
+          .on("click", (event, d) => {
+            this.onCellClicked(d)
           })
           // Highlight is achieved by shrinking the cell radius
-          .on("mouseover", function() {
-            d3Select(this)
-                .attr('r', self.cell.highlightRadius)
+          .on("mouseover", (event) => {
+            d3Select(event.currentTarget)
+                .attr('r', this.cell.highlightRadius)
                 .style('stroke-width', 2)
           })
-          .on("mouseleave", function() {
-            d3Select(this)
-                .attr('r', self.cell.radius)
+          .on("mouseleave", (event) => {
+            d3Select(event.currentTarget)
+                .attr('r', this.cell.radius)
                 .style('stroke-width', 4)
           })
     },
     // This method has some knowledge of the sample data
     // Used to inform the parent that a cell has been clicked
     onCellClicked: function(sampleData) {
-      if (sampleData && sampleData.BLSAMPLEID) {
-        // Convert to an actual index not string
-        this.$emit('cell-clicked', { location: + sampleData.LOCATION, type: 'puck' })
-      } else {
-        // All samples should have a location
-        this.$emit('cell-clicked', { location: + sampleData.LOCATION, type: 'puck' })
-      }
+      this.$emit('cell-clicked', { location: +sampleData.LOCATION, type: 'puck' })
     },
     updateSelected: function() {
       this.graphic.selectAll('.sample-cell')
