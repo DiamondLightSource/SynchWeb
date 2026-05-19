@@ -682,7 +682,9 @@ define(['marionette',
                 success: function() {
                     app.message({ message: 'Container Successfully Unqueued' })
                     self.ui.unqueuebutton.hide()
+                    self.ui.unqueuesamples.show()
                     self.ui.queuebutton.show()
+                    self.ui.rpreset.show()
                     self.model.set('CONTAINERQUEUEID', null, { silent: true })
                 },
                 error: function() {
@@ -806,7 +808,9 @@ define(['marionette',
                     success: function(json) {
                         app.message({ message: 'Container Successfully Queued' })
                         self.ui.unqueuebutton.show()
+                        self.ui.unqueuesamples.hide()
                         self.ui.queuebutton.hide()
+                        self.ui.rpreset.hide()
                         self.model.set('CONTAINERQUEUEID', json.CONTAINERQUEUEID, { silent: true })
                     },
                     error: function() {
