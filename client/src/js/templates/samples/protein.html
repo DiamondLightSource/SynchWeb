@@ -34,12 +34,12 @@
                   This sequence will be used for the model building step of any Big EP phasing runs.
                 </span>
             </label>
-            <div  data-testid="protein-sequence" class="SEQUENCE seq text tw-inline-block tw-w-2/3"><%=SEQUENCEMD%></div>
+            <div data-testid="protein-sequence" class="SEQUENCE seq text tw-inline-block tw-w-2/3"><%=SEQUENCEMD%></div>
         </li>
         
         <li>
             <span class="label">Component Type</span>
-            <span  data-testid="protein-component-type" class="COMPONENTTYPEID"><%-COMPONENTTYPE%></span>
+            <span data-testid="protein-component-type" class="COMPONENTTYPEID"><%-COMPONENTTYPE%></span>
         </li>
 
         <li>
@@ -50,6 +50,15 @@
         <li>
             <span class="label">Global</span>
             <span data-testid="protein-global" class="GLOBAL"><%-GLOBAL==1 ? 'Yes' : 'No' %></span>
+        </li>
+
+        <li>
+            <label>
+                <span class="label">Associated Elements</span>
+                <input type="text" id="element-search" placeholder="Type e.g., C, H, N, O..." autocomplete="off" />
+                <button type="button" class="btn-add button">Add</button>
+            </label>
+            <span class="element floated"></span>
         </li>
         
         <li class="clearfix">
@@ -63,7 +72,6 @@
                 <a href="#" data-testid="protein-add-pdb-button" class="button add"><i class="fa fa-plus"></i> Add PDB File</a>
             </label>
             <span class="pdb floated">
-                <ul class="visits clearfix"></ul>
             </span>
         </li>
         
