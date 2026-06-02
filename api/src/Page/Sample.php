@@ -214,6 +214,9 @@ class Sample extends Page
 
         array('/concentrationtypes', 'get', '_concentration_types'),
         array('/componenttypes', 'get', '_component_types'),
+        array('/elements(/pid/:pid)', 'get', '_get_elements'),
+        array('/elements/pid/:pid/:cid', 'delete', '_remove_element'),
+        array('/elements/pid/:pid/:cid', 'put', '_add_element'),
 
         array('/groups', 'get', '_sample_groups'),
         array('/groups', 'post', '_add_new_sample_group'),
@@ -3044,11 +3047,96 @@ class Sample extends Page
         $this->_output($rows);
     }
 
-
     function _component_sub_types()
     {
         $rows = $this->db->pq("SELECT componentsubtypeid, name FROM componentsubtype");
         $this->_output($rows);
+    }
+
+    function _get_elements()
+    {
+        if (!$this->has_arg('prop'))
+            $this->_error('No proposal specified');
+
+        $where = 'ct.name=:1';
+        $args = array('Element');
+        $join = 'INNER JOIN componenttype ct ON c.componenttypeid = ct.componenttypeid';
+
+        if ($this->has_arg('pid')) {
+            $join .= ' INNER JOIN protein_has_component phc ON c.componentid = phc.componentid';
+            $join .= ' INNER JOIN protein pr ON phc.proteinid = pr.proteinid';
+            $where .= ' AND pr.proposalid=:2 AND pr.proteinid=:3';
+            array_push($args, $this->proposalid, $this->arg('pid'));
+        }
+
+        $rows = $this->db->pq("SELECT c.componentid, c.name
+            FROM component c
+            $join
+            WHERE $where",
+            $args
+            );
+        $this->_output($rows);
+    }
+
+    function _add_element()
+    {
+        if (!$this->has_arg('prop'))
+            $this->_error('No proposal specified');
+
+        if (!$this->has_arg('pid'))
+            $this->_error('No protein specified');
+
+        if (!$this->has_arg('cid'))
+            $this->_error('No element specified');
+
+        $prot = $this->db->pq("SELECT p.proteinid
+            FROM protein p
+            WHERE p.proposalid=:1 AND p.proteinid=:2",
+            array($this->proposalid, $this->arg('pid')));
+
+        if (!sizeof($prot))
+            $this->_error('No such protein');
+
+        $phc = $this->db->pq("SELECT phc.proteinhascomponentid
+            FROM protein_has_component phc
+            INNER JOIN protein p ON p.proteinid = phc.proteinid
+            WHERE p.proposalid=:1 AND phc.proteinid=:2 AND phc.componentid=:3",
+            array($this->proposalid, $this->arg('pid'), $this->arg('cid')));
+
+        if (sizeof($phc))
+            $this->_error('Element already added to this protein');
+
+        $this->db->pq("INSERT INTO protein_has_component (proteinid, componentid) VALUES (:1, :2) RETURNING proteinhascomponentid INTO :id",
+            array($this->arg('pid'), $this->arg('cid')));
+
+        $phc = $this->db->id();
+
+        $this->_output(array('PROTEINHASCOMPONENTID' => $phc));
+    }
+
+    function _remove_element()
+    {
+        if (!$this->has_arg('prop'))
+            $this->_error('No proposal specified');
+
+        if (!$this->has_arg('pid'))
+            $this->_error('No protein specified');
+
+        if (!$this->has_arg('cid'))
+            $this->_error('No element specified');
+
+        $phc = $this->db->pq("SELECT phc.proteinhascomponentid
+            FROM protein_has_component phc
+            INNER JOIN protein p ON p.proteinid = phc.proteinid
+            WHERE p.proposalid=:1 AND phc.proteinid=:2 AND phc.componentid=:3",
+            array($this->proposalid, $this->arg('pid'), $this->arg('cid')));
+
+        if (!sizeof($phc))
+            $this->_error('No such association');
+
+        $this->db->pq("DELETE FROM protein_has_component WHERE proteinhascomponentid=:1", array($phc[0]['PROTEINHASCOMPONENTID']));
+
+        $this->_output(1);
     }
 
     # Sample Groups
