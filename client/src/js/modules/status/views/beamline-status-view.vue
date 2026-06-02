@@ -222,6 +222,7 @@ export default {
     fetchCamToken(data) {
       return this.$store.dispatch('saveDataToApi', {
         url: `/download/sign`,
+        success: (response) => response,
         data
       })
     },

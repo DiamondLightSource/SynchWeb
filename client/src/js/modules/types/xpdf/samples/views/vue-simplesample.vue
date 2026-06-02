@@ -34,7 +34,7 @@
               v-for="csvError in csvErrors"
               style="color:red; font-size:medium"
             >
-              {{ csvError }}
+              {{ csvError.message }}
             </li>
           </ul>
           <ul>
@@ -288,8 +288,8 @@
                 required: true,
                 requiredError,
                 unique: true,
-                uniqueError: function(headerName, rowNumber){
-                    return `${headerName} is not unique in row ${rowNumber}`
+                uniqueError: function(headerName, rowNumber) {
+                    return `${headerName} is not unique in row ${rowNumber}`;
                 },
                 headerError
             },
@@ -712,6 +712,7 @@
                 this.csvFile = event.target.files[0]
                 var self = this
                 var ready = false
+                const fileInput = event && event.target
 
                 // callback function to make sure we have finished trimming white space from uploaded file
                 // before passing it through the CSVFileValidator
@@ -720,27 +721,25 @@
                         CSVFileValidator(self.csvFile, csvConfig)
                         .then(csvData => {
                             self.csvData = csvData.data
-                            self.csvErrors = csvData.inValidMessages
+                            self.csvErrors = csvData.inValidData
 
                             if(self.commaInComments)
-                                self.csvErrors.push("Column count is greater than expected, you likely have a comma in a comment. Please remove any additional commas")
+                                self.csvErrors.push({ message: "Column count is greater than expected, you likely have a comma in a comment. Please remove any additional commas" })
 
                             if(self.csvData.length < 1 && self.csvErrors.length === 0){
-                                self.csvErrors.push("Only headers have been submitted, please add some sample information")
+                                self.csvErrors.push({ message: "Only headers have been submitted, please add some sample information" })
                             }
 
-                            if(self.csvErrors.length === 0)
-                                self.fileValid = true
-                            else {
-                                self.fileValid = false
-                                event.target.value = ''
+                            self.fileValid = self.csvErrors.length === 0
+                            if (!self.fileValid && fileInput) {
+                                fileInput.value = ''
                             }
 
                             console.log(csvData.data)
-                            console.log(csvData.inValidMessages)
+                            console.log(csvData.inValidData)
                         })
                     } else {
-                        setTimeout(check, 1000)
+                        setTimeout(check, 100)
                     }
                 }
                 check()

@@ -2532,8 +2532,12 @@ class Shipment extends Page
                 'MANUAL' => 'queuedmanualsubsamples', 'AUTO' => 'queuedautosubsamples',
             );
             $dir = $this->has_arg('order') ? ($this->arg('order') == 'asc' ? 'ASC' : 'DESC') : 'ASC';
-            if (array_key_exists($this->arg('sort_by'), $cols))
+            if (array_key_exists($this->arg('sort_by'), $cols)) {
                 $order = $cols[$this->arg('sort_by')] . ' ' . $dir;
+                if ($this->arg('sort_by') == 'NAME') {
+                    $order .= ', c.containerid ' . $dir;
+                }
+            }
         }
         // $this->db->set_debug(True);
         $rows = $this->db->paginate("SELECT $select
