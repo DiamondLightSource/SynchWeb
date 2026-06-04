@@ -139,7 +139,7 @@ define(['backbone',
         },
 
         updateVisits: function() {
-            this.ui.visitselect.html(this.visits.opts())
+            this.ui.visitselect.html('<option value=""> - </option>'+this.visits.opts())
             const model = this.visits.findWhere({ VISIT: this.visit })
             if (model) {
                 this.ui.visitselect.val(model.get('SESSIONID'))
@@ -147,12 +147,12 @@ define(['backbone',
         },
 
         updateProteins: function() {
-            this.ui.proteinselect.html(this.proteins.opts())
+            this.ui.proteinselect.html('<option value=""> - </option>'+this.proteins.opts())
             this.ui.proteinselect.val(this.protein)
         },
 
         updateGroups: function() {
-            this.ui.groupselect.html(this.groups.opts())
+            this.ui.groupselect.html('<option value=""> - </option>'+this.groups.opts())
             this.ui.groupselect.val(this.group)
         },
 
