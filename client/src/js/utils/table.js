@@ -171,7 +171,12 @@ define(['marionette', 'backgrid',
             },
               
             render: function() {
-              this.$el.append('<a class="button atp"><i class="fa fa-book"></i> <span class="tw-hidden lg:tw-inline">Add to Project</span></a>')
+              let html = '<a class="button atp"><i class="fa fa-book"></i> <span class="tw-hidden lg:tw-inline">Add to Project</span></a>'
+              const extraHtmlConfig = this.column.get('extraHtml')
+              if (typeof extraHtmlConfig === 'function') {
+                html += extraHtmlConfig(this.model)
+              }
+              this.$el.append(html)
               return this
             }
         }),

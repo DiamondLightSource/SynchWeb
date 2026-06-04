@@ -2010,7 +2010,7 @@ class Sample extends Page
               LEFT OUTER JOIN concentrationtype ct ON ct.concentrationtypeid = pr.concentrationtypeid
               WHERE pr.acronym is not null AND $where
               GROUP BY ct.symbol, pr.acronym, pr.name, pr.global
-              ORDER BY lower(pr.acronym)", $args);
+              ORDER BY lower(pr.acronym), pr.proteinid", $args);
 
         $this->_output($rows);
     }

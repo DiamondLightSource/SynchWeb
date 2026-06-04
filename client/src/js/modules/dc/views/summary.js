@@ -7,6 +7,9 @@ define(['backbone',
     'utils/kvcollection',
     'collections/spacegroups',
     'collections/processingpipelines',
+    'collections/visits',
+    'modules/shipment/collections/distinctproteins',
+    'collections/samplegroups',
     'templates/dc/summary.html'], 
     function(Backbone, Marionette, Backgrid, TableView,
         utils,
@@ -14,6 +17,9 @@ define(['backbone',
         KVCollection,
         Spacegroups,
         ProcessingPipelines,
+        Visits,
+        DistinctProteins,
+        SampleGroups,
         template) {
 
     var Pipelines = Backbone.Collection.extend(_.extend({
@@ -28,6 +34,8 @@ define(['backbone',
         templateHelpers: function() {
             return {
                 APIURL: app.apiurl,
+                PROTEINID: this.protein,
+                SAMPLEGROUPID: this.group,
             }
         },
 
@@ -38,6 +46,10 @@ define(['backbone',
         events: {
             'click a.dll': utils.signHandler,
             'click a.csv': 'downloadCSV',
+            'change @ui.typeselect': 'changeType',
+            'change @ui.visitselect': 'changeVisit',
+            'change @ui.proteinselect': 'changeProtein',
+            'change @ui.groupselect': 'changeGroup',
             'change @ui.pipeline': 'changePipeline',
             'change @ui.sg': 'changeSpaceGroup',
             'change @ui.minres': 'changeResolution',
@@ -50,6 +62,10 @@ define(['backbone',
         },
         
         ui: {
+            typeselect: 'select[name=type-select]',
+            visitselect: 'select[name=visit-select]',
+            proteinselect: 'select[name=protein-select]',
+            groupselect: 'select[name=group-select]',
             pipeline: 'select[name=pipeline]',
             sg: 'select[name=SG]',
             minres: 'input[name=minres]',
@@ -62,7 +78,82 @@ define(['backbone',
         },
         
         initialize: function(options) {
-            this.visit = options.model.get('VISIT')
+            this.visit = options.collection.queryParams.visit
+            this.protein = options.collection.queryParams.pid
+            this.group = options.collection.queryParams.sgid
+            this.visits = null
+            this.proteins = null
+            this.groups = null
+        },
+
+        setType: function() {
+            if (this.visit) this.ui.typeselect.val('visit')
+            if (this.protein) this.ui.typeselect.val('protein')
+            if (this.group) this.ui.typeselect.val('group')
+            this.changeType()
+        },
+
+        changeType: function() {
+            if (this.ui.typeselect.val() == 'visit') {
+                this.ui.visitselect.show()
+                this.ui.proteinselect.hide()
+                this.ui.groupselect.hide()
+                if (!this.visits) {
+                    this.visits = new Visits(null, { state: { pageSize: 9999 } })
+                    this.visits.fetch().done(this.updateVisits.bind(this))
+                }
+            } else if (this.ui.typeselect.val() == 'protein') {
+                this.ui.visitselect.hide()
+                this.ui.proteinselect.show()
+                this.ui.groupselect.hide()
+                if (!this.proteins) {
+                    this.proteins = new DistinctProteins(null, { state: { pageSize: 9999 } })
+                    this.proteins.fetch().done(this.updateProteins.bind(this))
+                }
+            } else {
+                // sample group
+                this.ui.visitselect.hide()
+                this.ui.proteinselect.hide()
+                this.ui.groupselect.show()
+                if (!this.groups) {
+                    this.groups = new SampleGroups(null, { state: { pageSize: 9999 } })
+                    this.groups.queryParams.groupSamplesType = 'BLSAMPLEGROUPID'
+                    this.groups.fetch().done(this.updateGroups.bind(this))
+                }
+            }
+        },
+
+        changeVisit: function() {
+            const selectedModel = this.visits.findWhere({ SESSIONID: this.ui.visitselect.val() });
+            if (selectedModel) {
+                app.trigger('visitsummary:show', selectedModel.get('VISIT'));
+            }
+        },
+
+        changeProtein: function() {
+            app.trigger('proteinsummary:show', this.ui.proteinselect.val());
+        },
+
+        changeGroup: function() {
+            app.trigger('groupsummary:show', this.ui.groupselect.val());
+        },
+
+        updateVisits: function() {
+            this.ui.visitselect.html(this.visits.opts())
+            const model = this.visits.findWhere({ VISIT: this.visit })
+            if (model) {
+                this.ui.visitselect.val(model.get('SESSIONID'))
+            }
+        },
+
+        updateProteins: function() {
+            this.ui.proteinselect.html(this.proteins.opts())
+            this.ui.proteinselect.val(this.protein)
+        },
+
+        updateGroups: function() {
+            this.ui.groupselect.html(this.groups.opts())
+            this.ui.groupselect.val(this.group)
         },
 
         downloadCSV: function(e) {
@@ -194,6 +285,7 @@ define(['backbone',
 
         onRender: function() {
             this.showSpaceGroups()
+            this.setType()
 
             this.processing_pipelines = new ProcessingPipelines()
             this.processing_pipelines.fetch({
@@ -204,7 +296,7 @@ define(['backbone',
             }).done(this.updatePipelines.bind(this));
 
             var columns = [
-                { label: '', cell: table.TemplateCell, editable: false, template: '<a href="/dc/visit/'+this.visit+'/id/<%-ID%>" class="button button-notext"><i class="fa fa-search"></i> <span>View Data Collection</span></a>' },
+                { label: '', cell: table.TemplateCell, editable: false, template: '<a href="/dc/visit/<%-VISIT%>/id/<%-ID%>" class="button button-notext"><i class="fa fa-search"></i> <span>View Data Collection</span></a>' },
                 { name: 'PREFIX', label: 'Prefix', cell: 'string', editable: false },
                 { name: 'SAMPLE', label: 'Sample', cell: table.TemplateCell, template: '<a href="/samples/sid/<%-BLSAMPLEID%>"><%-SAMPLE%></a>', editable: false },
                 { name: 'ENERGY', label: 'Energy (eV)', cell: 'string', editable: false },

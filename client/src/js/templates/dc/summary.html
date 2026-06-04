@@ -1,10 +1,34 @@
-<h1 class="no_mobile">Data Collection Summary</h1>
+<div class="content header-row">
+  <h1 class="no_mobile nou no-grow">Data Collection Summary for </h1>
+  <select name="type-select" class="xl">
+    <option value="visit">Visit</option>
+    <option value="protein">Protein</option>
+    <option value="group">Sample Group</option>
+  </select>
+  <select name="visit-select" class="xl"></select>
+  <select name="protein-select" class="xl"></select>
+  <select name="group-select" class="xl"></select>
+</div>
 
 <div class="options data_collection">
+    <% if (typeof VISIT !== 'undefined' && VISIT) { %>
     <div class="r">
         <a href="/dc/visit/<%-VISIT%>" class="button"><i class="fa fa-search"></i> All Data Collections</a>
-        <a href="<%-APIURL%>/processing/visit/<%-VISIT%>/csv/1" class="button csv"><i class="fa fa-file-o"></i> Download CSV</a>
+        <a href="<%-APIURL%>/processing/summary/visit/<%-VISIT%>/csv/1" class="button csv"><i class="fa fa-file-o"></i> Download CSV</a>
     </div>
+    <% } %>
+    <% if (typeof PROTEINID !== 'undefined' && PROTEINID) { %>
+    <div class="r">
+        <a href="/proteins/pid/<%-PROTEINID%>" class="button"><i class="fa fa-search"></i> View Protein</a>
+        <a href="<%-APIURL%>/processing/summary/protein/<%-PROTEINID%>/csv/1" class="button csv"><i class="fa fa-file-o"></i> Download CSV</a>
+    </div>
+    <% } %>
+    <% if (typeof SAMPLEGROUPID !== 'undefined' && SAMPLEGROUPID) { %>
+    <div class="r">
+        <a href="/samples/groups" class="button"><i class="fa fa-search"></i> View Sample Groups</a>
+        <a href="<%-APIURL%>/processing/summary/group/<%-SAMPLEGROUPID%>/csv/1" class="button csv"><i class="fa fa-file-o"></i> Download CSV</a>
+    </div>
+    <% } %>
 
     <label>Pipeline: <select name="pipeline"></select></label>
     <label>Spacegroup: <select name="SG"></select></label>

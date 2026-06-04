@@ -56,8 +56,9 @@
                                     </div>
                                 </div>
                                 <a v-if="value.key == 'LINKS' && visit.DCCOUNT>0" class="button button-notext" title="View Statistics" id="STATS"><i class="fa fa-pie-chart"></i></a>
-                                <a v-if="value.key == 'LINKS' && visit.DCCOUNT>0" class="button button-notext" title="Download PDF Report" id="PDF"><i class="fa fa-list"></i></a>
+                                <a v-if="value.key == 'LINKS' && visit.DCCOUNT>0" class="button button-notext" title="Download PDF Report" id="PDF"><i class="fa fa-file-pdf-o"></i></a>
                                 <a v-if="value.key == 'LINKS' && visit.DCCOUNT>0" class="button button-notext" title="Export Data Collections to CSV" id="CSV"><i class="fa fa-file-o"></i></a>
+                                <a v-if="value.key == 'LINKS' && visit.DCCOUNT>0" class="button button-notext" title="View Summary" id="SUMMARY"><i class="fa fa-list"></i></a>
                                 <span v-if="value.key == 'ERA' && visit.RISKRATING == 'Low'" title="Risk Rating: Low">&#128994;</span>
                                 <span v-else-if="value.key == 'ERA' && visit.RISKRATING == 'Medium'" title="Risk Rating: Medium">&#128993;</span>
                                 <span v-else-if="value.key == 'ERA' && visit.RISKRATING == 'High'" title="Risk Rating: High">&#128308;</span>
@@ -271,6 +272,9 @@ export default {
             }
             else if(event.target.parentElement.id === 'CSV' || event.target.id === 'CSV') {
                 this.signHandler(app.apiurl+'/download/csv/visit/'+visit.VISIT);
+            }
+            else if(event.target.parentElement.id === 'SUMMARY' || event.target.id === 'SUMMARY') {
+                window.location.href = '/dc/summary/visit/' + visit.VISIT;
             }
             else {
                 window.location.href = 'dc/visit/' + this.proposal + '-' + visit.VIS;
