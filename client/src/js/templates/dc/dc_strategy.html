@@ -15,6 +15,12 @@
     var showRankingRes = _.some(STRATS, function(r) {
         return r.RANKRES && parseFloat(r.RANKRES) !== 0
     })
+    var showExposure = _.some(STRATS, function(r) {
+        return r.TIME && parseFloat(r.TIME) !== 0
+    })
+    var showDose = _.some(STRATS, function(r) {
+        return r.DOSETOTAL && parseFloat(r.DOSETOTAL) !== 0
+    })
 
     var displayAxis = "Axis"
     if (STRATS && STRATS.length > 0 && STRATS[0].ROTATIONAXIS) {
@@ -66,15 +72,25 @@
             <% if (showKappa) { %> <th>Kappa (°)</th> <% } %>
             <th>Res (&#197;)</th>
             <% if (showRankingRes) { %> <th>Ranking Res (&#197;)</th> <% } %>
-            <th>Rel Trn (%)</th>
-            <th>Abs Trn (%)</th>
-            <th>Exposure (s)</th>
+            <th><% if (showDose) { %> Max <% } %>Transmission (%)</th>
+            <% if (showExposure) { %> <th>Exposure (s)</th> <% } %>
             <th>No. Images</th>
+            <th>Total Rotation (°)</th>
+            <% if (showDose) { %> <th>Dose (MGy)</th> <% } %>
         </tr>
     </thead>
     
-    <% _.each(STRATS, function(r, i) { %>
-    <tr class="stratrow" draggable="true" sid="<%-i%>">
+    <%
+    var highlight = true;
+    var lastId = null;
+
+    _.each(STRATS, function(r, i) {
+        if (r.SCREENINGSTRATEGYID !== lastId) {
+            highlight = !highlight;
+            lastId = r.SCREENINGSTRATEGYID;
+        }
+    %>
+    <tr class="stratrow <%= highlight ? 'highlight' : '' %>" draggable="true" sid="<%-i%>">
         <td><%-r.COM%></td>
         <td><%-r.COMMENTS%></td>
         <td><%-r.ST%></td>
@@ -84,10 +100,11 @@
         <% if (showKappa) { %> <td><%-r.KAPPA%></td> <% } %>
         <td><%-r.RES%></td>
         <% if (showRankingRes) { %> <td><%-r.RANKRES%></td> <% } %>
-        <td><%-r.TRAN%></td>
         <td><%-r.ATRAN%></td>
-        <td><%-r.TIME%></td>
+        <% if (showExposure) { %> <td><%-r.TIME%></td> <% } %>
         <td><%-r.NIMG%></td>
+        <td><%-r.ROTATION%></td>
+        <% if (showDose) { %> <td><%-r.DOSETOTAL%></td> <% } %>
     </tr>
     <% }) %>
 </table>
