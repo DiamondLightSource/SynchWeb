@@ -246,6 +246,7 @@ define(['marionette',
             const safetylevel = this.model.get('SAFETYLEVEL')
             const externalid = this.model.get('EXTERNALSHIPPINGIDTOSYNCHROTRON')
             const shippingid = this.model.get('SHIPPINGID')
+            const dcount = this.model.get('DCOUNT')
             if (!courier || (app.options.get('dhl_enable') && courier.toLowerCase().trim() == 'dhl')) {
                 if (label == '1') {
                     this.ui.booking.html('<a class="button pdf" href="'+app.apiurl+'/pdf/awb/sid/'+shippingid+'"><i class="fa fa-print"></i> Print Air Waybill</a>')
@@ -253,11 +254,17 @@ define(['marionette',
                     if (!pickup) {
                         this.ui.booking.append('<a class="button awb" href="/shipments/pickup/sid/'+shippingid+'"><i class="fa fa-truck"></i> Rebook Pickup</a>')
                     }
-                } else if ((country && !fac_country.includes(country)) || safetylevel == "Red") {
-                    this.ui.booking.html('<a class="button" href="#"><i class="fa fa-credit-card"></i> Create Air Waybill - Disabled</a>')
                 } else if (externalid && ss_url) {
                     const link = ss_url+'/shipment-requests/'+externalid+'/incoming'
                     this.ui.booking.html('<a class="button shipping-service" href="'+link+'"><i class="fa fa-print"></i> Manage Shipment Booking</a>')
+                } else if (safetylevel && safetylevel == "Red") {
+                    this.ui.booking.html('<a class="button" href="#"><i class="fa fa-credit-card"></i> Create Air Waybill - Disabled</a>')
+                } else if (this.nde && (this.industrial_visit || dcount > 1 || !this.ss_nde_incoming)) {
+                    this.ui.booking.html('<a class="button" href="#"><i class="fa fa-credit-card"></i> Create Air Waybill - Disabled</a>')
+                } else if (this.nde) {
+                    this.ui.booking.html('<a class="button awb" href="/shipments/awb/sid/'+shippingid+'"><i class="fa fa-credit-card"></i> Request DHL Air Waybill</a>')
+                } else if (country && !fac_country.includes(country)) {
+                    this.ui.booking.html('<a class="button" href="#"><i class="fa fa-credit-card"></i> Create Air Waybill - Disabled</a>')
                 } else {
                     this.ui.booking.html('<a class="button awb" href="/shipments/awb/sid/'+shippingid+'"><i class="fa fa-credit-card"></i> Create DHL Air Waybill</a>')
                 }
@@ -272,23 +279,26 @@ define(['marionette',
                 const safetylevel = this.model.get('SAFETYLEVEL')
                 const country = this.model.get('COUNTRY')
                 const courier = this.model.get('DELIVERYAGENT_AGENTNAME')
-                const fac_country_nde = app.options.get('facility_courier_countries_nde')
-                const fac_country_link = app.options.get('facility_courier_countries_link')
                 const fac_country = app.options.get('facility_courier_countries')
                 const ss_url = app.options.get("shipping_service_app_url_incoming")
                 const externalid = this.model.get('EXTERNALSHIPPINGIDTOSYNCHROTRON')
+                const dcount = this.model.get('DCOUNT')
                 if (label == '1') {
                     this.ui.dhlmessage.html('<p class="message notify">You can print your Air Waybill by clicking &quot;Print Air Waybill&quot; below.</p>')
+                } else if (externalid && ss_url) {
+                    this.ui.dhlmessage.html('<p class="message notify">You can now manage your shipment with DHL using &quot;Manage Shipment Booking&quot; below.</p>')
                 } else if (safetylevel && safetylevel == "Red") {
                     this.ui.dhlmessage.html('<p class="message alert">Shipping of red samples is not available through this application.</p>')
-                } else if (country && fac_country_nde.includes(country) ) {
-                    this.ui.dhlmessage.html('<p class="message alert">International shipping is not available through this application. If you&apos;re arranging your own shipping (e.g. industrial users), enter your tracking numbers below after booking and include printed return labels in the dewar case. European academic users, please see <a href="'+fac_country_link+'">here</a>.</p>')
+                } else if (this.nde && (this.industrial_visit || !this.ss_nde_incoming)) {
+                    this.ui.dhlmessage.html('<p class="message alert">International shipping is not available through this application. If you&apos;re arranging your own shipping, enter your tracking numbers below after booking and include printed return labels in the dewar case.</p>')
+                } else if (this.nde && dcount > 1) {
+                    this.ui.dhlmessage.html('<p class="message alert">International shipping is not available where there is more than one dewar in the shipment</p>')
+                } else if (this.nde) {
+                    this.ui.dhlmessage.html('<p class="message notify">You can now request your shipment with DHL using &quot;Request Air Waybill&quot; below.</p>')
                 } else if (country && !fac_country.includes(country) ) {
                     this.ui.dhlmessage.html('<p class="message alert">International shipping is not available through this application. If you&apos;re arranging your own shipping, enter your tracking numbers below after booking and include printed return labels in the dewar case.</p>')
                 } else if (courier && courier.toLowerCase().trim() != 'dhl') {
                     this.ui.dhlmessage.html('<p class="message alert">Shipping through this application is only available using DHL.</p>')
-                } else if (externalid && ss_url) {
-                    this.ui.dhlmessage.html('<p class="message notify">You can now manage your shipment with DHL using &quot;Manage Shipment Booking&quot; below.</p>')
                 } else {
                     this.ui.dhlmessage.html('<p class="message notify">You can now book your shipment with DHL using &quot;Create Air Waybill&quot; below.</p>')
                 }
@@ -324,7 +334,12 @@ define(['marionette',
                     this.$el.find(".remoteform").show()
                 }
             }
-            if (dynamic === 'Ready' || (app.proposal && app.proposal.get('ACTIVE') != '1')) {
+
+            if (
+                dynamic === 'Ready' ||
+                (app.proposal && app.proposal.get('ACTIVE') != '1') ||
+                (this.termsaccepted && this.nde && this.ss_nde_incoming)
+            ) {
                 this.ui.add_dewar.hide()
             } else {
                 this.ui.add_dewar.show()
@@ -393,6 +408,12 @@ define(['marionette',
             this.edit.create("ONSITEUSERS", 'text', { placeholder: 'No' });
             this.edit.create("MULTIAXISGONIOMETRY", 'select', { data: {'Yes': 'Yes', 'No': 'No'}})
 
+            this.termsaccepted = this.model.get('TERMSACCEPTED') == 1
+            const country = this.model.get('COUNTRY')
+            const fac_country_nde = app.options.get('facility_courier_countries_nde')
+            this.ss_nde_incoming = app.options.get('use_shipping_service_incoming_shipments_nde')
+            this.nde = country && fac_country_nde.includes(country)
+
             this.updateGUI()
             this.listenTo(this.model, "change", this.updateGUI)
 
@@ -406,9 +427,8 @@ define(['marionette',
             })
 
             const externalid = this.model.get('EXTERNALSHIPPINGIDTOSYNCHROTRON')
-            const termsaccepted = this.model.get('TERMSACCEPTED') == 1
             const ss_url = app.options.get("shipping_service_app_url_incoming")
-            if (ss_url && (externalid || termsaccepted)) {
+            if (ss_url && (externalid || this.termsaccepted)) {
                 this.ui.courierfields.hide()
             }
         },

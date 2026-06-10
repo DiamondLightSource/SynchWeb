@@ -130,6 +130,12 @@ define(['marionette', 'views/form',
             this.model.set({ TERMSACCEPTED: 1 })
             this.ui.accountnumber.val('')
             this.ui.couriername.val('')
+            const lc = this.contacts.findWhere({ LABCONTACTID: this.ui.lcout.val() })
+            const nde = app.options.get('facility_courier_countries_nde').indexOf(lc.get('COUNTRY')) > -1
+            const ss_nde_incoming = app.options.get('use_shipping_service_incoming_shipments_nde')
+            if (nde && ss_nde_incoming) {
+                this.setMaxDewarsPerShipment()
+            }
         },
 
         addLC: function(e) {
@@ -326,9 +332,12 @@ define(['marionette', 'views/form',
             const industrial_visit = industrial_codes.includes(app.prop.slice(0,2))
 
             const lc = this.contacts.findWhere({ LABCONTACTID: this.ui.lcout.val() })
-            const countryOk = app.options.get('facility_courier_countries').indexOf(lc.get('COUNTRY')) > -1 || app.options.get('facility_courier_countries_nde').indexOf(lc.get('COUNTRY')) > -1
+            const domestic = app.options.get('facility_courier_countries').indexOf(lc.get('COUNTRY')) > -1
+            const nde = app.options.get('facility_courier_countries_nde').indexOf(lc.get('COUNTRY')) > -1
+            const countryOk = domestic || nde
 
             const usingFacilityAccount = this.model.get('TERMSACCEPTED') === 1
+            const ss_nde_incoming = app.options.get('use_shipping_service_incoming_shipments_nde')
 
             if (countryOk && !industrial_visit && !usingFacilityAccount) {
                 this.ui.facc.show()
@@ -341,6 +350,22 @@ define(['marionette', 'views/form',
                 this.ui.accmsg.text('')
                 this.model.set({ TERMSACCEPTED: 0 })
             }
+
+            if (nde && ss_nde_incoming && usingFacilityAccount) {
+                this.setMaxDewarsPerShipment()
+            } else {
+                this.ui.dewars.prop('disabled', false)
+            }
+
+        },
+
+        setMaxDewarsPerShipment: function() {
+            if (this.ui.dewars.val() > 1) {
+                this.ui.dewars.val(1)
+                this.updateFCodes()
+                app.alert({ message: 'For international shipping we are limited to 1 dewar per shipment'})
+            }
+            this.ui.dewars.prop('disabled', true)
         },
         
         

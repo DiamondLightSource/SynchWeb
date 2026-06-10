@@ -72,7 +72,7 @@ function setupApplication($mode): Slim
             $visit_persist_storage_dir_segment, $dhl_enable, $scale_grid, $scale_grid_end_date, $preset_proposal, $timezone,
             $valid_components, $enabled_container_types, $synchweb_version, $redirects,
             $shipping_service_app_url, $use_shipping_service_redirect, $use_shipping_service_redirect_incoming_shipments,
-            $use_shipping_service_nde,
+            $use_shipping_service_nde, $use_shipping_service_incoming_shipments_nde,
             $dials_rest_url_rings, $closed_proposal_link, $ccp4_cloud_upload_url,
             $only_staff_can_assign, $industrial_prop_codes, $upstream_reprocessing_pipelines, $downstream_reprocessing_pipelines,
             $prop_codes_data_deleted, $container_types_with_parents, $bl_capacity;
@@ -103,6 +103,7 @@ function setupApplication($mode): Slim
             'shipping_service_app_url' => $use_shipping_service_redirect ? $shipping_service_app_url : null,
             'shipping_service_app_url_incoming' => $use_shipping_service_redirect_incoming_shipments ? $shipping_service_app_url : null,
             'use_shipping_service_nde' => $use_shipping_service_nde,
+            'use_shipping_service_incoming_shipments_nde' => $use_shipping_service_incoming_shipments_nde,
             'dials_rest_url_rings' => $dials_rest_url_rings,
             'closed_proposal_link' => $closed_proposal_link,
             'ccp4_cloud_upload_url' => $ccp4_cloud_upload_url,
