@@ -43,7 +43,7 @@ class Dimple extends DownstreamPlugin {
             return;
         }
 
-        $lfs = $this->_get_attachments(null, null, 'refmac5_restr.log');
+        $lfs = $this->_get_attachments(null, null, 'refmac%_restr.log');
         if (sizeof($lfs)) {
             $lf = $lfs[0]['FILE'];
         } else {
