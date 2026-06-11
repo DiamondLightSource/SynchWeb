@@ -41,7 +41,7 @@ export default {
     @apply tw-text-header-bc-color;
     @apply tw-p-1;
     @apply tw-text-xxs;
-    @apply list-none;
+    @apply tw-list-none;
     @apply tw-clear-both
 }
 

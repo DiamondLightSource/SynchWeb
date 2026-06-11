@@ -1,3 +1,5 @@
+const colors = require('tailwindcss/colors')
+
 module.exports = {
   /*
   Tailwind can remove some of its generated classes
@@ -8,28 +10,17 @@ module.exports = {
       './src/**/*.html',
       './src/**/*.vue',
     ],
-    options: {
-      whitelist: [
-        'tw-bg-auto-integrated',
-        'tw-bg-data-collected',
-        'tw-bg-auto-indexed',
-        'tw-bg-screened',
-        'tw-bg-grid-scanned',
-        'tw-bg-loaded-by-robot'
-      ]
-    }
-  },
-  future: {
-    purgeLayersByDefault: true,
-    removeDeprecatedGapUtilities: true,
+    safelist: [
+      'tw-bg-auto-integrated',
+      'tw-bg-data-collected',
+      'tw-bg-auto-indexed',
+      'tw-bg-screened',
+      'tw-bg-grid-scanned',
+      'tw-bg-loaded-by-robot'
+    ]
   },
   // Adding a prefix so its clear where we are overriding styles
   prefix: 'tw-',
-  variants: {
-    overflow: ['responsive', 'hover', 'focus'],
-    height: ['responsive', 'hover', 'focus'],
-    position: ['responsive', 'hover', 'focus']
-  },
   theme: {
     extend: {
       fontFamily: {
@@ -79,6 +70,17 @@ module.exports = {
       Currently using sass variables via postcss-simple-vars plugin as well.
       */
       colors: {
+        gray: {
+          100: '#f7fafc',
+          200: '#edf2f7',
+          300: '#e2e8f0',
+          400: '#cbd5e0',  // v1 value
+          500: '#a0aec0',
+          600: '#718096',
+          700: '#4a5568',
+          800: '#2d3748',
+          900: '#1a202c',
+        },
         'link-color': '#666666',
         'link-hover-color': '#222222',
 //Sidebar
@@ -172,17 +174,17 @@ module.exports = {
         'sample-group-added-dark': '#e6daae',
 // Data Collections messages color
         'info-color': {
-          default: '#00ff00',
+          DEFAULT: '#00ff00',
           lighter: '#ccffcc',
           darker: '#003300'
         },
         'alert-color': {
-          default: '#ffa500',
+          DEFAULT: '#ffa500',
           lighter: '#ffb733',
           darker: '#332100'
         },
         'warning-color': {
-          default: '#ff0000',
+          DEFAULT: '#ff0000',
           lighter: '#ff4d4d',
           darker: '#330000'
         },
