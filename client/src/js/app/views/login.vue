@@ -21,7 +21,7 @@
                 v-model="username"
                 :class="[
                   { ferror: errors.length },
-                  'tw-shadow tw-border tw-rounded tw-w-64 tw-py-2 tw-px-3 tw-text-gray-700 tw-leading-tight focus:tw-outline-none focus:tw-shadow-outline',
+                  'tw-shadow tw-border tw-rounded tw-w-64 tw-py-2 tw-px-3 tw-text-gray-700 tw-leading-tight focus:tw-outline-none focus:tw-ring',
                 ]"
                 type="text"
                 :name="name"
@@ -43,7 +43,7 @@
                 v-model="password"
                 :class="[
                   { ferror: errors.length },
-                  'tw-shadow tw-border tw-rounded tw-w-64 tw-py-2 tw-px-3 tw-text-gray-700 tw-leading-tight focus:tw-outline-none focus:tw-shadow-outline',
+                  'tw-shadow tw-border tw-rounded tw-w-64 tw-py-2 tw-px-3 tw-text-gray-700 tw-leading-tight focus:tw-outline-none focus:tw-ring',
                 ]"
                 type="password"
                 :name="name"

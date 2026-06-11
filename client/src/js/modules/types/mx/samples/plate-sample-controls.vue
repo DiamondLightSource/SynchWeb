@@ -92,6 +92,6 @@ export default {
 </script>
 <style scoped>
 .button {
-  @apply button tw-text-link-color tw-mx-1;
+  @apply tw-text-link-color tw-mx-1;
 }
 </style>

@@ -21,7 +21,7 @@
 <!-- With tailwind we can change the order of rendering (forwards, reverse, order-'n' etc.) -->
 <!-- We use row-reverse here because its similar to the original page structure -->
 <div class="tw-flex tw-flex-row-reverse tw-border tw-mt-2 tw-mb-2 tw-px-2">
-    <div class="tw-items-center tw-flex tw-flex-grow">
+    <div class="tw-items-center tw-flex tw-grow">
         <div class="tw-flex tw-flex-col tw-w-full">
             <!-- Row of sliders -->
             <div class="tw-flex tw-flex-row tw-p-1">
@@ -66,7 +66,7 @@
     <div class="tw-items-stretch tw-flex tw-flex-col tw-text-xs tw-py-4">
         <div class="tw-items-center">
             <button class="button submit" name="prev" title="Load previous image">&lt;</button>
-            <input class="tw-border tw-rounded tw-w-1/4 tw-text-right focus:tw-outline-none focus:tw-shadow-outline py-2 m-0" size="6" name="num" value="1" title="Load the image with this number" />/<%-NI%>
+            <input class="tw-border tw-rounded tw-w-1/4 tw-text-right focus:tw-outline-none focus:tw-ring py-2 m-0" size="6" name="num" value="1" title="Load the image with this number" />/<%-NI%>
             <button class="button submit" name="next" title="Load next image">&gt;</button>
         </div>
     </div>
