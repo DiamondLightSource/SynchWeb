@@ -1,24 +1,20 @@
-const colors = require('tailwindcss/colors')
-
 module.exports = {
   /*
   Tailwind can remove some of its generated classes
   We are using purgecss as well but this still helps
   */
-  purge: {
-    content: [
-      './src/**/*.html',
-      './src/**/*.vue',
-    ],
-    safelist: [
-      'tw-bg-auto-integrated',
-      'tw-bg-data-collected',
-      'tw-bg-auto-indexed',
-      'tw-bg-screened',
-      'tw-bg-grid-scanned',
-      'tw-bg-loaded-by-robot'
-    ]
-  },
+  content: [
+    './src/**/*.html',
+    './src/**/*.vue',
+  ],
+  safelist: [
+    'tw-bg-auto-integrated',
+    'tw-bg-data-collected',
+    'tw-bg-auto-indexed',
+    'tw-bg-screened',
+    'tw-bg-grid-scanned',
+    'tw-bg-loaded-by-robot'
+  ],
   // Adding a prefix so its clear where we are overriding styles
   prefix: 'tw-',
   theme: {
