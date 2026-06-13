@@ -2,29 +2,29 @@
 <h2><%-TYPE%></h2>
 
 <%
-    var showUnitCell = CELL && (CELL.SG || CELL.A || CELL.B || CELL.C || CELL.AL || CELL.BE || CELL.GA)
-    var showChi = _.some(STRATS, function(r) {
+    const showUnitCell = CELL && (CELL.SG || CELL.A || CELL.B || CELL.C || CELL.AL || CELL.BE || CELL.GA)
+    const showChi = STRATS.some(function(r) {
         return r.CHI && parseFloat(r.CHI) !== 0
     })
-    var showPhi = _.some(STRATS, function(r) {
+    const showPhi = STRATS.some(function(r) {
         return r.PHI && parseFloat(r.PHI) !== 0
     })
-    var showKappa = _.some(STRATS, function(r) {
+    const showKappa = STRATS.some(function(r) {
         return r.KAPPA && parseFloat(r.KAPPA) !== 0
     })
-    var showRankingRes = _.some(STRATS, function(r) {
+    const showRankingRes = STRATS.some(function(r) {
         return r.RANKRES && parseFloat(r.RANKRES) !== 0
     })
-    var showExposure = _.some(STRATS, function(r) {
+    const showExposure = STRATS.some(function(r) {
         return r.TIME && parseFloat(r.TIME) !== 0
     })
-    var showDose = _.some(STRATS, function(r) {
+    const showDose = STRATS.some(function(r) {
         return r.DOSETOTAL && parseFloat(r.DOSETOTAL) !== 0
     })
 
-    var displayAxis = "Axis"
+    let displayAxis = "Axis"
     if (STRATS && STRATS.length > 0 && STRATS[0].ROTATIONAXIS) {
-        var raw = STRATS[0].ROTATIONAXIS
+        let raw = STRATS[0].ROTATIONAXIS
         displayAxis = raw.charAt(0).toUpperCase() + raw.slice(1)
     }
 %>
@@ -81,10 +81,10 @@
     </thead>
     
     <%
-    var highlight = true;
-    var lastId = null;
+    let highlight = true;
+    let lastId = null;
 
-    _.each(STRATS, function(r, i) {
+    STRATS.forEach((r, i) => {
         if (r.SCREENINGSTRATEGYID !== lastId) {
             highlight = !highlight;
             lastId = r.SCREENINGSTRATEGYID;
