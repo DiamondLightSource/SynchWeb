@@ -866,6 +866,11 @@ li:last-child .visit_users {
         table {
             tr {
                 cursor: pointer;
+
+                &.highlight {
+                    background-color: #f7f7f7;
+                }
+
                 &:hover {
                     background: $content-sub-hover-background;
                 }
