@@ -16,14 +16,12 @@
         <a href="/dc/visit/<%-VISIT%>" class="button"><i class="fa fa-search"></i> All Data Collections</a>
         <a href="<%-APIURL%>/processing/summary/visit/<%-VISIT%>/csv/1" class="button csv"><i class="fa fa-file-o"></i> Download CSV</a>
     </div>
-    <% } %>
-    <% if (typeof PROTEINID !== 'undefined' && PROTEINID) { %>
+    <% } else if (typeof PROTEINID !== 'undefined' && PROTEINID) { %>
     <div class="r">
         <a href="/proteins/pid/<%-PROTEINID%>" class="button"><i class="fa fa-search"></i> View Protein</a>
         <a href="<%-APIURL%>/processing/summary/protein/<%-PROTEINID%>/csv/1" class="button csv"><i class="fa fa-file-o"></i> Download CSV</a>
     </div>
-    <% } %>
-    <% if (typeof SAMPLEGROUPID !== 'undefined' && SAMPLEGROUPID) { %>
+    <% } else if (typeof SAMPLEGROUPID !== 'undefined' && SAMPLEGROUPID) { %>
     <div class="r">
         <a href="/samples/groups" class="button"><i class="fa fa-search"></i> View Sample Groups</a>
         <a href="<%-APIURL%>/processing/summary/group/<%-SAMPLEGROUPID%>/csv/1" class="button csv"><i class="fa fa-file-o"></i> Download CSV</a>

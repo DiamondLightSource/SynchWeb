@@ -100,6 +100,7 @@ define(['backbone',
                 this.ui.groupselect.hide()
                 if (!this.visits) {
                     this.visits = new Visits(null, { state: { pageSize: 9999 } })
+                    this.visits.queryParams.notnull = 1
                     this.visits.fetch().done(this.updateVisits.bind(this))
                 }
             } else if (this.ui.typeselect.val() == 'protein') {
