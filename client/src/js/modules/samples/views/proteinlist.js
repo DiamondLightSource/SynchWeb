@@ -40,7 +40,11 @@ define(['marionette', 'backgrid', 'views/table', 'views/filter',
             { name: 'SCOUNT', label: 'Samples', cell: 'string', editable: false },
             { name: 'DCOUNT', label: 'Data Collections', cell: 'string', editable: false },
             { name: 'SAFETYLEVEL', label: 'Risk Rating', cell: table.SafetyCell, editable: false },
-            { name: ' ', cell: table.ProjectCell, itemname: 'ACRONYM', itemid: 'PROTEINID', itemtype:'protein', editable: false },
+            { name: ' ', cell: table.ProjectCell, itemname: 'ACRONYM', itemid: 'PROTEINID', itemtype:'protein', editable: false,
+                extraHtml: function(model) {
+                    return ' <a href="/dc/summary/protein/' + model.get('PROTEINID') + '" class="button"><i class="fa fa-list"></i> <span>View Summary</span></a>'
+                }
+            },
         ],
     
         hiddenColumns: [2,3,5],

@@ -18,7 +18,9 @@ export default {
     // If this component is used directly from another vue component this will not be called
     // Instead the parent vue component will need to load the model/collection data as required
     beforeRouteEnter: function(to, from, next) {
-        next(vm => vm.prefetchData())
+        next(vm => {
+            if (!vm.fetchOnLoad) vm.prefetchData()
+        })
     },
     props: {
         'mview': [Function, Promise], // The marionette view could be lazy loaded or static import 

@@ -48,6 +48,7 @@
             <td class="tw-w-2/12 tw-py-1 tw-pr-2">
               <span class="tw-flex tw-w-full tw-justify-end">
                 <button title="View Sample Group" @click="selectSampleGroup(result)" class="button"><i class="fa fa-folder-open"></i> </button>
+                <button title="View Summary" @click="goToSampleGroupSummary(result)" class="button"><i class="fa fa-list"></i> </button>
               </span>
             </td>
           </template>
@@ -236,6 +237,9 @@ export default {
     },
     async goToSampleGroupsDataCollections() {
       await this.$router.push(`/dc/sgid/${this.sampleGroupId}`)
+    },
+    async goToSampleGroupSummary(item) {
+      await this.$router.push(`/dc/summary/group/${item.BLSAMPLEGROUPID}`)
     }
   },
   watch: {
