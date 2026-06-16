@@ -1703,7 +1703,7 @@ class Shipment extends Page
         }
 
         $dewar = $this->db->pq(
-            "SELECT d.trackingnumbertosynchrotron,d.trackingnumberfromsynchrotron, LOWER(s.deliveryagent_agentname) as deliveryagent_agentname
+            "SELECT d.trackingnumbertosynchrotron,d.trackingnumberfromsynchrotron, LOWER(IFNULL(s.deliveryagent_agentname, '')) as deliveryagent_agentname
             FROM dewar d 
             INNER JOIN shipping s ON s.shippingid = d.shippingid 
             INNER JOIN proposal p ON p.proposalid = s.proposalid
@@ -1725,7 +1725,7 @@ class Shipment extends Page
 
         $delivery_agent = $dewar['DELIVERYAGENT_AGENTNAME'];
 
-        if ($delivery_agent == 'dhl') {
+        if ($delivery_agent == 'dhl' || $delivery_agent == '') {
             $tracking_history = $this->_dhl_dewar_tracking($tracking_number);
             $this->_output($tracking_history);
         } else {

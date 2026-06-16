@@ -23,6 +23,7 @@ define(['marionette', 'backbone', 'utils'], function(Marionette, Backbone, utils
         },
 
         deletePDB: function(e) {
+            e.preventDefault()
             if (this.options.isLigand) {
                 var self = this
                 Backbone.ajax({

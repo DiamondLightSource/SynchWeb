@@ -15,6 +15,8 @@ define(['marionette',
 
     'collections/componenttypes',
     'collections/concentrationtypes',
+    'collections/elements',
+    'modules/samples/views/elements',
 
     'modules/dc/views/getdcview',
     
@@ -22,7 +24,7 @@ define(['marionette',
     'backbone', 'backbone-validation'
     ], function(Marionette, Editable, DCCol, DCView, Samples, SamplesView, Containers, ContainersView, 
         PDBs, PDBView, AddPDBView, 
-        ComponentTypes, ConcentrationTypes,
+        ComponentTypes, ConcentrationTypes, Elements, ElementsView,
         GetDCView,
         template, Backbone) {
 
@@ -32,8 +34,13 @@ define(['marionette',
         template: template,
         showContainers: true,
         
+        ui: {
+            userInput: '#element-search',
+        },
+
         regions: {
             pdb: '.pdb',
+            element: '.element',
             smp: '.samples',
             dc: '.datacollections',
             cont: '.conts',
@@ -41,9 +48,55 @@ define(['marionette',
         
         events: {
             'click a.add': 'addPDB',
+            'click .btn-add': 'onAddElement',
+            'keypress #element-search': 'onKeyPress',
+        },
+
+        onKeyPress: function(e) {
+            if (e.which === 13) { this.onAddElement() }
+        },
+
+        onAddElement: function() {
+            const userInput = this.ui.userInput.val().trim();
+            if (!userInput) { return }
+
+            const matchedElement = this.elements.find(function(model) {
+                return model.get('NAME').toLowerCase() === userInput.toLowerCase();
+            });
+
+            if (matchedElement) {
+                const exactDatabaseName = matchedElement.get('NAME');
+                const componentId = matchedElement.get('COMPONENTID');
+                const isAlreadyAdded = this.associatedElements.some(function(model) {
+                    return model.get('COMPONENTID') === componentId;
+                });
+
+                if (isAlreadyAdded) {
+                    app.alert({ message: exactDatabaseName + ' has already been added to this protein!' })
+                    this.ui.userInput.val('');
+                    return;
+                }
+
+                this.associatedElements.create({
+                    NAME: exactDatabaseName,
+                    COMPONENTID: componentId,
+                }, {
+                    wait: true,
+                    success: function(model, response) {
+                        app.message({ message: 'Element successfully added' })
+                    },
+                    error: function(model, xhr, options) {
+                        app.alert({ message: 'Failed to save element to database. Please try again.' })
+                    }
+                });
+            } else {
+                app.alert({ message: 'Invalid chemical element' })
+            }
+            this.ui.userInput.val('');
         },
         
-        addPDB: function() {
+        addPDB: function(e) {
+            e.preventDefault()
             var view = new AddPDBView({ pid: this.model.get('PROTEINID') })
             this.listenTo(view, 'pdb:success', this.getPDBs)
             app.dialog.show(view)
@@ -52,10 +105,14 @@ define(['marionette',
         getPDBs: function() {
             this.pdbs.fetch()
         },
-        
+
+        getAssociatedElements: function() {
+            this.associatedElements.fetch()
+        },
+
         initialize: function(options) {
             Backbone.Validation.bind(this);
-            
+
             this.types = new ComponentTypes()
             this.tr = this.types.fetch()
 
@@ -72,6 +129,12 @@ define(['marionette',
             
             this.pdbs = new PDBs(null, { pid: this.model.get('PROTEINID') })
             this.getPDBs()
+
+            this.elements = new Elements()
+            this.elements.fetch()
+
+            this.associatedElements = new Elements(null, { pid: this.model.get('PROTEINID') })
+            this.getAssociatedElements()
 
             if (this.getOption('showContainers')) {
                 this.containers = new Containers()
@@ -103,6 +166,7 @@ define(['marionette',
             // var GetDCView = require('modules/dc/views/getdcview')
 
             this.pdb.show(new PDBView({ collection: this.pdbs }))
+            this.element.show(new ElementsView({ collection: this.associatedElements }))
             this.smp.show(GetSampleView.SampleList.get(app.type, { collection: this.samples, noPageUrl: true, noFilterUrl: true, noSearchUrl: true }))
             this.dc.show(GetDCView.DCView.get(app.type, { model: this.model, collection: this.dcs, params: { visit: null }, noPageUrl: true, noFilterUrl: true, noSearchUrl: true }))
             if (this.getOption('showContainers')) this.cont.show(new ContainersView({ collection: this.containers, params: {} }))
