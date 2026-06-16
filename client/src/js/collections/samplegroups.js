@@ -5,8 +5,9 @@
 define(['backbone',
   'backbone.paginator',
   'models/samplegroup',
-], function(Backbone, PageableCollection, SampleGroup) {
-  return PageableCollection.extend({
+  'utils/kvcollection',
+], function(Backbone, PageableCollection, SampleGroup, KVCollection) {
+  return PageableCollection.extend(_.extend({}, KVCollection, {
     model: SampleGroup,
     url: '/sample/groups',
 
@@ -23,5 +24,8 @@ define(['backbone',
     parseState: function(r) {
       return { totalRecords: r.total }
     },
-  })
+
+    keyAttribute: 'NAME',             // What the user sees in the dropdown list
+    valueAttribute: 'BLSAMPLEGROUPID', // The hidden ID submitted when selected
+  }))
 })
