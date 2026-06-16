@@ -113,11 +113,13 @@ class MySQL extends DatabaseParent {
         'PDBEntry_has_AutoProcProgram',
 
         // Protein -> Component
+        'Component',
         'ConcentrationType',
         'ComponentType',
         'Component_has_SubType',
         'ComponentSubType',
         'BLSampleType_has_Component',
+        'Protein_has_Component',
 
         // VMXi
         'ContainerInspection',

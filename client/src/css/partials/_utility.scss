@@ -391,10 +391,10 @@ ul.ui-autocomplete {
 
     h1 {
         padding: 0 !important;
-        @apply tw-flex-grow;
+        @apply tw-grow;
 
         &.no-grow {
-            @apply tw-flex-grow-0;
+            @apply tw-grow-0;
         }
     }
 

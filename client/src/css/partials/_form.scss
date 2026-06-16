@@ -19,6 +19,10 @@ div.form {
                 /* Want consistent padding for form span elements */
                 @apply tw-px-1 tw-py-2;
             }
+
+            span.novertpad {
+                @apply tw-px-1 tw-py-0;
+            }
         }
     }
     
