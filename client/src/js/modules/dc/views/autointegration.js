@@ -9,6 +9,7 @@ define(['marionette',
     'modules/dc/views/autoprocattachments',
     'modules/dc/views/apmessages',
     'modules/dc/views/downstreamreprocess',
+    'modules/dc/views/multiplexreprocess.js',
 
     'views/log',
     'views/table',
@@ -17,7 +18,7 @@ define(['marionette',
     'templates/dc/dc_autoproc.html'], function(Marionette, Backbone, Backgrid, TabView,
         AutoProcAttachments, AutoIntegrations, 
         RDPlotView, AIPlotsView, AutoProcAttachmentsView, APMessagesView, 
-        DownstreamView,
+        DownstreamView, MultiplexView,
         LogView, TableView, table,
         utils, template) {
 
@@ -34,6 +35,11 @@ define(['marionette',
             'click a.apattach': 'showAttachments',
             'click a.downstream': 'downstream',
             'click .dll': utils.signHandler,
+            'click @ui.multiplex': 'multiplexReprocessing',
+        },
+
+        ui: {
+            multiplex: '.multiplex',
         },
 
         regions: {
@@ -42,6 +48,15 @@ define(['marionette',
 
         onRender: function() {
             this.messages.show(new APMessagesView({ messages: new Backbone.Collection(this.model.get('MESSAGES')), embed: true }))
+            if (!this.model.get('TYPE').toLowerCase().includes('multiplex')) {
+                this.ui.multiplex.hide()
+            }
+        },
+
+        multiplexReprocessing: function(e) {
+            if (e) e.preventDefault()
+            app.dialog.show(new MultiplexView({ model: this.getOption('templateHelpers').PARENT, scalingid: this.model.get('SCALINGID'), type: this.model.get('TYPE')}))
+
         },
         
         showAttachments: function(e) {
