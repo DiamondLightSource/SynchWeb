@@ -225,7 +225,12 @@ define(['marionette',
             const sendingId = this.model.get('SENDINGLABCONTACTID')
             if (!sendingId || !this.contacts || !this.contacts.length) return
             const contact = this.contacts.findWhere({ LABCONTACTID: sendingId })
-            if (contact) this.model.set('COUNTRY', contact.get('COUNTRY'))
+            if (contact) {
+                const country = contact.get('COUNTRY')
+                this.model.set('COUNTRY', country)
+                const fac_country_nde = app.options.get('facility_courier_countries_nde')
+                this.nde = country && fac_country_nde.includes(country)
+            }
         },
 
         showButtons: function() {
@@ -409,21 +414,15 @@ define(['marionette',
             this.edit.create("MULTIAXISGONIOMETRY", 'select', { data: {'Yes': 'Yes', 'No': 'No'}})
 
             this.termsaccepted = this.model.get('TERMSACCEPTED') == 1
-            const country = this.model.get('COUNTRY')
-            const fac_country_nde = app.options.get('facility_courier_countries_nde')
             this.ss_nde_incoming = app.options.get('use_shipping_service_incoming_shipments_nde')
-            this.nde = country && fac_country_nde.includes(country)
 
-            this.updateGUI()
             this.listenTo(this.model, "change", this.updateGUI)
 
-            
-            var self = this
             this.contacts = new LabContacts(null, { state: { pageSize: 9999 } })
-            this.contacts.fetch().done(function() {
-                console.log(self.contacts, self.contacts.kv())
-                self.edit.create('SENDINGLABCONTACTID', 'select', { data: self.contacts.kv() })
-                self.edit.create('RETURNLABCONTACTID', 'select', { data: self.contacts.kv() })
+            this.contacts.fetch().done(() => {
+                this.edit.create('SENDINGLABCONTACTID', 'select', { data: this.contacts.kv() })
+                this.edit.create('RETURNLABCONTACTID', 'select', { data: this.contacts.kv() })
+                this.updateGUI()
             })
 
             const externalid = this.model.get('EXTERNALSHIPPINGIDTOSYNCHROTRON')
