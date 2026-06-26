@@ -48,7 +48,7 @@ define(['marionette',
 
         onRender: function() {
             this.messages.show(new APMessagesView({ messages: new Backbone.Collection(this.model.get('MESSAGES')), embed: true }))
-            if (!this.model.get('TYPE').toLowerCase().includes('multiplex')) {
+            if (this.model.get('TYPE').toLowerCase().includes('cluster') || !this.model.get('TYPE').toLowerCase().includes('multiplex')) {
                 this.ui.multiplex.hide()
             }
         },
