@@ -1098,19 +1098,23 @@ class Shipment extends Page
             return $dewar['EXTERNALSHIPPINGIDFROMSYNCHROTRON'];
         }
 
-        $dewars = [$dewar];
-        $proposal = $dewar['PROPOSAL'];
-        $session_number = $dewar['VIS'];
-        $external_id = (int) $dewar['DEWARID'];
-        $shipping_id = (int) $dewar['SHIPPINGID'];
-        $token = Utils::generateRandomMd5();
-        $this->db->pq(
-            "UPDATE dewar SET extra = JSON_SET(IFNULL(extra, '{}'), '$.token', :1 ) WHERE dewarid=:2",
-            array($token, $external_id)
-        );
+        if (!is_null($dewar['EXTERNALSHIPPINGIDTOSYNCHROTRON']) && !is_null($dewar['TOKEN']) && $dewar['DCOUNT'] == 1) {
+            $external_shipping_id = $dewar['EXTERNALSHIPPINGIDTOSYNCHROTRON'];
+        } else {
+            $dewars = [$dewar];
+            $proposal = $dewar['PROPOSAL'];
+            $session_number = $dewar['VIS'];
+            $external_id = (int) $dewar['DEWARID'];
+            $shipping_id = (int) $dewar['SHIPPINGID'];
+            $token = Utils::generateRandomMd5();
+            $this->db->pq(
+                "UPDATE dewar SET extra = JSON_SET(IFNULL(extra, '{}'), '$.token', :1 ) WHERE dewarid=:2",
+                array($token, $external_id)
+            );
 
-        $callback_url = "/api/shipment/dewars/confirmdispatch/did/{$external_id}/token/{$token}";
-        $external_shipping_id = $this->_create_dewars_shipment_request($dewars, $proposal, $session_number, $external_id, $shipping_id, $callback_url);
+            $callback_url = "/api/shipment/dewars/confirmdispatch/did/{$external_id}/token/{$token}";
+            $external_shipping_id = $this->_create_dewars_shipment_request($dewars, $proposal, $session_number, $external_id, $shipping_id, $callback_url);
+        }
 
         $this->db->pq(
             "UPDATE dewar SET externalShippingIdFromSynchrotron=:1 WHERE dewarid=:2",
@@ -1214,7 +1218,9 @@ class Shipment extends Page
 
         $dew = $this->db->pq(
             "SELECT d.dewarid, d.barcode, d.storagelocation, d.dewarstatus, d.externalShippingIdFromSynchrotron,
+            s.externalshippingidtosynchrotron, json_unquote(json_extract(d.extra, '$.token')) as token,
             s.shippingid, p.proposalcode, CONCAT(p.proposalcode, p.proposalnumber) as proposal,
+            (SELECT COUNT(*) FROM dewar d2 WHERE d2.shippingid = s.shippingid) as dcount,
             count(distinct c.containerId) as num_pucks, count(b.blsampleId) as num_samples,
             ifnull(bls.visit_number, 0) as vis, IF(d.facilitycode, d.facilitycode, d.code) as name,
             dr.manufacturerserialnumber
@@ -3544,7 +3550,7 @@ class Shipment extends Page
     {
         global $dhl_service, $dhl_service_eu, $dhl_acc, $dhl_acc_import, $facility_courier_countries,
             $facility_courier_countries_nde, $use_shipping_service_incoming_shipments,
-            $use_shipping_service_redirect_incoming_shipments;
+            $use_shipping_service_incoming_shipments_nde, $use_shipping_service_redirect_incoming_shipments;
         if (!$this->has_arg('prop'))
             $this->_error('No proposal specified');
         if (!$this->has_arg('sid'))
@@ -3591,8 +3597,10 @@ class Shipment extends Page
         }
 
         if (
-            Utils::getValueOrDefault($use_shipping_service_incoming_shipments)
-            && in_array($this->arg('COUNTRY'), $facility_courier_countries)
+            ((Utils::getValueOrDefault($use_shipping_service_incoming_shipments)
+              && in_array($this->arg('COUNTRY'), $facility_courier_countries))
+            || (Utils::getValueOrDefault($use_shipping_service_incoming_shipments_nde)
+              && in_array($this->arg('COUNTRY'), $facility_courier_countries_nde)))
             && Utils::getValueOrDefault($use_shipping_service_redirect_incoming_shipments)
         ) {
             if ($ship['EXTERNALSHIPPINGIDTOSYNCHROTRON']) {

@@ -520,7 +520,8 @@ define(['backbone',
                     if (
                         ss_url
                         && (Number(self.terms.get('ACCEPTED')) === 1) // terms.ACCEPTED could be undefined, 1, or "1"
-                        && app.options.get("facility_courier_countries").includes(country)
+                        && (app.options.get("facility_courier_countries").includes(country) ||
+                            app.options.get("facility_courier_countries_nde").includes(country))
                     ) {
                         self.shipment.fetch().done((shipment) => {
                             const external_id = shipment.EXTERNALSHIPPINGIDTOSYNCHROTRON;
