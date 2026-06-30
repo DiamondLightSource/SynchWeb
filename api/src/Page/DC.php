@@ -1171,7 +1171,7 @@ class DC extends Page
         global $strat_align;
 
         $rows = $this->db->pq("SELECT s.programversion, s.comments,
-                st.rankingresolution as rankres,
+                st.rankingresolution as rankres, sssw.dosetotal, st.screeningstrategyid,
                 ssw.wedgenumber, ssw.chi, ssw.kappa, ssw.phi, ssw.comments as sswcomments,
                 sssw.subwedgenumber, sssw.axisstart as st, sssw.exposuretime as time, sssw.transmission as tran,
                 sssw.oscillationrange as oscran, sssw.resolution as res, sssw.numberofimages as nimg, sssw.rotationaxis,
@@ -1199,6 +1199,7 @@ class DC extends Page
                 $output[$t] = array('CELL' => array(), 'STRATS' => array());
 
             $r['ATRAN'] = $r['TRAN'] / 100.0 * $r['DCTRN'];
+            $r['ROTATION'] = $r['NIMG'] * $r['OSCRAN'];
             foreach ($nf as $nff => $cols) {
                 foreach ($cols as $c) {
                     $r[$c] = number_format($r[$c], $nff);

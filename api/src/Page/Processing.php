@@ -9,7 +9,7 @@ use SynchWeb\Utils;
 class Processing extends Page {
     public static $dispatch = array(
         array('/:id(/dcg/:dcg)', 'get', '_results'),
-        array('/visit/:visit(/csv/:csv)', 'get', '_results_for_visit'),
+        array('/summary(/group/:sgid)(/protein/:pid)(/visit/:visit)(/csv/:csv)', 'get', '_summary'),
         array('/status', 'post', '_statuses'),
 
         array('/messages/status', 'post', '_ap_message_status'),
@@ -27,6 +27,8 @@ class Processing extends Page {
         'id' => '\d+',
         'ids' => '\d+',
         'dcg' => '\d+',
+        'pid' => '\d+',
+        'sgid' => '\d+',
         'visit' => '\w+\d+-\d+',
         'map' => '\d+',
         'n' => '\d+',
@@ -382,24 +384,56 @@ class Processing extends Page {
         $this->_output($out);
     }
 
-    function _results_for_visit() {
-        if (!($this->has_arg('visit'))) {
-            $this->_error('No visit specified');
+    function _summary() {
+        $where = 'dc.overlap = 0 AND dc.axisrange > 0 AND app.processingstatus = 1';
+        $join = '';
+        if ($this->has_arg('visit')) {
+            $pattern = '/([A-z]+)(\d+)-(\d+)/';
+            preg_match($pattern, $this->arg('visit'), $matches);
+            if (!sizeof($matches))
+                $this->_error('No such visit');
+
+            $info = $this->db->pq("SELECT s.sessionid FROM blsession s
+                INNER JOIN proposal p ON (p.proposalid = s.proposalid)
+                WHERE p.proposalid=:1 AND p.proposalcode=:2 AND p.proposalnumber=:3 AND s.visit_number=:4",
+                array($this->proposalid, $matches[1], $matches[2], $matches[3])
+            );
+
+            if (!sizeof($info)) {
+                $this->_error('No such visit');
+            }
+
+            $args = array($info[0]['SESSIONID']);
+            $where .= ' AND dc.sessionid=:1';
+        } else if ($this->has_arg('pid')) {
+            $info = $this->db->pq("SELECT pr.proteinid FROM protein pr
+                WHERE pr.proposalid=:1 AND pr.proteinid=:2",
+                array($this->proposalid, $this->arg('pid'))
+            );
+
+            if (!sizeof($info)) {
+                $this->_error('No such protein');
+            }
+
+            $args = array($info[0]['PROTEINID']);
+            $where .= ' AND c.proteinid=:1';
+            $join = 'INNER JOIN crystal c on smp.crystalid=c.crystalid';
+        } else if ($this->has_arg('sgid')) {
+            $info = $this->db->pq("SELECT blsg.blsamplegroupid FROM blsamplegroup blsg
+                WHERE blsg.proposalid=:1 AND blsg.blsamplegroupid=:2",
+                array($this->proposalid, $this->arg('sgid'))
+            );
+
+            if (!sizeof($info)) {
+                $this->_error('No such sample group');
+            }
+
+            $args = array($info[0]['BLSAMPLEGROUPID']);
+            $where .= ' AND bhb.blsamplegroupid=:1';
+            $join = 'INNER JOIN BLSampleGroup_has_BLSample bhb on smp.blsampleid=bhb.blsampleid';
+        } else {
+            $this->_error('No visit, protein or group specified');
         }
-        $pattern = '/([A-z]+)(\d+)-(\d+)/';
-        preg_match($pattern, $this->arg('visit'), $matches);
-        if (!sizeof($matches))
-            $this->_error('No such visit');
-
-        $info = $this->db->pq("SELECT s.sessionid FROM blsession s INNER JOIN proposal p ON (p.proposalid = s.proposalid) WHERE p.proposalcode=:1 AND p.proposalnumber=:2 AND s.visit_number=:3", array($matches[1], $matches[2], $matches[3]));
-
-        if (!sizeof($info)) {
-            $this->_error('No such visit');
-        }
-
-        $args = array($info[0]['SESSIONID']);
-
-        $where = 'dc.sessionid=:1 AND dc.overlap = 0 AND dc.axisrange > 0 AND app.processingstatus = 1';
 
         if ($this->has_arg('pipeline')) {
             $st = sizeof($args);
@@ -489,6 +523,7 @@ class Processing extends Page {
         $jobs = $this->db->pq(
             "SELECT dc.datacollectionid as id,
                 CONCAT(dc.imageprefix, '_', dc.datacollectionnumber) as prefix,
+                CONCAT(p.proposalcode, p.proposalnumber, '-', s.visit_number) as visit,
                 smp.name as sample,
                 smp.blsampleid,
                 ".self::EVTOA."/dc.wavelength as energy,
@@ -518,7 +553,10 @@ class Processing extends Page {
                 apssinner.ccanomalous as innerccanom,
                 app.autoprocprogramid as aid
                 FROM datacollection dc
+                INNER JOIN blsession s ON dc.sessionid = s.sessionid
+                INNER JOIN proposal p ON s.proposalid = p.proposalid
                 LEFT OUTER JOIN blsample smp ON dc.blsampleid = smp.blsampleid
+                $join
                 INNER JOIN processingjob pj ON dc.datacollectionid = pj.datacollectionid
                 INNER JOIN autoprocprogram app ON pj.processingjobid = app.processingjobid
                 INNER JOIN autoproc ap ON app.autoprocprogramid=ap.autoprocprogramid
@@ -583,7 +621,14 @@ class Processing extends Page {
 
         if ($this->has_arg('csv')) {
             $this->app->response->headers->set("Content-type", "text/csv");
-            Utils::setDispositionAttachment($this->app->response, $this->arg('visit') . "_summary.csv");
+            if ($this->has_arg('visit')) {
+                $filename = 'visit_' . $this->arg('visit') . "_summary.csv";
+            } else if ($this->has_arg('pid')) {
+                $filename = 'protein_' . $this->arg('pid') . "_summary.csv";
+            } else {
+                $filename = 'group_' . $this->arg('sgid') . "_summary.csv";
+            }
+            Utils::setDispositionAttachment($this->app->response, $filename);
             if (!empty($data)) {
                 print implode(',', array_keys($data[0])) . "\n";
             }

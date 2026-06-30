@@ -42,6 +42,18 @@ application.addInitializer(function() {
       application.navigate('/dc/'+(visit ? ('visit/'+visit) : '') + '/ty/'+type+'/id/'+id)
   //   controller.dc_list(visit, null, null, null, type, id)
   })
+
+  application.on('visitsummary:show', function(visit) {
+    application.navigate('/dc/summary/visit/'+visit)
+  })
+
+  application.on('proteinsummary:show', function(pid) {
+    application.navigate('/dc/summary/protein/'+pid)
+  })
+
+  application.on('groupsummary:show', function(pid) {
+    application.navigate('/dc/summary/group/'+pid)
+  })
 })
 
 // appRoutes: {
@@ -111,11 +123,44 @@ let routes = [
     }),
   },
   {
+    path: '/dc/summary/protein/:pid([0-9]+)',
+    name: 'dc-summary-protein',
+    component: MarionetteView,
+    props: route => ({
+        mview: Summary,
+        fetchOnLoad: true,
+        pid: route.params.pid || '',
+        options: {
+          model: new Visit(),
+          collection: new DCVisit(null, {
+            queryParams: { pid: route.params.pid }
+          })
+        }
+    }),
+  },
+  {
+    path: '/dc/summary/group/:sgid([0-9]+)',
+    name: 'dc-summary-group',
+    component: MarionetteView,
+    props: route => ({
+        mview: Summary,
+        fetchOnLoad: true,
+        sgid: route.params.sgid || '',
+        options: {
+          model: new Visit(),
+          collection: new DCVisit(null, {
+            queryParams: { sgid: route.params.sgid }
+          })
+        }
+    }),
+  },
+  {
     path: '/dc/summary/visit/:visit([a-zA-Z]{2}[0-9]+-[0-9]+)',
     name: 'dc-summary',
     component: MarionetteView,
     props: route => ({
         mview: Summary,
+        fetchOnLoad: true,
         visit: route.params.visit || '',
         options: {
           model: visitModel,

@@ -2,23 +2,29 @@
 <h2><%-TYPE%></h2>
 
 <%
-    var showUnitCell = CELL && (CELL.SG || CELL.A || CELL.B || CELL.C || CELL.AL || CELL.BE || CELL.GA)
-    var showChi = _.some(STRATS, function(r) {
+    const showUnitCell = CELL && (CELL.SG || CELL.A || CELL.B || CELL.C || CELL.AL || CELL.BE || CELL.GA)
+    const showChi = STRATS.some(function(r) {
         return r.CHI && parseFloat(r.CHI) !== 0
     })
-    var showPhi = _.some(STRATS, function(r) {
+    const showPhi = STRATS.some(function(r) {
         return r.PHI && parseFloat(r.PHI) !== 0
     })
-    var showKappa = _.some(STRATS, function(r) {
+    const showKappa = STRATS.some(function(r) {
         return r.KAPPA && parseFloat(r.KAPPA) !== 0
     })
-    var showRankingRes = _.some(STRATS, function(r) {
+    const showRankingRes = STRATS.some(function(r) {
         return r.RANKRES && parseFloat(r.RANKRES) !== 0
     })
+    const showExposure = STRATS.some(function(r) {
+        return r.TIME && parseFloat(r.TIME) !== 0
+    })
+    const showDose = STRATS.some(function(r) {
+        return r.DOSETOTAL && parseFloat(r.DOSETOTAL) !== 0
+    })
 
-    var displayAxis = "Axis"
+    let displayAxis = "Axis"
     if (STRATS && STRATS.length > 0 && STRATS[0].ROTATIONAXIS) {
-        var raw = STRATS[0].ROTATIONAXIS
+        let raw = STRATS[0].ROTATIONAXIS
         displayAxis = raw.charAt(0).toUpperCase() + raw.slice(1)
     }
 %>
@@ -66,15 +72,25 @@
             <% if (showKappa) { %> <th>Kappa (°)</th> <% } %>
             <th>Res (&#197;)</th>
             <% if (showRankingRes) { %> <th>Ranking Res (&#197;)</th> <% } %>
-            <th>Rel Trn (%)</th>
-            <th>Abs Trn (%)</th>
-            <th>Exposure (s)</th>
+            <th><% if (showDose) { %> Max <% } %>Transmission (%)</th>
+            <% if (showExposure) { %> <th>Exposure (s)</th> <% } %>
             <th>No. Images</th>
+            <th>Total Rotation (°)</th>
+            <% if (showDose) { %> <th>Dose (MGy)</th> <% } %>
         </tr>
     </thead>
     
-    <% _.each(STRATS, function(r, i) { %>
-    <tr class="stratrow" draggable="true" sid="<%-i%>">
+    <%
+    let highlight = true;
+    let lastId = null;
+
+    STRATS.forEach((r, i) => {
+        if (r.SCREENINGSTRATEGYID !== lastId) {
+            highlight = !highlight;
+            lastId = r.SCREENINGSTRATEGYID;
+        }
+    %>
+    <tr class="stratrow <%= highlight ? 'highlight' : '' %>" draggable="true" sid="<%-i%>">
         <td><%-r.COM%></td>
         <td><%-r.COMMENTS%></td>
         <td><%-r.ST%></td>
@@ -84,10 +100,11 @@
         <% if (showKappa) { %> <td><%-r.KAPPA%></td> <% } %>
         <td><%-r.RES%></td>
         <% if (showRankingRes) { %> <td><%-r.RANKRES%></td> <% } %>
-        <td><%-r.TRAN%></td>
         <td><%-r.ATRAN%></td>
-        <td><%-r.TIME%></td>
+        <% if (showExposure) { %> <td><%-r.TIME%></td> <% } %>
         <td><%-r.NIMG%></td>
+        <td><%-r.ROTATION%></td>
+        <% if (showDose) { %> <td><%-r.DOSETOTAL%></td> <% } %>
     </tr>
     <% }) %>
 </table>
