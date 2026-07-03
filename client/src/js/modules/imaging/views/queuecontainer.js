@@ -240,6 +240,7 @@ define(['marionette',
             ExperimentCell.__super__.initialize.call(this,options)
 
             this.listenTo(this.model, 'change:EXPERIMENTKIND', this.render, this)
+            this.listenTo(this.model, 'change:CONTAINERQUEUEID', this.render, this)
             this.listenTo(this.model, 'refresh', this.render, this)
 
             this.preSave = _.debounce(this.preSave, 1000)
@@ -330,6 +331,11 @@ define(['marionette',
             'Point': [{ name: 'Point Collection', type: 'SAD' }, { name: 'Fluorescence', type: 'XFE' }],
             'Region': [{ name: 'Grid Scan', type: 'MESH' }],
             'Line': [{ name: 'Line Scan', type: 'SAD' }],
+        },
+
+        initialize: function(options) {
+            ExperimentKindCell.__super__.initialize.call(this, options)
+            this.listenTo(this.model, 'change:CONTAINERQUEUEID', this.render, this)
         },
 
         render: function() {
@@ -681,11 +687,11 @@ define(['marionette',
                 },
                 success: function() {
                     app.message({ message: 'Container Successfully Unqueued' })
-                    self.ui.unqueuebutton.hide()
-                    self.ui.unqueuesamples.show()
-                    self.ui.queuebutton.show()
-                    self.ui.rpreset.show()
                     self.model.set('CONTAINERQUEUEID', null, { silent: true })
+                    self.typeselector.shadowCollection.each(function(m) {
+                        m.set('CONTAINERQUEUEID', null)
+                    })
+                    self.doOnRender()
                 },
                 error: function() {
                     app.alert({ message: 'Something went wrong unqueuing this container' })
@@ -807,11 +813,12 @@ define(['marionette',
                     },
                     success: function(json) {
                         app.message({ message: 'Container Successfully Queued' })
-                        self.ui.unqueuebutton.show()
-                        self.ui.unqueuesamples.hide()
-                        self.ui.queuebutton.hide()
-                        self.ui.rpreset.hide()
                         self.model.set('CONTAINERQUEUEID', json.CONTAINERQUEUEID, { silent: true })
+                        self.typeselector.shadowCollection.each(function(m) {
+                            m.set('CONTAINERQUEUEID', json.CONTAINERQUEUEID)
+                        })
+                        self.doOnRender()
+
                     },
                     error: function() {
                         app.alert({ message: 'Something went wrong queuing this container' })
