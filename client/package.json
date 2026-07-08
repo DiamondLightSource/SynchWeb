@@ -91,7 +91,7 @@
     "uglymol": "^0.6.4",
     "underscore": "1.8.3",
     "util": "^0.12.4",
-    "vee-validate": "^2.2.15",
+    "vee-validate": "^3.0.0",
     "vue": "^2.6.10",
     "vue-router": "^3.4.3",
     "vuex": "^3.5.1"
