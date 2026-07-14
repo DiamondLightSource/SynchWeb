@@ -532,7 +532,8 @@ define(['marionette',
                     INSPECTIONTYPEID: this.ui.ity.val(),
                 },
                 success: function() {
-                    app.alert({ message: 'Adhoc inspection successfully requested for this container' })
+                    app.message({ message: 'Adhoc inspection successfully requested for this container' })
+                    self.model.set('ALLOW_ADHOC', 0)
                     self.updateAdhoc()
                 },
                 error: function() {
