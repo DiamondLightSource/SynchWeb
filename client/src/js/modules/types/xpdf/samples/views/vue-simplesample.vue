@@ -1,10 +1,11 @@
 <template>
   <div>
+  <validation-observer ref="observer" v-slot="{ handleSubmit }">
     <form
       id="add_protein"
       method="post"
       :class="{loading: isLoading}"
-      @submit.prevent="onSubmit"
+      @submit.prevent="handleSubmit(onSubmit)"
     >
       <div class="form">
         <input
@@ -64,86 +65,92 @@
 
         <section v-else>
           <ul>
+
             <li>
               <label>Name
                 <span class="small">Name of the sample</span></label>
-              <span class="name"><input
-                v-model="name"
-                v-validate="'required'"
-                type="text"
-                name="name"
-                :class="{ferror: errors.has('name')}"
-                :disabled="proteinid"
-              ></span>
-              <span
-                v-if="errors.has('name')"
-                class="errormessage ferror"
-              >{{ errors.first('name') }}</span>
+              <validation-provider rules="required" name="name" tag="div" v-slot="{ errors }">
+                <span class="name"><input
+                  v-model="name"
+                  type="text"
+                  name="name"
+                  :class="{ferror: errors.length > 0}"
+                  :disabled="proteinid"
+                ></span>
+                <span
+                  v-if="errors.length > 0"
+                  class="errormessage ferror"
+                >{{ errors[0] }}</span>
+              </validation-provider>
             </li>
 
             <li>
               <label>Acronym
                 <span class="small">Short form name for sample (must be unique!)</span></label>
-              <span class="name"><input
-                v-model="acronym"
-                v-validate="'required'"
-                type="text"
-                name="acronym"
-                :class="{ferror: errors.has('acronym')}"
-              ></span>
-              <span
-                v-if="errors.has('acronym')"
-                class="errormessage ferror"
-              >{{ errors.first('acronym') }}</span>
+              <validation-provider rules="required" name="acronym" tag="div" v-slot="{ errors }">
+                <span class="name"><input
+                  v-model="acronym"
+                  type="text"
+                  name="acronym"
+                  :class="{ferror: errors.length > 0}"
+                ></span>
+                <span
+                  v-if="errors.length > 0"
+                  class="errormessage ferror"
+                >{{ errors[0] }}</span>
+              </validation-provider>
             </li>
 
             <li>
               <label>Composition
                 <span class="small">Chemical formula of the material</span></label>
-              <span class="composition"><input
-                v-model="seq"
-                v-validate="{required: true, closeExp: true, regex:/^[a-zA-Z0-9\(\)\.]*$/ }"
-                type="text"
-                name="seq"
-                :class="{ferror: errors.has('seq')}"
-              ></span>
-              <span
-                v-if="errors.has('seq')"
-                class="errormessage ferror"
-              >{{ errors.first('seq') }}</span>
+              <validation-provider rules="required|closeExp|regex:^[a-zA-Z0-9\(\)\.]*$" name="seq" tag="div" v-slot="{ errors }">
+                <span class="composition"><input
+                  v-model="seq"
+                  type="text"
+                  name="seq"
+                  :class="{ferror: errors.length > 0}"
+                ></span>
+                <span
+                  v-if="errors.length > 0"
+                  class="errormessage ferror"
+                >{{ errors[0] }}</span>
+              </validation-provider>
             </li>
 
             <li>
               <label>Density
                 <span class="small">Crystallographic density of the phase (g cm<span class="super">-3</span>)</span></label>
-              <span><input
-                v-model="density"
-                v-validate="'required|decimal'"
-                type="text"
-                name="density"
-                :class="{ferror: errors.has('density')}"
-              ></span>
-              <span
-                v-if="errors.has('density')"
-                class="errormessage ferror"
-              >{{ errors.first('density') }}</span>
+              <validation-provider rules="required|decimal" name="density" tag="div" v-slot="{ errors }">
+                <span><input
+                  v-model="density"
+                  type="text"
+                  name="density"
+                  :class="{ferror: errors.length > 0}"
+                ></span>
+                <span
+                  v-if="errors.length > 0"
+                  class="errormessage ferror"
+                >{{ errors[0] }}</span>
+              </validation-provider>
             </li>
 
             <li>
               <label>Packing Fraction
                 <span class="small">Must be between 0 and 1</span>
               </label>
-              <span><input
-                v-model="fraction"
-                v-validate="'required|min_value:0|max_value:1'"
-                type="text"
-                name="fraction"
-                :class="{ferror: errors.has('fraction')}"
-              ></span>
-              <span
-                v-if="errors.has('fraction')"
-                class="errormessage ferror"
-              >{{ errors.first('fraction') }}</span>
+              <validation-provider rules="required|min_value:0|max_value:1" name="fraction" tag="div" v-slot="{ errors }">
+                <span><input
+                  v-model="fraction"
+                  type="text"
+                  name="fraction"
+                  :class="{ferror: errors.length > 0}"
+                ></span>
+                <span
+                  v-if="errors.length > 0"
+                  class="errormessage ferror"
+                >{{ errors[0] }}</span>
+              </validation-provider>
             </li>
 
             <li>
@@ -159,21 +166,23 @@
         </section>
 
         <ul>
+
           <li>
             <label>Exposure Time
               <span class="small">Must be a non negative integer</span>
             </label>
-            <span><input
-              v-model="expTime"
-              v-validate="'required|min_value:0'"
-              type="text"
-              name="expTime"
-              :class="{ferror: errors.has('expTime')}"
-            ></span>
-            <span
-              v-if="errors.has('expTime')"
-              class="errormessage ferror"
-            >{{ errors.first('expTime') }}</span>
+            <validation-provider rules="required|min_value:0" name="expTime" tag="div" v-slot="{ errors }">
+              <span><input
+                v-model="expTime"
+                type="text"
+                name="expTime"
+                :class="{ferror: errors.length > 0}"
+              ></span>
+              <span
+                v-if="errors.length > 0"
+                class="errormessage ferror"
+              >{{ errors[0] }}</span>
+            </validation-provider>
           </li>
 
           <li>
@@ -188,31 +197,34 @@
             <label>Capillary
               <span class="small">The capillary or container that should be associated with this sample</span>
             </label>
-            <select
-              id="containerSelect"
-              v-model="type"
-              v-validate="'required'"
-              name="type"
-              style="width: 400px"
-              :disabled="containerless"
-              @change="getCapillaryInfo('density')"
-            >
-              <option
-                v-if="!hasExistingCapillaries"
-                disabled
-                value=""
+            <validation-provider rules="required" name="type" tag="div" v-slot="{ errors }">
+              <select
+                id="containerSelect"
+                v-model="type"
+                name="type"
+                style="width: 400px"
+                :disabled="containerless"
+                :class="{ferror: errors.length > 0}"
+                @change="getCapillaryInfo('density')"
               >
-                Container*
-              </option>
-              <option v-for="container in containers">
-                {{ container }}
-              </option>
-            </select>
-            <span
-              v-if="errors.has('type')"
-              class="errormessage ferror"
-            >{{ errors.first('type') }}</span>
+                <option
+                  v-if="!hasExistingCapillaries"
+                  disabled
+                  value=""
+                >
+                  Container*
+                </option>
+                <option v-for="container in containers">
+                  {{ container }}
+                </option>
+              </select>
+              <span
+                v-if="errors.length > 0"
+                class="errormessage ferror"
+              >{{ errors[0] }}</span>
+            </validation-provider>
           </li>
+
         </ul>
 
         <button
@@ -260,6 +272,7 @@
         </button>
       </div>
     </form>
+  </validation-observer>
   </div>
 </template>
 
@@ -461,27 +474,22 @@
                 this.containers = this.containers.concat(existingSamplesArray)
             },
             onSubmit: function(e){
-                e.preventDefault()
-                let self = this
-                
-                this.$validator.validateAll().then(function(result){
-                    if(self.fileUpload){
-                        if(result && self.fileValid && self.csvErrors.length === 0 && self.defaultDewarId){
-                            self.prepareFromFile()
-                        } else {
-                            console.log('File submission prevented, validation failed');
-                            app.alert({ title: 'Error', message: 'File validation failed, or default dewar for this visit could not be created' })
-                        }
+
+                if(this.fileUpload){
+                    if(this.fileValid && this.csvErrors.length === 0 && this.defaultDewarId){
+                        this.prepareFromFile()
                     } else {
-                        if(result && self.defaultDewarId){
-                            self.prepareSimpleSample()
-                        } else {
-                            console.log('Form submission prevented, validation failed');
-                            app.alert({ title: 'Error', message: 'Form validation failed, or default dewar for this visit could not be created' })
-                        }
+                        console.log('File submission prevented, validation failed');
+                        app.alert({ title: 'Error', message: 'File validation failed, or default dewar for this visit could not be created' })
                     }
-                    
-                })
+                } else {
+                    if(this.defaultDewarId){
+                        this.prepareSimpleSample()
+                    } else {
+                        console.log('Form submission prevented, validation failed');
+                        app.alert({ title: 'Error', message: 'Form validation failed, or default dewar for this visit could not be created' })
+                    }
+                }
             },
 
             prepareFromFile: function(){

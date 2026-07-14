@@ -1,14 +1,14 @@
 <template>
   <validation-provider
     :ref="ref"
-    v-slot="{ errors, flags: { changed } }"
+    v-slot="{ errors, dirty }"
     :rules="rules"
     :name="name"
     :tag="tag"
     :vid="vid"
     :slim="slim"
   >
-    <div :class="{'tw-bg-dark-amber': changed, [classNames]: true }">
+    <div :class="{'tw-bg-dark-amber': dirty, [classNames]: true }">
       <slot
         :errors="errors"
         :input-changed="updateFieldFlags"
@@ -56,7 +56,7 @@ export default {
   },
   methods: {
     updateFieldFlags() {
-      this.$refs[this.ref].setFlags({ changed: true })
+      this.$refs[this.ref].setFlags({ dirty: true })
     }
   }
 }

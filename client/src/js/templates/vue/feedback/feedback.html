@@ -3,34 +3,37 @@
 
     <p class="help">This page is for sending feedback about the ISPyB web interface to the developers, not for your beamtime! Please use UAS to report feedback for your visits</p>
 
-    <form novalidate v-bind:class="{loading: isLoading}">
+    <validation-observer ref="formObserver" v-slot="{ handleSubmit }">
+
+    <form novalidate v-bind:class="{loading: isLoading}" @submit.prevent="handleSubmit(onSubmit)">
 
     <div class="form">
         <ul>
 
-            <li>
+            <validation-provider rules="required" name="name" tag="li" v-slot="{ errors }">
                 <label>Your Name</label>
-                <input type="text" name="name" v-bind:class="{ferror: errors.has('name')}" v-validate="'required'" v-model="name"/>
-                <span v-if="errors.has('name')" class="errormesage ferror">{{ errors.first('name') }}</span>
-            </li>
+                <input type="text" name="name" v-bind:class="{ferror: errors.length > 0}" v-model="name"/>
+                <span v-if="errors.length > 0" class="errormesage ferror">{{ errors[0] }}</span>
+            </validation-provider>
 
-            <li>
+            <validation-provider rules="required|email" name="email" tag="li" v-slot="{ errors }">
                 <label>Your Email Address</label>
-                <input name="email" type="email"  v-bind:class="{ferror: errors.has('email')}" v-validate="'required|email'" v-model="email"/>
-                <span v-if="errors.has('email')" class="errormesage ferror">{{ errors.first('email') }}</span>
-            </li>
+                <input name="email" type="email" v-bind:class="{ferror: errors.length > 0}" v-model="email"/>
+                <span v-if="errors.length > 0" class="errormesage ferror">{{ errors[0] }}</span>
+            </validation-provider>
 
-            <li>
+            <validation-provider rules="required" name="feedback" tag="li" v-slot="{ errors }">
                 <label>Feedback</label>
-                <textarea name="feedback"  v-bind:class="{ferror: errors.has('feedback')}" v-validate="'required'" v-model="feedback"></textarea>
-                <span v-if="errors.has('feedback')" class="errormesage ferror">{{ errors.first('feedback') }}</span>
-            </li>
+                <textarea name="feedback" v-bind:class="{ferror: errors.length > 0}" v-model="feedback"></textarea>
+                <span v-if="errors.length > 0" class="errormesage ferror">{{ errors[0] }}</span>
+            </validation-provider>
 
         </ul>
 
-        <button name="submit" value="1" type="submit" class="button submit" v-on:click.prevent="onSubmit">Send Feedback</button>
+        <button name="submit" value="1" type="submit" class="button submit">Send Feedback</button>
 
     </div>
 
     </form>
+    </validation-observer>
 </section>
