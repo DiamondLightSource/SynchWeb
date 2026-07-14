@@ -5,9 +5,9 @@
     <h1>Login</h1>
     <p v-if="sso && !authError" class="tw-text-center tw-text-lg">Redirecting to single sign on...</p>
     <p v-if="authError === 'not-recognised'" class="tw-text-center tw-text-lg">
-      <b>User not recognised</b>. If you have logged in with your email address,
-      <a :href="logoutUrl" target="_blank">log out of the SSO provider</a> and <a href="/login">log in</a> again with
-      your FedID.
+      <b>User not recognised</b>. You can only access this system once you have been issued a FedID. 
+      If you need to access this system, but don't have a FedID, please contact the User Office, then 
+      <a :href="logoutUrl" target="_blank">log out of the SSO provider</a> and <a href="/login">log in</a> again.
     </p>
 
     <!-- Wrap the form in an observer component so we can check validation state on submission -->
