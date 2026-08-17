@@ -1,4 +1,4 @@
-define(['marionette', 'backbone', 'vendor/backbone/backbone.syphon'], function(Marionette, Backbone) {
+define(['marionette', 'backbone'], function(Marionette, Backbone) {
 
     // A Validated Grid Row
     return ValidatedRow = Backbone.Marionette.ItemView.extend({

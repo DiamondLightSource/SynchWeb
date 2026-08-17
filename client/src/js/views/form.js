@@ -4,7 +4,7 @@ define(['marionette', 'backbone',
         'utils/forms',
         'utils/validation',
     
-        'vendor/backbone/backbone.syphon'
+        'backbone.syphon'
     
     ], function(Marionette, Backbone, $, forms) {
 

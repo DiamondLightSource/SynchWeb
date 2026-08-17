@@ -3,14 +3,14 @@ define(['jquery', 'marionette',
         'utils/canvas',
         'templates/dc/imageviewer.html',
         'templates/dc/imageviewer_embedded.html',
-        'caman',
+        'caman-dist-only',
         'utils',
         'utils/xhrimage',
         'jquery-ui/ui/widgets/progressbar'
     ], function($, Marionette, CanvasMixin, template, embed, caman, utils, XHRImage) {
+
+    const Caman = window.Caman
     
-    // Note we do not import the caman libray as Caman.
-    // This is because Caman is added to the window global object
     return Marionette.ItemView.extend(_.extend({}, CanvasMixin, {
         className: function() {
             return 'content' + (this.getOption('embed') ? ' embed' : '')
