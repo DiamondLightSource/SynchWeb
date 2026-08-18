@@ -155,6 +155,7 @@ class Shipment extends Page
         'PROPOSALTYPE' => '\w+',
         'pickup_confirmation_code' => '\w+',
         'status' => '\w+',
+        'journey_type' => '\w+',
 
         'manifest' => '\d',
         'currentuser' => '\d',
@@ -210,8 +211,7 @@ class Shipment extends Page
 
         array('/dewars/transfer', 'post', '_transfer_dewar'),
         array('/dewars/dispatch', 'post', '_dispatch_dewar'),
-        array('/dewars/confirmdispatch/did/:did/token/:TOKEN', 'post', '_outgoing_shipment_confirmation'),
-        array('/dewars/confirmpickup/sid/:sid/token/:TOKEN', 'post', '_incoming_shipment_confirmation'),
+        array('/dewars/confirm/did/:did/token/:TOKEN', 'post', '_shipment_confirmation'),
 
         array('/dewars/tracking(/:DEWARID)', 'get', '_get_dewar_tracking'),
 
@@ -1109,7 +1109,7 @@ class Shipment extends Page
             array($token, $external_id)
         );
 
-        $callback_url = "/api/shipment/dewars/confirmdispatch/did/{$external_id}/token/{$token}";
+        $callback_url = "/api/shipment/dewars/confirm/did/{$external_id}/token/{$token}";
         $external_shipping_id = $this->_create_dewars_shipment_request($dewars, $proposal, $session_number, $external_id, $shipping_id, $callback_url);
 
         $this->db->pq(
@@ -1403,15 +1403,43 @@ class Shipment extends Page
         }
     }
 
-    function _outgoing_shipment_confirmation()
+    function _shipment_confirmation()
     {
+        if (!$this->has_arg('journey_type'))
+            $this->_error('No journey type specified');
         if (!$this->has_arg('did'))
             $this->_error('No dewar specified');
-        if (!$this->has_arg('TOKEN'))
-            $this->_error('No token specified');
         if (!$this->has_arg('status'))
             $this->_error('No status specified');
 
+        $dew = $this->db->pq(
+            "SELECT d.shippingid,
+                json_unquote(json_extract(d.extra, '$.token')) as token
+                FROM dewar d
+                WHERE d.dewarid=:1",
+            array($this->arg('did'))
+        );
+        if (!sizeof($dew))
+            $this->_error('No such dewar');
+        else
+            $dew = $dew[0];
+
+        if (!$this->has_arg('TOKEN') || $this->arg('TOKEN') !== $dew['TOKEN']) {
+            $this->_error('Incorrect token');
+        }
+
+        if ($this->arg('journey_type') === 'TO_FACILITY') {
+            $this->set_arg('sid', $dew['SHIPPINGID']);
+            $this->_incoming_shipment_confirmation();
+        } else if ($this->arg('journey_type') === 'FROM_FACILITY') {
+            $this->_outgoing_shipment_confirmation();
+        } else {
+            $this->_error('Invalid journey type');
+        }
+    }
+
+    function _outgoing_shipment_confirmation()
+    {
         if ($this->arg('status') === 'CREATED') {
             $this->_cancel_dispatch_dewar_confirmation();
         } else if ($this->arg('status') === 'BOOKED' || $this->arg('status') === 'PENDING') {
@@ -1563,13 +1591,6 @@ class Shipment extends Page
 
     function _incoming_shipment_confirmation()
     {
-        if (!$this->has_arg('sid'))
-            $this->_error('No shipment specified');
-        if (!$this->has_arg('TOKEN'))
-            $this->_error('No token specified');
-        if (!$this->has_arg('status'))
-            $this->_error('No status specified');
-
         if ($this->arg('status') === 'CREATED') {
             $this->_cancel_pickup_dewar_confirmation();
         } else if ($this->arg('status') === 'BOOKED' || $this->arg('status') === 'PENDING') {
@@ -3514,6 +3535,8 @@ class Shipment extends Page
     {
 
         $shipping_id = (int) $shipment['SHIPPINGID'];
+        // Any dewar id is ok for callback as it will be converted back to a shipping id
+        $dewar_id = (int) $dewars[0]['DEWARID'];
 
         $token = Utils::generateRandomMd5(7);
         $this->db->pq(
@@ -3521,7 +3544,7 @@ class Shipment extends Page
             array($token, $shipping_id)
         );
 
-        $callback_url = "/api/shipment/dewars/confirmpickup/sid/{$shipping_id}/token/{$token}";
+        $callback_url = "/api/shipment/dewars/confirm/did/{$dewar_id}/token/{$token}";
 
         $external_shipping_id = $this->_create_dewars_shipment_request(
             $dewars,
