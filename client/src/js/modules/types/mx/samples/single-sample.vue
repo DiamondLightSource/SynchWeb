@@ -18,6 +18,7 @@
 
     <div>
       <validation-provider
+        v-slot="{ errors }"
         class="tw-py-1 tw-flex tw-w-full"
         tag="div"
         :name="`Sample ${sampleLocation + 1} Protein`"
@@ -73,8 +74,8 @@
           label-class="tw-w-1/5"
           label="Sample Name"
           :quiet="true"
-          :error-message="errors[0]"
-          :error-class="errors[0] ? 'tw-text-xxs ferror' : ''"
+          :error-message="errors && errors[0]"
+          :error-class="(errors && errors[0]) ? 'tw-text-xxs ferror' : ''"
           v-model.trim="NAME"
         />
       </validation-provider>
@@ -93,8 +94,8 @@
           :quiet="true"
           type="number"
           label-class="tw-w-1/5"
-          :error-message="errors[0]"
-          :error-class="errors[0] ? 'tw-text-xxs ferror' : ''"
+          :error-message="errors && errors[0]"
+          :error-class="(errors && errors[0]) ? 'tw-text-xxs ferror' : ''"
           label="Abundance"
         />
       </validation-provider>
@@ -145,9 +146,9 @@
           label="Anomalous Scattering"
           option-value-key="value"
           option-text-key="text"
-          :error-message="errors[0]"
+          :error-message="errors && errors[0]"
           :quiet="true"
-          :error-class="errors[0] ? 'tw-text-xxs ferror' : ''"
+          :error-class="(errors && errors[0]) ? 'tw-text-xxs ferror' : ''"
         />
 
         <validation-provider
@@ -166,9 +167,9 @@
             type="number"
             :step="1"
             label="Required Resolution"
-            :error-message="errors[0]"
+            :error-message="errors && errors[0]"
             :quiet="true"
-            :error-class="errors[0] ? 'tw-text-xxs ferror' : ''"
+            :error-class="(errors && errors[0]) ? 'tw-text-xxs ferror' : ''"
           />
         </validation-provider>
 
@@ -200,8 +201,8 @@
                     input-class="tw-w-12 tw-h-8 single-sample-input"
                     type="number"
                     :step="0.01"
-                    :error-message="errors[0]"
-                    :error-class="errors[0] ? 'ferror' : ''"
+                    :error-message="errors && errors[0]"
+                    :error-class="(errors && errors[0]) ? 'ferror' : ''"
                   />
                 </validation-provider>
 
@@ -217,10 +218,10 @@
                     v-model="CELL_B"
                     :quiet="true"
                     input-class="tw-w-12 tw-h-8 single-sample-input"
-                    :error-message="errors[0]"
+                    :error-message="errors && errors[0]"
                     type="number"
                     :step="0.01"
-                    :error-class="errors[0] ? 'ferror' : ''"
+                    :error-class="(errors && errors[0]) ? 'ferror' : ''"
                   />
                 </validation-provider>
 
@@ -235,11 +236,11 @@
                   <base-input-text
                     v-model="CELL_C"
                     input-class="tw-w-12 tw-h-8 single-sample-input"
-                    :error-message="errors[0]"
+                    :error-message="errors && errors[0]"
                     type="number"
                     :step="0.01"
                     :quiet="true"
-                    :error-class="errors[0] ? 'ferror' : ''"
+                    :error-class="(errors && errors[0]) ? 'ferror' : ''"
                     v-on="$listeners"
                   />
                 </validation-provider>
@@ -258,8 +259,8 @@
                     :quiet="true"
                     type="number"
                     :step="0.01"
-                    :error-message="errors[0]"
-                    :error-class="errors[0] ? 'ferror' : ''"
+                    :error-message="errors && errors[0]"
+                    :error-class="(errors && errors[0]) ? 'ferror' : ''"
                     v-on="$listeners"
                   />
                 </validation-provider>
@@ -277,8 +278,8 @@
                     input-class="tw-w-12 tw-h-8 single-sample-input"
                     type="number"
                     :step="0.01"
-                    :error-message="errors[0]"
-                    :error-class="errors[0] ? 'ferror' : ''"
+                    :error-message="errors && errors[0]"
+                    :error-class="(errors && errors[0]) ? 'ferror' : ''"
                     :quiet="true"
                     v-on="$listeners"
                   />
@@ -297,8 +298,8 @@
                     input-class="tw-w-12 tw-h-8 single-sample-input"
                     type="number"
                     :step="0.01"
-                    :error-message="errors[0]"
-                    :error-class="errors[0] ? 'ferror' : ''"
+                    :error-message="errors && errors[0]"
+                    :error-class="(errors && errors[0]) ? 'ferror' : ''"
                     :quiet="true"
                     v-on="$listeners"
                   />

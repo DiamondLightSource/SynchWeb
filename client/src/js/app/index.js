@@ -2,7 +2,8 @@ require('font-awesome/css/font-awesome.css')
 require('css/main.scss')
 
 import Vue from 'vue'
-import VeeValidate from 'vee-validate'
+import { ValidationObserver, ValidationProvider, extend } from 'vee-validate'
+import * as rules from 'vee-validate/dist/rules'
 import PortalVue from 'portal-vue'
 
 import Main from 'app/layouts/main.vue'
@@ -13,12 +14,16 @@ import router from 'app/router/router'
 import MarionetteApp from 'app/marionette-application.js'
 
 import config from 'config.json'
-import VeeValidateCustomRules from 'app/mixins/vee-validate-custom-rules'
+import 'app/mixins/vee-validate-custom-rules'
 
-Vue.use(VeeValidate)
 Vue.use(PortalVue)
 
-Vue.use(VeeValidate)
+Vue.component('ValidationObserver', ValidationObserver)
+Vue.component('ValidationProvider', ValidationProvider)
+
+Object.keys(rules).forEach(rule => {
+  extend(rule, rules[rule]);
+});
 
 Vue.config.productionTip = false
 Vue.config.devtools = !config.production
@@ -26,7 +31,6 @@ Vue.config.devtools = !config.production
 const vm = new Vue({
   store,
   router,
-  mixins: [VeeValidateCustomRules],
   created: function() {
     console.log("VUE::created")
 

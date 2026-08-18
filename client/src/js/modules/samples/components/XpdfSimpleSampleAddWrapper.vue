@@ -16,7 +16,6 @@ import SimpleSample from 'modules/types/xpdf/samples/views/vue-simplesample.vue'
 import Protein from 'models/protein'
 
 import EventBus from 'app/components/utils/event-bus.js'
-import VeeValidateCustom from 'app/mixins/vee-validate-custom-rules'
 
 
 export default {
@@ -24,7 +23,6 @@ export default {
     components: {
         'simple-sample': SimpleSample
     },
-    mixins: [VeeValidateCustom],
     props: {
         'pid': {
             type: Number,
