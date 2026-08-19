@@ -204,12 +204,12 @@ define(['marionette', 'views/form',
                 if (location) {
                     self.ui.loc.val(location)
                     if (restrictedLocations.includes(location.toLowerCase())) {
-                        self.ui.dispatchState.text("Warning: This dewar is still on the beamline. We recommend waiting until the dewar returns to storage before requesting it's return. Dewars are not topped up with LN2 after a return is requested.")
+                        self.ui.dispatchState.text("Warning: This dewar is still on the beamline. We recommend waiting until the dewar returns to storage before requesting its return. Dewars are not topped up with LN2 after a return is requested.")
                     } else if (
                         location.startsWith('tray-') &&
                         (!historyComment || (typeof historyComment === 'object' && !historyComment.checked))
                     ) {
-                        self.ui.dispatchState.text("Warning: This dewar has not had it's contents checked. We recommend asking your local contact to check the dewar's contents before requesting it's return. Dewars are not topped up with LN2 after a return is requested.")
+                        self.ui.dispatchState.text("Warning: This dewar has not had its contents checked. We recommend asking your local contact to check the dewar's contents before requesting its return. Dewars are not topped up with LN2 after a return is requested.")
                     }
                 }
             })
