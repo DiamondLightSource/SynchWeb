@@ -1,13 +1,8 @@
 define(['vue',
-    'veevalidate',
-    'promise',
     'utils/vuewrapper',
     'modules/feedback/models/feedback',
     'templates/vue/feedback/feedback.html',
-    ], function(Vue, VeeValidate, Promise, VueWrapper, FeedbackModel, template) {
-
-    // Promise is not used, but required for IE if we want to use vee-validate
-    Vue.use(VeeValidate)
+    ], function(Vue, VueWrapper, FeedbackModel, template) {
 
     return VueWrapper.extend({
         vueView: Vue.extend({
@@ -21,10 +16,6 @@ define(['vue',
                 }
             },
             methods: {
-                // With new build and (IE polyfill) we could use
-                // Object.assign() to reset all data to initial state
-                // Using the method below is simple alternative that
-                // allows us to clear form data after submission
                 resetForm: function() {
                     this.name = ''
                     this.email = ''
@@ -33,13 +24,15 @@ define(['vue',
                     // To reset form validation, we should wait for next tick
                     // Vue rectivity means the DOM will not be updated immediately
                     this.$nextTick(function() {
-                        this.$validator.reset()
+                        if (this.$refs.formObserver) {
+                            this.$refs.formObserver.reset();
+                        }
                     })
                 },
                 onSubmit: function() {   
                     let self = this
 
-                    this.$validator.validateAll().then(function(result) {
+                    this.$refs.formObserver.validate().then(function(result) {
                         if (result) {
                             self.submitFeedback()
                         } else {

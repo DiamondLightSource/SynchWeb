@@ -347,7 +347,7 @@ export default {
         {key: 'BLTIMESTAMP', title: 'Date'},
         {key: 'STATUS', title: 'Status'},
         {key: 'LOCATION', title: 'Location'},
-        {key: 'BEAMLINELOCATION', title: 'Beamline'}
+        {key: 'BEAMLINENAME', title: 'Beamline'}
       ],
       containerHistoryTotal: 0,
       displayQueueModal: false,

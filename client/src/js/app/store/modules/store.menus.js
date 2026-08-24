@@ -6,7 +6,6 @@ import SmMenu from 'modules/types/sm/menu.js'
 import TomoMenu from 'modules/types/tomo/menu.js'
 import XpdfMenu from 'modules/types/xpdf/menu.js'
 import GenProcMenu from 'modules/types/genproc/menu.js'
-import ConexsMenu from 'modules/types/conexs/menu.js'
 import EmMenu from 'modules/types/em/menu.js'
 
 const menuStore = {
@@ -21,14 +20,14 @@ const menuStore = {
         'sm': SmMenu,
         'tomo': TomoMenu,
         'xpdf': XpdfMenu,
-        'b18': ConexsMenu,
+        'b18': GenProcMenu,
         'i16': GenProcMenu,
         'i14': GenProcMenu,
-        'i18': ConexsMenu,
+        'i18': GenProcMenu,
         'i08': GenProcMenu,
         'i11': GenProcMenu,
         'k11': GenProcMenu,
-        'i20': ConexsMenu,
+        'i20': GenProcMenu,
         'i12': GenProcMenu,
         'i13': GenProcMenu,
         'b24': GenProcMenu,

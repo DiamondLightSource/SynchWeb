@@ -36,7 +36,6 @@ import CellRoutes from 'modules/cell/routes.js'
 import StatusRoutes from 'modules/status/routes.js'
 import FaultRoutes from 'modules/fault/routes.js'
 import StatsRoutes from 'modules/stats/routes.js'
-import SubmissionRoutes from 'modules/submission/routes.js'
 import VisitsRoutes from 'modules/visits/routes.js'
 import { resolve } from 'promise'
 
@@ -101,7 +100,6 @@ router.addRoutes(CellRoutes)
 router.addRoutes(StatusRoutes)
 router.addRoutes(FaultRoutes)
 router.addRoutes(StatsRoutes)
-router.addRoutes(SubmissionRoutes)
 router.addRoutes(VisitsRoutes)
 
 
