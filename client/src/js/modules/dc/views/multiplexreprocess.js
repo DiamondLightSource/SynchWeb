@@ -175,9 +175,6 @@ define(['backbone', 'marionette', 'views/dialog',
         },
 
         _enqueue: function(options) {
-            console.log('Enqueue here '+options.PROCESSINGJOBID)
-/*
-            TODO uncomment this when ready to enqueue
             Backbone.ajax({
                 url: app.apiurl+'/process/enqueue',
                 method: 'POST',
@@ -185,7 +182,6 @@ define(['backbone', 'marionette', 'views/dialog',
                     PROCESSINGJOBID: options.PROCESSINGJOBID,
                 },
             })
-*/
         },
 
         initialize: function(options) {
