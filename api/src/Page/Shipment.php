@@ -1030,7 +1030,6 @@ class Shipment extends Page
         array $dewars,
         string $proposal,
         int $session_number,
-        int $external_id,
         int $shipping_id,
         string $callback_url=""
     ): int {
@@ -1038,7 +1037,7 @@ class Shipment extends Page
 
         foreach (array_values($dewars) as $dew) {
             $package = [
-                "external_id" => (int) $dew['DEWARID'],
+                "external_id" => null,
                 "container_name" => $dew['NAME'],
                 "serial_number" => $dew['MANUFACTURERSERIALNUMBER'],
                 "shippable_item_type" => "CRYOGENIC_DRY_SHIPPER_CASE",
@@ -1080,7 +1079,7 @@ class Shipment extends Page
         $shipment_request_info = array(
             "proposal" => $proposal,
             "session_number" => $session_number,
-            "external_id" => $external_id,
+            "external_id" => null,
             "origin_url" => "{$protocol}://{$_SERVER['SERVER_NAME']}{$server_port}/shipments/sid/{$shipping_id}",
             "packages" => $packages
         );
@@ -1101,91 +1100,22 @@ class Shipment extends Page
         $dewars = [$dewar];
         $proposal = $dewar['PROPOSAL'];
         $session_number = $dewar['VIS'];
-        $external_id = (int) $dewar['DEWARID'];
+        $dewar_id = (int) $dewar['DEWARID'];
         $shipping_id = (int) $dewar['SHIPPINGID'];
         $token = Utils::generateRandomMd5();
         $this->db->pq(
             "UPDATE dewar SET extra = JSON_SET(IFNULL(extra, '{}'), '$.token', :1 ) WHERE dewarid=:2",
-            array($token, $external_id)
+            array($token, $dewar_id)
         );
 
-        $callback_url = "/api/shipment/dewars/confirm/did/{$external_id}/token/{$token}";
-        $external_shipping_id = $this->_create_dewars_shipment_request($dewars, $proposal, $session_number, $external_id, $shipping_id, $callback_url);
+        $callback_url = "/api/shipment/dewars/confirm/did/{$dewar_id}/token/{$token}";
+        $external_shipping_id = $this->_create_dewars_shipment_request($dewars, $proposal, $session_number, $shipping_id, $callback_url);
 
         $this->db->pq(
             "UPDATE dewar SET externalShippingIdFromSynchrotron=:1 WHERE dewarid=:2",
-            array($external_shipping_id, $dewar['DEWARID'])
+            array($external_shipping_id, $dewar_id)
         );
         return $external_shipping_id;
-    }
-
-    function _dispatch_dewar_in_shipping_service($dispatch_info, $dewar)
-    {
-        global $facility_company;
-        global $facility_address;
-        global $facility_city;
-        global $facility_postcode;
-        global $facility_country;
-        global $facility_phone;
-        global $facility_contact;
-        global $facility_email;
-
-        # Create shipment
-        $shipment_data = array(
-            "consignee_company_name" => $dispatch_info['LABNAME'],
-            "consignee_country" => $dispatch_info['COUNTRY'],
-            "consignee_city" => $dispatch_info['CITY'],
-            "consignee_post_code" => Utils::getValueOrDefault($dispatch_info['POSTCODE'], null),
-            "consignee_contact_name" =>  $dispatch_info['GIVENNAME'] . " " .  $dispatch_info['FAMILYNAME'],
-            "consignee_contact_phone_number" =>  $dispatch_info['PHONENUMBER'],
-            "consignee_contact_email" =>  $dispatch_info['EMAILADDRESS'],
-            "shipper_company_name" => $facility_company,
-            "shipper_address_line1" => $facility_address,
-            "shipper_city" => $facility_city,
-            "shipper_country" => $facility_country,
-            "shipper_post_code" => $facility_postcode,
-            "shipper_contact_name" => $facility_contact,
-            "shipper_contact_phone_number" => $facility_phone,
-            "shipper_contact_email" => $facility_email,
-            "internal_contact_name" => $this->has_arg('LOCALCONTACT') ? $this->args['LOCALCONTACT'] : null,
-            "shipment_reference" =>  $dispatch_info['VISIT'],
-            "external_id" => (int) $dispatch_info['DEWARID'],
-            "journey_type" => ShippingService::JOURNEY_FROM_FACILITY,
-            "packages" => array(
-                array(
-                    "external_id" => (int) $dispatch_info['DEWARID'],
-                    "container_name" => $dewar['NAME'],
-                )
-            )
-        );
-
-        # Split up address. Necessary as address is a single field in ispyb
-        $address_lines = explode(PHP_EOL, rtrim($dispatch_info['ADDRESS']));
-        $num_lines = count($address_lines);
-        if ($num_lines  > 3) {
-            throw new Exception("Could not build request for shipping service: address input contains more than 3 lines (exc. city and post code)");
-        }
-        if (isset($address_lines[0])) $shipment_data['consignee_address_line1'] = $address_lines[0];
-        if (isset($address_lines[1])) $shipment_data['consignee_address_line2'] = $address_lines[1];
-        if (isset($address_lines[2])) $shipment_data['consignee_address_line3'] = $address_lines[2];
-
-        $create = ($dewar['DEWARSTATUS'] != 'dispatch-requested');
-
-        try {
-            if ($create === true) {
-                $shipment_data["proposal"] = $dewar["PROPOSAL"];
-                $response = $this->shipping_service->create_shipment($shipment_data);
-            } else {
-                $this->shipping_service->update_shipment($dispatch_info['DEWARID'], $shipment_data, ShippingService::JOURNEY_FROM_FACILITY);
-                $response = $this->shipping_service->get_shipment($dispatch_info['DEWARID'], ShippingService::JOURNEY_FROM_FACILITY);
-            }
-            $shipment_id = $response['shipmentId'];
-            $this->shipping_service->dispatch_shipment($shipment_id, false);
-        } catch (Exception $e) {
-            throw new Exception($e->getMessage());
-        }
-
-        return $shipment_id;
     }
 
     function _dispatch_dewar()
@@ -1197,7 +1127,6 @@ class Shipment extends Page
         global $dispatch_email_intl;
         global $use_shipping_service, $use_shipping_service_nde;
         global $shipping_service_links_in_emails;
-        global $use_shipping_service_redirect;
         global $shipping_service_app_url;
         // Variable to store where the dewar is (Synchrotron or eBIC building)
         // Could map this to dewar storage locations in ISPyB to make more generic...?
@@ -1282,31 +1211,16 @@ class Shipment extends Page
 
         if (Utils::getValueOrDefault($use_shipping_service) && ($domestic || $nde)) {
             if ($terms_accepted) {
-                if (Utils::getValueOrDefault($use_shipping_service_redirect)) {
-                    try {
-                        $shipment_id = $this->_dispatch_dewar_shipment_request($dew);
-                    } catch (Exception $e) {
-                        $error_json = json_decode($e->getMessage());
-                        $error_response = $error_json->content->detail ?? $e->getMessage();
-                        $error_status = $error_json->status ? $error_json->status : 400; // Status can be 0
-                        $this->_error("Shipping service error: " . json_encode($error_response), $error_status);
-                    }
-                    if (Utils::getValueOrDefault($shipping_service_links_in_emails)) {
-                        $data['AWBURL'] = "{$shipping_service_app_url}/shipment-requests/{$shipment_id}/outgoing";
-                    }
-                } else {
-                    try {
-                        $shipment_id = $this->_dispatch_dewar_in_shipping_service($data, $dew);
-                        if (Utils::getValueOrDefault($shipping_service_links_in_emails)) {
-                            $data['AWBURL'] = $this->shipping_service->get_awb_pdf_url($shipment_id);
-                        }
-                    } catch (Exception $e) {
-                        error_log($e);
-                        $error_json = json_decode($e->getMessage());
-                        $error_response = $error_json->content->detail ?? $e->getMessage();
-                        $error_status = $error_json->status ? $error_json->status : 400;
-                        $this->_error($error_response, $error_status);
-                    }
+                try {
+                    $shipment_id = $this->_dispatch_dewar_shipment_request($dew);
+                } catch (Exception $e) {
+                    $error_json = json_decode($e->getMessage());
+                    $error_response = $error_json->content->detail ?? $e->getMessage();
+                    $error_status = $error_json->status ? $error_json->status : 400; // Status can be 0
+                    $this->_error("Shipping service error: " . json_encode($error_response), $error_status);
+                }
+                if (Utils::getValueOrDefault($shipping_service_links_in_emails)) {
+                    $data['AWBURL'] = "{$shipping_service_app_url}/shipment-requests/{$shipment_id}/outgoing";
                 }
             }
         }
@@ -1316,7 +1230,6 @@ class Shipment extends Page
             Utils::getValueOrDefault($use_shipping_service)
             && ($domestic || $nde)
             && $terms_accepted
-            && Utils::getValueOrDefault($use_shipping_service_redirect)
         );
 
         if ($use_dispatch_lite_template) {
@@ -3470,67 +3383,6 @@ class Shipment extends Page
     }
 
 
-    function _book_shipment_in_shipping_service($user, $shipment, $dewars, $journey_type) {
-        $address_lines = explode(PHP_EOL, rtrim($user["address"]));
-        $contact = array(
-            "company_name" => $user["company"],
-            "address_line1" => isset($address_lines[0]) ? $address_lines[0] : null,
-            "address_line2" => isset($address_lines[1]) ? $address_lines[1] : null,
-            "address_line3" => isset($address_lines[2]) ? $address_lines[2] : null,
-            "city" => $user["city"],
-            "country" => $user["country"],
-            "post_code" => trim($user["postcode"]),
-            "contact_name" => $user["name"],
-            "contact_phone_number" => $user["phone"],
-            "contact_email" => trim($user["email"])
-        );
-        $shipment_data = array(
-            "shipment_reference" => $shipment["PROP"] . '-' . ($shipment["session_number"] ?? 0),
-            "external_id" => $shipment['SHIPPINGID'],
-            "packages" => array_map(
-                function($dewar) {
-                    return array(
-                        "external_id" => $dewar["DEWARID"],
-                        "container_name" => $dewar["NAME"],
-                    );
-                },
-                $dewars
-            )
-        );
-
-        // Create or update shipment in shipping service
-        try {
-            $response = $this->shipping_service->get_shipment($shipment['SHIPPINGID'], $journey_type);
-            $user_shipment_role = $this->has_arg('RETURN') ? "consignee" : "shipper";
-            $relabelled_contact = array_combine(
-                array_map(function($key) use ($user_shipment_role) {return $user_shipment_role."_".$key;}, 
-                    array_keys($contact)), 
-                $contact);
-            $shipment_update_data = array_merge($response, $shipment_data, $relabelled_contact);
-            $this->shipping_service->update_shipment($shipment["SHIPPINGID"], $shipment_update_data, ShippingService::JOURNEY_TO_FACILITY);
-        } catch (\Exception $e) {
-            $shipment_data["proposal"] = $shipment["PROP"];
-            $shipment_data["contact"] = $contact;
-            $response = $this->shipping_service->create_shipment_by_journey_type($shipment_data, $journey_type);
-        }
-
-        // Dispatch shipment in shipping service
-        $shipmentId = $response["shipmentId"];
-        $dispatch_details = $this->shipping_service->dispatch_shipment($shipmentId, false);
-
-        $awb_pieces = array_map(
-            function($package, $index) {return array("piecenumber" => $index+1, "licenseplate" => $package["tracking_number"]);},
-            $dispatch_details["packages"],
-            array_keys($dispatch_details["packages"])
-        );
-
-        return array(
-            "awb" => $dispatch_details["tracking_number"],
-            "label" => $dispatch_details["air_waybill"],
-            "pieces" => $awb_pieces
-        );
-    }
-
     function _create_shipment_shipment_request($shipment, array $dewars): int
     {
 
@@ -3551,7 +3403,6 @@ class Shipment extends Page
             $shipment['PROP'],
             isset($shipment['session_number']) ? $shipment['session_number'] : 0,
             $shipping_id,
-            $shipping_id,
             $callback_url
         );
 
@@ -3566,8 +3417,7 @@ class Shipment extends Page
     function _create_awb()
     {
         global $dhl_service, $dhl_service_eu, $dhl_acc, $dhl_acc_import, $facility_courier_countries,
-            $facility_courier_countries_nde, $use_shipping_service_incoming_shipments,
-            $use_shipping_service_redirect_incoming_shipments;
+            $facility_courier_countries_nde, $use_shipping_service_incoming_shipments;
         if (!$this->has_arg('prop'))
             $this->_error('No proposal specified');
         if (!$this->has_arg('sid'))
@@ -3616,7 +3466,6 @@ class Shipment extends Page
         if (
             Utils::getValueOrDefault($use_shipping_service_incoming_shipments)
             && in_array($this->arg('COUNTRY'), $facility_courier_countries)
-            && Utils::getValueOrDefault($use_shipping_service_redirect_incoming_shipments)
         ) {
             if ($ship['EXTERNALSHIPPINGIDTOSYNCHROTRON']) {
                 $this->_error("Shipping service error: Booking already exists");
@@ -3721,28 +3570,23 @@ class Shipment extends Page
         $awb = null;
         if (!$ship['DELIVERYAGENT_FLIGHTCODE']) {
             try {
-                if (Utils::getValueOrDefault($use_shipping_service_incoming_shipments) && $accno === $dhl_acc) {
-                    $journey_type = $this->has_arg('RETURN') ? ShippingService::JOURNEY_FROM_FACILITY : ShippingService::JOURNEY_TO_FACILITY;
-                    $awb = $this->_book_shipment_in_shipping_service($user, $ship, $dewars, $journey_type);
-                } else {
-                    error_log("Not using shipping service for: {$ship['SHIPPINGID']}");
-                    $awb = $this->dhl->create_awb(array(
-                        'payee' => $payee,
-                        'accountnumber' => $accno,
-                        'shipperid' => $ship['PROP'],
-                        'service' => $product,
-                        'date' => $ship['DELIVERYAGENT_SHIPPINGDATE'],
-                        'declaredvalue' => $this->arg('DECLAREDVALUE'),
-                        'description' => $this->arg('DESCRIPTION'),
+                error_log("Not using shipping service for: {$ship['SHIPPINGID']}");
+                $awb = $this->dhl->create_awb(array(
+                    'payee' => $payee,
+                    'accountnumber' => $accno,
+                    'shipperid' => $ship['PROP'],
+                    'service' => $product,
+                    'date' => $ship['DELIVERYAGENT_SHIPPINGDATE'],
+                    'declaredvalue' => $this->arg('DECLAREDVALUE'),
+                    'description' => $this->arg('DESCRIPTION'),
 
-                        'sender' => $this->has_arg('RETURN') ? $facility : $user,
-                        'receiver' => $this->has_arg('RETURN') ? $user : $facility,
+                    'sender' => $this->has_arg('RETURN') ? $facility : $user,
+                    'receiver' => $this->has_arg('RETURN') ? $user : $facility,
 
-                        'pieces' => $pieces,
-                        'notification' => implode(';', $emails),
-                        'message' => $facility_company . ': Shipment booked from ISPyB for ' . $ship['PROP'] . ' ' . $ship['SHIPPINGNAME'] . ' containing ' . implode(',', $names)
-                    ));
-                }
+                    'pieces' => $pieces,
+                    'notification' => implode(';', $emails),
+                    'message' => $facility_company . ': Shipment booked from ISPyB for ' . $ship['PROP'] . ' ' . $ship['SHIPPINGNAME'] . ' containing ' . implode(',', $names)
+                ));
 
                 $this->db->pq("UPDATE shipping 
                     SET deliveryagent_flightcode=:1, deliveryagent_flightcodetimestamp=CURRENT_TIMESTAMP, deliveryagent_label=:2, deliveryagent_productcode=:3, deliveryagent_flightcodepersonid=:4, shippingstatus='awb created', deliveryagent_agentname='DHL'

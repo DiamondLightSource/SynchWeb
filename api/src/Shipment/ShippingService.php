@@ -9,7 +9,6 @@ namespace SynchWeb\Shipment;
 class ShippingService
 {
     private $shipping_api_url;
-    private $shipping_app_url;
     public const JOURNEY_TO_FACILITY = "TO_FACILITY";
     public const JOURNEY_FROM_FACILITY = "FROM_FACILITY";
 
@@ -41,7 +40,6 @@ class ShippingService
     function __construct()
     {
         global $shipping_service_app_url;
-        $this->shipping_app_url = $shipping_service_app_url;
         $this->shipping_api_url = $shipping_service_app_url . "/api";
     }
 
@@ -97,66 +95,6 @@ class ShippingService
         return $response;
     }
 
-
-    function create_shipment($shipment_data)
-    {
-        return $this->_send_request(
-            $this->shipping_api_url . '/shipments/',
-            "POST",
-            $shipment_data,
-            201
-        );
-    }
-
-
-    function create_shipment_by_journey_type($shipment_data, $journey_type)
-    {
-        return $this->_send_request(
-            $this->shipping_api_url . '/shipments/' . $journey_type,
-            "POST",
-            $shipment_data,
-            201
-        );
-    }
-
-
-    function get_shipment($external_id, $journey_type)
-    {
-        return $this->_send_request(
-            $this->shipping_api_url . '/shipments/external_id/' . $external_id . '?journey_type=' . $journey_type,
-            "GET",
-            null,
-            200
-        );
-    }
-
-
-    function update_shipment($external_id, $shipment_data, $journey_type)
-    {
-        return $this->_send_request(
-            $this->shipping_api_url . '/shipments/external_id/' . $external_id . '?journey_type=' . $journey_type,
-            "PUT",
-            $shipment_data,
-            204
-        );
-    }
-
-
-    function dispatch_shipment($shipment_id, $pickup_requested)
-    {
-        $pickup_requested_str = ($pickup_requested) ? "true" : "false";
-        return $this->_send_request(
-            $this->shipping_api_url . '/shipments/' . $shipment_id . '/dispatch?pickup_requested=' . $pickup_requested_str,
-            "POST",
-            null,
-            201
-        );
-    }
-
-    function get_awb_pdf_url($shipment_id)
-    {
-        return $this->shipping_app_url . '/shipments/' . $shipment_id . '/awb';
-    }
 
     function create_shipment_request($shipment_request_data)
     {
