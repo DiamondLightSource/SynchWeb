@@ -7,7 +7,7 @@ define(['jquery', 'marionette',
         'utils/canvas',
         'modules/dc/views/viridis',
         'templates/dc/gridplot.html',
-        'heatmap',
+        'heatmap.js',
         'utils',
         'utils/xhrimage',
         'jquery-ui',
@@ -489,8 +489,8 @@ define(['jquery', 'marionette',
 
                     // Dont zero values < 1 if data is scaled to max==1
                     data.push({
-                        x: x,
-                        y: y,
+                        x: Math.round(x),
+                        y: Math.round(y),
                         value: val < 1 && max > 1 ? 0 : val,
                         radius: radius
                     })
