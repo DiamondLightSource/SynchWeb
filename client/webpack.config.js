@@ -25,7 +25,9 @@ module.exports = (env, argv) => ({
   },
   resolve: {
     fallback: {
-        util: require.resolve("util/")
+        util: require.resolve("util/"),
+        http: false,
+        fs: false,
     },
     alias: {
       marionette: 'backbone.marionette/lib/backbone.marionette.min',
@@ -59,19 +61,11 @@ module.exports = (env, argv) => ({
       'jquery.editable': 'vendor/jquery/jquery.jeditable.min',
       'jquery.editable.datepicker': 'vendor/jquery/jquery.jeditable.datepicker',
 
-      // Caman npm depends on fibers, canvas, fs which we don't want...
-      // So use direct downloaded dependency
-      caman: 'vendor/caman.min',
-
-      // heatmap in npm has dependency on canvas/node-gyp... so use old one for now
-      heatmap: 'vendor/hmap',
-
       markdown: 'markdown/lib/markdown',
 
       // Vue packages from npm (vee-validate requires promise polyfill - also npm)
       vue: 'vue/dist/vue.min',
       veevalidate: 'vee-validate/dist/vee-validate.min',
-      luxon: 'luxon',
 
       js: path.resolve(__dirname, 'src/js'),
       css: path.resolve(__dirname, 'src/css'),
@@ -155,7 +149,7 @@ module.exports = (env, argv) => ({
         // Caman adds to the window object within a browser
         // The import loader ensures it it recognised as browser env not NodeJS
         {
-            test: /caman\.min\.js$/,
+            test: require.resolve('caman-dist-only/dist/caman.full.js'),
             use: "imports-loader?exports=>undefined,require=>false,this=>window"
         },
         {
