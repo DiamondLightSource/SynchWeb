@@ -12,7 +12,7 @@ class Process extends Page
             'PROCESSINGJOBID' => '\d+',
             'DATACOLLECTIONID' => '\d+',
             'SCALINGID' => '\d+',
-            'DISPLAYNAME' => '([\w\s\-])+',
+            'DISPLAYNAME' => '[\w\s\-.\(\)\=]+',
             'COMMENTS' => '.*',
 
             'PROCESSINGJOBIMAGESWEEPID' => '\d+',
