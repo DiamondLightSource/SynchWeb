@@ -391,7 +391,7 @@ class Proposal extends Page
         }
 
         if ($this->has_arg('cm')) {
-            $where .= " AND p.proposalcode LIKE :" . (sizeof($args) + 1) . " AND s.startdate <= SYSDATE";
+            $where .= " AND p.proposalcode LIKE :" . (sizeof($args) + 1) . " AND s.startdate <= SYSDATE AND s.enddate >= SYSDATE";
             array_push($args, $commissioning_code);
         }
 
