@@ -34,7 +34,7 @@ describe("Sidebar", () => {
   });
 
   it("isProposalActive returns true if proposal is active", () => {
-    localVue.prototype.$store.getters["proposal/currentProposalActive"] = "1";
+    localVue.prototype.$store.getters["proposal/currentProposalActive"] = true;
     const wrapper = shallowMount(Sidebar, {
       localVue,
     });
@@ -42,7 +42,7 @@ describe("Sidebar", () => {
   });
 
   it("isProposalActive returns false if proposal is not active", () => {
-    localVue.prototype.$store.getters["proposal/currentProposalActive"] = "0";
+    localVue.prototype.$store.getters["proposal/currentProposalActive"] = false;
     const wrapper = shallowMount(Sidebar, {
       localVue,
     });
