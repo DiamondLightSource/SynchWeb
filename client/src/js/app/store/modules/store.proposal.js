@@ -136,7 +136,7 @@ const proposalModule = {
       return state.proposal
     },
     currentProposalType: state => state.proposalType,
-    currentProposalState: state => state.proposalModel ? state.proposalModel.get('STATE'): null,
+    currentProposalActive: state => state.proposalModel ? Number(state.proposalModel.get('ACTIVE')) === 1 : false,
     getProposalId: state => state.proposalModel ? state.proposalModel.get('PROPOSALID'): null,
     currentVisit: state => state.visit,
     currentProposalModel: state => state.proposalModel

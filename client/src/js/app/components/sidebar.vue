@@ -22,7 +22,7 @@
       >
         <p class="">
           <i
-            v-show="isProposalClosed"
+            v-show="!isProposalActive"
             class="fa fa-warning tw-text-red-500"
           >&nbsp;</i>{{ proposal ? proposal : 'No Proposal' }} <i
             v-show="proposal"
@@ -33,11 +33,11 @@
 
       <div>
         <router-link
-          v-show="isProposalClosed"
+          v-show="!isProposalActive"
           to=""
           class="tw-w-full tw-border-t tw-border-gray-400 tw-bg-sidebar-mobile-background hover:tw-bg-gray-100 tw-block tw-text-white tw-py-3 tw-px-4"
         >
-          <p>This proposal is closed.</p><p>You cannot create shipments, proteins or contacts.</p>
+          <p>This proposal has ended.</p><p>You cannot create shipments, proteins or contacts.</p>
         </router-link>
         <router-link
           v-for="(item, index) in proposalMenu"
@@ -119,8 +119,8 @@ export default {
         proposal: function() {
             return this.$store.getters['proposal/currentProposal']
         },
-        isProposalClosed: function() {
-            return this.$store.getters['proposal/currentProposalState'] == 'Closed'
+        isProposalActive: function() {
+            return this.$store.getters['proposal/currentProposalActive']
         },
         isLoggedIn: function() {
             return this.$store.getters['auth/isLoggedIn']
