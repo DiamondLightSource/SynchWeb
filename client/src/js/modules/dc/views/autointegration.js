@@ -35,7 +35,7 @@ define(['marionette',
             'click a.apattach': 'showAttachments',
             'click a.downstream': 'downstream',
             'click .dll': utils.signHandler,
-            'click @ui.multiplex': 'multiplexReprocessing',
+            'click .reproc': 'multiplexReprocessing',
         },
 
         ui: {
