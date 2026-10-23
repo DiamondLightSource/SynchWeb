@@ -214,7 +214,9 @@ class Proposal extends Page
                 $order = $cols[$this->arg('sort_by')] . ' ' . $dir;
         }
 
-        $rows = $this->db->paginate("SELECT CONCAT(p.proposalcode,p.proposalnumber) as proposal, p.title, TO_CHAR(p.bltimestamp, 'DD-MM-YYYY') as st, p.proposalcode, p.proposalnumber, count(distinct s.sessionid) as vcount, p.proposalid, CONCAT(pe.givenname, ' ', pe.familyname) as fullname, pe.personid, p.state, IF(p.state = 'Open', 1, 0) as active, CONCAT(p.proposalcode,p.proposalnumber) as prop, s.beamlinename
+        $rows = $this->db->paginate("SELECT CONCAT(p.proposalcode,p.proposalnumber) as proposal, p.title, TO_CHAR(p.bltimestamp, 'DD-MM-YYYY') as st, p.proposalcode, p.proposalnumber, count(distinct s.sessionid) as vcount, p.proposalid, CONCAT(pe.givenname, ' ', pe.familyname) as fullname, pe.personid, p.state,
+                    IF(p.state = 'Open' AND (p.endDate IS NULL OR p.endDate >= NOW()), 1, 0) as active,
+                    CONCAT(p.proposalcode,p.proposalnumber) as prop, s.beamlinename
                     FROM proposal p 
                     LEFT OUTER JOIN blsession s ON p.proposalid = s.proposalid 
                     LEFT OUTER JOIN person pe ON pe.personid = p.personid
@@ -391,7 +393,7 @@ class Proposal extends Page
         }
 
         if ($this->has_arg('cm')) {
-            $where .= " AND p.proposalcode LIKE :" . (sizeof($args) + 1) . " AND s.startdate <= SYSDATE";
+            $where .= " AND p.proposalcode LIKE :" . (sizeof($args) + 1) . " AND s.startdate <= SYSDATE AND s.enddate >= SYSDATE";
             array_push($args, $commissioning_code);
         }
 

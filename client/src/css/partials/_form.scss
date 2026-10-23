@@ -31,7 +31,12 @@ div.form {
         float: left;
         display: block;
         font-size: 12px;
-        
+
+        span.label {
+            display: block;
+            width: 100%;
+        }
+
         span.small {
             display: block;
             font-size: 10px;

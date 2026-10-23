@@ -27,7 +27,7 @@
     >
       <p class="tw-text-xs">
         <i
-          v-show="isProposalClosed"
+          v-show="!isProposalActive"
           class="fa fa-warning tw-text-red-500"
         >&nbsp;</i> {{ proposal ? proposal : 'No Proposal' }} <i
           v-show="proposal"
@@ -42,14 +42,14 @@
             class="tw-border tw-border-gray-400 tw-divide-y tw-divide-gray-400"
           >
             <li
-              v-if="isProposalClosed"
+              v-if="!isProposalActive"
               class="tw-w-full tw-bg-sidebar-grad-end"
             >
               <router-link
                 to=""
                 class="tw-block tw-text-gray-900 tw-py-4 tw-px-2"
               >
-                <p>This proposal is closed. You cannot create shipments, proteins or contacts.</p>
+                <p>This proposal has ended. You cannot create shipments, proteins or contacts.</p>
                 <span v-if="getClosedProposalLink"><a @click="onWrapperClick" :href="getClosedProposalLink">Click here for more info.</a></span>
               </router-link>
             </li>
@@ -160,8 +160,8 @@ export default {
         proposal: function() {
             return this.$store.getters['proposal/currentProposal']
         },
-        isProposalClosed: function() {
-            return this.$store.getters['proposal/currentProposalState'] ===  'Closed'
+        isProposalActive: function() {
+            return this.$store.getters['proposal/currentProposalActive']
         },
         isLoggedIn: function() {
             return this.$store.getters['auth/isLoggedIn']

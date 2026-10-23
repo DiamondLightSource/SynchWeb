@@ -33,20 +33,20 @@ describe("Sidebar", () => {
     expect(wrapper.vm.isLoggedIn).toBe(false);
   });
 
-  it("isProposalClosed returns true if proposal is Closed", () => {
-    localVue.prototype.$store.getters["proposal/currentProposalState"] = "Closed";
+  it("isProposalActive returns true if proposal is active", () => {
+    localVue.prototype.$store.getters["proposal/currentProposalActive"] = true;
     const wrapper = shallowMount(Sidebar, {
       localVue,
     });
-    expect(wrapper.vm.isProposalClosed).toBe(true);
+    expect(wrapper.vm.isProposalActive).toBe(true);
   });
 
-  it("isProposalClosed returns false if proposal is not Closed", () => {
-    localVue.prototype.$store.getters["proposal/currentProposalState"] = "anything else";
+  it("isProposalActive returns false if proposal is not active", () => {
+    localVue.prototype.$store.getters["proposal/currentProposalActive"] = false;
     const wrapper = shallowMount(Sidebar, {
       localVue,
     });
-    expect(wrapper.vm.isProposalClosed).toBe(false);
+    expect(wrapper.vm.isProposalActive).toBe(false);
   });
 
   it("extras initially empty without proposal", () => {
