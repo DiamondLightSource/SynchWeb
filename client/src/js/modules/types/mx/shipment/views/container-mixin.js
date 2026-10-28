@@ -4,6 +4,7 @@ import SpaceGroups from 'collections/spacegroups.js'
 import AnomalousList from 'utils/anoms.js'
 import ExperimentKindsList from 'utils/experimentkinds.js'
 import DistinctProteins from 'modules/shipment/collections/distinctproteins'
+import Ligands from 'collections/ligands'
 import ContainerRegistry from 'modules/shipment/collections/containerregistry'
 import ContainersCollection from 'collections/containers'
 import ContainerTypes from 'modules/shipment/collections/containertypes'
@@ -57,6 +58,7 @@ export default {
       ],
       experimentKindList: [],
       globalProteins: [],
+      ligands: [],
 
       imagingImagers: [],
       imagingCollections: null,
@@ -121,6 +123,11 @@ export default {
       proteinsCollection.queryParams.global = 1
       const result = await this.$store.dispatch('getCollection', proteinsCollection)
       this.globalProteins = result.toJSON()
+    },
+    async getLigands() {
+      const ligandsCollection = new Ligands()
+      const result = await this.$store.dispatch('getCollection', ligandsCollection)
+      this.ligands = result.toJSON()
     },
     async getProteins() {
       const proteinsCollection = new DistinctProteins()
@@ -567,6 +574,7 @@ export default {
       $sampleGroupInputDisabled: () => this.sampleGroupInputDisabled,
       $containerStatus: () => this.container ? this.container['CONTAINERSTATUS'] : null,
       $globalProteins:() => this.globalProteins,
+      $ligands:() => this.ligands,
       $plateType: () => this.plateType,
       $containerTypeDetails: () => this.containerTypeDetails,
       $screenComponents: () => this.screenComponents,

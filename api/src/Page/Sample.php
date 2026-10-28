@@ -78,6 +78,7 @@ class Sample extends Page
         'CONCENTRATIONTYPEID' => '\d+',
         'GLOBAL' => '\d+',
 
+        'LIGANDIDS' => '\d+',
         'COMPONENTIDS' => '\d+',
         'COMPONENTAMOUNTS' => '\d+(.\d+)?',
         'ABUNDANCE' => '\d+(.\d+)?',
@@ -1511,6 +1512,12 @@ class Sample extends Page
         }
     }
 
+    function _add_sample_ligands($ligandids, $blsampleid)
+    {
+        foreach ($ligandids as $l)
+            $this->db->pq("INSERT INTO blsample_has_ligand (blsampleid, ligandid) VALUES (:1,:2)", array($blsampleid, $l));
+    }
+
 
     function _add_sample()
     {
@@ -1613,6 +1620,7 @@ class Sample extends Page
             'RADIATIONSENSITIVITY',
             'SCREENCOMPONENTGROUPID',
             'BLSUBSAMPLEID',
+            'LIGANDIDS',
             'COMPONENTIDS',
             'COMPONENTAMOUNTS',
             'REQUIREDRESOLUTION',
@@ -1699,6 +1707,10 @@ class Sample extends Page
 
         if ($a['VALID_SAMPLE_GROUP']) {
             $this->_save_sample_to_group($sid, $a['SAMPLEGROUP'], null, null);
+        }
+
+        if ($a['LIGANDIDS']) {
+            $this->_add_sample_ligands($a['LIGANDIDS'], $sid);
         }
 
         return $sid;
