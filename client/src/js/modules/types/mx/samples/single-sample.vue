@@ -122,6 +122,20 @@
       <validation-provider
         tag="div"
         class="tw-py-1"
+        name="SMILES Code"
+      >
+        <base-input-text
+          v-model="SMILES"
+          input-class="tw-w-48 tw-h-8"
+          outer-class="tw-w-full tw-flex"
+          label-class="tw-w-1/5"
+          label="SMILES Code"
+        />
+      </validation-provider>
+
+      <validation-provider
+        tag="div"
+        class="tw-py-1"
         name="Comment"
       >
         <base-input-text
@@ -367,7 +381,53 @@
           </div>
         </div>
       </div>
-    
+
+      <div class="">
+        <p class="tw-mb-2">
+          Ligands
+        </p>
+        <div class="tw-w-full tw-flex">
+          <p class="tw-w-1/5 tw-text-xxs">
+            Add:
+          </p>
+          <combo-box
+            v-if="canEditRow(sample['LOCATION'], editingRow)"
+            v-model="newLigandId"
+            class="tw-w-48 protein-select tw-mr-2"
+            :data="ligands"
+            text-field="NAME"
+            value-field="LIGANDID"
+            :input-index="sampleLocation"
+            default-text=""
+            size="small"
+            :exclude-element-class-list="['custom-add']"
+            :can-create-new-item="false"
+          >
+            <template #default="{ option }">
+              <span class="tw-flex tw-justify-between tw-w-full">
+                {{ option['NAME'] }}
+              </span>
+            </template>
+          </combo-box>
+          <div v-if="LIGANDS.length > 0">
+            <sample-ligand-view
+              v-for="(ligand, ligandIndex) in LIGANDS"
+              :key="ligandIndex"
+              :name="ligand['NAME']"
+              :ligand-id="ligand['LIGANDID']"
+              :collection="sampleLigands"
+              @remove-sample-ligands="removeLigandFromSample"
+            />
+          </div>
+          <div
+            v-else
+            class="tw-flex tw-items-center"
+          >
+            <p>No Ligands</p>
+          </div>
+        </div>
+      </div>
+
       <div v-if="containerId">
         <button
           v-if="sample.BLSAMPLEID"
@@ -414,12 +474,14 @@ import SampleTableMixin from 'modules/types/mx/samples/sample-table-mixin.js'
 
 import { ValidationProvider }  from 'vee-validate'
 import SampleComponentView from 'modules/samples/views/sample-component-view.vue'
+import SampleLigandView from 'modules/samples/views/sample-ligand-view.vue'
 
 export default {
   name: 'SingleSampleDefault',
   components: {
     'screen-component-group': ScreenComponentGroup,
     'sample-component-view': SampleComponentView,
+    'sample-ligand-view': SampleLigandView,
     'base-input-select': BaseInputSelect,
     'base-input-text': BaseInputText,
     'base-input-textarea': BaseInputTextArea,
@@ -442,6 +504,7 @@ export default {
       ],
       selectedProteinComponent: null,
       newComponentId: '',
+      newLigandId: '',
     }
   },
   created() {
@@ -505,11 +568,22 @@ export default {
         value: updatedProteinsComponent
       })
     },
+    removeLigandFromSample(ligandId) {
+      const updatedLigands = this.LIGANDS.filter(ligand => Number(ligand['LIGANDID']) !== +ligandId)
+
+      this.$store.commit('samples/updateSamplesField', {
+        path: `samples/${this.sampleIndex}/LIGANDS`,
+        value: updatedLigands
+      })
+    },
     getProteinId(protein) {
       return Number(protein['PROTEINID'])
     },
     getAbundance(protein) {
       return Number(protein['ABUNDANCE'])
+    },
+    getLigandId(ligand) {
+      return Number(ligand['LIGANDID'])
     },
     setComponentIdsAndAmounts() {
       const componentIds = map(this.COMPONENTS, this.getProteinId)
@@ -523,6 +597,13 @@ export default {
       this.$store.commit('samples/updateSamplesField', {
         path: `samples/${this.sampleIndex}/COMPONENTAMOUNTS`,
         value: componentAbundance
+      })
+    },
+    setLigandIds() {
+      const ligandIds = map(this.LIGANDS, this.getLigandId)
+      this.$store.commit('samples/updateSamplesField', {
+        path: `samples/${this.sampleIndex}/LIGANDIDS`,
+        value: ligandIds
       })
     },
     addScreenComponentToGroup() {},
@@ -550,6 +631,9 @@ export default {
     sampleComponents() {
       return this.sample['COMPONENTS']
     },
+    sampleLigands() {
+      return this.sample['LIGANDS']
+    },
   },
   watch: {
     newComponentId: {
@@ -572,9 +656,33 @@ export default {
         }
       }
     },
+    newLigandId: {
+      handler(newValue) {
+        if (newValue) {
+          this.newLigandId = ''
+          const value = Number(newValue)
+
+          const addedLigandIds = map(this.LIGANDS, this.getLigandId)
+          if (addedLigandIds.includes(value)) return
+
+          const ligands = this.LIGANDS
+          const assignedLigand = this.ligands.find(ligand => Number(ligand['LIGANDID']) === value)
+          ligands.push({ ...assignedLigand })
+
+          this.$store.commit('samples/updateSamplesField', {
+            path: `samples/${this.sampleIndex}/LIGANDS`,
+            value: ligands
+          })
+        }
+      }
+    },
     COMPONENTS: {
       deep: true,
       handler: 'setComponentIdsAndAmounts'
+    },
+    LIGANDS: {
+      deep: true,
+      handler: 'setLigandIds'
     },
     sampleIndex: {
       immediate: true,

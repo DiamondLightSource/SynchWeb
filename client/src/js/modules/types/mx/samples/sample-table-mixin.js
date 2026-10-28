@@ -106,6 +106,9 @@ export default {
     containers() {
       return this.$containers()
     },
+    ligands() {
+      return this.$ligands()
+    },
     queueForUDC() {
       return this.$queueForUDC()
     },
@@ -136,6 +139,7 @@ export default {
       'ENERGY',
       'EXPERIMENTALDENSITY',
       'EXPERIMENTKIND',
+      'LIGANDS',
       'LOCATION',
       'LOOPTYPE',
       'MINIMUMRESOLUTION',
@@ -319,6 +323,7 @@ export default {
     "$shipments",
     "$dewars",
     "$containers",
+    "$ligands",
     "$queueForUDC",
     "$proteins",
     "$sampleGroupsSamples",

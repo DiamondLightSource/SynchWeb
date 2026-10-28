@@ -661,6 +661,7 @@ export default {
 
     this.getGlobalProteins()
     this.getProteins()
+    this.getLigands()
     this.getContainerTypes()
     this.getContainerRegistry()
     this.getParentContainers()
