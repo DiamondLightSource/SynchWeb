@@ -50,21 +50,20 @@
                 <td><%- BEAM.XBEAM ? BEAM.XBEAM : '- -' %></td>
                 <td><%- BEAM.YBEAM ? BEAM.YBEAM : '- -' %></td>
             </tr>
-            <!-- these are flipped, not sure why? -->
             <tr>
                 <td>Refined</td>
-                <td><%- BEAM.REFINEDYBEAM ? BEAM.REFINEDYBEAM : '- -' %></td>
                 <td><%- BEAM.REFINEDXBEAM ? BEAM.REFINEDXBEAM : '- -' %></td>
+                <td><%- BEAM.REFINEDYBEAM ? BEAM.REFINEDYBEAM : '- -' %></td>
             </tr>
             <tr>
                 <td>&Delta;</td>
-                <td><%- BEAM.REFINEDYBEAM && BEAM.XBEAM ? (BEAM.XBEAM - BEAM.REFINEDYBEAM).toFixed(2) : '- -' %></td>
-                <td><%- BEAM.YBEAM && BEAM.REFINEDXBEAM ? (BEAM.YBEAM - BEAM.REFINEDXBEAM).toFixed(2) : '- -' %></td>
+                <td><%- BEAM.REFINEDXBEAM && BEAM.XBEAM ? (BEAM.XBEAM - BEAM.REFINEDXBEAM).toFixed(2) : '- -' %></td>
+                <td><%- BEAM.YBEAM && BEAM.REFINEDYBEAM ? (BEAM.YBEAM - BEAM.REFINEDYBEAM).toFixed(2) : '- -' %></td>
             </tr>
         </tbody>
     </table>
 
-    <% if (BEAM.REFINEDYBEAM > 0 && (Math.abs(BEAM.XBEAM-BEAM.REFINEDYBEAM) > 0.5 || Math.abs(BEAM.YBEAM-BEAM.REFINEDXBEAM) > 0.5)) { %>
+    <% if (BEAM.REFINEDXBEAM > 0 && (Math.abs(BEAM.XBEAM-BEAM.REFINEDXBEAM) > 0.5 || Math.abs(BEAM.YBEAM-BEAM.REFINEDYBEAM) > 0.5)) { %>
     <p class="message alert">WARNING: Beam centre has moved significantly during refinement! (>0.5mm)</p>
     <% } %>
 
