@@ -266,6 +266,7 @@
     $use_shipping_service = null;
     $use_shipping_service_nde = False;
     $use_shipping_service_incoming_shipments = null;
+    $use_shipping_service_incoming_shipments_nde = False;
     $shipping_service_api_user = null;
     $shipping_service_api_password = null;
     $shipping_service_app_url = null;

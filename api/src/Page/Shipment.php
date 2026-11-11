@@ -1097,19 +1097,24 @@ class Shipment extends Page
             return $dewar['EXTERNALSHIPPINGIDFROMSYNCHROTRON'];
         }
 
-        $dewars = [$dewar];
-        $proposal = $dewar['PROPOSAL'];
-        $session_number = $dewar['VIS'];
         $dewar_id = (int) $dewar['DEWARID'];
-        $shipping_id = (int) $dewar['SHIPPINGID'];
-        $token = Utils::generateRandomMd5();
-        $this->db->pq(
-            "UPDATE dewar SET extra = JSON_SET(IFNULL(extra, '{}'), '$.token', :1 ) WHERE dewarid=:2",
-            array($token, $dewar_id)
-        );
 
-        $callback_url = "/api/shipment/dewars/confirm/did/{$dewar_id}/token/{$token}";
-        $external_shipping_id = $this->_create_dewars_shipment_request($dewars, $proposal, $session_number, $shipping_id, $callback_url);
+        if (!is_null($dewar['EXTERNALSHIPPINGIDTOSYNCHROTRON']) && !is_null($dewar['TOKEN']) && $dewar['DCOUNT'] == 1) {
+            $external_shipping_id = $dewar['EXTERNALSHIPPINGIDTOSYNCHROTRON'];
+        } else {
+            $dewars = [$dewar];
+            $proposal = $dewar['PROPOSAL'];
+            $session_number = $dewar['VIS'];
+            $shipping_id = (int) $dewar['SHIPPINGID'];
+            $token = Utils::generateRandomMd5();
+            $this->db->pq(
+                "UPDATE dewar SET extra = JSON_SET(IFNULL(extra, '{}'), '$.token', :1 ) WHERE dewarid=:2",
+                array($token, $dewar_id)
+            );
+
+            $callback_url = "/api/shipment/dewars/confirm/did/{$dewar_id}/token/{$token}";
+            $external_shipping_id = $this->_create_dewars_shipment_request($dewars, $proposal, $session_number, $shipping_id, $callback_url);
+        }
 
         $this->db->pq(
             "UPDATE dewar SET externalShippingIdFromSynchrotron=:1 WHERE dewarid=:2",
@@ -1143,7 +1148,9 @@ class Shipment extends Page
 
         $dew = $this->db->pq(
             "SELECT d.dewarid, d.barcode, d.storagelocation, d.dewarstatus, d.externalShippingIdFromSynchrotron,
+            s.externalshippingidtosynchrotron, json_unquote(json_extract(d.extra, '$.token')) as token,
             s.shippingid, p.proposalcode, CONCAT(p.proposalcode, p.proposalnumber) as proposal,
+            (SELECT COUNT(*) FROM dewar d2 WHERE d2.shippingid = s.shippingid) as dcount,
             count(distinct c.containerId) as num_pucks, count(b.blsampleId) as num_samples,
             ifnull(bls.visit_number, 0) as vis, IF(d.facilitycode, d.facilitycode, d.code) as name,
             dr.manufacturerserialnumber
@@ -1267,20 +1274,7 @@ class Shipment extends Page
             $data['BARCODE'] = $dew['BARCODE'];
             $email->data = $data;
 
-            if (
-                $country != $facility_country &&
-                array_key_exists('DELIVERYAGENT_AGENTNAME', $data) &&
-                $data['DELIVERYAGENT_AGENTNAME'] === 'DHL' &&
-                array_key_exists('PROPOSALCODE', $dew) &&
-                in_array($dew['PROPOSALCODE'], array('bi','cm','mx')) &&
-                !is_null($dispatch_email_intl)
-            ) {
-                $recpts = $dispatch_email_intl;
-            } else {
-                $recpts = $dispatch_email;
-            }
-
-            $recpts .= ', ' . $this->arg('EMAILADDRESS');
+            $recpts = $dispatch_email . ', ' . $this->arg('EMAILADDRESS');
             $local_contact_email = $this->has_arg('LCEMAIL') ? $this->args['LCEMAIL'] : '';
             if ($local_contact_email) $recpts .= ', ' . $local_contact_email;
 
@@ -3417,7 +3411,8 @@ class Shipment extends Page
     function _create_awb()
     {
         global $dhl_service, $dhl_service_eu, $dhl_acc, $dhl_acc_import, $facility_courier_countries,
-            $facility_courier_countries_nde, $use_shipping_service_incoming_shipments;
+            $facility_courier_countries_nde, $use_shipping_service_incoming_shipments,
+            $use_shipping_service_incoming_shipments_nde;
         if (!$this->has_arg('prop'))
             $this->_error('No proposal specified');
         if (!$this->has_arg('sid'))
@@ -3464,8 +3459,10 @@ class Shipment extends Page
         }
 
         if (
-            Utils::getValueOrDefault($use_shipping_service_incoming_shipments)
-            && in_array($this->arg('COUNTRY'), $facility_courier_countries)
+            ((Utils::getValueOrDefault($use_shipping_service_incoming_shipments)
+              && in_array($this->arg('COUNTRY'), $facility_courier_countries))
+            || (Utils::getValueOrDefault($use_shipping_service_incoming_shipments_nde)
+              && in_array($this->arg('COUNTRY'), $facility_courier_countries_nde)))
         ) {
             if ($ship['EXTERNALSHIPPINGIDTOSYNCHROTRON']) {
                 $this->_error("Shipping service error: Booking already exists");
