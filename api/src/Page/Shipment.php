@@ -2205,6 +2205,8 @@ class Shipment extends Page
         $select = '';
         $having = '';
         $subsamplesInTotal = "";
+        $totWithClause = "";
+        $totSelectFields = "c.containerid";
         $totalQuery = new DatabaseQueryBuilder($this->db);
 
         if ($this->has_arg('visit')) {
@@ -2302,15 +2304,20 @@ class Shipment extends Page
                 $where .= " AND c.imagerid IS NOT NULL";
             } else if ($this->arg('ty') == 'todispose') {
                 $where .= " AND c.imagerid IS NOT NULL";
-                $having .= " HAVING (TIMESTAMPDIFF('HOUR', min(ci.bltimestamp), CURRENT_TIMESTAMP)/24) > 42";
-                $totalQuery->joinClause("LEFT OUTER JOIN containerinspection ci ON ci.containerid = c.containerid AND ci.state = 'Completed'");
+                $having .= " HAVING ci.age > 42";
+                $totalQuery->joinClause("LEFT OUTER JOIN inspection_summary ci ON ci.containerid = c.containerid");
+                $totWithClause = "WITH inspection_summary AS (
+                    SELECT containerid, ROUND(TIMESTAMPDIFF(HOUR, MIN(bltimestamp), CURRENT_TIMESTAMP)/24, 1) as age
+                    FROM containerinspection WHERE state = 'Completed' GROUP BY containerid
+                )";
+                $totSelectFields = "c.containerid, ci.age";
             } else if ($this->arg('ty') == 'queued') {
                 $where .= " AND cq.containerqueueid IS NOT NULL";
                 $totalQuery->joinClause("LEFT OUTER JOIN containerqueue cq ON cq.containerid = c.containerid AND cq.completedtimestamp IS NULL");
             } else if ($this->arg('ty') == 'completed') {
-                $where .= " AND cq2.completedtimestamp IS NOT NULL";
-                $totalQuery->joinClause("LEFT OUTER JOIN containerqueue cq2 ON cq2.containerid = c.containerid AND cq2.completedtimestamp IS NOT NULL");
-                $this->args['sort_by'] = 'COMPLETEDTIMESTAMP';
+                $where .= " AND cq.completedtimestamp IS NOT NULL";
+                $totalQuery->joinClause("LEFT OUTER JOIN containerqueue cq ON cq.containerid = c.containerid AND cq.completedtimestamp IS NOT NULL");
+                $this->args['sort_by'] = 'LASTQUEUECOMPLETED';
                 $this->args['order'] = 'desc';
             } else if ($this->arg('ty') == 'processing') {
                 $where .= " AND c.containerstatus = 'processing'";
@@ -2423,9 +2430,9 @@ class Shipment extends Page
             $where .= " AND (" . implode(" OR ", $conditions) . ")";
         }
 
-        $tot = $this->db->pq("SELECT COUNT(*) as tot FROM
+        $tot = $this->db->pq($totWithClause . " SELECT COUNT(*) as tot FROM
                 (SELECT $manualsubsamples
-                c.containerid
+                $totSelectFields
                 FROM container c 
                 {$totalQuery->getJoins()}
                 WHERE $where
@@ -2457,10 +2464,10 @@ class Shipment extends Page
 
         if ($this->has_arg('sort_by')) {
             $cols = array(
-                'NAME' => 'c.code', 'DEWAR' => 'd.code', 'SHIPMENT' => 'sh.shippingname', 'SAMPLES' => 'count(distinct s.blsampleid)',
-                'INSPECTIONS' => 'count(distinct ci.containerinspectionid)', 'LASTINSPECTIONDAYS' => 'lastinspectiondays',
-                'DCCOUNT' => 'COUNT(distinct dc.datacollectionid)', 'SUBSAMPLES' => 'subsamples',
-                'LASTQUEUECOMPLETED' => 'max(cq2.completedtimestamp)', 'AGE' => 'age',
+                'NAME' => 'c.code', 'DEWAR' => 'd.code', 'SHIPMENT' => 'sh.shippingname', 'SAMPLES' => 's_sum.samples',
+                'INSPECTIONS' => 'ci.inspections', 'LASTINSPECTIONDAYS' => 'ci.lastinspectiondays',
+                'SUBSAMPLES' => 's_sum.subsamples',
+                'LASTQUEUECOMPLETED' => 'cq.lastqueuecompleted', 'AGE' => 'ci.age',
                 'CONTAINERTYPE' => 'c.containertype', 'CONTAINERSTATUS' => 'c.containerstatus',
                 'VISIT' => 'visit', 'REQUESTEDIMAGER' => 'requestedimager', 'IMAGER' => 'imager',
                 'MANUAL' => 'queuedmanualsubsamples', 'AUTO' => 'queuedautosubsamples',
@@ -2474,11 +2481,42 @@ class Shipment extends Page
             }
         }
         // $this->db->set_debug(True);
-        $rows = $this->db->paginate("SELECT $select
-                round(TIMESTAMPDIFF('HOUR', min(ci.bltimestamp), CURRENT_TIMESTAMP)/24,1) as age,
-                TO_CHAR(max(ci.bltimestamp), 'HH24:MI DD-MM-YYYY') as lastinspection,
-                round(TIMESTAMPDIFF('HOUR', max(ci.bltimestamp), CURRENT_TIMESTAMP)/24,1) as lastinspectiondays,
-                count(distinct ci.containerinspectionid) as inspections,
+        $rows = $this->db->paginate("WITH
+            inspection_summary AS (
+                SELECT
+                    containerid,
+                    ROUND(TIMESTAMPDIFF(HOUR, MIN(bltimestamp), CURRENT_TIMESTAMP)/24, 1) as age,
+                    TO_CHAR(MAX(bltimestamp), 'HH24:MI DD-MM-YYYY') as lastinspection,
+                    ROUND(TIMESTAMPDIFF(HOUR, MAX(bltimestamp), CURRENT_TIMESTAMP)/24, 1) as lastinspectiondays,
+                    COUNT(DISTINCT containerinspectionid) as inspections
+                FROM containerinspection
+                WHERE state = 'Completed'
+                GROUP BY containerid
+            ),
+            sample_summary AS (
+                SELECT
+                    s.containerid,
+                    COUNT(DISTINCT s.blsampleid) as samples,
+                    COUNT(DISTINCT ss.blsubsampleid) as subsamples
+                FROM blsample s
+                LEFT JOIN blsubsample ss ON ss.blsampleid = s.blsampleid AND ss.source = 'manual'
+                GROUP BY s.containerid
+            ),
+            queue_summary AS (
+                SELECT
+                    containerid,
+                    MAX(CASE WHEN completedtimestamp IS NULL THEN containerqueueid END) as containerqueueid,
+                    MAX(CASE WHEN completedtimestamp IS NULL THEN TO_CHAR(createdtimestamp, 'DD-MM-YYYY HH24:MI') END) as queuedtimestamp,
+                    TO_CHAR(MAX(completedtimestamp), 'HH24:MI DD-MM-YYYY') as lastqueuecompleted,
+                    MAX(completedtimestamp) as completedtimestamp
+                FROM containerqueue
+                GROUP BY containerid
+            )
+            SELECT $select
+                ci.age,
+                ci.lastinspection,
+                ci.lastinspectiondays,
+                IFNULL(ci.inspections, 0) as inspections,
                 c.scheduleid, c.screenid, c.ownerid, c.imagerid, c.bltimestamp, c.samplechangerlocation, c.beamlinelocation, c.containertype, c.capacity, c.barcode,
                 c.containerstatus, c.containerid, c.code as name, c.requestedreturn, c.requestedimagerid, c.comments, c.experimenttype, c.storagetemperature,
                 c.parentcontainerid, c.parentcontainerlocation, pc.code as parentcontainer,
@@ -2487,31 +2525,35 @@ class Shipment extends Page
                 CONCAT(p.proposalcode, p.proposalnumber) as prop, CONCAT(p.proposalcode, p.proposalnumber, '-', ses.visit_number) as visit, ses.beamlinename,
                 d.dewarstatus, d.code as dewar, d.dewarid,
                 sh.shippingname as shipment, sh.shippingid, sh.safetylevel as shippingsafetylevel,
-                count(distinct s.blsampleid) as samples,
-                cq.containerqueueid, TO_CHAR(cq.createdtimestamp, 'DD-MM-YYYY HH24:MI') as queuedtimestamp,
+                IFNULL(s_sum.samples, 0) as samples,
+                cq.containerqueueid, cq.queuedtimestamp,
                 reg.barcode as registry, reg.containerregistryid,
-                (SELECT sch.name FROM schedule sch WHERE sch.scheduleid = c.scheduleid) as schedule,
-                (SELECT i2.name FROM imager i2 WHERE i2.imagerid = c.requestedimagerid) as requestedimager,
-                (SELECT count(distinct ss.blsubsampleid) FROM blsubsample ss RIGHT OUTER JOIN blsample s2 ON s2.blsampleid = ss.blsampleid WHERE s2.containerid = c.containerid AND ss.source='manual') as subsamples,
+                sch.name as schedule,
+                i2.name as requestedimager,
+                IFNULL(s_sum.subsamples, 0) as subsamples,
                 $subsamples
-                (SELECT ses3.beamlinename FROM blsession ses3 WHERE d.firstexperimentid = ses3.sessionid) as firstexperimentbeamline,
-                (SELECT pp.name FROM processingpipeline pp WHERE c.prioritypipelineid = pp.processingpipelineid) as pipeline,
-                TO_CHAR(max(cq2.completedtimestamp), 'HH24:MI DD-MM-YYYY') as lastqueuecompleted,
-                (SELECT CONCAT(pe.givenname, ' ', pe.familyname) FROM person pe WHERE c.ownerid = pe.personid) as owner
+                ses3.beamlinename as firstexperimentbeamline,
+                pp.name as pipeline,
+                cq.lastqueuecompleted,
+                CONCAT(pe.givenname, ' ', pe.familyname) as owner
 
                                   FROM container c 
                                   INNER JOIN dewar d ON d.dewarid = c.dewarid 
                                   INNER JOIN shipping sh ON sh.shippingid = d.shippingid 
                                   INNER JOIN proposal p ON p.proposalid = sh.proposalid 
-                                  LEFT OUTER JOIN blsample s ON s.containerid = c.containerid 
-                                  LEFT OUTER JOIN containerinspection ci ON ci.containerid = c.containerid AND ci.state = 'Completed'
+                                  LEFT OUTER JOIN inspection_summary ci ON ci.containerid = c.containerid
+                                  LEFT OUTER JOIN sample_summary s_sum ON s_sum.containerid = c.containerid
+                                  LEFT OUTER JOIN queue_summary cq ON cq.containerid = c.containerid
                                   LEFT OUTER JOIN imager i ON i.imagerid = c.imagerid
                                   LEFT OUTER JOIN screen sc ON sc.screenid = c.screenid
-                                  LEFT OUTER JOIN containerqueue cq ON cq.containerid = c.containerid AND cq.completedtimestamp IS NULL
-                                  LEFT OUTER JOIN containerqueue cq2 ON cq2.containerid = c.containerid AND cq2.completedtimestamp IS NOT NULL
                                   LEFT OUTER JOIN containerregistry reg ON reg.containerregistryid = c.containerregistryid
                                   LEFT OUTER JOIN blsession ses ON c.sessionid = ses.sessionid
                                   LEFT OUTER JOIN container pc ON c.parentcontainerid = pc.containerid
+                                  LEFT OUTER JOIN schedule sch ON sch.scheduleid = c.scheduleid
+                                  LEFT OUTER JOIN imager i2 ON i2.imagerid = c.requestedimagerid
+                                  LEFT OUTER JOIN blsession ses3 ON d.firstexperimentid = ses3.sessionid
+                                  LEFT OUTER JOIN processingpipeline pp ON c.prioritypipelineid = pp.processingpipelineid
+                                  LEFT OUTER JOIN person pe ON c.ownerid = pe.personid
 
                                   $join
                                   WHERE $where
