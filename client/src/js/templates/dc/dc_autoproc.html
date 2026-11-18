@@ -13,7 +13,8 @@
     <% } else { %>
 
     <p class="r downloads">
-        <a class="multiplex button" href="#"><i class="fa fa-cog"></i> Multiplex Reprocessing</a>
+        <a class="multiplex button logf" href="<%-APIURL%>/download/ap/cluster/<%-AID%>"><i class="fa fa-line-chart"></i> Cluster Plots</a>
+        <a class="multiplex button reproc" href="#"><i class="fa fa-cog"></i> Multiplex Reprocessing</a>
         <% if (IMAGESWEEPCOUNT > 1) { %>
             <span><%=IMAGESWEEPCOUNT%> image sweeps</span>
         <% } %>

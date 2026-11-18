@@ -30,6 +30,7 @@ define(['backbone', 'marionette', 'views/dialog',
         ui: {
             fields: 'input, select',
             sg: 'select[name=sg]',
+            sm: 'input[name=sm]',
             res: 'input[name=res]',
             opts: 'div.options',
             filteringMethod: 'select[name=method]',
@@ -116,6 +117,13 @@ define(['backbone', 'marionette', 'views/dialog',
                     PROCESSINGJOBID: jobId,
                     PARAMETERKEY: 'spacegroup',
                     PARAMETERVALUE: sg
+                }))
+
+                var sm = this.ui.sm.is(':checked')
+                if (sm) reprocessingparams.add(new ReprocessingParameter({
+                    PROCESSINGJOBID: jobId,
+                    PARAMETERKEY: 'small_molecule',
+                    PARAMETERVALUE: 'true'
                 }))
 
                 const cchalf = this.ui.cchalf.prop('checked')

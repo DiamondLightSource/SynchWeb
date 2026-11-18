@@ -60,6 +60,7 @@ class Download extends Page
         array('/ap/attachments(/:AUTOPROCPROGRAMATTACHMENTID)(/dl/:download)', 'get', '_get_autoproc_attachments'),
         array('/ap/archive/:AUTOPROCPROGRAMID', 'get', '_get_autoproc_archive'),
         array('/ap/log/:AUTOPROCPROGRAMID', 'get', '_get_autoproc_log'),
+        array('/ap/cluster/:AUTOPROCPROGRAMID', 'get', '_get_multiplex_clustering_file'),
     );
 
 
@@ -507,6 +508,36 @@ class Download extends Page
 
         if (!sizeof($rows)) {
             return $this->_error('No log file found');
+        }
+        $this->_get_file($rows[0]['AUTOPROCPROGRAMID'], $rows[0]);
+
+    }
+
+
+    # ------------------------------------------------------------------------
+    # Get the xia2 multiplex clustering file
+    function _get_multiplex_clustering_file()
+    {
+
+        if (!$this->has_arg('prop')) {
+            $this->_error('No proposal specified');
+        }
+        $args = array($this->proposalid, $this->arg('AUTOPROCPROGRAMID'));
+
+        $rows = $this->db->pq(
+            "SELECT app.autoprocprogramid, appa.filename, appa.filepath
+                FROM autoprocprogram app
+                INNER JOIN processingjob pj on pj.processingjobid = app.processingjobid
+                INNER JOIN autoprocprogramattachment appa ON appa.autoprocprogramid = app.autoprocprogramid
+                INNER JOIN datacollection dc ON dc.datacollectionid = pj.datacollectionid
+                INNER JOIN datacollectiongroup dcg ON dcg.datacollectiongroupid = dc.datacollectiongroupid
+                INNER JOIN blsession s ON s.sessionid = dcg.sessionid
+                WHERE s.proposalid=:1
+                AND app.autoprocprogramid=:2
+                AND appa.filename='xia2.multiplex_clustering.html'", $args);
+
+        if (!sizeof($rows)) {
+            return $this->_output(array('error' => 'No xia2.multiplex_clustering.html file found'));
         }
         $this->_get_file($rows[0]['AUTOPROCPROGRAMID'], $rows[0]);
 

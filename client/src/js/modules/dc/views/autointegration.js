@@ -35,11 +35,12 @@ define(['marionette',
             'click a.apattach': 'showAttachments',
             'click a.downstream': 'downstream',
             'click .dll': utils.signHandler,
-            'click @ui.multiplex': 'multiplexReprocessing',
+            'click .reproc': 'multiplexReprocessing',
         },
 
         ui: {
-            multiplex: '.multiplex',
+            reproc: '.reproc',
+            logf: '.logf',
         },
 
         regions: {
@@ -48,8 +49,15 @@ define(['marionette',
 
         onRender: function() {
             this.messages.show(new APMessagesView({ messages: new Backbone.Collection(this.model.get('MESSAGES')), embed: true }))
-            if (this.model.get('TYPE').toLowerCase().includes('cluster') || !this.model.get('TYPE').toLowerCase().includes('multiplex')) {
-                this.ui.multiplex.hide()
+            const type = this.model.get('TYPE').toLowerCase();
+            const isMultiplex = type.includes('multiplex');
+            const isFiltering = type.includes('filtering');
+            const isCluster = type.includes('cluster');
+            if (!isMultiplex || isFiltering || isCluster) {
+                this.ui.reproc.hide();
+            }
+            if (!isMultiplex || isFiltering) {
+                this.ui.logf.hide();
             }
         },
 
