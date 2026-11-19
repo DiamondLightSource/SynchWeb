@@ -720,8 +720,7 @@ class Shipment extends Page
               LEFT OUTER JOIN dewarregistry_has_proposal rhp ON r.dewarregistryid = rhp.dewarregistryid
               LEFT OUTER JOIN dewarreport dr ON r.facilitycode = dr.facilitycode
               LEFT OUTER JOIN proposal p ON p.proposalid = rhp.proposalid 
-              LEFT OUTER JOIN dewar d ON d.facilitycode = r.facilitycode
-              LEFT OUTER JOIN shipping s ON d.shippingid = s.shippingid 
+              LEFT OUTER JOIN dewar d ON d.dewarregistryid = r.dewarregistryid
 
               WHERE $where 
               GROUP BY $group
